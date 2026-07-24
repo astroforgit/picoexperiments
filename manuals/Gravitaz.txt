@@ -1,0 +1,25 @@
+Hey all!
+
+Here's a project I started about two years ago and just finally got around to finishing. It's a simple Shmup reminiscent of a Galaga or an Invaders, but with a few fun twists.
+
+Featuring:
+
+-Six enemy classes with unique weapons
+-Randomized waves
+-Shop system
+
+-New in Version 1.1:
+--Bossfights!
+--Music
+--Persistent Highscores
+--General Bugfixes
+
+If you want to download a standalone game, it can be found for free over at https://kepler-softworks.itch.io/gravitaz
+
+I also have a short video talking about some parts of the code (enemy logic and the particle system) a bit over on my Youtube channel at https://www.youtube.com/watch?v=IVEEdj82Biw
+
+Feel free to rip out the particle system and use it in your own projects, I really enjoyed using it, and I think with a bit of modification, it could be expanded upon for a lot of other things.
+
+I hope you all enjoy this little game, I know I enjoyed making it, and let me know what your high scores are!
+
+https://www.lexaloffle.com/bbs/?tid=38597

@@ -1,0 +1,5 @@
+After a long time without any updates I have decided to post version 0.5 of the game in its current, un-finished state. There is no goal as such apart from mine gold and build some cool looking space stations. Since version 0.4 many changes have been made such as adding a title screen, fixing some sound issues, improving sprite work, adding some new building blocks and many other improvements.
+
+This is an unfinished update and game overall that will most likely never be finished but I hope you enjoy what is here now. I think that it is for the best for me to move onto new ideas and projects rather than get stuck on the same project for months on end.
+
+https://www.lexaloffle.com/bbs/?tid=28994

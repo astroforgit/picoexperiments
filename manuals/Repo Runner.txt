@@ -1,0 +1,45 @@
+v1.0.1 - post gamejam bugfix
+Cart #53355 | 2018-06-07 | Code ▽ | Embed ▽ | License: CC4-BY-NC-SA
+5
+
+Fixed the bug that caused people to have broken noses forever.
+
+[Game for the Game Dev Network Gooseberry Jam. Theme: You are the villain! Deadline: 5/27.]
+
+In Repo Runner, you're... the repo-person! The one who tows cars that people haven't paid up for. You work for Repo Co., and each day you must extract the target vehicle before the debtee drives it away.
+
+v1.0
+Repo Runner 1.0
+by tarngerine
+Cart #53053 | 2018-05-27 | Code ▽ | Embed ▽ | License: CC4-BY-NC-SA
+5
+
+Deadline is coming up soon, so calling it a wrap on this one. Fleshed out the win/loss conditions with a debt you must settle with the company. Added random events that would dock your money, in addition to encounter-related losses.
+
+v0.3
+Repoman 0.3
+by tarngerine
+Cart #53038 | 2018-05-26 | Code ▽ | Embed ▽ | License: CC4-BY-NC-SA
+5
+
+Music, UI polish. Had a lot of fun composing with @Gruber's tutorials on YouTube.
+
+v0.2 - added encounters
+Repoman 0.2
+by tarngerine
+Cart #53015 | 2018-05-25 | Code ▽ | Embed ▽ | License: CC4-BY-NC-SA
+5
+
+Encounters with dialogue for the debtees when they see you repossessing their vehicle. I think that's really the emotional conflict with repo work — obviously, they owe money, but everyone has their troubles.
+
+v0.1 - initial mvp
+Repoman 0.1
+by tarngerine
+Cart #52962 | 2018-05-23 | Code ▽ | Embed ▽ | License: CC4-BY-NC-SA
+5
+
+Basic game with multiple levels of increasing difficulty, as well as user onboarding and money tracking for the bounties you complete.
+
+Gamejam: https://itch.io/jam/game-dev-network-gooseberry-jam
+
+https://www.lexaloffle.com/bbs/?tid=31322

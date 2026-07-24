@@ -1,0 +1,30 @@
+My entry to the 3-Color Jam (#3CJam), where you had to create a "spooky" game that used no more than 3 colours (and yes, Black is a colour!). It is an attempt to make a short adventure game, based heavily on the movie "Halloween" by John Carpenter.
+
+I created it using my SCUMM-8 point & click adventure game engine (GitHub link)
+
+However, due to the BBS web player not hiding mouse cursor and right-clicks,
+I recommend playing it on My itch.io page (LINK)
+
+Also, for the best effect: turn the lights down and the sound up or headphones)! :D
+
+CONTROLS:
+
+    Mouse is recommended
+    (Arrows / Z / X - will also work)
+
+A "POINT & CLICK" PRIMER:
+
+    If never played a "Point+Click" adventure game before...
+    Simply use the cursor and (left) click where you want the player to Walk To.
+    To interact with objects, click on the Verb you wish to perform, then click on the object.
+    For example, to Pick-up the Knife... simply click "PICK-UP" and then click on the "Knife" object in the scene.
+    When hovering the cursor over objects, their default verb/action (if applicable) will be highlighted. In this case, you can simply Right-click on the object for the default verb/action to be performed.
+
+CREDITS & THANKS:
+
+    Code, Art & Music (cover): Paul Nicholas ( @Liquidream)
+    Additional design by Hilda Nicholas.
+    Original "Halloween" Music, Concept & Credit: John Carpenter
+
+
+https://www.lexaloffle.com/bbs/?tid=30160

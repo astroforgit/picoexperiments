@@ -1,0 +1,141 @@
+PICO Space
+
+drakeblue_picospace
+by drakeblue
+Cart #drakeblue_picospace-0 | 2021-04-03 | Code ▽ | Embed ▽ | License: CC4-BY-NC-SA
+16
+
+v0.9b
+Defend the animals of the galaxy from the space weevil invasion in your grandad's space taxi!
+
+Check the notice boards at space stations for prospective passengers. Gain rewards when they're delivered safely and discover how to defeat the weevil menace.
+
+The galaxy is quickly becoming a more and more dangerous place so be careful out there - with 50-70 systems and some questionable government policies an animal needs to look after themselves!
+
+Please report any bugs or if something is unclear below. Feedback helps me improve and is always welcome :)
+Controls
+Main Menu
+
+    Use Up, Down and X to select options in the menus.
+    Return/Start/P will always take you to the Main Menu
+    Hold Return/Start/P to access the normal PICO-8 menu.
+
+I recommend a gamepad if you have one, but keys work fine too. Holding the X and O buttons together is useful to use the ship flip ability successfully. On mobile, I've found swiping my thumb backwards and forwards between the X and O buttons works okay, but it does seem easier to play with keys or a gamepad (to me at least).
+Starting the Game
+
+Use the up and down directions to highlight an option and X to select it.
+
+    Begin New Game - starts a new game with the currently show captain in a new galaxy (Captain Magerquack by default).
+    Change Captain - chooses a new captain and galaxy with which to start a new game using the Begin New Game option. This doesn't affect the currently stored game or any game from a pasted code.
+    Continue Last Game - this retrieves the previously auto-saved game from your browser's cache or PICO-8's cartdata. The game is saved at the Dock Menu and on entering a system via a hyperjump.
+    If you want to preserve further game states beyond this then use the next option.
+    Load From Pasted Code - every time the game is saved PICO Space places a save game code into the clipboard. By pasting this code into a text file or similar then multiple game saves can be maintained. To restore from one of these codes:
+    > - copy the code into the clipboard from the application you've used to store it
+    > - switch back to PICO Space running in PICO-8 and paste it
+    > - Use X to select the Load From Pasted Code option in the menu
+
+NOTE: THIS DOESN'T SEEM TO WORK IN THE BROWSER - YOU WILL NEED TO DOWNLOAD THE STANDALONE PICO-8 CONSOLE VERSION TO LOAD FROM SAVE CODES OR ACCESS THE GAME THROUGH SPLORE
+THE GAME WILL BEHAVE UNPREDICTABLY (PROBABLY CRASH) IF A MALFORMED CODE OR OTHER DATA IS PASTED INTO IT
+
+    Set Difficulty - Adjusts how dangerous the galaxy is in the game. This option affects new games only so needs to be set before choosing "Begin New Game".
+    > - Easy - for casual or inexperienced players, but still with some challenge
+    > - Normal - a reasonable challenge, success is not guaranteed on each journey
+    > - Hard - a difficult game likely to require multiple reloads
+
+Please tell me if you think these ratings aren't very correct so I can try to tweak them
+How to Get Around the Galaxy
+
+(the following is an extract from the dog-eared manual you found in the glove compartment of your grandad's ship)
+
+Congratulations on your purchase of a Farwilre P1C0 Star Taxi!
+
+Your ship will enable you to fly anywhere within a system's boundary by directing it with the arrow keys or control stick (if fitted). Be careful of flying into a system's sun as there may be undesirable explosive consequences.
+
+    The Short Range Scanner is useful to see what's close to you and is located in the bottom right of the viewscreen.
+    The current system or current target (with distance in standard galactic units) is shown in the top left.
+    Your ship's remaining shield energy is displayed in the bottom left. If this is depleted then it will flash to indicate that you should dock at the nearest space station for recharging.
+    To locate space stations or other objects within a star system press Return, Start or P to bring up the main menu.
+
+Main Menu (Pause)
+
+Select the System Map (with Up, Down and X) from the options shown.
+System Map
+
+Solar systems are large so to avoid excessive journey time it is advised to utilise your ship's hyperdrive from the System Map (where traffic laws permit).
+
+To do this:
+
+    Locate the cursor where you wish to jump to by using the direction keys
+    Press O, Z or V to execute a hyper jump
+    Press X to target the nearest system object. The target is shown in the top left and also indicated by a red marker.
+
+Note: be sure to peruse the System Map in a safe location to avoid possible accidents while it has your attention. Last year 45% of ship accidents happened while pilots were viewing their map screens - don't let the next one happen to you!
+
+Systems in PICO Space are linked by Hyperspace Wyrmholes (of as yet unknown origin). These can be used to traverse between stars even in ships that are unequipped with an interstellar-capable drive. Thus to travel to another system simply fly into the centre of a wyrmhole and your ship will travel through hyperspace to a point in the system indicated in the wyrmhole's name.
+
+If you know which adjacent star you wish to travel to, it is easiest to find where the wyrmhole to it is by using the System Map.
+
+To navigate about the greater galaxy and hence determine which wyrmholes to use it is advisable to examine the ship's Galaxy Scanner.
+Galaxy Scanner
+
+The Galaxy Scanner will open centred on your current location - shown by the ship icon and expanding circle indicator. Adjacent stars (i.e. those which are connected by a pair of wyrmholes) have lines drawn between them. Systems adjacent to your current location have green lines drawn to them. Corresponding wyrmholes should be visible on the System Map.
+
+The view and cursor in the centre may be moved using the direction keys. The currently highlighted system will be the closest to the cursor position.
+
+The galaxy is quite large so for optimal viewing it may be necessary to zoom the view in or out by holding the X key and using the Up and Down directions to change the scale of the view.
+
+If your ship is fitted with an Interstellar Drive then it is possible to hyperjump (without traversing a wyrmhole) to adjacent systems by highlighting them with the cursor in this view and pressing O, Z or C.
+Status
+
+At any time your current status can be checked from the Main Menu by selecting this option.
+
+The screen shows:
+
+    You, the captain of the ship and your combat rating
+    Any current message
+    Your current passenger if one is present and to where they wish to be taken.
+    Information about any upgrades that have been added to your ship
+    The energy level remaining for you ship's shields
+    The danger level of this galaxy
+
+Weaponry
+
+Should you be unfortunate enough to encounter a hostile threat on your travels your P1C0 Space Taxi is fitted with a standard P3W Blaser; a small but adequate defensive weapon.
+
+    Tap X (and release) and the P3W will fire
+    Hold X to charge multiple shots that will rapidly fire on releasing the trigger.
+    Note: while energy is diverted to charging the P3W your shields are unable to recover strength.
+
+Dock Menu
+
+When docked at a space station the following standard options will be available:
+Notice Board
+
+Waiting passengers are listed here for an enterprising space taxi owner to transport to their desired destination.
+
+Use the Up, Down and X keys to select a passenger that you wish to transport. Be careful to choose a journey you can complete - an animal never backs out of a deal!
+New Paint
+
+Choose from a range of desirable colour schemes to customise your Farwilre pride and joy!
+Launch to Space
+
+The station will launch you back to space so you may continue on your journeying.
+
+extract ends
+Tips
+
+    Choose your passengers wisely - some wish to travel further than others. Check on where they want to go via the Galaxy Map before committing to a journey you aren't sure you want to take.
+    Plan your journey before leaving the safety of the space stations.
+    If your shields are damaged it may be wise to stop at a station on the way to your destination to recharge them.
+    Charge your weapon before encountering enemies, but don't hold X constantly as it stops your shields recharging as you fly.
+    Use your hyperspace ability within systems to save on journey time or to escape a tough spot, especially as the galaxy becomes more and more dangerous.
+    Note that the game is only paused in the Main Menu, other screens don't freeze time.
+
+If you are not sure what to do:
+
+    try ferrying passengers
+    later in the game, try reading the Beeb News or listening to what the NPC ships say to you.
+
+Good Luck, Captain!
+
+https://www.lexaloffle.com/bbs/?tid=42279

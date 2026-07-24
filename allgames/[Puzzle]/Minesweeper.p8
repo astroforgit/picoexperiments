@@ -1,0 +1,1559 @@
+pico-8 cartridge // http://www.pico-8.com
+version 8
+__lua__
+--minesweeper port/clone
+--by ryan kinsey 
+
+version = "1.1"
+
+poke(0x5f2d,1)
+--to stop mouse trails
+--enable drawboard and graphics
+--in playdraw()
+
+customs=false
+mousecords=false
+
+--resolution settings here
+--currently unused
+--will need to be coordinates
+--pixelsize
+--p=1
+--restl=0
+--restr=127
+--resbl=127
+--resbr=127
+
+--warning, difficulty 2 and 3
+--will draw off screen
+--scrolling will be implemented 
+--in a future update
+ difficulty=1
+--location of the mine you hit
+ hitx=0
+ hity=0
+--you haven't lost yet, right?
+ lost=false
+ contmode=1
+
+ --for use in mouse support tests
+ boundaries=false
+
+function str(n)
+--functions as tostring()
+ return ""..n
+end
+
+function titleinit()
+--initialise the title screen
+ mode = 0
+ rectfill(0,0,127,127,7)
+ rect(1,11,126,126,6)
+ fakewindow()
+ drawlogos()
+ print("version "..version,81,119,0)
+ --calib()
+end
+
+function gameinit()
+--initialise the game
+--draws the board + ui
+ mode = 1
+ timer=0
+ gen()
+ graphics()
+ fakewindow()
+ drawboard()
+ if contmode==1 then
+  drawselect()
+ end
+--reset lost in case of replay
+ lost=false
+ offgrid=false
+
+end
+
+function difficultyselectinit()
+--in progress
+--start the difficulty selection
+ mode = 4
+ --colx=1 is game and 2=help 
+ colx=1
+ select()
+ diffselectgraphics()
+ fakewindow() 
+end
+
+function calib()
+--just for lining up
+ line(63,63,63,63,11)
+ line(63,0,63,127)
+ line(0,63,127,63)
+ line(0,0,127,127)
+ line(0,127,127,0)
+end
+
+function textmiddle(s)
+ return 64-flr((#s*4)/2)
+end
+
+function gen()
+--initialise grids
+ grid={}
+ grid2={}
+--ensure no tiles are active
+ acboard={}
+ playgrid={}
+--set size of grid and mine limit
+ if difficulty==1 then
+  m=9 --number of rows
+  n=9 --number of columns
+  minelim=10 --number of mines
+  flagmax=minelim
+  flagsleft=flagmax
+  offx=15
+  offy=32
+ elseif difficulty==2 then
+  m=16
+  n=16
+  minelim=40
+  flagmax=minelim
+  flagsleft=flagmax
+  --offx=-2
+  --offy=32
+  offx=-60
+  offy=-60
+ elseif difficulty==3 then
+  m=16
+  n=30
+  minelim=99
+  flagmax=minelim
+  flagsleft=flagmax
+  offx=-170
+  --offy=15
+  offy=-60
+ elseif difficulty==4 then
+  m=2
+  n=2
+  minelim=1
+  flagmax=minelim
+  flagsleft=flagmax
+  offx=15
+  offy=32
+ elseif difficulty==5 then
+  m=9
+  n=13
+  minelim=15
+  flagmax=minelim
+  flagsleft=flagmax
+  offx=-2
+  offy=32
+ else
+  minelim=flr((m+n)/2)
+  flagmax=minelim
+  flagsleft=flagmax
+  offx=-2
+--this one should make it approx in middle
+--offx=flr((127/2)-(flr(n/2)*12)-4)
+  offy=32
+ end
+ 
+ for i = 1,n do
+  acboard[i] = {} --create a new row
+  for j = 1,m do
+   acboard[i][j] = 0
+  end
+ end
+--generate the board
+ resetgrid()
+ randgrid()
+--reset player position 
+ getplaygrid()
+ startat()
+end
+
+function select()
+--used for custom difficulties
+--offsets allow board to be drawn
+--in top left corner
+--rows and columns start at 1
+ m=1
+ n=1
+ offx=0
+ offy=35
+end
+ 
+function resetgrid()
+--fills grid{} with zeroes 
+ grid={} 
+ for i = 1,n do
+  grid[i] = {} --create a new row
+  for j = 1,m do
+   --if i==j then 
+   --grid[i][j] = 1
+   --else
+   grid[i][j] = 0
+   --end
+  end
+ end
+end 
+
+function random(x)
+--returns random integer between 
+--1 and x
+ return (flr(rnd(x)))+1
+end
+
+function randgrid()
+--randomly places mines in grid{}
+ resetgrid()
+ checkmines()
+ while nummines<minelim do
+  corm=random(m)
+  corn=random(n)
+  if grid[corn][corm] == 0 then
+   grid[corn][corm]+=1
+  end
+  checkmines()
+ end  
+end
+
+function mineat(x,y)
+--checks if the coordinate is 
+--valid and has a mine
+ if (x>0 and y>0 and x<=n and y<=m) then
+  if grid[x][y] == 1 then
+   return true
+  end
+ else 
+  return false
+ end
+end
+
+function canmove(x,y,b)
+ --checks if the player can move
+ --in that direction
+ if b == 0 then
+  if x > 1 then
+   return true
+  end
+ elseif b == 1 then
+  if x < n then
+   return true
+  end
+ elseif b == 2 then
+  if y > 1 then
+   return true
+  end
+ elseif b == 3 then
+  if y < m then
+   return true
+  end
+ end
+end
+
+function button(q)
+ --if btnp(q) then
+  contmode=1
+  if q<4 then
+   x, y = getplayerpos()
+   if not canmove(x,y,q) then
+    if q== 2 then
+     offgrid=true
+    end
+   elseif canmove(x,y,q) then 
+    if q== 0 then
+     playgrid[x-1][y]=1
+     playgrid[x][y]=0
+    elseif q== 1 then
+     playgrid[x+1][y]=1
+     playgrid[x][y]=0
+    elseif q==2 then
+     playgrid[x][y-1]=1
+     playgrid[x][y]=0
+    elseif q==3 then
+     if offgrid==true then
+      offgrid=false
+     else
+      playgrid[x][y+1]=1
+      playgrid[x][y]=0
+     end
+    end
+   end
+   graphics()
+   fakewindow()
+   drawboard()
+   drawselect()
+  end
+  if q==4 then
+   drawface(4)
+   if offgrid== true then
+    gameinit()
+    offgrid=true
+   else
+   x, y = getplayerpos()
+   reveal(x,y)
+   if lost == false then
+    checkwin()
+   end
+   drawboard()
+   if mode==1 then
+    drawselect()
+   end
+   end
+  end
+  if q==5 then
+   if offgrid==false then
+    dropflag()
+    drawboard()
+    if contmode==1 then
+     drawselect()
+    end
+    checkwin()
+   end
+  end 
+end
+
+function notpressed()
+--checks no buttons are pressed
+ if not btn(0) and
+ not btn(1) and
+ not btn(2) and
+ not btn(3) and
+ not btn(4) and
+ not btn(5)
+ then
+ return true
+ end
+ drawflagsleft()
+end
+
+function isactive(x,y)
+--checks if tile has been revealed
+ if acboard[x][y]<1 then
+  return false
+ else
+  return true
+ end
+end
+
+function isflagged(x,y)
+--checks if tile is already flagged
+ if isactive(x,y) then
+  return true
+ elseif acboard[x][y]<0 then
+  return true
+ else
+  return false
+ end
+end
+
+function iswrong(x,y) 
+--checks if a flag is placed
+--but there is no mine there
+--a.k.a wrong
+ if isflagged(x,y)then
+  if acboard[x][y] <0 then
+   if not mineat(x,y) then
+    return true
+   elseif not isflagged(x,y) then
+    return false
+   end
+  end
+ end
+end
+
+function count(x,y)
+--counts the number of mines 
+--surrounding the coordinate
+--(x,y) of grid{}
+ close=0
+ if mineat(x,y) then
+  return 10
+ else
+  for i = -1,1 do
+   for j = -1,1 do
+    w=x+i
+    h=y+j
+    if mineat(w,h) then
+     close+=1
+    end
+   end
+  end
+ end 
+ return close
+end
+
+function drawgrid()
+--draws grid{}
+  for i = 1,n do
+   for j = 1,m do
+    print(grid[i][j],(9*i)+offx,(9*j)+offy,7)
+   end
+  end 
+end
+
+function drawplaygrid()
+--draws playgrid{}
+ for i = 1,n do
+  for j = 1,m do
+   print(playgrid[i][j],(9*i)+offx,(9*j)+offy,7)
+  end
+ end 
+end
+
+function drawselect() 
+--draws the keyboard controlled 
+--selector
+
+ --getplayerpos()
+ palt(0,false)
+ palt(14,true)
+ if offgrid==true then
+  --this is where the face is
+  --spr(tl,56,18,2,2)
+  spr(25,64,26,1,2)
+ else
+  for i = 1,n do
+   for j = 1,m do
+    if (playgrid[i][j]==1) then
+     spr(25,(9*i)+offx+4,(9*j)+offy+4,1,2)
+    end  
+   end
+  end
+ end 
+end
+
+function drawgrid2()
+--draws grid2{}
+ --rectfill(23,42,104,123,0)
+ for i = 1,n do
+  for j = 1,m do
+   print(count(i,j),(9*i)+offx,(9*j)+offy,7)
+  end
+ end 
+end
+
+function drawboard()
+--draws the actual game board
+--behind board
+ rectfill(offx+7,offy+7,(9*n)+offx+9,(9*m)+offy+9,0)
+ --u
+ line(offx+7,offy+7,(9*n)+offx+9,offy+7,5)
+ --d
+ line(offx+7,(9*m)+offy+9,(9*n)+offx+9,(9*m)+offy+9,7)
+ --l
+ line(offx+7,offy+7,offx+7,(9*m)+offy+9,5)
+ --r
+ line((9*n)+offx+9,offy+8,(9*n)+offx+9,(9*m)+offy+9,7)
+ for i = 1,n do
+  for j= 1,m do
+   if not isactive(i,j) then
+    if acboard[i][j]<0 then
+     spr(29,(9*i)+offx,(9*j)+offy)
+    else
+     spr(09,(9*i)+offx,(9*j)+offy)
+    end
+   else
+    spr(count(i,j),(9*i)+offx,(9*j)+offy)
+   --spr(12,(9*i)+offx,(9*j)+offy)
+   end
+  end
+ end
+end
+
+function drawwrong()
+--draws the cross sprite on any
+--wrongly marked tiles
+ for i=1,n do
+  for j=1,m do
+   if iswrong(i,j) then
+    spr(14,(9*i)+offx,(9*j)+offy)
+   end
+  end 
+ end
+end
+
+function drawhit()
+--draws the hit sprite on the tile
+--that caused gameover
+ w=hitx
+ h=hity
+ spr(13,(9*w)+offx,(9*h)+offy)
+end
+
+function getplaygrid()
+--generates playgrid()
+ for i = 1,n do
+  playgrid[i] = {} --create a new row
+  for j = 1,m do
+   playgrid[i][j] = 0
+  end
+ end 
+end
+
+function drawflagsleft()
+--draws the segment display 
+--showing how many flags remain
+
+ s= str(flagsleft)
+ --print(#s,64,64,11)
+ if #s == 1 then
+  s = "00"..s
+ else if #s == 2 then
+  s = "0"..s
+ end
+ end
+ s1=sub(s,1,1)
+ s2=sub(s,2,2)
+ s3=sub(s,3)
+
+ --draw the segment display
+ spr((70+s1),offx+10,offy-14,1,2)
+ spr((70+s2),offx+18,offy-14,1,2)
+ spr((70+s3),offx+26,offy-14,1,2)
+
+ --for testing purposes only
+ --print(sub(s,1,1),64,64,11)
+ --print(sub(s,2,2),74,64,11)
+ --print(sub(s,3),84,64,11)
+end
+
+function drawtimetaken()
+--draws the segment display
+--showing the time elapsed
+
+ s= str(flr(timer))
+ --print(#s,64,64,11)
+ if #s == 1 then
+  s = "00"..s
+ else if #s == 2 then
+  s = "0"..s
+ end
+ end
+ s1=sub(s,1,1)
+ s2=sub(s,2,2)
+ s3=sub(s,3)
+
+ --draw the segment display
+ spr((70+s1),(9*n)+offx-17,offy-14,1,2)
+ spr((70+s2),(9*n)+offx-9,offy-14,1,2)
+ spr((70+s3),(9*n)+offx-1,offy-14,1,2)
+end
+
+
+function acboard()
+--generates the board that stores
+--which tiles are active 
+ for i = 1,n do
+  acboard[i] = {} --create a new row
+  for j = 1,m do
+   acboard[i][j] = 0
+  end
+ end
+end
+
+function startat()
+--starts the keyboard selector 
+--at the top left
+ playgrid[1][1]+=1
+end
+
+function getplayerpos()
+--returns the position of the
+--keyboard selector
+ for i = 1,n do
+  for j= 1,m do
+   if playgrid[i][j] ==1 then
+    return i, j
+   end
+  end
+ end
+end
+
+function checkmines()
+--returns the number of mines 
+--remaining
+ nummines=0
+ for i = 1,n do
+  for j = 1,m do
+   if mineat(i,j) then
+    nummines+=1
+   end
+  end
+ end 
+ return nummines
+end
+
+function reveal(x,y)
+--reveals the selected tile
+ if (x>0 and y>0 and x<=n and y<=m) then
+  if not isactive(x,y) then
+   --if its not acive
+   --check if flagged
+   if acboard[x][y]<0 then
+   --must be flagged 
+    acboard[x][y]+=20
+     flagsleft+=1
+   end 
+   acboard[x][y]=1
+   --now it is active it will be drawn
+   --check if bomb 
+   if count(x,y)==10 then
+    hitx=x
+    hity=y
+    lost=true
+   --if bomb, reveal all other bombs
+    for i=1,n do
+     for j=1,m do
+      if not isflagged(i,j) then
+       if mineat(i,j)then
+        acboard[i][j]=1
+       end
+      end
+      --and end game
+     end
+    end 
+    graphics()
+    mode=3
+    drawface(3) 
+   end
+     
+   --if blank, reveal surrounding 
+   --tiles
+   if count(x,y)==0 then
+    for i = -1,1 do
+     for j = -1,1 do
+      w=x+i
+      h=y+j        
+      reveal(w,h)
+     end
+    end
+   end
+  end
+ end
+end
+
+function mousecheck()
+ for i=1,n+1 do
+  for j=1,m+1 do
+   if stat(32) > (9*i)+offx-1 and stat(32) < ((9*(i+1))+offx-1) then
+    if stat(33) > (9*j)+offy-1 and stat(33) < ((9*(j+1))+offy-1) then
+     return i, j
+    end
+   else if stat(32)>56 and stat(32)<72 then
+    if stat(33)>18 and stat(33)<34 then
+     return 0
+    end
+   end
+  end
+ end
+ end
+end
+
+function dropflag(q,z)
+--drop or return a flag
+ if contmode==1 then 
+ x, y = getplayerpos()
+ if not isflagged(x,y) then
+  if flagsleft>0 then
+   flagsleft-=1
+   acboard[x][y]-=20
+  end
+ elseif isflagged(x,y) then
+  if acboard[x][y]<0 then
+   acboard[x][y]+=20
+   flagsleft+=1
+  end
+ end
+ end
+ 
+ if contmode==2 then
+  if not isflagged(q,z) then
+  if flagsleft>0 then
+   flagsleft-=1
+   acboard[q][z]-=20
+  end
+ elseif isflagged(q,z) then
+  if acboard[q][z]<0 then
+   acboard[q][z]+=20
+   flagsleft+=1
+  end
+ end
+ end
+end
+
+function checkwin()
+--checks that the game has been
+--finished correctly
+ correct=0
+ for i = 1,n do
+  for j = 1,m do
+   if mineat(i,j) then
+    if acboard[i][j]<0 then
+     if acboard[i][j]>-25 then
+      correct+=1
+     end
+    end
+   end
+  end
+ end
+ 
+ --if correct==minelim then
+  --graphics()
+  --drawboard()
+  --mode=2
+  --drawface(2)
+ --end
+ 
+ actives=0
+ for i = 1,n do
+  for j = 1,m do
+   if acboard[i][j]==1 then
+    actives+=1
+   end
+  end
+ end 
+ if (m*n)-minelim==actives then
+  graphics()
+  drawboard()
+  mode=2
+  drawface(2)
+ end
+end
+
+function drawface(w)
+--draws face depending on argument
+ if w == 1 then
+  tl=18
+ elseif w == 2 then
+  tl=20
+ elseif w == 3 then 
+  tl=16
+ elseif w == 4 then
+  tl=22
+ end
+ --draw the appropriate face
+ spr(tl,56,18,2,2)
+end
+
+function graphics()
+--draws the borders, and general
+--background graphics of the game
+ --make sure black is not transparent
+ palt(0,false)
+ --fill screen
+ rectfill(1,11,126,126,6)
+  --indent
+ --u
+ line(offx+5,offy-20,(9*n)+offx+12,offy-20,7)
+ --d
+ line(offx+4,(9*m)+offy+12,(9*n)+offx+12,(9*m)+offy+12,5)
+ --l
+ line(offx+4,offy-20,offx+4,(9*m)+offy+11,7)
+ --r
+ line((9*n)+offx+12,(9*m)+offy+11,(9*n)+offx+12,offy-19,5)
+ 
+ --fake game/help bar
+ --print("game help",3,13,0)
+ 
+ --ui border
+ --u
+ line(offx+7,offy-17,(9*n)+offx+9,offy-17,5)
+ --d
+ line(offx+7,offy+4,(9*n)+offx+9,offy+4,7)
+ --l
+ line(offx+7,offy-16,offx+7,offy+3,5)
+ --r
+ line((9*n)+offx+9,offy-16,(9*n)+offx+9,offy+4,7)
+ 
+ --draw over the arrow if it bleeds
+ --onto the bottom
+ line(0,127,127,127,5)
+ drawface(1)
+ drawflagsleft()
+ drawtimetaken()
+end
+
+function diffselectgraphics()
+--draws the menu for the difficulty select
+ --make sure black is not transparent
+ palt(0,false)
+ --fill screen
+ rectfill(1,11,126,126,6)
+  --indent
+ --u
+ line(offx+5,offy-20,(9*n)+offx+12,offy-20,7)
+ --d
+ line(offx+4,(9*m)+offy+12,(9*n)+offx+12,(9*m)+offy+12,5)
+ --l
+ line(offx+4,offy-20,offx+4,(9*m)+offy+11,7)
+ --r
+ line((9*n)+offx+12,(9*m)+offy+11,(9*n)+offx+12,offy-19,5)
+ 
+ --diffmenu
+ --fake game/help bar
+ rectfill(1,10,126,19,6)
+ print("game help",3,13,0)
+ 
+ --highlight game bar
+ --rect(1,10,20,19,11)
+ if colx==1 then
+ --u
+ line(1,10,20,10,5)
+ --b
+ line(1,19,20,19,7)
+ --l
+ line(1,10,1,18,5)
+ --r
+ line(20,19,20,10,7)
+ --rect(0,0,64,64,11)
+ elseif colx==2 then
+ --u
+ line(20,10,40,10,5)
+ --b
+ line(20,19,40,19,7)
+ --l
+ line(20,10,20,18,5)
+ --r
+ line(40,19,40,10,7)
+ end
+ 
+ print("number of rows",34,64,11)
+ print("number of columns",34,74,11)
+ drawrows()
+ drawcolumns()
+end
+
+function drawrows()
+--in the custom difficulty menu
+--prints the currently selected
+--number of rows
+ print(m,104,64,11)
+end
+
+function drawcolumns()
+--in the custom difficulty menu
+--prints the currently selected
+--number of columns
+ print(n,104,74,11)
+end
+
+function fakewindow()
+--draws the fake windows bar
+ rectfill(1,1,126,10,1)
+
+ if mode== 0 then
+  graphic=57
+  tag="games"
+ else
+  graphic=28
+  tag="minesweeper"
+ end
+ 
+ --icon
+ palt(14,true)
+ palt(0,false)
+ spr(graphic,2,2)
+ --windows icons
+ spr(44,100,2)
+ spr(45,109,2)
+ spr(46,118,2)
+ print(tag,11,4,7)
+ --border around screen
+ line(0,0,127,0,7)
+ line(0,0,0,126,7)
+ line(0,127,127,127,5)
+ line(127,1,127,127,5)
+   --shading for border
+ spr(31,0,0)
+ spr(31,0,127)
+ spr(31,127,0)
+ palt()
+end
+
+function drawlogos()
+--used to draw logos on title screen
+ --spr(64,49,80,5,2)
+ 
+ --unused sticky note box
+ --rectfill(6,85,95,115,10)
+ --rect(6,85,95,115,0)
+ 
+ palt(0,false)
+ palt(11,true)
+ --draw the mine
+ spr(135,48,31,4,4)
+ --spr(097,3,117)
+ print("@tanthetaequals2",4,119,0)
+ palt()
+end
+
+function _init()
+--initializes the game
+ titleinit()
+ lastx=stat(32)
+ lasty=stat(33)
+end
+
+function _update()
+--call specific update depending
+--on current game state/mode
+ if (mode == 0) then
+  titleupdate()
+ elseif (mode == 1) then
+  gameupdate()
+ elseif (mode == 2) then
+  winupdate()
+ elseif (mode == 3) then
+  gameoverupdate()
+ elseif (mode == 4) then
+  difficultyselectupdate()
+ end
+ 
+ --click or move to enable mouse support
+ if (stat(34) == 1) then
+  contmode=2
+  mousesupport=true
+	end
+	 
+	if lastx-stat(32)~=0 and lasty-stat(33)~=0 then
+  contmode=2
+  mousesupport=true
+ end
+ lastx=stat(32)
+ lasty=stat(33)
+	 
+end
+
+function titleupdate()
+--check for button presses on 
+--title screen
+--z to play
+ if btnp(4) or stat(34)==1 then
+  gameinit()
+ end
+--x to start difficulty select
+ if customs==true then
+  if btnp(5) or stat(34)==2 then
+   difficultyselectinit()
+  end
+ end
+end
+
+function gameupdate()
+--update for when game is playing
+
+--30fps, add 1/30 to timer each frame
+ timer+=(1/30)
+ 
+--check for button presses
+ if btnp(0) then
+  button(0)
+ end
+ if btnp(1) then
+  button(1)
+ end
+ if btnp(2) then
+  button(2)
+ end
+ if btnp(3) then
+  button(3)
+ end
+ if btnp(4) then
+  button(4)
+ end
+ if btnp(5) then
+  button(5)
+ end
+ 
+ if stat(34)==1 then
+  drawface(4)
+  if held==false then
+  held=true
+  if mousecheck() == 0 then
+   gameinit()
+  else if mousecheck() then
+   x, y=mousecheck() 
+   reveal(x,y)
+   end 
+  end
+  if lost == false then
+   checkwin()
+  end
+  end
+ else
+  held=false
+ end
+ 
+ if stat(34)==2 then 
+  if held2==false then
+   held2=true
+  if mousecheck() then
+   x, y=mousecheck() 
+   dropflag(x,y)
+  end
+ end
+ else
+ held2=false
+ end
+ 
+end
+
+function winupdate()
+--check for burron presses on
+--the win screen
+
+--z to restart
+ if btnp(4) or stat(34)==1 then
+  if held==false then
+   held=true
+   gameinit()
+  end
+ else held=false
+ end
+--x to return to title screen
+ if btnp(5) or stat(34)==2 then
+  if held2==false then
+   held2=true
+   titleinit()
+  end
+ else held2=false
+ end
+end
+
+function gameoverupdate()
+--check for button pressed on
+--the game over screen
+
+--z to restart
+ if btnp(4) or stat(34)==1 then
+  if held==false then
+   held=true
+   gameinit()
+  end
+ else held=false
+ end
+--x to return to title screen
+ if btnp(5) or stat(34)==2 then
+  if held2==false then
+   held2=true
+   titleinit()
+  end
+ else held2=false
+ end
+end
+
+function difficultyselectupdate()
+--check for button presses on the 
+--difficulty select menu
+
+--left and right to change columns
+--and also increase number of columns 
+ if btnp(0) then
+  if n > 1 then
+   n -= 1
+  end
+  if colx==2 then
+   colx=1
+  end
+ drawcolumns()
+ end
+ 
+ if btnp(1) then
+  if n < 10 then
+   n += 1
+  end
+  if colx==1 then
+   colx=2
+  end
+ drawcolumns()
+ end
+ 
+--up and down to increase
+--the number of rows
+ if btnp(2) then
+  if m > 1 then
+   m -= 1
+  end
+ drawrows()
+ end
+ 
+ if btnp(3) then
+  if m < 10 then
+   m += 1
+  end
+ drawrows()
+ end
+ 
+--z to start a custom difficulty 
+ if btnp(4) then
+  difficulty=10
+  gameinit()
+ end
+--x to return to title screen
+ if btnp(5) then
+  titleinit()
+ end
+end
+
+function drawmouse()
+ --for mouse support
+ if mousesupport==true then
+  if contmode==2 then
+  palt(o,false)
+  palt(14,true)
+  spr(25,stat(32),stat(33),1,2)
+  if mousecords==true then
+  rectfill(1,1,40,10,0)
+  print("x:"..stat(32).." y:"..stat(33),1,1,11)
+  end
+  palt()
+  end
+ end
+end
+
+function _draw()
+--call different draw functions
+--depending on game state/mode
+ if (mode == 0) then
+  titledraw()
+ elseif (mode == 1) then
+  playdraw()
+ elseif (mode == 2) then
+ --winscreen
+  windraw()
+ elseif (mode == 3) then
+ --game over screen
+  gameoverdraw()
+ elseif (mode == 4) then
+  difficultyselectdraw()
+ end
+end
+
+function titledraw()
+--draw function for title screen
+ --do some fancy wiggles to the text
+ 
+ if contmode==2 then
+  rectfill(0,0,127,127,7)
+  rect(1,11,126,126,6)
+  fakewindow()
+  drawlogos()
+  print("version "..version,81,119,0)
+  pressz="press z to start"
+ print(pressz,textmiddle(pressz),89,0)
+ --spr(132,43,88)
+ instruc="z to reveal, x to flag"
+ print(instruc,textmiddle(instruc),98,0)
+ --spr(132,28,97)
+ --spr(133,32,106)
+ feat="now with mouse support!"
+ for i=-1,1 do
+  for j=-1,1 do
+   print(feat,textmiddle(feat)+i,66+j,0)
+   print(feat,textmiddle(feat),66,7)
+  end
+ end
+  drawmouse()
+ 
+ 
+ else
+ pressz="press z to start"
+ print(pressz,textmiddle(pressz),89,0)
+ --spr(132,43,88)
+ instruc="z to reveal, x to flag"
+ print(instruc,textmiddle(instruc),98,0)
+ --spr(132,28,97)
+ --spr(133,32,106)
+ feat="now with mouse support!"
+ for i=-1,1 do
+  for j=-1,1 do
+   print(feat,textmiddle(feat)+i,66+j,0)
+   print(feat,textmiddle(feat),66,7)
+  end
+ end
+ end
+end
+
+function playdraw()
+--draw function for when the game
+--is being played
+ --drawface()
+ fakewindow()
+ graphics()
+ drawboard()
+ if contmode==1 then
+  drawselect()
+ end
+ --drawgrid()
+ --drawgrid2()
+ --drawplaygrid()
+ --print("mines remaining",20,31,7)
+ --print(nummines,100,31,8)
+ --print(mode,0,0,11)
+ --drawflagsleft()
+ drawtimetaken()
+  if notpressed() then
+   if offgrid==false then
+    drawface(1)
+   end
+  end
+ --if offgrid==true then
+  --print("offgrid",64,64,11)
+ --end
+ --print(corn,0,0,11)
+ --print(corm,8,0,11)
+ --rectfill(0,16,8,24,0)
+ --print(random(m),0,16,11)
+ 
+ drawmouse()
+ 
+ --testing boundaries
+ if boundaries==true then
+ for i=1,n+1 do
+  for j=1,m+1 do
+	 line((9*i)+offx-1,0,(9*i)+offx-1,127,11)
+  line(0,(9*j)+offy-1,127,(9*j)+offy-1)
+	 --spr(29,(9*i)+offx,(9*j)+offy)
+  end 
+	end
+	end
+	
+	--memory usage /1024mb
+	--print(stat(0),64,64,11)
+	
+	--cpu usage between frames
+	--print(stat(1),64,74,11)
+	
+	--i can't click both on my mac
+	if stat(34)==3 then
+	 print("both click",0,64,11)
+	end
+	 --print(stat(34),64,64,11)
+	
+end
+
+function windraw()
+--draw the win screen
+ --rectfill(0,0,127,127,11)
+ 
+-- print("you won!",46,15,8)
+ 
+end
+
+function gameoverdraw()
+--draw the game over screen
+ fakewindow()
+ graphics()
+ drawboard()
+ drawwrong()
+ drawhit()
+ drawface(3)
+ --rectfill(0,0,127,127,11)
+ 
+-- print("you lost!",46,15,8)
+
+ --y=79 for near centre
+ --drawboard
+end
+
+function difficultyselectdraw()
+--draw the difficulty select menu
+ diffselectgraphics()
+end
+__gfx__
+666666666666666666666666666666666666666666666666666666666666666666666666677777766666666667777776666666668888888866666666dddddddd
+666666666666c66666633666668886666661666666444466666333666600006666699666766666656060060676600665606006068080080868666686dddddddd
+66666666666cc66666366366666668666661666666466666663666666666606666966966766666656600006676066065660000668800008866866866dddddddd
+666666666666c66666666366668886666616666666444666663336666666066666699666766666656007000676660665600700068007000866688666dddddddd
+666666666666c66666633666666668666616166666666466663663666666066666966966766666656000000676606665600000068000000866688666dddddddd
+666666666666c66666366666666668666611116666666466663663666660666666966966766666656600006676666665660000668800008866866866dddddddd
+66666666666ccc6666333366668886666666166666444666666336666660666666699666766666656060060676606665606006068080080868666686dddddddd
+666666666666666666666666666666666666666666666666666666666666666666666666655555556666666665555555666666668888888866666666dddddddd
+7777777777777777777777777777777777777777777777777777777777777777e0eeeeee0eeeeeee00000000000000001111111167777776666666666eeeeeee
+7666666666666665766666666666666576666666666666657666666666666665070eeeee00eeeeee0000000000000000151551517666666566666666eeeeeeee
+76666000000666657666600000066665766660000006666576666000000666650770eeee070eeeee0000000000000000115555117668866566666666eeeeeeee
+76660aaaaaa0666576660aaaaaa0666576660aaaaaa0666576660aaaaaa0666507770eee0770eeee0008888888888000155755517688866566666666eeeeeeee
+7660aaaaaaaa06657660aaaaaaaa06657660aaaaaaaa06657660aaaaaaaa0665077770ee07770eee0008677777768000155555517666566566666666eeeeeeee
+760a0a0aa0a0a065760aaaaaaaaaa065760aaaaaaaaaa065760aaaaaaaaaa06507700eee077770ee0008766666658000115555117600006566666666eeeeeeee
+760aa0aaaa0aa065760aa00aa00aa065760a00500050a065760aaa0aa0aaa065e0070eee0777000e0008765555658000151551517666666566666666eeeeeeee
+760a0a0aa0a0a065760aaaaaaaaaa065760a05000500a065760aaaaaaaaaa065eeeeeeee0700eeee0008765555658000111111116555555566666666eeeeeeee
+760aaaaaaaaaa065760aaaaaaaaaa065760aa00aa00aa065760aaaaaaaaaa065eeeeeeee00e00eee00087656656580006777777667777776677777766eeeeeee
+760aaa0000aaa065760aa0aaaa0aa065760aaaaaaaaaa065760aaaa00aaaa065eeeeeeee0ee00eee0008765555658000766666657666666576666665ee0123ee
+760aa0aaaa0aa065760aaa0000aaa065760aa0aaaa0aa065760aaa0aa0aaa065eeeeeeeeeeee00ee0008766666658000766666657655556576066065ee4567ee
+7660aaaaaaaa06657660aaaaaaaa06657660aa0000aa06657660aaa00aaa0665eeeeeeeeeeee00ee0008655555558000766666657655556576600665ee89abee
+76660aaaaaa0666576660aaaaaa0666576660aaaaaa0666576660aaaaaa06665eeeeeeeeeeeeeeee0008888888888000766666657656656576600665eecdefee
+7666600000066665766660000006666576666000000666657666600000066665eeeeeeeeeeeeeeee0000000000000000760000657655556576066065eeeeeeee
+7666666666666665766666666666666576666666666666657666666666666665eeeeeeeeeeeeeeee0000000000000000766666657666666576666665eeeeeeee
+5555555555555555555555555555555555555555555555555555555555555555eeeeeeeeeeeeeeee0000000000000000655555556555555565555555eeeeeeee
+999ee999999ee99900000000000000000000000000000000000000000000000000000000eeeeeeee000000000000000000000000677777766666666600000000
+9eeeeee99eeeeee900000000000000000000000000000000000000000000000000000000effffeee000000000000000000000000766666656866668600000000
+9eeeeee99eeeeee900000000000000000000000000000000000000000000000000000000e9999ffe000000000000000000000000766886656686686600000000
+eeeeeeeeeeeeeeee00000000000000000000000000000000000000000000000000000000e999999e000000000000000000000000768886656668866600000000
+eeeeeeeeeeeeeeee00000000000000000000000000000000000000000000000000000000e999999e000000000000000000000000766656656668866600000000
+9eeeeee99eeeeee900000000000000000000000000000000000000000000000000000000e999999e000000000000000000000000760000656686686600000000
+9eeeeee99eeeeee900000000000000000000000000000000000000000000000000000000e999999e000000000000000000000000766666656866668600000000
+999ee999999ee99900000000000000000000000000000000000000000000000000000000eeeeeeee000000000000000000000000655555556666666600000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000800000000000000000888800001111000088880000888800001111000088880000888800008888000088880000888800
+00000000000000000000000000000009760000000000000008000080010000800100008001000080080000800800001008000010010000800800008008000080
+000000000000000000000000000000a777e000000000000008000080010000800100008001000080080000800800001008000010010000800800008008000080
+0000000000000000000000000000000b7f0000000000000008000080010000800100008001000080080000800800001008000010010000800800008008000080
+07777077770077700777700000777700c00000000000000008000080010000800100008001000080080000800800001008000010010000800800008008000080
+77077007700770007707700000700700000000000000000008000080010000800100008001000080080000800800001008000010010000800800008008000080
+77777007700770007707707707777700000000000000000008000080010000800100008001000080080000800800001008000010010000800800008008000080
+77000007700770007707700007700700000000000000000000111100001111000088880000888800008888000088880000888800001111000088880000888800
+77000077770777707777000007777700000000000000000008000080010000800800001001000080010000800100008008000080010000800800008001000080
+00000000000000000000000000000000000000000000000008000080010000800800001001000080010000800100008008000080010000800800008001000080
+00000000000000000000000000000000000000000000000008000080010000800800001001000080010000800100008008000080010000800800008001000080
+00000000000000000000000000000000000000000000000008000080010000800800001001000080010000800100008008000080010000800800008001000080
+00000000000000000000000000000000000000000000000008000080010000800800001001000080010000800100008008000080010000800800008001000080
+00000000000000000000000000000000000000000000000000888800001111000088880000888800001111000088880000888800001111000088880000888800
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+11111111cccccccc0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+11111111cccccccc0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+11111111cccccccc0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+11111111cccccccc0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+11111111cccccccc0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+11111111cccccccc0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+11111111cccccccc0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+11111111cccccccc0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000000000000000000000000000000009ffffff99ffffff900000000bbbbbbbbbbbbbbb00bbbbbbbbbbbbbbb0000000000000000000000000000000000000000
+000000000000000000000000000000009f9999f99f9ff9f900000000bbbbbbbbbbbbbb5550bbbbbbbbbbbbbb0000000000000000000000000000000000000000
+000000000000000000000000000000009ffff9f99f9ff9f900000000bbbbbbbbbbbbb556550bbbbbbbbbbbbb0000000000000000000000000000000000000000
+000000000000000000000000000000009ff99ff99ff99ff900000000bbbbbbbbbbbb55565550bbbbbbbbbbbb0000000000000000000000000000000000000000
+000000000000000000000000000000009f9ffff99f9ff9f900000000bbbbbb00bbb5566655550bbb00bbbbbb0000000000000000000000000000000000000000
+000000000000000000000000000000009f9999f99f9ff9f900000000bbbbb5560056666655555000550bbbbb0000000000000000000000000000000000000000
+000000000000000000000000000000009ffffff99ffffff900000000bbbb055666666666655555555000bbbb0000000000000000000000000000000000000000
+00000000000000000000000000000000999999999999999900000000bbbb055566666665555555550000bbbb0000000000000000000000000000000000000000
+00000000000000000000000000000000f999999f0000000000000000bbbbb5566666655555555555000bbbbb0000000000000000000000000000000000000000
+00000000000000000000000000000000f9ffff9f0000000000000000bbbbb5666565555555555555000bbbbb0000000000000000000000000000000000000000
+00000000000000000000000000000000f9999f9f0000000000000000bbbbb5666655555555555555000bbbbb0000000000000000000000000000000000000000
+00000000000000000000000000000000f99ff99f0000000000000000bbbb566666555555555555550000bbbb0000000000000000000000000000000000000000
+00000000000000000000000000000000f9f9999f0000000000000000bbb55666655555560555555000000bbb0000000000000000000000000000000000000000
+00000000000000000000000000000000f9ffff9f0000000000000000bb5566655555556500555550000000bb0000000000000000000000000000000000000000
+00000000000000000000000000000000f999999f0000000000000000b565655555555655000555000000000b0000000000000000000000000000000000000000
+00000000000000000000000000000000ffffffff0000000000000000066555555555055500005000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000055555555000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000b000055555555000000000000000000b0000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000bb0000000555500000000000000000bb0000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000bbb00000000000000000000000000bbb0000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000bbbb000000000000000000000000bbbb0000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000bbbbb0000000000000000000000bbbbb0000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000bbbbb0000000000000000000000bbbbb0000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000bbbbb0000000000000000000000bbbbb0000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000bbbb006000000000000000000000bbbb0000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000bbbb066000000000000000000000bbbb0000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000bbbbb0000000000000000000000bbbbb0000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000bbbbbb00bbb0000000000bbb00bbbbbb0000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000bbbbbbbbbbbb00000000bbbbbbbbbbbb0000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000bbbbbbbbbbbbb060000bbbbbbbbbbbbb0000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000bbbbbbbbbbbbbb0600bbbbbbbbbbbbbb0000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000bbbbbbbbbbbbbbb00bbbbbbbbbbbbbbb0000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__gff__
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__map__
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__sfx__
+000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__music__
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44

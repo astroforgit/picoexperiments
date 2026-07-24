@@ -1,0 +1,27 @@
+Gameplay
+
+The Beetle and his ball is stuck in a strange castle that seems to shift the deeper you go.
+Work toghether with a shifty paddle and find the exit in this multitasking adventure!
+
+This game was made for Game Maker's Toolkit Jam 2020 in less than 48 hours!
+Theme
+
+The theme was: "Out of control"!
+Post jam update
+
+A lot of polish and new content have been made! Thanks for playing :)
+Multiplayer update
+
+Added multiplayer just for fun, updated some levels and fixed some small bugs!
+Controls
+Move paddle and bettle
+
+Keyboard -> Arrow keys
+Controller -> D-pad/Joystick
+Credits
+
+Sebastian Lind
+
+Good luck and have fun! 
+
+https://www.lexaloffle.com/bbs/?tid=38788

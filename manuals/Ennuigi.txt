@@ -1,0 +1,15 @@
+Spend some time with a depressed, laconic Luigi as he chain smokes and wanders through a crumbling Mushroom Kingdom, ruminating on ontology, ethics, family, identity, and the mistakes he and his brother have made.
+
+Controls:
+
+    left/right: walk around
+    up: ruminate
+    down: smoke
+
+About the game:
+
+This is a shot at a collection of ideas I had a few years ago, about looking critically at the universe of Super Mario Bros. in light of the total lack of explicit narrative in the original game in particular. Who are these strange men? What motivates them? By what right do they wreak the havoc they do on this strange place? What do they feel about where they are and what they're doing?
+
+And so, this is one lens through which to look at all that, with Luigi, the second brother, the also-ran, as a complicit onlooker, wandering now through some fractured, rotting liminal place in this strange world, reflecting on it all in scattered fragments.
+
+https://www.lexaloffle.com/bbs/?tid=2232

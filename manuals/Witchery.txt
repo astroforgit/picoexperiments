@@ -1,0 +1,21 @@
+A zelda-like dungeon crawler where a little witch must save the world from an evil sorceress
+
+This project is the first pico-8 game I've made so its a bit buggy in places.
+
+Controls:
+
+Arrow keys - move
+
+C - Shoot (use arrow keys after shooting to change magic direction)
+
+V - Open potion screen (Press C to use potion and press C on 2 ingredients to create a potion)
+
+Gameplay:
+
+Caves - Enter caves to fight a dungeon, each dungeon has a boss which when defeated will open up a new area.
+
+Switches - switches open doors when you shoot them.
+
+Monsters - Bosses and monsters like slimes will try to kill you so shoot them first.
+
+https://www.lexaloffle.com/bbs/?tid=39688

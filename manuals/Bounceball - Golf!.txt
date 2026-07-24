@@ -1,0 +1,25 @@
+Remember Bounceball Deluxe? That game that took the world by storm and unexpectedly got millions of downloads and worldwide critical acclaim? No? Weird. Well, after making that and being instantly promoted to celebrity status, I didn't stop working, despite having enough riches to live off the game's success alone. No, in between the TV interviews, I was making a couple other games, just for fun. But those two went totally under the radar. And fans of Bounceball were left wanting more. Well, nobody knew it, but I was also secretly working on a third project. And now, it's out of hiding. The highly anticipated next installment in the Bounceball series is finally here: Bounceball: Golf! This spinoff/sequel includes many exciting features such as:
+
+    At least one level! (probably more)
+    The ball from Bounceball!
+    The paddle's in there too (tell no one)
+    System where a simple mechanic is explained 3 different times because none of my playtesters were ever able to figure it out!
+    A contrived plotline!*
+    Absolutely no music!
+    Extremely simple visual design that fans of the original Bounceball are sure to love!
+    Too many exclamation marks in the description!
+    Some of the worst code I have ever written! (Somebody please tell me how to do bezier animations)
+    Gameplay almost nothing like the original game!
+    Questionable level of colorblindness support!
+    my dad really liked it
+    A cutscene!
+
+*Due to budget constraints the contrived plotline was not able to fit within the game itself. The collector's edition** has it printed on the back of the box; this one has it here:
+
+Ball and Paddle - probably not their real names but they never reveal them to the press - were the best of friends, having great fun playing Squash together every day. But one day, Ball strayed too far out into the red-line forest, and wasn't able to find their way back. In their epic journey to find the Squash arena and meet up with Paddle once again, Ball will have to learn how to do things they thought they never could, break out of the constraints of the incredibly predictable game world - and find a new friend along the way. Or something like that, anyway.
+
+**still in development
+
+update: you will now be severely penalized for holding in Z.
+
+https://www.lexaloffle.com/bbs/?tid=36503

@@ -1,0 +1,27 @@
+Hey guys,
+
+here is our first Pico-8 game!
+
+Help Pinkbunny to collect all stolen potatoes and save Pinkbunnyland!
+
+Use the arrow keys for movement and X to reset the level if you get stuck.
+
+Please post your total playing time! We're curious how long it might take you to beat the game.
+
+Have fun!
+
+Team Hackefuffel,
+gideon & gizmo
+
+Update:
+
+1) We needed to change our "bunny:hop()" function to a global "hop()" function.
+For some reason that function returns nil in the webplayer?!?.
+
+2) The game is now available under the CC4-ATTR-NC-SA License! \o/
+
+3) We're about to release the second episode! And by popular demand the difficulty level will be much higher :D
+
+4) Fixed that nasty sound bug (~_~)\
+
+https://www.lexaloffle.com/bbs/?tid=2039

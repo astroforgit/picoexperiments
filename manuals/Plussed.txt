@@ -1,0 +1,9 @@
+My submission for #LOWREZJAM 2017. An action puzzle game where you try to match colors on each side of the board.
+
+Up, Down, Left, Right: Move character
+O: Match
+X: Move
+
+Hit O to remove matching tiles above, below, and to each side of the player. 1 point each for a pair, 2 each for a triple, and 3 each for a quad. Move next to a tile and hold X to move a tile with the player.
+
+https://www.lexaloffle.com/bbs/?tid=29795

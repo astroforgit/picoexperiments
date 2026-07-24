@@ -1,0 +1,30 @@
+A game about a blob-thing called "Vic" who wants to climb a tower for some reason. Wrap around the screen the screen and collect powerups as you climb the endless tower. Also, all of the platforms are jump-through.
+
+The powerups:
+---Extra Vic: If you fall, the Extra Vic can send you to the top of the screen for a second chance.
+---Rocket Shoes: The Rocket Shoes can send you flying really high. Useful for saving throws.
+---Stopwatch: Stop the autoscroll for a few seconds.
+
+Vic can only hold one powerup at a time, and collecting another one will replace whatever one he had before. They're activated with [x], and are consumed after use.
+
+-
+
+-
+
+This is an old project of mine from 2005, which I previously submitted under the name Rogue Tower. I worked on it for a while, listening to feedback along the way, but I burned out eventually and lost my enthusiasm for the project. Although I did add to it now and then, I pretty much forgot about the project the rest of the time, focusing on other stuff.
+
+It's not 100% finished, but it's finished enough that I can ship this and get it out of my system. That's not to say I don't care about Vic's Tower; I just wanted to resolve some unfinished business before I return to Pico-8 proper.
+
+Changes from Rogue Tower:
+---Visual touches
+---Music
+---Title Screen
+---A bird appears now and then. It was originally going to be a hazard, but I'm too tired.
+---The random generator spawns wide blocks as well now, though sometimes a narrow block will spawn over it.
+---New premade layouts.
+---[x] is used for powerups, rather than as a suicide button.
+---The other powerups actually work now, of course.
+---New sounds for the Stopwatch powerup.
+---The wrapping system is improved.
+
+https://www.lexaloffle.com/bbs/?tid=28940

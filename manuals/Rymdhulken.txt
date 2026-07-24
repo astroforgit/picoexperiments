@@ -1,0 +1,11 @@
+Available at itch.io https://spoike.itch.io/rymdhulken
+
+Releasing my first PICO-8 game, a little tactical rogue like with some aliens. I've started to run low on tokens and am taking a little break from tinkering with it to get some feedback.
+
+The game is inspired by a bunch of games (like Space Hulk, Cannon Fodder and XCOM). It is largely based on Space Marines by Adam Alexander who made it for 7DRL 2020. Many thanks to the Roguelike tutorial Youtube series by LazyDevs that guided me into writing this game.
+
+	[32x8]
+
+Still got some work to do on it, but it's a playable thing with a start and a goal. Hope y'all like it.
+
+https://www.lexaloffle.com/bbs/?tid=39070

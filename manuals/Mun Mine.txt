@@ -1,0 +1,8 @@
+I decided that the first game I should make for this system would be an homage to the earliest game I have strong memories of playing : “Moon Mine“. Published in 1983, “Moon Mine” was available only on the TI-99/4a, Which means that nobody has ever heard of it. I had it though, and it was a blast. For years this was my favorite game.
+So here’s my remake. Made from memory and by closely examining the old game manual I found in the basement.
+
+The original classic was made by Rob F Hendren and John Phillips and I’ve always felt it didn’t get enough nostalgia love.
+
+The instructions are in the system menu. Basically use the arrow keys to move the lasers. O to fire. X to beam down a crew-member to retrieve minerals and water samples.
+
+https://www.lexaloffle.com/bbs/?tid=29256

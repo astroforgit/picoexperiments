@@ -1,0 +1,12 @@
+Left,Right to move.
+Z,X to jump. Hold jump to glide.
+
+Wanted to make something with the game-feel-onomatopoeia of "pak-pok". There's a lot of this in games (eg: Mario turtle shells) but the "pok" usually ends in death.
+
+My last cart-game featured a lot of death so I felt like making something nice instead. But then I kinda needed spikes. Sorry. It's a little bit violent, but no one dies.
+
+This game is built on top of the simple platformer engine I posted here: https://www.lexaloffle.com/bbs/?tid=35086
+
+Thanks to the following for helping test the game: Mark Foster, Hafiz Azman, Dugan, Paul Jeffries, Martin Ferenc, German Gonzalez
+
+https://www.lexaloffle.com/bbs/?tid=35326

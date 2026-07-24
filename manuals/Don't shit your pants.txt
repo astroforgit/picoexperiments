@@ -1,0 +1,12 @@
+A port of the classic flash game Don't Shit Your Pants! by Decade Studios, now Cellar Door Games:
+https://cellardoorgames.com/our-games/dont-shit-your-pants/
+
+I was reminded of this old game the other day, and after seeing a few demakes recently, I decided to have a go at porting it.
+
+I'm pretty happy with the result, I tried to get everything as accurate as I can to the original, including some weird behaviours. The colours are pretty far off, because even with the extended palette, PICO-8 just doesn't have hideous enough colours to match the original.
+
+Also while I managed to get the intro and success music pretty accurate, I haven't managed to find a nice match for the fail jingle yet, so the current version is my first simpler attempt. If anyone wants to help I'd be grateful for the help.
+
+I'm not marking this one as Creative Commons, since the artwork, music and concept remain the property of Cellar Door Games, which I'm just blatantly copying here, however if anyone finds any part of my code useful feel free to use it.
+
+https://www.lexaloffle.com/bbs/?tid=38710

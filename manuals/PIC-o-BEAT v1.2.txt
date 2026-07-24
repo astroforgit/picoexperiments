@@ -1,0 +1,47 @@
+PIC-o-BEAT
+
+PIC-o-BEAT is a rhythm game that really paints a picture
+How to play?
+
+1-Pick a beat
+
+Choose a song from the 8 options with different style and speed to set your difficulty
+2-Pick a pic
+
+Choose a picture from the 48 available, they come in 3 sets: 8x8,harder 8x8 and 16x16
+3-Paint!
+
+Hit the notes as they get to the pointers, you can set your controls on the main menu:
+
+Control scheme 0:
+
+    Directional - Yellow
+    Z and X - Blue
+
+Control scheme 0:
+
+    Z,Down,Right - Yellow
+    X,Up,Left - Blue
+
+4- Medals
+
+If you get 100% you get a medal depending on your difficulty
+	[16x16]
+
+How it works?
+
+changelog
+
+
+V1.2: bugfixes and optimizations
+
+    removed "ghost notes" when replaying a pic
+    removed bug where perfect would stop registering if you "End Run" then exit
+    overall code optimization of 222 tokens
+
+V1.3 even more optimizations
+
+    fixed bug where it wouldn't save more than one medal per session
+    more code optimization of 213 tokens
+
+https://www.lexaloffle.com/bbs/?tid=42138

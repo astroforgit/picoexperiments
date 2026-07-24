@@ -1,0 +1,9 @@
+When a Vampire Bat moves into the local castle, suddenly things start going missing...
+
+Help Happy Larry find out what's happening!
+
+Move with cursors and use action buttons for stats/inventory.
+
+Made for the #3cjam October 2017
+
+https://www.lexaloffle.com/bbs/?tid=30172

@@ -1,0 +1,20 @@
+You owe money to the wrong people and you only have a few minutes to pay it back. Grab the money bags and drop them at the safe house. Don't get caught. Don't run out of fuel.
+
+Inspired by Getaway!, a crime-themed game designed by Mark Reid and published for Atari 8-bit computers in 1982.
+Screenshots
+Controls
+
+    up/down/left/right: drive/steer
+    x : speed boost
+
+Changelog
+1.3
+
+    minor UI and help text adjustments.
+
+1.2
+
+    easy level debt reduced to $2000, with a due date of 2 minutes.
+    money bags sometimes appear closer to your location
+
+https://www.lexaloffle.com/bbs/?tid=37193

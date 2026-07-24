@@ -1,0 +1,15 @@
+This is a 17-games-in-one collaborative cart. There have been a couple of 16-in-1 jams done before but these tended to be presented as 16 standalone games with a menu screen to pick between them. I wanted to do something that was an homage to Lazy Jones on the C64 (https://www.youtube.com/watch?v=Y7DyoDJCqac), where you have 16 mini-games but also an overarching 17th game that ties them all together.
+
+There were 16 different developers in 10 countries: UK, USA, Canada, Australia, France, Russia, Hungary, Norway, Finland, Sweden.
+
+Contributors were: @Liquidream @platformalist @p01 @gruber_music @egordorichev @brintown @enargy @viza @MrHodgepants @kometbomb @johanpeitz @2darray @GregosEl @dollarone​, plus UncleSporky and... me!
+
+Fly around space collecting crystals to open “anomalies”. Each one will send you to another dimension where a weird challenge will present itself. Do well and your ship will be refuelled accordingly! Try to get through all 16 anomalies before you run out of fuel.
+
+All mini-games run using the arrow keys, plus Z and X on the keyboard (which correspond to the Pico-8’s O and X button prompts by default).
+
+Hope you enjoy it!
+
+Neil
+
+https://www.lexaloffle.com/bbs/?tid=33434

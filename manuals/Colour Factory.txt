@@ -1,0 +1,11 @@
+My entry for the 9th alakajam
+
+Colour Factory is a puzzle game much like Pipe Dream, only with colours. You connect pipes to certain processors that can mix or distil the colour into secondary or primary colours. You have been given some input colour(s) and the wanted output colours have been decided. Now it's up to you to create them!
+
+There is also a timed challenge specifically made for the ScoreSpace x Alakajam tournament: who can create the right factory fastest? The timer ends when you hit the factory button. Good luck!
+
+I added mouse support in the last hour or so, do let me know if there's any bugs!
+
+Apart from that, use arrows and X to place pipes, and Z to focus on the factory button (and then X to confirm you want to start it!).
+
+https://www.lexaloffle.com/bbs/?tid=38538

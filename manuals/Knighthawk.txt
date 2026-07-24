@@ -1,0 +1,18 @@
+This is an old cartridge my brother and I never quite finished because we hit the token limit. I am not very pleased about how it came out, as I don't have much skill in level design.
+
+The name is a play on the Nighthawk, a version of the Blackhawk helicopter for the Navy. My dad flew them, so I went with that as the name.
+
+Knighthawk's theme was inspired by a board game called Scythe. Scythe had great artwork, and I believe the game was based on the art. All the art in Scythe was painted by Jakub Rozalski. I loosely tried to follow the theme of the art. If anyone wants to know why I chose an orinthopter, it was because it seemed to fit this theme. I hadn't read the Dune books at the time, though I have started reading them last week.
+
+About Gameplay:
+
+The main mechanic of Knighthawk is to swap between weapons based on the situation at hand. Use X to do this.
+Each weapon has strengths and weaknesses. No enemies have resistance or vulnerability to a certain type.
+
+The boss at the end is a bit tough, and will follow you around to a certain extent. This boss really doesn't fit the rest of the game's theme, but was an attempt to make the player face a smarter enemy rather than a bigger one.
+
+If you just want to goof around I left the invulnerability toggle in the pause menu.
+shmup
+
+https://www.lexaloffle.com/bbs/?tid=35377
+

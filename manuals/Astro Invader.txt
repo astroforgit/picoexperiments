@@ -1,0 +1,5 @@
+This one is an oldie that some may remember. Wasn't the greatest of arcade games but for a time as a youth it was the arcade game I had the most access too.
+
+Tried to make this pretty faithful to the original although I think it is too easy. Per the original there are two alien deployment patterns that alternate on levels. The large yellow UFO's also deploy as in the original. And the point value for the UFO's changes depending on the shot number you are on. Hint: 16th shot for max value.
+
+https://www.lexaloffle.com/bbs/?tid=35341

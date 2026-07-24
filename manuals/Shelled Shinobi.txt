@@ -1,0 +1,21 @@
+Shelled Shinobi
+
+Alternate between classic platforming and controlling a fast sliding shell.
+Controls
+
+Keyboard / Gamepad:
+Move: Left, Right arrow keys / Left joystick or D-Pad (p8/bin).
+Jump*: Z or C / 🅾️.
+Shell*: X or V / ❎.
+Pause, Options: P or Enter / Start (p8/bin) or Back (web).
+
+*Can be swapped in the pause menu.
+Versions
+
+Depending on your device and browser, the game may stutter in the browser version. In that case, please import this cart to PICO-8 or launch it from SPLORE.
+
+You can also download the game on itch.io: https://noppa.itch.io/shelled-shinobi.
+
+It's currently also possible to lower the framerate in code by changing the value of 'fps_60' in '_init()' (could be useful for e.g. RPi0 users?).
+
+https://www.lexaloffle.com/bbs/?tid=38573

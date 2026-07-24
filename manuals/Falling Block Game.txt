@@ -1,0 +1,30 @@
+Certainly not the first block-stacking game, but this might be the first one on PICO-8 with global high scores*!
+Play the game here*:
+
+https://jaredkrinke.itch.io/fbgp8
+How to play
+
+The goal of the game is to score points by clearing lines. You clear lines by rotating and dropping pieces into complete lines (no gaps). The more lines you clear at once, the more points you score.
+
+Pro tip: pieces fall faster on higher levels, but you get more points, so if you can handle it, try starting on level 9.
+Game modes
+
+    Endless (exactly what it sounds like)
+    Countdown (game ends after 25 lines)
+    Cleanup (same as countdown, but the play area starts filled with garbage)
+
+High scores
+
+High scores are tracked both locally and globally*.
+
+See if you can make it into the top 10! (Update 12/13: getting on the list is no longer easy :)
+Code
+
+    Code is on GitHub: https://github.com/jaredkrinke/pico-8-fbg
+    I'm using GPIO, JavaScript, and a back-end service to track scores. Happy to discuss my PICO-8-to-HTML host communication approach :)
+
+Notes
+
+* Global high scores only work on the web/browser version
+
+https://www.lexaloffle.com/bbs/?tid=36125

@@ -1,0 +1,11 @@
+Full version available https://www.dropbox.com/s/dnlkfk6945vj90o/raburabu.zip?dl=0
+
+What a lovely day in Whatever Land! Except for random fires in skyscrapers here and there.
+In control of little Ravra, a pubescent giant monster, you must save the love of your life you just saw on TV while taking as few lives as possible along the way. Or must you?
+
+Because I really wanted the game to include both English and Japanese text, and a minimal set of Japanese characters alone takes 1/4 of the sprite sheet and tokens, it was impossible to keep it within a single cartridge. My way around this was to have separate cartridges for the Japanese and English text and a standalone cartridge (uploaded here) including nothing but the main gameplay. So if you can, by all means do download the full version! (the filenames should be raburabu.p8.png, english.p8 and nihongo.p8, all within the same folder) (please forgive me for this dirty little cheat!)
+You get the intro, main menu and endings by doing so. :)
+
+Speaking of which, there are four different endings, seven secrets hidden within the main game and a also hidden message somewhere. Can you find them all without cheating?
+
+https://www.lexaloffle.com/bbs/?tid=2442

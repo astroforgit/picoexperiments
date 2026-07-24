@@ -1,0 +1,1260 @@
+pico-8 cartridge // http://www.pico-8.com
+version 18
+__lua__
+
+
+--added hills and clouds in background
+
+k_title_mode = 1
+k_play_mode = 2
+k_finish_mode = 3
+k_level_select = 4
+
+game_mode=k_title_mode
+
+best_time=18000
+
+
+camera_x = 64
+camera_y = -60
+camera_z = 64
+f=80 -- focal length
+--z_scale = 2
+
+floor_y=10
+
+shift_h=0
+
+camera_angle = .25
+
+rotation_speed =.01
+
+
+player={}
+
+sprite_list={}
+
+
+step_size = 1
+
+cur_level = 0
+
+moving=false
+
+screen_center_x=64
+screen_center_y=64
+screen_height=112
+screen_width=120
+screen_start_x=8
+screen_start_y=75
+
+
+
+h_step = 2
+v_step = 1
+
+
+frame_num=0
+
+driver_list={}
+
+
+level_list={}
+function new_level(name,start_x,start_y,num_laps,finish,gate1,gate2,waypoint_list_x,waypoint_list_z)
+	a={}
+	a.name = name
+	a.start_x=start_x
+	a.start_y=start_y
+	a.num_laps=num_laps
+	
+	a.finish=finish
+	a.gate1=gate1
+	a.gate2=gate2
+	
+	a.waypoint_list_x=waypoint_list_x
+	a.waypoint_list_z=waypoint_list_z
+	
+	a.best_time=9999
+	
+	add(level_list,a)
+	return a
+end
+
+
+cloud_list={}
+function new_cloud()
+	a={}
+	a.x=rnd(256)
+	a.y= rnd(32)+16
+	a.vx=rnd(1)-.5
+	a.sprite=98
+	add(cloud_list,a)
+end
+
+hill_list={}
+function new_hill()
+	a={}
+	a.x=rnd(256)
+	a.y= 64-8
+	a.sprite=114
+	add(hill_list,a)
+end
+
+
+
+function draw_clouds()
+	for cloud in all(cloud_list) do
+		sspr(find_x_index(cloud.sprite),find_y_index(cloud.sprite),16,8,flr((cloud.x-512*camera_angle)%(128+32))-32,cloud.y,32,8)
+	end
+end
+
+function draw_hills()
+	for hill in all(hill_list) do
+		sspr(find_x_index(hill.sprite),find_y_index(hill.sprite),16,8,flr((hill.x-512*camera_angle)%(128+32))-32,hill.y,32,8)
+	end
+end
+
+
+function new_driver(x,z,waypoint_list_x,waypoint_list_z)
+
+	a={}
+	a.vx=0
+	a.vz=0
+	a.angle = .25
+	a.vangle = 0
+	a.x=x
+	a.y=10
+	a.z=z
+	a.speed = 0
+	a.acel = .05
+	a.max_speed = 3
+	a.turn_acel = .001
+	a.dv_x=1
+	a.dv_z=0
+	
+	a.color = {2,13,7}
+	
+	collide_wall=false
+	collide_car=false
+
+
+
+	a.h=1
+
+	a.ai=true
+
+	a.lap_num=1
+	a.gate1=false
+	a.gate2=false
+
+	a.waypoint_index=1
+	a.waypoint_list_x=waypoint_list_x
+	a.waypoint_list_z=waypoint_list_z
+
+
+	a.waypoint_x = a.waypoint_list_x[a.waypoint_index]*8+4
+	a.waypoint_z = a.waypoint_list_z[a.waypoint_index]*8+4
+
+
+	a.lap_start=0
+	a.best_lap=0
+	a.race_start=0
+	
+	a.finish=false
+	a.time=18000
+
+	add(driver_list,a)
+
+	return a
+end
+
+
+
+
+function low_res_mode()
+	poke(0x5f2c,1)
+	screen_center_x=32
+	screen_center_y=64
+	screen_height=120
+	screen_width=64
+	screen_start_y=70
+	
+	v_step=1
+	h_step=1
+	
+end
+
+function pause(t)
+	--flip the screen and draw for t frames
+	for i=0,t do flip() end
+end
+
+--return the color and the height from the sprite 8 to the right
+function get_map_pix(x,y)
+	local tile_number = mget(shr(x,3), shr(y,3))
+
+	local tile_y = band(shr(tile_number,1),0xfff8)+y%8
+	local tile_x = shl(tile_number%16,3)+x%8
+
+	return sget(tile_x,tile_y) 
+end
+
+
+
+
+
+function plot_3d(px,py,pz)
+	
+
+	
+	
+	cc=cos(-camera_angle)
+	cs=sin(-camera_angle)
+	
+
+	px = px - camera_x
+	pz = pz - camera_z
+	py = py - camera_y
+	
+	mx = px*cc-pz*cs
+	mz = pz*cc+px*cs
+
+		
+	sx = 64*mx/mz+64
+	sy = 64*py/mz+64
+	h = .5*64/mz
+	
+
+	return sx,sy,h
+end
+
+function find_x_index(the_index)
+	return (the_index%16*8)
+end
+
+function find_y_index(the_index)
+	return (flr(the_index/16)*8)
+end
+
+function draw_sprite_3d(px,py,pz,index,width,height,sprflip,overide_scale)
+	local x,y,h = plot_3d(px,py,pz)
+	if(overide_scale!=nil)h=overide_scale
+	
+	y+=4 --shift the sprite so it looks centered over block
+	x+=4
+	local new_width=width*h
+	local new_height=height*h
+	
+	if(h>0) then
+	sspr(find_x_index(index),find_y_index(index),width,height,x-flr(new_width/2),y-new_height,new_width,new_height,sprflip)
+	
+	end
+	
+	return h
+end
+
+function quick_cast_map_3d()
+
+	local cc=cos(camera_angle)
+	local cs=sin(camera_angle)				
+	local camera_x=camera_x
+	local camera_y=camera_y
+	local camera_z=camera_z
+
+	local offset_table=offset_table
+	
+	local mem_start=0x6000+64*64
+	
+	--local floor_cam_y=shl(floor_y-camera_y,5)
+	
+	for sy=64,127 do
+			local pz=shl(floor_y-camera_y,6)/(sy-64)
+			local pzcc=pz*cc
+			local pzcs=pz*cs
+
+			local dpx = shr(pz,6)
+
+			local mx=-pzcs+camera_x-pzcc
+			local mz=pzcc+camera_z-pzcs
+			
+			local mx_step=cc*dpx
+			local mz_step=cs*dpx
+
+			
+		for sx=0,127 ,8 do
+
+			--this is unrolled 8 times
+			--basically, each mx,my step represents how each pixel moves
+			--down on the map as we go one pixel to the right on the screen
+			--the c1=blah blah function is just a way to read the pixel from
+			--the map
+			mx+=mx_step
+			mz+=mz_step
+			local c1= shr(band(   peek( offset_table[mget(shr(mx,3), shr(mz,3))]+ shr(band(mx,7),1)+shl(band(mz,7),6))  ,shl(0x000f,shl(band(mx,1),2))),shl(band(mx,1),2))
+
+			mx+=mx_step
+			mz+=mz_step
+			local c2= shr(band(   peek( offset_table[mget(shr(mx,3), shr(mz,3))]+ shr(band(mx,7),1)+shl(band(mz,7),6))  ,shl(0x000f,shl(band(mx,1),2))),shl(band(mx,1),2))
+
+			mx+=mx_step
+			mz+=mz_step
+			local c3= shr(band(   peek( offset_table[mget(shr(mx,3), shr(mz,3))]+ shr(band(mx,7),1)+shl(band(mz,7),6))  ,shl(0x000f,shl(band(mx,1),2))),shl(band(mx,1),2))
+
+			mx+=mx_step
+			mz+=mz_step
+			local c4= shr(band(   peek( offset_table[mget(shr(mx,3), shr(mz,3))]+ shr(band(mx,7),1)+shl(band(mz,7),6))  ,shl(0x000f,shl(band(mx,1),2))),shl(band(mx,1),2))
+
+			mx+=mx_step
+			mz+=mz_step
+			local c5= shr(band(   peek( offset_table[mget(shr(mx,3), shr(mz,3))]+ shr(band(mx,7),1)+shl(band(mz,7),6))  ,shl(0x000f,shl(band(mx,1),2))),shl(band(mx,1),2))
+
+			mx+=mx_step
+			mz+=mz_step
+			local c6= shr(band(   peek( offset_table[mget(shr(mx,3), shr(mz,3))]+ shr(band(mx,7),1)+shl(band(mz,7),6))  ,shl(0x000f,shl(band(mx,1),2))),shl(band(mx,1),2))
+
+			mx+=mx_step
+			mz+=mz_step
+			local c7= shr(band(   peek( offset_table[mget(shr(mx,3), shr(mz,3))]+ shr(band(mx,7),1)+shl(band(mz,7),6))  ,shl(0x000f,shl(band(mx,1),2))),shl(band(mx,1),2))
+
+			mx+=mx_step
+			mz+=mz_step
+			local c8= shr(band(   peek( offset_table[mget(shr(mx,3), shr(mz,3))]+ shr(band(mx,7),1)+shl(band(mz,7),6))  ,shl(0x000f,shl(band(mx,1),2))),shl(band(mx,1),2))
+
+			
+			--shr(band(   peek(shl(band(tile_number,0x000f),2)+shr(band(mx,7),1)+shl(band(mz,7),6)+shl(band(shr(tile_number,4),0xffff),9)),shl(0x000f,shl(band(mx,1),2))),shl(band(mx,1),2))
+
+
+			
+			poke4(mem_start,bor(  bor(bor(shr(c1,16),shr(c2,12)),bor(shr(c3,8),shr(c4,4))) ,  bor(bor(c5,shl(c6,4)),bor(shl(c7,8),shl(c8,12)))  ))
+			mem_start+=4
+			
+
+		end
+
+	end
+
+end
+
+offset_table={}
+for tile=0,127 do
+	offset_table[tile]=shl(band(tile,0x000f),2)+shl(band(shr(tile,4),0xffff),9)
+end
+
+
+function handle_buttons()
+	
+	moving=false
+
+	if(btn(2) or btn(5)) then 
+		player.speed+=player.acel
+		moving=true
+	end
+	if(btn(3)) then player.speed-=player.acel  end
+	if(btn(0)) then player.vangle-=player.turn_acel   end
+	if(btn(1)) then player.vangle+=player.turn_acel  end
+	
+	if(btn(5,1)) then game_mode=k_title_mode end
+
+
+end
+
+engine_note = 1
+engine_playing = false
+collide_wall_playing = false
+collide_car_playing = false
+function handle_sound()
+	if(playing_music==false) then music(14) playing_music=true end
+	if(moving) then
+		
+		if(player.speed < player.max_speed*.9) then
+			if(engine_note==2 or not engine_playing) then
+				--sfx(6)
+				engine_note=1
+				engine_playing=true
+			end
+		else
+			if(engine_note==1 or not engine_playing) then
+				--music(16,0,7)
+				engine_note=2
+				engine_playing=true
+			end
+		end
+		
+	
+	else
+		--music(-1,500)
+		engine_playing=false
+	end
+	
+	if(player.collide_wall and not collide_wall_playing )then
+		sfx(4)
+		collide_wall_playing=true
+	end
+		
+	if(not player.collide_wall) then collide_wall_playing=false end
+	
+	if(player.collide_car and not collide_car_playing )then
+		sfx(5)
+		collide_car_playing=true
+	end
+		
+	if(not player.collide_car) then collide_car_playing=false end
+
+
+
+end
+
+function handle_driver(driver)
+	
+	driver.collide_wall=false
+	driver.collide_car=false
+	
+	driver.angle+=driver.vangle
+	--driver.angle%=1
+	
+	driver.dv_x = -1*sin(driver.angle)
+	driver.dv_z = 1*cos(driver.angle)
+	
+	driver.vx = driver.dv_x * driver.speed
+	driver.vz = driver.dv_z * driver.speed
+	
+	--check collision with walls
+	if(check_collide(driver.x+driver.vx,driver.z)) then driver.vx=0 driver.speed*=.8 driver.collide_wall=true end
+	if(check_collide(driver.x,driver.z+driver.vz)) then  driver.vz=0 driver.speed*=.8 driver.collide_wall=true end
+	--are we stuck? then back out
+	if(check_collide(driver.x,driver.z)) then driver.x-=driver.dv_x driver.z-=driver.dv_z end
+	
+	
+	--check collision with other drivers
+	for car in all(driver_list) do
+		if(car != driver) then
+			if( (abs(driver.x+driver.vx-car.x)+abs(driver.z-car.z))<10 ) then driver.vx=0 driver.collide_car=true end
+			if( (abs(driver.x-car.x)+abs(driver.z+driver.vz-car.z))<10 ) then driver.vz=0 driver.collide_car=true end
+		end
+	end
+	
+	
+	driver.x+=driver.vx
+	driver.z+=driver.vz
+	
+	driver.vangle*=.9
+	if(check_road(driver.x,driver.z)) then
+		driver.speed*=.99
+	elseif(check_bumpy(driver.x,driver.z)) then
+		driver.speed*=.96
+	else
+		driver.speed*=.98
+	end
+	
+	if(driver.speed>driver.max_speed)then driver.speed=driver.max_speed end
+	
+	--check lap mechanism
+	
+	if(check_lap(driver.x,driver.z) and driver.gate2) then
+		driver.lap_num+=1 driver.gate1=false driver.gate2=false 
+		if(driver.lap_num>cur_level.num_laps) then
+			driver.time=frame_num
+		end
+		
+	end
+	if(check_gate1(driver.x,driver.z) ) then driver.gate1=true driver.gate2=false end
+	if(check_gate2(driver.x,driver.z) ) then driver.gate2=true driver.gate2=true end
+	
+end
+
+
+
+function handle_camera()
+	
+	
+	
+	camera_angle= camera_angle*.75+player.angle*.25
+	camera_x= .75*camera_x+(player.x - player.dv_x*22)*.25
+	camera_y=-5
+	camera_z=  .75*camera_z+(player.z - player.dv_z*22)*.25
+	
+	
+end
+
+function	check_lap(x,z)
+	--return(fget(mget(x/8,z/8),3))
+	tile_x=flr(x/8)
+	tile_y=flr(z/8)
+	if(tile_x>=cur_level.finish[1] and tile_x<=cur_level.finish[3] and tile_y>=cur_level.finish[2] and tile_y<=cur_level.finish[4]) then 
+	--pal(0,9)
+	return true 
+	else
+	--pal(0,0)
+	return false
+	end
+	
+end
+
+function	check_gate1(x,z)
+	tile_x=flr(x/8)
+	tile_y=flr(z/8)
+	if(tile_x>=cur_level.gate1[1] and tile_x<=cur_level.gate1[3] and tile_y>=cur_level.gate1[2] and tile_y<=cur_level.gate1[4]) then 
+	--pal(0,9)
+	return true 
+	else
+	--pal(0,0)
+	return false
+	end
+end
+
+function	check_gate2(x,z)
+	tile_x=flr(x/8)
+	tile_y=flr(z/8)
+	if(tile_x>=cur_level.gate2[1] and tile_x<=cur_level.gate2[3] and tile_y>=cur_level.gate2[2] and tile_y<=cur_level.gate2[4]) then 
+	--pal(0,9)
+	return true 
+	else
+	--pal(0,0)
+	return false
+	end
+end
+
+function	check_collide(x,z)
+	return(fget(mget(x/8,z/8),0))
+end
+
+function	check_road(x,z)
+	return(fget(mget(x/8,z/8),1))
+end
+
+function	check_bumpy(x,z)
+	return(fget(mget(x/8,z/8),2))
+end
+
+
+function	handle_driver_ai(driver)
+	
+	--find angle to way point
+	driver.angle%=1
+	
+	
+	way_angle= (atan2(driver.waypoint_x-driver.x,driver.waypoint_z-driver.z)+.25 - driver.angle)--direction vectors are off by 90
+	
+	
+	if(way_angle>0.5) then way_angle= -(1-way_angle) end 
+	if(way_angle<-0.5) then way_angle= -(1+way_angle) end 
+	
+	
+	if( way_angle>0 )then driver.vangle+=(driver.turn_acel) end
+    if( way_angle<0 )then driver.vangle-=(driver.turn_acel) end
+
+	--driver.vangle=0
+	--driver.angle = way_angle
+	
+	
+	driver.speed += driver.acel
+	
+	if( abs(driver.waypoint_x-driver.x)+abs(driver.waypoint_z-driver.z) < 60 ) then
+
+		driver.waypoint_index+=1
+		
+		if(driver.waypoint_index>#driver.waypoint_list_x) then driver.waypoint_index=1 end
+
+		
+		driver.waypoint_x=driver.waypoint_list_x[driver.waypoint_index]*8+4
+		driver.waypoint_z=driver.waypoint_list_z[driver.waypoint_index]*8+4
+	end
+
+end
+
+function draw_mouse(x,y,z,angle,overide_scale)
+	
+	angle=(angle*12)%12
+	if(angle<0)then angle+=12 end
+	--if(angle>12)then angle-=12 end
+	spflip=false
+	
+	if(angle<.5)then		index=64 spflip=false
+	elseif(angle<1)then	index=66 spflip=false
+	elseif(angle<1.5)then	index=68 spflip=false
+	elseif(angle<2)then	index=70 spflip=false
+	elseif(angle<4)then	index=72 spflip=false
+	elseif(angle<5)then	index=74 spflip=false
+	elseif(angle<6)then	index=76 spflip=false
+	elseif(angle<7)then	index=78 spflip=false
+	elseif(angle<8)then	index=76 spflip=true
+	elseif(angle<9)then	index=74 spflip=true
+	elseif(angle<10)then	index=72 spflip=true
+	elseif(angle<10.5)then	index=70 spflip=true
+	elseif(angle<11.0)then	index=68 spflip=true
+	elseif(angle<11.5)then	index=66 spflip=true
+	elseif(angle<12)then	index=64 spflip=true
+	end
+	
+	if(check_road(x,z) )then
+		h=draw_sprite_3d(x,y,z,index,16,16,spflip,overide_scale)
+	elseif(check_bumpy(x,z))then
+		h=draw_sprite_3d(x,y-flr((x+z)/4)%5/10,z,index,16,16,spflip,overide_scale)
+	else
+		h=draw_sprite_3d(x,y-.5,z,index,16,16,spflip,overide_scale)
+	end
+	
+	return h
+
+end
+
+
+
+function draw_drivers()
+	
+	turning=0
+
+	
+	for driver in all(driver_list) do
+		 turning=driver.vangle*10
+		 
+		 pal(4,driver.color[1])
+		 pal(5,driver.color[2])
+		 pal(6,driver.color[3])
+		 palt(14,true)
+		 palt(0,false)
+		 
+		if(driver.ai==true)then
+			driver.h = draw_mouse(driver.x,10,driver.z,driver.angle+turning-player.angle)
+		else
+			driver.h = draw_mouse(driver.x,10,driver.z,driver.angle+turning-player.angle)
+		end
+		
+		pal()
+	end
+	
+	
+	sort_drivers(driver_list)
+end
+
+
+function sort_drivers(a)
+  for i=1,#a do
+     j = i
+    while j > 1 and a[j-1].h > a[j].h do
+      a[j],a[j-1] = a[j-1],a[j]
+      j = j - 1
+    end
+  end
+end
+
+function sort_driver_times(a)
+  for i=1,#a do
+     j = i
+    while j > 1 and a[j-1].time > a[j].time do
+      a[j],a[j-1] = a[j-1],a[j]
+      j = j - 1
+    end
+  end
+end
+
+function draw_background()
+	palt(0,false)
+	palt(14,true)
+	
+	cls(12)
+	
+
+
+		quick_cast_map_3d()
+		
+		draw_clouds()
+		draw_hills()
+end
+
+
+
+driver_colors={{4,5,6},{2,13,7},{9,10,7},{12,1,13}}
+function	start_level(level)
+	
+	driver_list={}
+	
+	for i=1, #level.start_x do
+		driver=new_driver(level.start_x[i]*8+4,level.start_y[i]*8+4,level.waypoint_list_x,level.waypoint_list_z)
+		driver.color=driver_colors[i]
+		--driver.time=0
+	end
+	
+	player = driver_list[1]
+	player.ai=false
+	
+
+	frame_num=0
+	
+	cloud_list={}
+	hill_list={}
+	for i=1,3 do
+	new_cloud()
+	end
+	
+	for i=1,2 do
+	new_hill()
+	end
+	
+	cur_level=level
+	
+	camera_x=cur_level.start_x[1]*8+4
+	camera_z=cur_level.start_y[1]*8+4
+	camera_waypoint=1
+	
+end
+
+highlight_level = 1
+function	handle_level_select()
+	
+	if(btnp(3)) then highlight_level+=1 end
+	if(btnp(2)) then highlight_level-=1 end
+	highlight_level=mid(highlight_level,1,#level_list)
+
+	if(btnp(4)) then start_level(level_list[highlight_level]) game_mode=k_play_mode playing_music=false end
+end
+
+function	draw_level_select()
+	draw_background()
+		camera_angle+=.002
+		player.angle=camera_angle
+		--quick_cast_map_3d()
+		
+		rectfill(24,40,104,104,13)
+		rectfill(26,42,102,102,0)
+		
+		pal()
+		spr(100,34,42,7,2)
+		
+		for i=1,#level_list do
+			print(level_list[i].name,38,56+i*8,7)
+		end
+		
+		circfill(32,58+highlight_level*8,2,7)
+		
+		print("z to start",60,96,7)
+end
+
+finish_spin=0
+function	draw_finish()
+		if(playing_music==false)then	music(24) playing_music=true end
+	draw_background()
+		camera_angle+=.002
+		player.angle=camera_angle
+		--quick_cast_map_3d()
+		
+		rectfill(20,40,104,108,13)
+		rectfill(22,42,102,106,0)
+		
+		pal()
+		spr(100,34,42,7,2)
+		
+		if(frame_num-player.race_start<cur_level.best_time)then cur_level.best_time=frame_num-player.race_start end
+		
+		race_text = "race time: "..flr((frame_num-player.race_start)/1800)..":"..flr((frame_num-player.race_start)/30)%60 ..":"..(frame_num-player.race_start)%30*2
+
+		print(race_text,26,60,7)
+		
+		race_text = "best time: "..flr((cur_level.best_time)/1800)..":"..flr((cur_level.best_time)/30)%60 ..":"..(cur_level.best_time)%30*2
+	
+		print(race_text,26,68,7)
+		
+		sort_driver_times(driver_list)
+		
+		finish_spin+=.3
+		finish_spin%=15
+		
+		local player_place=0
+		
+		for i=1,#driver_list do 
+			pal(4,driver_list[i].color[1])
+			pal(5,driver_list[i].color[2])
+			pal(6,driver_list[i].color[3])
+			palt(14,true)
+			palt(0,false)
+		 
+			if(finish_spin<=8) then
+			spr(64+flr(finish_spin)*2,28+(i-1)*18,75,2,2,false,false)
+			else
+			spr(64+flr(16-finish_spin)*2,28+(i-1)*18,75,2,2,true,false)
+			end
+			
+			--if(driver_list[i].ai==false)then player_place=i end
+		    --
+			--
+			--print(player_place,32,32,8)
+			
+			--print(driver_list[i].time,10,i*8+32,7)
+			
+			
+			pal()
+		end
+		
+		
+		
+		print("z to start",60,96,7)
+end
+
+
+function	camera_tween()
+
+	--camera_angle%=1
+
+	next_x = cur_level.waypoint_list_x[camera_waypoint]*8+4
+	next_z = cur_level.waypoint_list_z[camera_waypoint]*8+4
+	
+	way_angle= (atan2(next_x-camera_x,next_z-camera_z)+.25)
+	
+	if(way_angle>0.5) then way_angle= -(1-way_angle) end 
+	if(way_angle<-0.5) then way_angle= -(1+way_angle) end 
+	
+	camera_angle = camera_angle*.8+way_angle*.2
+	
+	--if(camera_angle>way_angle+.01) then camera_angle-= abs(camera_angle-way_angle)*.1
+	--	elseif(camera_angle<way_angle-.01) then camera_angle+= abs(camera_angle-way_angle)*.1
+	--	end
+	
+	--camera_angle = (camera_angle + way_angle) /2
+	
+	
+	--camera_angle=way_angle
+	
+	dv_x = -1*sin(camera_angle)
+	dv_z = 1*cos(camera_angle)
+	
+	camera_vx = dv_x * 2
+	camera_vz = dv_z * 2
+	
+	--camera_x=camera_x*.8+(camera_x+camera_vx)*.2
+	--camera_z=camera_z*.8+(camera_z+camera_vz)*.2
+	
+	
+	camera_x+=camera_vx
+	camera_z+=camera_vz
+	camera_y=sin(cur_frame/600)*5+20
+	
+	
+	if( abs(camera_x-next_x)+abs(camera_z-next_z) < 120) then
+		camera_waypoint+=1
+		if(camera_waypoint>#cur_level.waypoint_list_x) then camera_waypoint=1 end
+	end
+	
+end
+
+
+function _init()
+	new_level("easy street",{20,20,18,18},{9,11,11,9},4,{21,8,22,12},{46,45,46,48},{45,45,45,48},{41,51,52,49,43,39,39,34,13,7,7,11,19},{10,19,41,46,47,43,31,25,25,20,14,10,10})
+	
+	new_level("hairpin alley",{42,42,40,40},{53,55,53,55},4,{43,52,44,56 },{45,58,45,62},{41,58,41,62},{56,64,71,76,77,55,12,10,8,4,4,8,13,19,19,23,39},{55,51,52,56,60,60,60,56,51,46,42,39,39,45,53,55,55})
+	
+	new_level("down and out",{95,95,93,93},{7,9,9,7},4,{96,5,97,11 },{114,56,114,62},{109,55,109,62},{106,113,113,110,110,112,110,110,115,121,122,118,101,98,97,86,80,81,87},{8,15,18,21,28,31,35,45,49,50,56,58,58,53,34,28,19,10,8})
+
+	start_level(level_list[1])
+end
+
+
+playing_music=false
+function _update()
+	
+	if(game_mode==k_level_select) then
+		handle_level_select()
+	end
+	
+	if(game_mode==k_play_mode) then
+	
+		--if(playing_music) then music(-1,1800) playing_music=false end
+		--if(not playing_music)then music(14) playing_music=true end
+		handle_buttons()
+		handle_sound()
+
+	
+		for driver in all(driver_list) do
+			if(driver.ai) then handle_driver_ai(driver) end
+			handle_driver(driver)
+		end
+	
+		handle_camera()	
+		
+		if(player.lap_num>cur_level.num_laps) then game_mode=k_finish_mode playing_music=false music(-1) end
+		
+	end
+	
+	if(game_mode==k_level_select) then
+		draw_level_select()
+	end
+	
+	
+	if(game_mode==k_title_mode) then
+		if(not playing_music) then music(0) playing_music=true end
+		if( btnp(4) )then game_mode=k_level_select  pause(10) end
+	end
+	
+	if(game_mode==k_finish_mode) then
+		
+		if(btnp(4) )then game_mode=k_title_mode  pause(20) playing_music=false end
+	end
+	
+
+
+end
+
+
+
+
+
+
+cur_frame=0
+function _draw()
+	cur_frame+=1
+
+	if(game_mode==k_play_mode) then
+
+		draw_background()
+		
+		draw_drivers()
+		
+		
+
+		print(stat(1),0,0,7)
+		
+		rectfill(0,0,54,15,1)
+		print("time: "..flr((frame_num-player.race_start)/1800)..":"..flr((frame_num-player.race_start)/30)%60 ..":"..(frame_num-player.race_start)%30*2,2,2,6)
+		print("lap:"..player.lap_num.."/"..cur_level.num_laps,2,8,6)
+		
+		
+		
+		frame_num+=1
+	--pause(5)
+	end
+	
+	--camera_vx=2
+	--camera_vz=1
+	
+	if(game_mode==k_title_mode) then
+		camera_tween()
+		draw_background()
+		--camera_angle+=.002
+		--player.angle=camera_angle
+		
+		
+		--quick_cast_map_3d()
+		pal()
+		rectfill(30-2,48-2,127-30+2,72+2,13)
+		rectfill(30,48,127-30,72,0)
+		
+		spr(100,34,48,7,2)
+		
+	
+		
+		
+		print("z to start",42,65,5)
+		print("z to start",42,64,7)
+		
+		print("gfx+code: electric gryphon",12,100,5)
+		print("gfx+code: electric gryphon",12,99,7)
+		print("music: gruber",12,108,5)
+		print("music: gruber",12,107,7)
+	end
+	
+	if(game_mode==k_finish_mode) then
+	
+		draw_finish()
+		
+		
+		
+		
+	end
+	
+	
+end
+
+__gfx__
+333333333333333333333bb344444444444444445555555555555555555555550666666666666660444444443333333344444444555555553333333355555555
+333333333333bb3333333bb3444444444ff444445555555555555555555555556666666666666611344344443333333344443443555555553333333355555555
+333333333333bb333333333344f44444f9954444555555555555555555555555666777777777711134333444333bb33344433343b5b55555333bb33355555b5b
+3333333333333333333ee3334f954444f99544445555555555555555555555556675555555555d1133333444333bb333444333333b355555333bb3335555b3b3
+333333333333333333eaae3344544444455444445555555555555555555555556675555555555d113333334433333333443333333333355533333333555b3333
+333333333bb3333333eaae334444444444444444555555dddddddddddd5555556675555555555d11333333343344334443333333333331553111331155533333
+333333333bb33333333ee3334444444444444f4455555d1111111111117555556675555555555d11333333443444344444333333333331551555115555b33333
+333333333333333333333333444444444444f95455555d1111111111167555556675555555555d11333334444444444444433333333331555555555555b33333
+444444443333333333333333444ff4444444454455555d1100000000667555556675555555555d11333333344444444444333333333333155555555555b33333
+4bbbbbbb3bb333333333333344f995444444444455555d1100000000667555556675555555555d113333344444444444444333333333315555555555551b3333
+4b3333333bb333333333333344f995444444444455555d1100000000667555556675555555555d113333344444f44444444333333333315555555555555b3333
+4b3333333333ee3333bb3333444554444444ff4455555d1100000000667555556675555555555d11333333444f95444443333333333333155555555555b33333
+4b33b333333eaae333bb333344444444444f995455555d1100000000667555556675555555555d113bb3333444544444443333333bb333155555555555b33333
+4b33b3b3333eaae333333bb344444444444f995455555d110000000066755555661dddddddddd1113bb334444444444444433bb33bb3315555555555551b3bb3
+4b3333b33333ee3333333bb3444444444444554455555d1100000000667555556111111111111111333334444444444444433bb33333331555555555555b3bb3
+4b3333333333333333333333444444444444444455555d1100000000667555550111111111111110333333444444444443333333333333155555555555b33333
+5555555555555d11dd755555555555555555555555555d1166666666667555555555555556666665333334444444444444433333333331555555555555b33333
+555555555555d1100dd75555555555555561555555555d16666666666675555555555555677777d0333333444443444344333333333331555555555555b33333
+55555555555d110000dd755555555555551155555555557777777777775555555555555567fffd103333333444334433433333333333315555bb55bb55b33333
+5555555555d11000000dd75555555555555555555555555555555555555555555555555567fffd1033333344333333334433333333331555bb33bb33555b3333
+555555555d1100000000dd7555555555555556155555555555555555555555555555555567fffd1033333444333333334443333333315555333333335555b333
+55555555d110000000000dd755555555555551155555555555555555555555555555555567dddd103433344433333bb3444333433115555533333bb355555313
+5555555d11000000000000dd7555555556155555555555555555555555555555555555556d1111103443444433333bb3444434431555555533333bb355555551
+555555d1100000000000000dd7555555511555555555555555555555555555555555555550000005444444443333333344444444555555553333333355555555
+555555d11000000000000006675555550000700000070000000077770000001111000000111111111111101111111111667ffffffffffd105666666666666665
+5555555d1100000000000066755555550000670000760000000077770000111111110000111111111111101111111111667ffffffffffd106666666666666610
+55555555d1100000000006675555555577776670076677770000777700011ccc11111000011111111111001011111111667ffffffffffd106667777777777110
+555555555d11000000006675555555556666666776666666000077770011cc1111111100011111111110011011111111667ffffffffffd10667ffffffffffd10
+5555555555d110000006675555555555666666600666666677770000011cc11111111110001111111100110011111111667ffffffffffd10667ffffffffffd10
+55555555555d1100006675555555555500006600006600007777000001cc111111111110000111110001100011111111661dddddddddd110667ffffffffffd10
+555555555555d110066755555555555500006000000600007777000011c11111111111110000111111110000111111116111111111111110667ffffffffffd10
+5555555555555d11667555555555555500000000000000007777000011c11111111111110000001111000000111111115000000000000005667ffffffffffd10
+ee0000eeee0000eeeee000eeee000eeeeee000eee000eeeeeee00000eeeeeeeeeee000eeeeeeeeeeeeee0000e000eeeeee000eeee000eeeeee0000eeee0000ee
+e045550ee055540eee05550ee05440eeee0560ee05440eeeee0504440eeeeeeeee04440eeeeeeeeeeee0444004440eeee04440ee04440eeee04fff0ee0fff40e
+e04555600655540eee055660055440eeee05600054ff0eeeee0504ff0eeeeeeeee04ff400eeeeeeeeee04ff400040eeee04ff00000ff0eeee04ff440044ff40e
+e04455666655440eee045566655440eeee05566654f0eeeeee0504ff000eeeeeee04ff40700eeeeeeee04ff475500eeee04ff475570f0eeee04f47755774f40e
+ee004556655400eeeee0455655540eeeee05566554f0eeeeee05044f05f0eeeeee04ff4075f0eeeeeeee00f40550eeeeee04f40550040eeeee004705507400ee
+eeee04566540eeeeeeee04565540eeeeeee056655440eeeeeee050445550eeeeeee04f055550eeeeeeeee0455ff0eeeeeee0444ff500eeeeeeee045ff540eeee
+eee0450000540eeeeee0450005540eeeeeee0005540eeeeeee000045550eeeeee0000445550eeeeeeee00045550eeeeeeeee0045550eeeeeeee0405555040eee
+ee0040cccc0400eeeee040ccc0540eeeeee00cc05540eeeee0cc044450e000eee0c0444400ee00eeee0c0440070000eeeee004077040eeeeee044057750440ee
+e0dd0c1111c0dd0eee0d0c111c04000ee000c11c0444000ee0cc04444400c0eee0c0444440e00c0eee0c00444040c00ee00044400044000eee044400004440ee
+e011dc1111cd110eee010c1111c0dd600d066111c04411600dc1c0444440c0eee0c0004444040c0eee0c05044400c0d006110000c0005dd0e0d0400cc0040d0e
+e00016666661000ee001666611c0116001055661c05011600161c0000010dd0ee010550004440c0ee0dd01500000061006110500c0000110e011000cc0001100
+0ddd05555550ddd00ddd555566600060010555566600006001560dd066011670e01000666000000e076110660dd06c1006000050006601100ddd66000066ddd0
+011105555550111001115555550dd60ee000555550dd600ee050116605011670e0066605550666000761105066110c0ee006dd066655000e0111555555551110
+0111000000001110011100005501160eeeee0005501160eeee00116700001660e006d605550d660006610000761100eeee0611055000eeee0111000000001110
+e000eeeeeeee000ee000eeee0001160eeeeeeee0001160eeeeee01660eee000eee0116000001160ee000eee06610eeeeee0611000eeeeeeee000eeeeeeee000e
+eeeeeeeeeeeeeeeeeeeeeeeeeee000eeeeeeeeeeee000eeeeeeee000eeeeeeeeeee000eeeee000eeeeeeeeee000eeeeeeee000eeeeeeeeeeeeeeeeeeeeeeeeee
+8888888888888888eeeeeeeeeeeeeeee00000000000000000000000000000000000000000000000000000000ee0000eeee0000ee000000000000000000000000
+8888888888888888eeeee66eeeeeeeee00000000000000000000000000000000000000000000000000000000e045550ee055540e000000000000000000000000
+8888888888888888eee77766eee66eee00000000000000000000000000000000000000000000000000000000e04555600655540e000000000000000000000000
+8888888888888888ee7777766e7766ee0007eeee0000000000000000000007e00000000000000000000007e0e04455666655440e000000000000000000000000
+8888888888888888ee777777667766ee00088888e000000000000000000008800ee007eee000000000000880ee004556655400ee000000000000000000000000
+8888888888888888e77777777777766e00088228800000000000000000000880e82008822e0007e0ee00e88eeeee04566540eeee000000000000000000000000
+8888888888888888e77777777777766e000880088007e0007ee00007ee00088e820002200800088e88008888eee0450000540eee000000000000000000000000
+88888888888888887777777777777766000880088008800e888e00e888e00888200000eee800088822002882ee0040cccc0400ee000000000000000000000000
+8888888888888888eeeeeeeeeeeeeeee00088ee8800220088228008822800888e0000e8888000882000008800000000000000000000000000000000000000000
+8888888888888888eeeeeeeeeeeeeeee000888882007e00880020088008008828e00088228000880000008800000000000000000000000000000000000000000
+8888888888888888eeeeeeeeeeeeeeee0008822200088008800e00880080088028e0088008000880000008800000000000000000000000000000000000000000
+8888888888888888eeeeeeeeeeeeeeee00088000000880088ee80088ee8008800880088ee8e008800000088e0000000000000000000000000000000000000000
+8888888888888888eebb3eeeeeeeeeee000880000008800288820028882008800880028882800880000002880000000000000000000000000000000000000000
+8888888888888888ebb333eeeeebbeee000220000002200022200002220002200220002220200220000000220000000000000000000000000000000000000000
+8888888888888888ebb333bb33bb333e000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+8888888888888888bb3333333bb33333000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+9292e3f3e3f3e3f3e3f3e3f3e3f3e3f3e3f3e3f3e3f3e3f3e3f3b131404141409292031361616161616171f1d19292f1d15161616161718282f11010111010c3
+d310101010101010101010101010101010101010d00362626262621361616161616161612232f1c3d31020d2021261616161616171f110101010101010101092
+9292c3d3c3d3c3d3c3d3c3d3c3d3c3d3c3d3c3d3c3d3c3d3c3d392314041414140e3f35161616161616171f1d1e3f3f1d15161616161718282f21010101010e3
+f31010101010101010101010101010101010101010e2e2e2e2e2d00313616161616161616171f1109210d102126161616161612333f110101010101010101092
+929210101010101010101010101010101010101010101010e3f3e3f33140404040c3d35161616161616171f1d1c3d3f1d1516161616171828282f110101010c3
+d31010101010101010101010101010101010101010101010101010d003136161616161616171f1109210d151616161616161233382f210101010101010929292
+929210e0e0e0e0e0e0e0e0e0e0e0e0e0e010101010211010c3d3c3d330303030c010d15161616161616171f1d1e3f3f1d1516161616171828282f110101010e3
+f31010101020101010101010101010101010101010101010101010d182031361616161616171f1109210d151616161616123338282f010101010101010921010
+9292d28282026060606060606060606032f21010211021101010e3f330303030c110d15161616161616171f1d1c3d3f1d1516161616171828282f110101010c3
+d3101010101010101010101010101010101010e3f3e3f3e3f31010d182825161616161616171f1109210d151616161616171e3f3f01010101010101010921010
+929282820212616161616161616161612232f210101020101010c3d33030c0b21010d15161616161616171f1d1e3f3f1d1516161616171828282f110101010e3
+f3101010101010101010101010101010101010c3d3c3d3c3d3101010e2d05161616161616171f1e3f310d151616161616171c3d3f11010101010101010921010
+92928202126161616161616161616161612232f2101010102110e3f3c0b210101021d15161616161616171f2d2c3d3f2d2516161616171828282f110101010c3
+d310101010101010101010101010101110101010101010101010101010d15161616161616171f1c3d310d1516161616161718282f11010101010101010921010
+9292021261616161616161616161616161612232f210101010b0c3d3101020101010d15161616161616171e3f3e3f3e3f3516161616171828282f110101010e3
+f31010101010101010101010101010101010101010101010e3f3101010d15161616161616171f1109210d1516161616161718282f11010101110101010921010
+929251616161616161616161616161616161612232f21010a141e3f3101010101010d15161616161616171c3d3c3d3c3d3516161616171828282f110101010c3
+d31010101010101010101010101010101010101010101010c3d3101010d15161616161616171f1109210d1516161616161718282f11010101010101010921010
+92925161616161612362626262136161616161612232f210a141c3d3101021101010d151616161616161719292e3f39292516161616171828282f110111010e3
+f3e3f3e3f3e3f3e3f3e3f3e3f3e3f31010101010101010101010101010d15161616161616171f1109210d151616161616171e3f3f11010101010101010921010
+929251616161612333f0e2e2d003136161616161612232f1a141e3f3101010101010d151616161616161223292c3d39202126161616171828282f110101010c3
+d3c3d3c3d3c3d3c3d3c3d3c3d3c3d310101010101010101010e3f31010d15161616161616171f110e3f3d151616161616171c3d3101010101010101010921010
+e3f3516161612333f010b01010d0031361616161616171f110b2c3d3101010101010d15161616161616161223292920212616161616171828282f110101010e3
+f3101010101010101010101010e3f310101010101110101010c3d31010d15161616161616171f110c3d3d15161616161617182f2101010101010101010929292
+c3d35161616171f010a131c21010d00313616161616171f11010e3f3101010101020d15161616161616161612260601261616161616171828282f110109292c3
+d3101010101010101010101010c3d31010101010101010101010101010d15161616161616171f1109210d1516161616161223282f21010101010101010101092
+e3f35161616171f210a1313140c210d003136161616171f11010c3d3101021101010d10313616161616161616161616161616161616171828282f11010921010
+026060606060606032f2101010e3f31010101010101010101010101010d15161616161616171f1109210d151616161616161223282f2e0e0e0e0e0e0e0e0e092
+c3d3516161612232f210a0303031c210d0516161616171f11010e3f3101010101010d18203136161616161616161616161616161612333828282f11010921002
+12616161616161612232f21010c3d31010101010101010101010101010d15161616161616171f1109210d1031361616161616122328282828282828282828292
+e3f351616161612232f210a0403030c1d1516161616171f11010c3d3101010102110d182820313616161616161616161616161612333f0e2e2e2101010920212
+6161616161616161612232f110e3f31010101010101010101010101010d15161616161616171f1e3f31010d0031361616161616122606060606060328282f092
+c3d35161616161612232f210a03040c1d1516161616171f11010e3f3101011101010d182828203136161616161616161616161233382f1929292929292921261
+6161616161616161616171f110c3d31010101010101010101010101010d15161616161616171f1c3d3101010d00313616161616161616161616161223282f192
+e3f3031361616161612232f2a13030c2d1516161616171f11010c3d3101010101010d182828282036262626262626262626262338282f192e3f3e0d202126161
+61616161e3f39261616171f110e3f31010101010101010101011101010d15161616161616171f110921010e3f3d003136161616161616161616161612232f192
+c3d3d0031361616161612232f2a030c0d1516161616171f11010e3f310101010101010e2e2e2e2e2e2e2e2e2e29292e2e2e2e2e2e2e21092c3d3026012616161
+61616161c3d39261616171f110c3d31010101010101010101010101010d15161616161616171f110929292c3d310d0031361616161616161616161616171f192
+921010d0031361616161612232f2b292d1516161616122328282929292929292929292929292929292929292929292929292929292929292d202126161616161
+6161616161616161616171f21010929210101010101010101010101010d15161616161616171f2e0e0109210101010d00362626262626213616161616171f192
+92101010d0031361616161612232f192d15161616161612260606060606060606060606060606060606060606060606060606060606060606012616161616161
+616161616161616161612232f210109292101010101010101010101010d15161616161616171828282e3f31010101010e2e2e2e2e2e2d003136161616171f192
+9292101010d0516173b383616171f192d15161616161616161616161616161616161616161616161616161636361616161616161616161616161616161616161
+61612362136161616161612232f2e0e092921010101010101010101010d15161616161616122328282c3d39292e3f31010101010e3f310d0516161616171f192
+1092921010d1516193b3a3616171f192d15161616161616161616161616161616161616161616161614361636361436161616161616161616161616161616161
+61233392031361616161616122328282f1929210101010101010101010d15161616161616161223282f1101010c3d39292e3f392c3d39292516161616171f192
+1010921010d15161616161616171f192d10313616161616161616161616161616161616161616161616161636361616161616161616161616161616161616161
+23338292820313616161616161223282f1109292101010101010101010d10313616161616161612232f2e0e0e0e0e0e0e0c3d3e0e0e0d202126161616171f192
+1010921010d15161616173836171f19210d003626262626262626262626262626262626262626262626262626262626262626262626262626262626262626292
+338282e3f38251616161616161612232f1109292101010101010101010d18203136161616161616122606060606060606060606060606012616161616171f192
+101092c210d15161616193a36171f2929210d0828292929292929292929292929292929292929292929292929292929292929292929292929292929292929292
+929292c3d38251616161616161616171f1109292101010101010101010d18282031361616161616161616161616161616161616161616161616161616171f192
+10e3f341c1d1031361616161612232f2929292929292606060606060606060606060606060606060606060606060606060606060606060606060606060606060
+32828282929212616161616161616171f1109292101010101010101010d18282820313616161616161616161616161616161616161616161616161612333f292
+10c3d340c110d0031361616161612260606060606012616161616161616173836161616161616161616161616161616161616161616161616161616161616161
+22606060921261616161616161616171f110e3f310101010101010101010e2e2e2d0031361616161616161616161616161616161616161616161612333828292
+10e3f331c11010d00313616161616161616161616161616161616161616193a361616161616161616153616161615361616161616161616173b3836161616161
+61616161616161616161616161612333f110c3d31010101011101010101010101010d00362626262626262626262626262626262626262626262623382828292
+10c3d331c1101010d0031361616161616161616161616161616161616161616161616161616161616161616161616161616161616161616193b3a36161616161
+61616161616161616161616161233382f110e3f3101010101010101010101010101010e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e292
+10e3f3e3f310101010d0036262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262
+62626262626262626262626262338282f110c3d31010101092929292101010101010101010101010101010101010101010101010101010101010101092929292
+10c3d3c3d39292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292
+92929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292101010
+__gff__
+0204040404000000000004040404040400040404040002000000040404040004000000000400000000010404040404040000000002020a10101010120101010100000000000000000000000000000000000000000000000000000000000000001212000000000000000000000000000012120000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__map__
+3e3f3e3f3e3f3e3f3e3f3e3f3e3f3e3f3e3f3e3f3e3f3e3f3e3f3e3f3e3f3e3f3e3f3e3f3e3f3e3f3e3f3e3f29292929293e3f3e3f29292929293f3e3f3e3f3e3f29292929292929292929292929292929292929293e3f2929292929292929293e3f2929293e3f29292929292929292929292929292929292901010101010101
+3c3d3c3d3c3d3c3d3c3d3c3d3c3d3c3d3c3d3c3d3c3d3c3d3c3d3c3d3c3d3c3d3c3d3c3d3c3d3c3d3c3d3c3d293c3d3c3d3c3d3c3d3c3d3c3d3c3d3c3d3c3d3c3d01010101010101010101010101010101010101013c3d0101010101010101013c3d0101013c3d01010101010101010101010101010101012901010101010101
+3e3f3e3f2929291b1b0404040313031b2929293e3f292929291b0c010101010101010101010101010101010101010101010101010b0b0b010101293e3f3e3f3e3f010101010101010101010101010101010101010101010101010101010101013e3f010101010101010101010101010101010101010101012901010101010101
+3c3d3c3d2929010a1b1b04041303131b1b29293c3d2929290c2b010101010101010101010101011101010101010101010101011a0414142c0101013c3d3c3d3c3d010101010101010101010101010101010101010101010101010101010101013c3d0101010101010e0e0e0e0e0e010101010101010101013e3f010101010101
+3e3f2929290101012b2b2b2b2b2b2b2b2b2b293e3f29290c0101010101010101010101010101010101010101011101010101011a140414141c010101293e3f3e3f0101010101013e3f010101010101010e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e290e0e0e0e0e2d2828282828282f0101010101010101013c3d29293e3f0101
+3c3d29290101010101010101120102010101013c3d292901010101010101110101010101110101010101010101010101010101010a0403042c010101013c3d3c3d0101010101013c3d0101010101012d200606060606060606060606060606060606060606060606060606060623282f0101010101010101010101013c3d0101
+3e3f29010101010e0e0e0e0e0e0e0e0e0e0e0e0e2929290e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e010111010a1314141c0101013e3f3e3f0101010111013e3f01010101012d2021161616161616161616161616161616363616161616161616161616162223282f010101010101010111010101290101
+3c3d010102011d2828200606060606060606060606292906060606060606060606060606060606060606060623282828281f010101010a14141c0101013c3d3c3d0101010101013c3d010101012d20211616161616161616161616161616161636361616161616161616161616162223282f0101010111010111110101290101
+3e3f010101011d2820211616161616161616161616363616161616161616161616161616161616161616161622232828282f0e0e0e01012b2b010111013e3f3e3f01010101010101010101011d202116161616161616161616161616161616163636161616161616161616161616162223282f01010101011101010101290101
+3c3d01010e0e2d202116161616161616161616161636361616161616161616161616161616161616161616161622232828282828281f010101010101013c3d3c3d01010101010101010101011d15161616161616161616161616161616161616363616161616161616161616161616162223282f010101010101011101290101
+3e3f011d282820211616161616161616161616341636361634161616161616161616161616161616161616161616222328282828281f010101010101013e3f3e3f01010101010101010101011d1516161616161616161616161616161616161636361616161616161616161616161616162223282f0101010101110101290101
+3c3d011d282021161616161616161616161616161636361616161616161616161616161616161616161616161616162223282828281f011101010101013c3d3c3d01010101010101010101011d151616161616161632262626262626262626262626262626262626262631161616161616162223281f01010101010101290101
+3e3f011d202116161616161616161616161616161636361616161616161616161616161616161616161616161616161622232828282f0e0e0e0e01010101013e3f01010101010101010101011d1516161616161632330f2e2e2e2e2e2e2e2e2e2e292e2e2e2e2e2e2e0d30311616161616161622231f01010101010101290101
+3c3d011d1516161616161616322626262626262626292926262626262626262626262626262626262631161616161616162223282828282828281f010101013c3d01010101010101010101011d15161616161616170f0129290101010b0b0b0b0b2901010101010101010d303116161616161616171f01010101010101290101
+3e3f011d1516161616161632333e3f280f2e2e2e0d2929282828282828282828282828282828283e3f30311616161616161622232828282828281f010101013e3f01010101010101010101011d15161616161616171f29290101011a030403040329013e3f3e3f3e3f01010d3031161616161616171f01010101010101290101
+3c3d011d1516161616163233293c3d281f0101011d2929282828282828282828282828282828283c3d283031161616161616162223282828280f01010101013c3d01010101010101010101011d15161616161616171f3e3f3e3f011a131413141329293c3d3c3d3c3d0101010d30311616161616171f01010101010101290101
+3e3f011d151616161616172929293e3f2f0e0e0e2d3e3f2828282828283e3f2828282828283e3f29293e3f30311616161616161622282828281f01010101013e3f01010101010101010101011d15161616161616171f3c3d3c3d011a030403040304032c010101013e3f0101010d151616161616171f01010101010101293e3f
+3c3d011d151616161616173e3f293c3d293e3f29293c3d29293e3f29293c3d29293e3f29293c3d28283c3d28303116161616161616222328281f01010101013c3d01010101010101010101011d15161616161616171f3e3f2929292913141314131413142c0101013c3d0101011d151616161616171f01010101010101013c3d
+3e3f011d151616161616173c3d292928283c3d2828282828283c3d2828282828283c3d282828282828282929283031161616161616161728281f01010101293e3f01010101010101010101011d15161616161616171f3c3d01012a040304030403040304032c0101013e3f01011d151616161616172f01010101010101010129
+3c3d011d1516161616162223293e3f28282828282828282828282828282828282828282828280f2e2e0d283e3f2830311616161616161728281f01010129293c3d01010101010101010101011d15161616161616172f010101010a14131413141314131413142c0b013c3d01012d15161616161617281f010101010101010129
+3e3f011d1516161616161622233c3d28282828282828282828282828282828282828282828282f0e011d283c3d2828303116161616161728281f0101012929292901010101010101010101011d1516161616161622232f0101010129290a030403040304030403041c0101011d2021161616161622231f010101010101010129
+3c3d011d1516161616161616220606060606060606060606060606060606060606060606060623281f1d2828292928283031161616161728281f01010101293e3f01010101010101010101011d151616161616161622232f0101013e3f1a131413141314131413141c0101011d1516163226311616171f010101010101010129
+3e3f011d3031161616161616161616161616161616161616161616161616161616161616161622232f2d28282829293e3f15161616161728281f01010101013c3d01010101010101010101011d15161616163738161622232f01013c3d012b2b2b0a0303043e3f2b010101011d1516161724151616171f010101010101010129
+3c3d011d283031161616161616161616161616161616161616161616161616161616161616161622232828283e3f283c3d15161616161728281f01010101013e3f01010101010101010101011d15161616163b3b16161622232f01010101010101010a13143c3d01010101011d1516161724151616171f010101010101010129
+3e3f011d282830311616161616161616161616161616161616161616161616161616161616161616222328283c3d28282815161616161728281f11010101013c3d01010101010101010101011d30311616163b3b3816161622232f0e0e0e0e010101012b2b2b2901010101011d1516161724151616171f010101010101010129
+3c3d01012e2e0d30311616161616161616161616161616161616161616161616161616161616161616222328282928282815161616161728281f01010101013e3f0101010101010101010101010d30311616393b3a161616162206060606232f0101010101012901010101011d1516161724151616171f010101010101010129
+3e3f010112011d28303116161616161616161616161616161616161616161616161616161616161616161728283e3f282815161616161728281f01010101013c3d010101010111010101010101010d30311616161616161616161616161622232f01010101013e3f0e0e0e0e2d1516161724151616171f010101010101010129
+3c3d010112011d28282831161616161616161616161616161616161616161616161616161616161616161728283c3d282815161616161728281f01010101013e3f01010101010101010101010101010d30311616161616161616161616161622232f0e0e0e2d3c3d28282828281516161724151616171f010101010101010129
+3e3f290101011d28282830262626262626262626262626262626262626262631161616161616161616161728282929282815161616161728281f01010101013c3d0101010101010101010101010101010d30311616161616161616161616161622232828282828292e2e2e2e0d1516162206211616171f010101010101010129
+3c3d29290101122e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e3e3f3031161616161616161616170f0d29290f0d15161616161728281f01010101013e3f010101010101010101010101010101010d30311616161616161616161616161622232828280f290b0b0b0b0b0d31161616161632331f010101010101010129
+3e3f3e3f2901010101010101010101010101011201010101010101012a3c3d2930311616161616161616171f1d29291f1d15161616161728281f01010101013c3d01010101010101010101010101010101010d303116161616161616161616161616222328281f29130303030c2d151616161616170f01010101010101010129
+3c3d3c3d292901010101010101010112010101010101010101010b2a1314042929303116161616161616171f1d29291f1d15161616161728281f01010101013e3f0101010101010101011101010101010101010d3031161616161616161616161616162223281f3e3f2b2b2b2d20211616161616171f01010101010101010129
+__sfx__
+010f000005135051050c00005135091351c0150c1351d0150a1351501516015021350713500000051350000003135031350013500000021351b015031351a0150513504135000000713505135037153c7001b725
+010f00000c03300000300152401524615200150c013210150c003190151a01500000246153c70029515295150c0332e5052e5150c60524615225150000022515297172b71529014297152461535015295151d015
+010f000007135061350000009135071351f711000000510505135041350000007135051351c0151d0150313503135021350000005135031350a1050a135000000113502135031350413505135000000a13500000
+010f00000c033225152e5153a515246152b7070a145350150c003290153200529005246152501526015220150c0331e0251f0252700524615225051a0152250522015225152201522515246150a7110a0001d005
+01110000210130a000137001300008700080001b7000a700037000300024600080000a7000a00008700087000a7000c0001670016000167001650027500140000c7000c000220002e00022000000000000000000
+0111000010773247001f5002270024600227001b5001b5001f5001f5001f5001f500225002250022500225000c0001b7001b5001b700246001b5001b5001b500275002750027500275001f5001f5001f5001f500
+011200000051702517005170251700517025170051702517005170251700517025170051702517005170251700517025170051702517005170251700517025170051702517005170251700517025170051702517
+011200002452024520245122451524615187151b7151f71527520275202751227515246151f7151b7151f715295202b5212b5122b5152461524715277152e715275002e715275022e715246152b7152771524715
+011200002352023520235122351524615177151b7151f715275202752027512275152461523715277152e7152b5202c5212c5202c5202c5202c5222c5222c5222b5202b5202b5222b515225151f5151b51516515
+011200000c0330802508744080250872508044177151b7151b7000f0251174411025246150f0240b7440b0250c0330802508744080250872524715277152e715080242e715080242e715246150f0240c7440c025
+011600000042500415094250a4250042500415094250a42500425094253f2050a42508425094250a425074250c4250a42503425004150c4250a42503425004150c42500415186150042502425024250342504425
+011600000c0330c4130f54510545186150c0330f545105450c0330f5450c41310545115450f545105450c0230c0330c4131554516545186150c03315545165450c0330c5450f4130f4130e5450e5450f54510545
+0116000005425054150e4250f42505425054150e4250f425054250e4253f2050f4250d4250e4250f4250c4250a4250a42513425144150a4250a42513425144150a42509415086150741007410074120441101411
+011600000c0330c4131454515545186150c03314545155450c033145450c413155451654514545155450c0230c0330c413195451a545186150c033195451a5451a520195201852017522175220c033186150c033
+010b00200c03324510245102451024512245122751127510186151841516215184150c0031841516215134150c033114151321516415182151b4151d215224151861524415222151e4151d2151c4151b21518415
+011400001051512515150151a5151051512515150151a5151051512515150151a5151051512515150151a5151051512515170151c5151051512515170151c5151051512515160151c5151051512515160151c515
+011400000c0330253502525020450e6150252502045025250c0330253502525020450e6150252502045025250c0330252502045025350e6150204502535025250c0330253502525020450e615025250204502525
+011400002c7252c0152c7152a0252a7152a0152a7152f0152c7252c0152c7152801525725250152a7252a0152072520715207151e7251e7151e7151e715217152072520715207151e7251e7151e7151e7151e715
+011400000c0330653506525060450e6150652506045065250c0330653506525060450e6150652506045065250c0330952509045095350e6150904509535095250c0330953509525090450e615095250904509525
+0114000020725200152071520015217252101521715210152c7252c0152c7152c0152a7252a0152a7152a015257252501525715250152672526015267153401532725310152d715280152672525015217151c015
+010e000005145185111c725050250c12524515185150c04511045185151d515110250c0451d5151d0250c0450a0451a015190150a02505145190151a015050450c0451d0151c0150012502145187150414518715
+010e000021745115152072521735186152072521735186052d7142b7142971426025240351151521035115151d0451c0051c0251d035186151c0251d035115151151530715247151871524716187160c70724717
+010e000002145185111c72502125091452451518515090250e045185151d5150e025090451d5151d025090450a0451a015190150a02505045190151a015050450c0451d0151c0150012502145187150414518715
+010e000029045000002802529035186152802529035000001a51515515115150e51518615000002603500000240450000023025240351861523025240350000015515185151c51521515186150c615280162d016
+010e000002145185112072521025090452451518515090450e04521515265150e025090451d5151d01504045090451d01520015210250414520015210250404509045280152d0150702505145187150414518715
+011a00000173401025117341102512734120250873408025127341202501734010251173411025087340802505734050250d7340d025147341402506734060250873408025127341202511734110250d7340d025
+010d00200c0331b51119515195152071220712145151451518615317151d5151d515125050c03314515145150c0330150519515195150d517205161451514515186153171520515205150d5110c033145150c033
+011a00000a7340a02511734110250d7340d02505734050250673406025147341402511734110250d7340d0250a7340a02511734110250d7340d02508734080250373403025127341202511734110250d7340d025
+010d00200c0331b511295122951220712207122c5102c51018615315143151531514295150c03329515295150c0330150525515255150d517205162051520515186153171520515205150d5110c033145150c033
+01180000021100211002110021120e1140e1100e1100e1120d1140d1100d1100d1120d1120940509110091120c1100c1100c1100c1120b1110b1100b1100b1120a1100a1100a1100a11209111091100911009112
+01180000117201172011722117221d7201d7201d7221d7221c7211c7201c7201c7201c7221c72218720187221b7211b7201b7201b7201b7221b7221d7221d7221a7201a7201a7201a7201a7221a7221672016722
+011800001972019720197221972218720187201872018720147201472015720157201f7211f7201d7201d7201c7201c7201c7221c7221a7201a7201a7221a7251a7201a7201a7221a72219721197201972219722
+011800001a7201a7201a7221a7221c7201c7201c7221c7221e7201e7202172021720247212472023720237202272022720227202272022722227221f7201f7202272122720227202272221721217202172221722
+0118000002114021100211002112091140911009110091120e1140e1100c1100c1120911209110081100811207110071100711007112061110611006110061120111101110011100111202111021100211002112
+0118000020720207202072220722217202172021722217222b7212b72029720297202872128720267202672526720267202672026720267222672228721287202672026720267202672225721257202572225722
+010e00000c0231951517516195150c0231751519516175150c0231951517516195150c0231751519516175150c023135151f0111f5110c0231751519516175150c0231e7111e7102a7100c023175151951617515
+010e000000130070200c51000130070200a51000130070200c51000130070200a5200a5200a5120a5120a51200130070200c51000130070200a51000130070200c510001300b5200a5200a5200a5120a5120a512
+010e00000c0231e5151c5161e5150c0231c5151e5161c5150c0231e5151c5161e5150c0231c5151e5161c5150c0230c51518011185110c0231c5151e5161c5150c0231e7111e7102a7100c023175151951617515
+010e0000051300c02011010051300c0200f010051300c02011010051300c0200f0200f0200f0120f0120f012061300d02012010071300e02013010081300f0201503012020140101201015030120201401012010
+010700000c5370f0370c5270f0270f537120370f527120271e537230371e527230272f537260372f52726027165371903716527190271c537190371c527210271c53621036245262102624536330362452633026
+018800000074400730007320073200730007300073200732007300073200730007320073000732007320073200732007300073000730007320073000730007300073200732007300073000732007300073200732
+01640020070140801107011060110701108011070110601100013080120701106511070110801707012060110c013080120701106011050110801008017005350053408010070110601100535080170701106011
+018800000073000730007320073200730007300073200732007300073200730007320073000732007320073200732007300073000730007320073000730007300073200732007300073000732007300073200732
+0164002006510075110851707512060110c0130801207011060110501108017070120801107011060110701108011075110651100523080120701108017005350053408012070110601100535080170701106511
+011800001d5351f53516525275151d5351f53516525275151f5352053518525295151f5352053518525295151f5352053517525295151f5352053517525295151d5351f53516525275151d5351f5351652527515
+010c00200c0330f13503130377140313533516337140c033306150c0330313003130031253e5153e5150c1430c043161340a1351b3130a1353a7143a7123a715306153e5150313003130031251b3130c0331b313
+010c00200c0331413508130377140813533516337140c033306150c0330813008130081253e5153e5150c1330c0430f134031351b313031353a7143a7123a715306153e5150313003130031251b3130c0333e515
+011800001f5452253527525295151f5452253527525295151f5452253527525295151f5452253527525295151f5452353527525295151f5452353527525295151f5452253527525295151f545225352752529515
+010c002013035165351b0351d53513025165251b0251d52513015165151b0151d51513015165151b0151d51513015165151b0151d51513015165151b0151d51513015165151b0151d51513015165251b0351d545
+011200000843508435122150043530615014351221502435034351221508435084353061512215054250341508435084350043501435306150243512215034351221512215084350843530615122151221524615
+011200000c033242352323524235202351d2352a5111b1350c0331b1351d1351b135201351d135171350c0330c0332423523235202351d2351b235202352a5110c03326125271162c11523135201351d13512215
+0112000001435014352a5110543530615064352a5110743508435115152a5110d43530615014352a511084150d4350d4352a5110543530615064352a5110743508435014352a5110143530615115152a52124615
+011200000c033115152823529235282352923511515292350c0332823529216282252923511515115150c0330c033115151c1351d1351c1351d135115151d1350c03323135115152213523116221352013522135
+0112000001435014352a5110543530615064352a5110743508435115152a5110d435306150143502435034350443513135141350743516135171350a435191351a1350d4351c1351d1351c1351d1352a5001e131
+011200000c033115152823529235282352923511515292350c0332823529216282252923511515115150c0330c033192351a235246151c2351d2350c0331f235202350c033222352323522235232352a50030011
+0114001800140005351c7341c725247342472505140055352173421725287342872504140045351f7341f725247342472502140025351d7341d72524734247250000000000000000000000000000000000000000
+011400180c043287252b0152f72534015377253061528725290152d72530015377250c0432f7253001534725370153c725306152b7252d01532725370153b7250000000000000000000000000000000000000000
+0114001809140095351f7341f7252473424725091400953518734187251f7341f72505140055351f7341f7252473424725051400553518734187251f7341f7250000000000000000000000000000000000000000
+0114001802140025351f7341f725247342472504140045351f7341f725247342472505140055352b7242b715307243071507140075352b7242b71534724347150000000000000000000000000000000000000000
+011400180c0433772534015307252f0152d725306152d7252f0153072534015377250c0433772534015307252f0152d725306152d7252f0153072534015377250000000000000000000000000000000000000000
+011400180c0433c7253701534725300152f725306152f7253001534725370153c7250c0433c7253701534725300152f725306152f7253001534725370153c7250000000000000000000000000000000000000000
+011400180c043287252b0152f725340153772530615287252901530725370153c7250c043287252901530725370153c72530615287252901530725370153c7250000000000000000000000000000000000000000
+011400180c003287052b0052f705340053770530605287052900530705370053c7050c0032f7053000534705370053c705306052b7052d00532705370053b7050000000000000000000000000000000000000000
+000f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__music__
+00 00 01 43 44
+00 00 01 43 44
+01 00 01 43 44
+00 00 01 43 44
+00 02 03 43 44
+02 02 03 43 44
+00 04 42 43 44
+00 04 42 43 44
+00 04 05 43 44
+00 04 05 43 44
+01 04 05 43 44
+00 04 05 43 44
+00 06 07 43 44
+02 08 09 43 44
+01 0a 0b 43 44
+00 0c 0d 43 44
+00 0a 0e 43 44
+02 0c 0e 43 44
+00 10 42 43 44
+01 10 0f 43 44
+00 10 0f 43 44
+00 10 11 43 44
+00 12 11 43 44
+02 12 13 43 44
+01 14 15 43 44
+00 14 15 43 44
+00 16 15 43 44
+00 16 15 43 44
+00 18 17 43 44
+02 16 17 43 44
+00 19 42 43 44
+01 19 1a 43 44
+00 19 1a 43 44
+00 1b 1a 43 44
+00 19 1c 43 44
+02 1b 1c 43 44
+01 1d 1e 43 44
+00 1d 1f 43 44
+00 1d 1e 43 44
+00 1d 1f 43 44
+00 21 20 43 44
+02 1d 22 43 44
+00 27 42 43 44
+01 24 23 43 44
+00 24 23 43 44
+02 26 25 43 44
+01 28 29 43 44
+03 2a 2b 43 44
+01 2d 30 43 44
+00 2e 30 43 44
+00 2d 30 43 44
+00 2e 30 43 44
+00 2d 2c 43 44
+00 2d 2c 43 44
+02 2e 2f 43 44
+01 31 32 43 44
+00 31 32 43 44
+00 33 34 43 44
+02 35 36 43 44
+01 37 38 43 3f
+00 37 38 43 3f
+00 39 3b 43 3f
+00 39 3c 43 3f
+02 3a 3d 43 3f

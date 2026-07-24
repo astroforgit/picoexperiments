@@ -1,0 +1,42 @@
+Greetings, PILOT. You have been assigned to travel to web ██-██ to pacify the creatures traveling through. I know you don't need an introduction to the web, but the players at home might.
+
+Use LEFT and RIGHT to move.
+
+Use Z to shoot and X to jump.
+
+If you get caught by a creature, and your superzapper is charged up, press X to use it.
+
+You can recharge your superzapper by collecting powerups.
+
+You can get a point bonus if you kill enemies from far away, and you can get an even larger point bonus if you kill enemies while they're on the rim of the web.
+
+Good luck, PILOT.
+
+Changelog
+
+v1.3 (8/31/18)
+
+    Make powerup multiplier display less distracting
+
+v1.2 (8/25/18)
+
+    Player is immediately released when using the superzapper
+    Fix pre-game-over music continuing forever when resetting after getting dragged into the web
+    Make rim kills a little easier
+    Tweak point values for some enemies
+    Make powerup graphic more circular
+    Show current powerup multiplier in the bottom-left corner
+    Performance improvements
+
+v1.1 (8/23/18)
+
+    Powerup point value no longer increases if you collect a powerup while jumping
+    Fixed a bug where if you got a high score, the results screen would report a high score after every game regardless of score until the game is reset
+    Performance improvements
+
+v1.0 (8/15/18)
+
+    Initial release
+
+
+https://www.lexaloffle.com/bbs/?tid=31677

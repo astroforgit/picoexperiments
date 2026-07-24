@@ -1,0 +1,12 @@
+Created for the MMAJam Halloween themed jam
+
+It's a spoopy bejeweled clone :)
+
+I'm still new to the gamedev thing so this one was more challenging than I thought it was gonna be. Very fun!
+
+Cart #57920 | 2018-10-13 | Code ▽ | Embed ▽ | No License
+5
+
+I usually post WIP gifs and stuff on my twitter: https://twitter.com/mccolgst
+
+https://www.lexaloffle.com/bbs/?tid=32067

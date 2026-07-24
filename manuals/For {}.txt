@@ -1,0 +1,8 @@
+For {}
+
+A programming puzzle block-pusher, 24 puzzles to solve!
+On the map there are instructions that let up as they execute sequentially.
+As you move, the program executes the next instruction.
+Move the blocks to escape the programming loop!
+
+https://www.lexaloffle.com/bbs/?tid=39832

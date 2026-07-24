@@ -1,0 +1,1595 @@
+sting sim FLIGHT MANUAL 
+
+
+
+
+
+= TINY SIRES 
+
+
+Hello Aviator, 
+
+Tiny Sim simulates a Cessna 172R “Skyhawk” with a Garmin G1000 
+glass cockpit (which is a fancy way of saying ‘large screens’ instead 
+of traditional instruments). If you are interested in more details 
+about the actual airplane, you can refer to Cessno's official website 
+httos://cessna.txtav.com/en/piston/cessna-skyhawk 
+
+
+O 
+< 
+m 
+es] 
+< 
+m 
+= 
+
+
+
+
+
+While the simulator is small on the outside (128px by 128px to be 
+exact), it is really powerful under the hood. Among other things, it 
+features: 
+
+° A realistic flight model (taking into account angle of attack, 
+inertia, wind, engine torque, air density, collision with 
+objects, etc.). In simple words, this meons thot it flies really 
+well and you can learn a lot about real flight with Tiny Sim. 
+
+e Stunning 3D graphics (nothing less to be expected from 
+PICO-8 gpu!) 
+
+o Sky gradient 
+o Perspective correct cloud layer & light line 
+o Model level of detail (distance based) 
+
+e A world to discover with airports, a town, the sea, ships, an 
+island and even mountains (well... a mountain). You will be 
+able to fly in different weather conditions, from clear 
+weather with unlimited visibility to low ceilings and visibility 
+with stormy winds. 
+
+
+TOOHDS 114 
+
+
+GTYOM 
+
+
+= TINY SIA => 
+
+
+
+
+
+Throttle & RPM 
+(‘Y’/'Z') Low RPM > go slow 
+E(X’) High RPM > go fast 
+Flaps 
+
+player 2 (‘Q’) to toggle 
+Flaps up > take-off and cruise 
+Flaps down > landing 
+Speed Indicator 
+Airspeed in knots 
+Altitude & Climb Rate 
+Altitude in feet, climb rate in 100s of 
+feet per minute 
+GPS Destination 
+t player 2 (‘E) to change 
+DIS distance to destination 
+BRG direction to destination 
+
+
+10. 
+11. 
+
+
+Cheatsheet - Be a Pilot in 1 Minute! 
+
+
+510b Lil 
+
+
+9 
+
+
+hs THY 
+
+
+1 
+0 
+
+
+Heading and Wind indicator 
+Shows in which direction you are 
+going and where the wind is 
+coming from 
+
+GPS Pointer 
+
+Blue arrow points to selected GPS 
+destination 
+
+Moving map 
+
+player 2 (‘Tab’) to toggle 
+Airport symbol 
+
+White line indicates runway 
+direction 
+
+You! 
+
+Estimated time of arrival at GPS 
+destination 
+
+
+= TINY SIN F 
+
+
+There are two aspects to this simulator: while you can learn a lot 
+about flying a small airplane and e.g. try to land it in messy weather 
+with no outside visibility, you can also just have fun flying around 
+and buzz the tower (hello Top Gun), do low level night flying at 
+Smallville, fly around Mt. Big or make a trip to the beach at Petite lle. 
+Just don't fly into the no-fly zone southeast of Tinyville and have 
+your license revoked! 
+
+
+This guide will first explain you how the simulator works, especially 
+the flight instruments. The flight school chapter will then teach you 
+about basic (and not so basic) flight maneuvers. It includes 20 
+exercises, which you can accomplish directly in Tiny Sim. 
+
+
+Then the guide will show you some highlights of the world built into 
+Tiny Sim and what you can do. 
+
+
+Now go and have fun with Tiny Sim! (And you might even learn 
+something...) 
+
+
+@F Souchu and @tcueni 
+
+
+PS: Oh, you're asking why you can only fly at dawn and at night. 
+Good question! Given the limited resolution and color palette of 
+Pico-8, this is the most realistic outside view that can be achieved. 
+Smallville looks beautiful during the night with all the glaring lights 
+and the skyscrapers towering into the night sky. During the day it 
+would most likely look like grey polygons and lines on a green 
+surface. Your feedback on this topic is very welcome! 
+
+
+O 
+< 
+m 
+es] 
+< 
+m 
+= 
+
+
+
+
+
+TOOHDS 114 
+
+
+GTYOM 
+
+
+=Œ TINY SINS 
+
+
+
+
+
+Red chevrons indicate that you are climbing or descending at an 
+angle which is too steep and that you should move the nose in the 
+directions of the chevrons. In the example below, you should push the 
+nose down in order to avoid stalling the airplane and falling out of the 
+sky like a rock. 
+
+
+
+
+
+7 
+a 
+=) 
+op) 
+(@) 
+Ag 
+(©) 
+© 
+= 
+
+
+Wind Vector 
+
+
+Indicates, where the wind is coming from. In this example, we have 
+right tailwind and you would need to point your nose slightly right 
+(i.e. into the wind) to maintain your direction. You can observe the 
+influence of the wind also in the groundspeed, which is shown in the 
+right cockpit. 
+
+
+
+
+
+= TINY SIN F 
+
+
+Left Cockpit (Primary Flight Display, PFD) 
+
+
+Radios / GPS 
+
+
+On the left side, there is the NAVI navigation radio. The radio is 
+currently tuned to the ITN station, which is the instrument landing 
+system (ILS) at Tinyville. On the right side, there is the selected GPS 
+waypoint (Smallville airport - SMV) as well as the distance to it (11 
+nautical miles) and the bearing to reach the waypoint (meaning that 
+you need to turn to a heading of 211 degrees to get to SMV). 
+
+Press tplayer 2 (‘E’) to change the GPS waypoint. 
+
+
+Airspeed Indicator (ASI) 
+
+
+The airspeed indicator indicates the airplane's airspeed (i.e. the 
+speed of the airplane through the air, NOT relative to the ground). 
+The speed is shown as a numeric value in knots and there is a 
+moving speed tape in the background to show how fast the airspeed 
+is changing. Indicated airspeed decreases with altitude, i.e. if you fly 
+high, the indicated airspeed value will be lower than your actual 
+airspeed. 
+
+
+M3IAY3AO 
+
+
+7 
+— 
+=i) 
+op) 
+(®) 
+AE 
+(@) 
+© 
+= 
+
+
+
+
+
+GTYOM 
+
+
+= TINY SINS 
+
+
+On the right side of the tape, you have so-called speed bugs, which 
+show you some important speeds of this airplane: 
+
+
+e Vr: rotation speed (lift the nose at this speed when taking 
+off), 55 knots 
+
+e Vx: best climb angle (maximum altitude gain per distance), 
+60 knots 
+
+° Vg: best engine-out glide speed (use in case of engine 
+failure to glide as far as possible), 65 knots 
+
+° Vy: best climb rate (maximum altitude gain per time), 79 
+knots 
+
+
+M3IAY3AO 
+
+
+7 
+a 
+=) 
+ep) 
+@) 
+AE 
+(©) 
+©) 
+= 
+
+
+
+
+
+GTYOM 
+
+
+= TINY SIRES 
+
+
+Altimeter and Vertical Speed Indicator (VSI) 
+
+
+The altimeter shows the airplane's altitude above sea level in feet. 
+There is a moving altitude tape in the background to show, how fast 
+the altitude is changing. 
+
+The vertical speed indicator is the moving, black bar on the right 
+side and indicates the climb or descent speed in 100s of feet per 
+minute (in this case: 800 feet/min climb). 
+
+
+
+
+
+Attitude Indicator (Al - aka artificial horizon) 
+
+
+The attitude indicator shows the airplane's pitch (the nose pointing 
+up or down) and bank (left or right turn). It helps you controlling the 
+airplane at night or in the clouds. The airplane is represented by 
+the yellow symbol. In the example below, the airplane is in a climbing 
+left turn. 
+
+The parallel white lines above and below the horizon line represent 
+multiples of 10 degrees of pitch. In the example, this represents 
+around 8 degrees nose-up. 
+
+
+M3IAY3AO 
+
+
+7 
+EL 
+=) 
+ep) 
+@) 
+AE 
+(©) 
+©) 
+= 
+
+
+
+
+
+GTYOM 
+
+
+= TINY SIN F 
+
+
+Inset Map 
+
+
+The inset map is a small map located directly on the primary flight 
+display (as opposed to the large map on the multi-function display in 
+the right cockpit). Length and width of the area displayed are both 5 
+nautical miles. In the example above, there is a VOR navigation beacon 
+(blue) approximately 1 nautical mile straight ahead. The colors are as 
+follows: 
+
+
+M3IAY3AO 
+
+
+e Pink: airport 
+e Blue: VOR navigation beacon 
+e Grey: city or landmark 
+
+
+They correspond to the colors in the large map on the MFD. 
+
+
+7 
+a 
+=) 
+ep) 
+@) 
+AE 
+(@) 
+©) 
+= 
+
+
+
+
+
+t 
+
+
+
+
+
+Flaps 
+
+
+GTYOM 
+
+
+Wing flaps have the purpose of slowing the plane down and giving 
+
+the pilot a better visibility for Landing (i.e. the nose can stay lower for 
+landing). You normally lower them, when you start the approach. =| 
+Attention: don't lower the flaps above 110 knots or you might 
+
+damage the airplane! Take-off is normally done without flaps. 
+
+Press player 2 ‘Q’ to lower and raise the flaps. 
+
+
+= TINY SIN F 
+
+
+Throttle and RPM Indicator 
+
+
+The throttle controls the power of the airplane's engine, which is 
+indicated in RPM. Maximum continuous power for take-off is 2400 
+RPM, cruise around 2200-2300 RPM, initial approach 2000 RPM, 
+intermediate approach 1300-1800 RPM and for landing the throttle 
+should be completely closed, resulting in 700 RPM. 
+
+Due to air density decreasing with altitude, the engine’s maximum 
+power output will also decrease with altitude, meaning that at 10,00 
+feet, you will not have the full 2400 RPM at your disposal. 
+
+Press H/9'X’/'7' to increase/decrease power. 
+
+
+Horizontal Situation Indicator (HSI) 
+
+
+On top, there is the airplane's heading, i.e. the direction the nose is 
+pointing to (which is not the direction you are flying to, if there is 
+some windl). Below, there is the round heading indicator with the 
+four cardinal directions (north, east, south and west) and the 
+airplane symbol in the middle. 
+
+There is the green course deviation indicator (CDI) laid over. The tip 
+of the green arrow shows the course to the station and the middle 
+part of the green line (near the airplane symbol) indicates if you are 
+flying on the correct course. 
+
+
+M3IAY3AO 
+
+
+a 
+AL 
+=j) 
+ep) 
+O 
+Ag 
+©) 
+© 
+f= 
+
+
+
+
+
+GTYOM 
+
+
+= TINY SIN = 
+
+
+If the green line is left of the airplane symbol, you need to turn left 
+towards the line and - once it is recentered - turn right again so the 
+tip of the arrow points straight ahead. If the green line is right of the 
+airplane symbol, turn right towards the line and - once it is 
+recentered - turn left again so the tip of the arrow points straight 
+ahead. 
+
+The blue arrow is the bearing pointer (BP) and points towards 
+another waypoint. In the example above, the waypoint PTI is located 
+slightly to the right, 25 nautical miles away. To fly towards the 
+waypoint, simply turn until the tip of the arrow points straight 
+ahead. The distance shown and the direction of the tip of the arrow 
+correspond to the DIS and BRG values of the GPS. 
+
+Press + player 2 (‘E’) to change the GPS waypoint. 
+
+
+M3IAY3AO 
+
+
+7 
+a 
+=) 
+ep) 
+O 
+AE 
+O 
+©) 
+= 
+
+
+
+
+
+aoM 
+
+
+
+
+
+= TINY SIN F 
+
+
+Glideslope Indicator 
+
+
+The glideslope indicator shows if you are too high or too low on an 
+
+ILS approach. The green dot represents the correct glideslope you 
+
+should be on. If it is above you, this means that you are too low and 
+you need to fly higher. If it is below you, this means that you are too 
+high and you need fly lower. In the figure above, the airplane is very 
+slightly below the correct glidepath. 
+
+
+Timer 
+
+
+The timer shows the elapsed time since the beginning of the flight. 
+
+
+
+
+
+M3IAY3AO 
+
+
+7 
+m 
+= 
+ep) 
+@) 
+ae 
+(©) 
+© 
+= 
+
+
+
+
+
+aoM 
+
+
+= TINY SIRES 
+
+
+Right Cockpit (Multi-function Display, MF D) 
+
+
+GPS 
+
+
+The multi-function display (MFD) shows the same GPS direct-to 
+waypoint as the primary flight display (PFD), in this case PTI (Petite 
+lle). To the right, you have the groundspeed (GS), which indicates how 
+fast you are doing relative to the ground (which is not the same 
+speed shown on the airspeed indicator in the left cockpit). If you 
+have a headwind, your groundspeed is lower and if you have a 
+tailwind, your groundspeed is higher. 
+
+Press Oplayer 2 (‘Tab’) to toggle between left and right cockpit 
+
+Press ¢player 2 (‘E’) to change the GPS waypoint. 
+
+
+M3IAY3AO 
+
+
+T 
+a 
+= 
+Oo 
+oO 
+JE 
+©) 
+O 
+= 
+
+
+
+
+
+Exercise: Choose a stormy weather scenario and fly a full 
+circle while maintaining the same indicated airspeed. Note 
+how groundspeed (and the wind vector) change, while you 
+fly the circle. 
+
+
+A 
+
+
+GTYOM 
+
+
+=TINS SIN = 
+
+
+Map 
+
+
+In the center of the map you can see your own airplane. Further, you 
+will see airports (with the runway direction), the instrument landing 
+system (ILS) at Tinyville, VOR navigation beacons (blue), a prohibited 
+zone, selected cities and landmarks and the shoreline. 
+
+
+
+
+
+= TINY SIN F 
+
+
+Flight Lessons 
+
+
+Welcome to the Tiny Flight School! I will be your flight instructor and 
+help you earn your license. 
+
+
+Straight and level flight 
+
+
+One of the most important things is that you can fly straight 
+(airplane does not turn) and level (airplane does not climb or 
+descend) in various conditions. To do this, you can use the outside 
+view (in fair weather) or your instruments (in bad weather). 
+Specifically, you will use the attitude indicator to check that your 
+wings are level and confirm straight and level flight with the HSI / 
+heading indicator and altimeter / vertical speed indicator. Heading 
+and altitude should remain constant and vertical speed should read 
+zero. 
+
+
+Exercise 1: Select full approach and clear weather. Maintain 
+a heading of 313° and an altitude of 3000 feet. Note the 
+attitude of the nose (on the horizon) and the airspeed. If you 
+deviate from either heading or altitude, make small 
+corrections to go back to 313° and 3000 feet. Avoid 
+over-correcting! Now reduce power to approx. 1650 RPM. 
+You will need to raise the nose to maintain your altitude. 
+The result will be straight and level flight with 4-5° nose up 
+and and indicated airspeed of 75 knots. Re-apply full power 
+and wait until attitude and airspeed have stabilized again. 
+
+
+M3IAY3AO 
+
+
+7 
+= 
+=) 
+ep) 
+@) 
+AE 
+(©) 
+©) 
+= 
+
+
+
+
+
+GTYOM 
+
+
+= TINY SIN F 
+
+
+Exercise 2: Repeat in stormy weather, solely by using your 
+instruments. Always maintain straight and level flight. Check 
+what happens with attitude and airspeed if you lower flaps 
+and raise them again. 
+
+
+M3IAY3AO 
+
+
+Level turns 
+
+
+Once you have mastered straight and level flight, it is time to start 
+turning. Use the left and right keys to turn in either direction. In 
+turns, the nose has a tendency to drop, so be sure to apply back 
+pressure to maintain your altitude. 
+
+
+Exercise 3: Select full approach and clear weather. You 
+start out on a 318° heading. Make a full circle to the left 
+while maintaining 3000 feet. Keep an eye on the heading 
+and begin to straighten out the airplane 5° before reaching 
+313° again. After than, make a right turn to 085° and 
+re-establish straight and level flight. 
+
+
+7 
+EL 
+=) 
+ep) 
+@) 
+AE 
+(©) 
+©) 
+= 
+
+
+
+
+
+Exercise 4: Repeat in stormy weather and at 1800 RPM, solely 
+by using your instruments. 
+
+
+GTYOM 
+
+
+= TINY SIN F 
+
+
+Climb and descent 
+
+
+Climb and descent are always a function of pitch (the nose pointing 
+up or down) and power. In order to climb, apply full power and point 
+the nose up. The more you point the nose up, the lower the airspeed 
+of the airplane will be. Basically, you will try to climb at a certain 
+airspeed by adjusting your pitch. There are a couple of pre-defined 
+climb speeds: Vx (marked ‘X on the airspeed tape) gives you the best 
+climb angle, i.e. the most altitude gain per distance. If you have 
+obstacles in front of you that you need to clear, Vx is your best bet. 
+Vy (marked ‘Y on the airspeed tape) gives you the best climb rate, i.e. 
+the most altitude gain per time. If you want to get to your cruising 
+altitude as soon as possible, fly at Vy. And finally, there is cruise 
+climb (not shown on the airspeed tape, 85-95 knots), which is more 
+shallow to better cool the engine and provide better forward 
+visibility while climbing. 
+
+In order to descend, you reduce power and point the nose down. 
+You normally try to descend at 500-1000 feet per minute and adjust 
+power so as to not overspeed the airplane. (If you point the nose 
+down at full power, you will gain airspeed very fast!) For a cruise 
+descent, 2000 RPM and 5° nose down are a good starting point. On 
+approach, you will normally use lower power settings (1400-1800 RPM). 
+
+
+M3IAY3AO 
+
+
+7 
+= 
+=) 
+ep) 
+@) 
+AE 
+(©) 
+©) 
+Fz 
+
+
+
+
+
+GTYOM 
+
+
+= TINY SIN F 
+
+
+Exercise 5: Select full approach and clear weather. Apply 
+full power and start raising the nose while maintaining a 
+heading of 313°. Raise the nose to obtain a stable airspeed 
+of 95 knots (cruise climb). Note pitch, airspeed and vertical 
+speed. Do the same for Vy (79 knots) and Vx (60 knots). 
+Re-establish level flight and reduce power to around 2000 
+RPM. Lower the nose to get a 500 feet per minute descent. 
+Note the resulting airspeed. Now, lower the nose further to 
+obtain a 1000 feet per minute descent and note how the 
+airspeed increases. Reduce power to 1500 RPM while 
+maintaining a 1000 feet per minute descent. Re-establish 
+level flight. 
+
+
+M3IAY3AO 
+
+
+Exercise 6: Repeat in stormy weather while doing a left 
+(climbing and descending) turn. 
+
+
+7 
+a 
+=) 
+ep) 
+@) 
+AE 
+(©) 
+©) 
+Fz 
+
+
+
+
+
+Take-off 
+
+
+You are cleared for take-off! Align the airplane with the runway and 
+check the heading is correct. Normally, you will select flaps up for 
+take-off but you have the option of taking off with flaps, in which 
+case you will get off the ground sooner but climb slower due to 
+increased drag. Then apply full power and re-check RPM, which 
+should be at 2400. Watch the airspeed build up and gently start 
+pulling the nose up at 55 knots (Vr, marked ‘R on the airspeed tape) 
+to around 12° nose up. (Note that if you pull up the nose too early, 
+the airplane will not be able to Lift off.) 
+
+
+GTYOM 
+
+
+= TINY SIN F 
+
+
+Climb at Vx and maintain runway heading to at least 500 feet. Then 
+raise your flaps (if any), accelerate to cruise climb (85-95 knots) and 
+turn on course. 
+
+
+Exercise 7: Select free flight and clear weather. Take off as 
+described above without flaps. At 500 feet start the turn 
+towards SMV (follow the blue arrow on the HSI or turn to the 
+heading indicated under ‘BRG). Climb to 2000 feet and level 
+off. 
+
+
+M3IAY3AO 
+
+
+Exercise 8: Repeat in breezy weather. Note that you will 
+need to turn left immediately after becoming airborne in 
+order to maintain runway heading. If you fail to do so, the 
+wind will blow you to the right. 
+
+
+7 
+a 
+=) 
+ep) 
+@) 
+AE 
+(©) 
+©) 
+= 
+
+
+
+
+
+Landing 
+
+
+Now that you can take off, climb, turn and descend, there is still one 
+important part missing: the landing. While it can be tricky - e.g. when 
+there is a gusty crosswind - it is not too complicated normally. It all 
+comes down to correctly managing speed, altitude and power while 
+being correctly aligned with the runway. As they say: a good landing 
+starts with a good approach. 
+
+First, you must be aligned with the runway axis (which at Tinyville is 
+85° from the west or 265° from the east). If you move away from the 
+axis, make small corrections to rejoin it. If you have a crosswind, you 
+might need to point to the left or the right of the runway to remain 
+aligned with its axis. 
+
+
+GTYOM 
+
+
+= TINY SIN F 
+
+
+Then, you also want to be on the correct glidepath, i.e. coming in at 
+the right angle. A normal approach is flown at a 3° angle. Generally 
+speaking, it is better to come in too steep than coming in too flat (in 
+which case you might collide with the ground). To help you judge 
+your approach angle, there are four bi-colored lights on the left side 
+of the runway (called PAPI lights). 
+
+
+° If you are seeing two white and two red lights, your 
+approach is correct (‘red over white, you're alright). 
+e If you are seeing three white and one red lights, you are 
+
+
+slightly too high. Example: 
+
+
+
+
+
+° If you are seeing four white lights, you are too high (‘white 
+over white, you are going to fly all night’). 
+
+e If you are seeing one white and three red lights, you are 
+slightly low. 
+
+° If you are seeing four red lights, you are too low (‘red over 
+
+
+red, you are dead’). 
+
+
+M3IAY3AO 
+
+
+7 
+= 
+= 
+ep) 
+@) 
+AE 
+©) 
+© 
+= 
+
+
+
+
+
+GTYOM 
+
+
+= TINY SIRES 
+
+
+A good place to start is to lower the flaps, reduce power to around 
+1200 RPM and put the nose slightly below the horizon. This will result 
+in a sink rate of 400-500 feet per minute and an indicated airspeed 
+of 65-70 knots. Make continuous, small adjustments: 
+
+
+e If you are getting too low, add a little bit of power. 
+
+° If you are getting too high, remove a little bit of power. 
+
+e If you are getting too slow (below 60 knots), lower the nose a 
+tiny bit. 
+
+° If you are getting too fast (above 75 knots), raise the nose a 
+tiny bit. 
+
+
+If you do everything correctly, you will eventually arrive over the 
+beginning of the runway flying in the direction of the runway. At 50 
+feet off the ground, reduce power to idle. Then you start to 
+continuously raise the nose. When the airplane is about to touch 
+down, raise the nose some more. Keep it off the ground as long as 
+you can. The goal is to touch down at the lowest possible speed. 
+
+
+Exercise 9: Select visual approach and clear weather. Land 
+as per the description above. Too easy? Try to land in a stiff 
+crosswind by selecting breezy weather! 
+
+
+M3IAY3AO 
+
+
+7 
+a 
+=) 
+ep) 
+@) 
+AE 
+(©) 
+©) 
+= 
+
+
+
+
+
+GTYOM 
+
+
+= TINY SIN F 
+
+
+Stall & Unusual Attitude Recovery 
+
+
+Sometimes, things just go wrong... You did not pay attention to your 
+airspeed and now the airplane is too slow. The wings to not generate 
+enough lift to keep the airplane flying. This is called a stall. The 
+instinctive reaction is to pull the controls in order to keep the 
+airplane in the air. This is wrong and will kill you if happen to be 
+close to the ground. What you need to do is apply full power and 
+simultaneously push the controls to lower the nose. This will 
+increase airspeed and the airplane starts flying again. 
+
+
+M3IAY3AO 
+
+
+Exercise 10: Select full approach and clear weather. Reduce 
+power to idle and raise the nose to 15° nose up. When the 
+airplane stalls, apply full power and lower the nose. Go back 
+to straight and level flight. Note at which airspeed the 
+airplane stalls and how much altitude you lose during the 
+recovery. 
+
+
+7 
+a 
+=) 
+ep) 
+@) 
+AE 
+(©) 
+©) 
+= 
+
+
+
+
+
+Exercise 11: Repeat with flaps. Instead of reducing power to 
+idle apply full power and see how high you have to raise the 
+nose for the airplane to stall. Note at which airspeed the 
+airplane stalls. It should be lower compared to Exercise 10 
+as we used flaps this time. 
+
+
+GTYOM 
+
+
+= TINY SIN F 
+
+
+An attitude is considered as unusual when there is an unusually 
+high pitch (nose pointing up or down) or bank (lowered wing) angle. 
+There are two cases to distinguish: nose high and nose low. In the 
+first case, a stall is normally imminent and it is up to you to prevent 
+the stall (if you don't then hopefully you have trained stall 
+recovery...). In order to do this, you simultaneously apply full power, 
+lower the nose to the horizon and only then level the wings. In the 
+second case, you first level the wings and reduce power to idle (to 
+prevent overspeed) and only then start to pull up. If you start to pull 
+up in a steep bank, you might overstress the airplane and cause 
+structural damage (i.e.. your wings fall off). 
+
+
+Exercise 12: Select unusual attitude and clear weather. 
+Immediately reduce power, level wings and pull up. 
+
+
+M3IAY3AO 
+
+
+7 
+EL 
+=) 
+ep) 
+@) 
+AE 
+(©) 
+©) 
+= 
+
+
+
+
+
+GTYOM 
+
+
+= TINY SIRES 
+
+
+ILS Approach 
+
+
+This lesson is similar to the landing lesson, only this time you are in 
+the clouds and you do not see the airport at first. You will have to fly 
+the airplane and find the airport only with reference to your 
+instruments. 
+
+There is a ground-based beacon called Instrument Landing System 
+(ILS), which will guide you towards the airport and the correct angle. 
+You already know the heading of the runway you will land on (85° at 
+Tinyville) and your instruments will tell you how much you are to the 
+left or to the right of the correct path. Also, you want to descend on 
+a 3° angle. Your instruments will tell you how much above or below 
+the glidepath you are. Then you also have to manage your airspeed 
+in order to be neither too fast nor too slow. And always remember: a 
+good landing starts with a good approach, so you want your 
+approach be stable and only make minor corrections. 
+
+
+M3IAY3AO 
+
+
+7 
+a 
+=) 
+ep) 
+@) 
+AE 
+(©) 
+©) 
+= 
+
+
+
+
+
+GTYOM 
+
+
+With regard to your horizontal path, there are three 
+possible cases: 
+
+
+° You are on the correct path (called the localizer) 
+flying runway heading. This is what you wont to 
+look at most of the time. Attention: if you fly the 
+correct heading and you see the green needle of 
+the localizer moving either left or right, you have 
+a crosswind and you need to fly slightly into the 
+wind in order to stay on the localizer. 
+
+
+MaAlAYSAAO 
+
+
+
+
+
+e You are to the left of the localizer flying runway 
+heading, which means that the green needle on 
+the HSI is to your right and you need to fly 
+slightly to the right to re-center the green 
+needle. When it reaches the center of the 
+airplane symbol, turn back to the runway 
+heading (85° in this example). 
+
+
+7 
+- 
+= 
+op) 
+@ 
+AE 
+(©) 
+© 
+FF 
+
+
+
+
+
+° You are to the right of the localizer flying runway 
+heading, which means that the green needle on 
+the HSI is to your left and you need to fly slightly 
+to the left to re-center the green needle. When it 
+reaches the center of the airplane symbol, turn 
+back to the runway heading (85° in this example). 
+
+
+QTYOM 
+
+
+
+
+
+= TINY SIA = 
+
+
+Concerning your vertical path, there are also three cases. 
+They are somewhat similar to the visual approach with the 
+PAPI lights, which tell you if you are too high or too low. 
+
+
+° If the green dot is in the centered, it means thot you 
+are on the correct 3° glidepath and you are neither 
+too high nor too low. If you maintain 100 knots and a 
+500 feet per minute descent, you should remain on 
+the glidepath. 
+
+
+MaAlAYSAO 
+
+
+° If the green dot is above center, this means that you 
+are below the glide slope. This is dangerous as you 
+are too close to the ground. Add a bit of power and 
+slightly raise the nose. Once the green dot is 
+re-centered, establish a 100 knot, 500 feet per minute 
+descent to remain on the glidepath. 
+
+
+7 
+a 
+=) 
+op) 
+O 
+BTE 
+(©) 
+(©) 
+Fi 
+
+
+
+
+
+e If the green dot is below center, this means that you 
+are above the glide slope. Slightly reduce power and 
+lower the nose. Once the green dot is re-centered, 
+establish a 100 knot, 500 feet per minute descent to = 
+remain on the glidepath. 
+
+
+QTYOM 
+
+
+= TINY SIN F 
+
+
+Exercise 13: Select final approach and clear weather. Let's 
+take it easy first and fly an ILS approach with good visibility. 
+Fly straight and level on a 85° heading at 100 knots. Soon 
+you will see the green glideslope dot moving in from above. 
+When it is almost centered lower the flaps and establish a 
+500 feet per minute descent while remaining at 100 knots. 
+Observe, if the green dot remains centered and make small 
+adjustments if necessary. Make small heading adjustments 
+to remain on the localizer. Once you arrive at 200 feet, look 
+outside and make a normal landing. 
+
+
+M3IAY3AO 
+
+
+Exercise 14: Select final approach and breezy weather. Now 
+you have a cloud ceiling of 1000 feet. This means that 
+initially, you will be in the clouds but you will in the clear 
+soon. Fly a heading of around 80° (into the wind) to remain 
+on the localizer. At 200 feet, look outside and make a 
+normal landing. 
+
+
+7 
+a 
+=) 
+ep) 
+@) 
+AE 
+(©) 
+©) 
+= 
+
+
+
+
+
+Exercise 15: Select final approach and stormy weather. Now 
+you have a cloud ceiling of 200 feet. This means thot you will 
+be in the clouds all the time and break out of them only a 
+couple of seconds before landing. Also, there is a strong 
+crosswind from the left and you need to fly a heading of 
+around 70° to remain on the localizer. Make small 
+corrections to remain both on glideslope and localizer. At 
+200 feet, look outside and if you can see the runway, land 
+normally. 
+
+
+GTYOM 
+
+
+= TINY SIN F 
+
+
+Full Approach 
+
+
+This lesson will show you how to fly to a location, from which you can 
+either fly an ILS approach (see previous lesson) or identify the 
+airport visually and make a normal landing. There are two 
+approaches in Tiny Sim: the full ILS approach at Tinyville and the 
+VOR approach to Petite Ile. The ILS approach is a so-called 
+precision approach and it will oring you down to 200 feet. The VOR 
+approach is a so-called non-precision approach and it will bring 
+you down to 500 feet. This means that if you have a very low cloud 
+ceiling (as in the stormy weather scenario), you will not be able to 
+successfully fly this approach and have to divert to Tinyville. 
+
+
+ILS approach into Tinyville: 
+
+
+Exercise 16: Select full approach and clear weather. You are 
+inbound to PCO VOR on a 313° heading at 3000 feet. (As the 
+weather is good, you can already see the airport slightly to 
+the right. You will fly the same approach in the clouds later 
+on.) You are one mile from PCO, which is directly ahead of 
+you (blue arrow). The distance will decrease and when you 
+pass over PCO, the arrow will turn and point behind you. 
+Continue on this heading. When you are approx. 6 miles 
+from PCO, you will see the green CDI moving (which means 
+that you get closer to Tinyville’s localizer - green line on the 
+map). 
+
+
+M3IAY3AO 
+
+
+7 
+a 
+=) 
+ep) 
+@) 
+AE 
+(©) 
+©) 
+Fz 
+
+
+
+
+
+GTYOM 
+
+
+=TINS SIN = 
+
+
+(Ex. 16 continued) You will then turn left to a heading of 265° and 
+follow the localizer away from the airport. At the same time, reduce 
+power to 2200 RPM and descend to 2000 feet. This is also the moment 
+to change the GPS waypoint to TNY. This way, the blue arrow always 
+points towards the airport. Now make a right turn to heading 310° 
+and fly for one minute. Maintain 2000 feet. Now you fly away from the 
+localizer at a 45° angle. Fly for 1 minute, then make a left 180° turn to 
+heading 130°. Soon, the green localizer needle will start moving. 
+Make a left turn to your final heading of 85° with the needle 
+centered. At the same time, the green glideslope dot will start 
+moving in from the top. When it centers, lower the flaps, reduce 
+power to 2000 RPM and fly the ILS approach and land as you have 
+learned in the previous lessons. 
+
+
+
+
+
+M3IAY3AO 
+
+
+7 
+EL 
+=) 
+ep) 
+@) 
+ae 
+(©) 
+© 
+= 
+
+
+
+
+
+QTYOM 
+
+
+= TINY SIN F 
+
+
+Exercise 17: Repeat in breezy weather. You will now fly in the 
+clouds most of the time an have a moderate wind from the 
+northeast. Remember to correct your heading into the wind 
+to remain on the desired ground track. The wind indicator 
+will show you where the wind is coming from. You will break 
+out of the clouds at 500 feet. Continue until you see the 
+runway and land. 
+
+
+M3IAY3AO 
+
+
+Exercise 18: Repeat in stormy weather. You now have a 
+strong wind coming out of the north. You will need to 
+significantly correct into the wind to remain on the desired 
+track (an initial heading of 327° instead of 313° is a good 
+starting point). The wind indicator is your friend! You 
+eventually break out of the clouds at 200 feet, which leaves 
+you only a couple of seconds to find the runway and land. 
+Good luck, this is not easy! 
+
+
+7 
+EL 
+=) 
+ep) 
+@) 
+AE 
+(©) 
+©) 
+= 
+
+
+
+
+
+GTYOM 
+
+
+= TINY SIN F 
+
+
+VOR approach into PTI 
+
+
+Exercise 19: Select full approach and breezy weather. This 
+time, you will fly a non-precision approach into PTI. You are 
+inbound to PCO VOR on a 313° heading at 3000 feet. When 
+overflying PCO, turn left to a heading of approx. 300° (the 
+required ground track is 295°, but you have a crosswind 
+from the right). Fly until you are two nautical miles from PCO 
+(DIS will indicate the distance). Then make a shallow right 
+turn to your final heading of 145°. You are now inbound to 
+PCO again - from the other side. When you overfly the 
+station, reduce power to 1500 RPM and start a 1000 feet per 
+minute descent, maintaining the heading. Level off at 500 
+feet. When you are 4 nautical miles from PCO, you should 
+see the runway lights of PTI. Make a visual approach and 
+land. 
+
+
+M3IAY3AO 
+
+
+7 
+a 
+=) 
+ep) 
+@) 
+AE 
+(©) 
+©) 
+Fz 
+
+
+
+
+
+Exercise 20: Repeat in stormy weather. You will have to 
+apply a larger correction angle into the wind. In stormy 
+weather you will be unable to see the runway at 500 feet as 
+you are still in the clouds. Make a climbing left turn back to 
+PCO. Level off at 3000 feet. Make an ILS approach into TNY 
+(see also Exercise 18) - this is your only option when the 
+weather is really bad. 
+
+
+GTYOM 
+
+
+Smallville Area Aeronautical Chart 
+
+
+
+
+
+= TINY SIRES 
+
+
+Tinyville Airport (TNY) 
+
+
+This is the international airport of the region. It features an ILS 
+approach, which enables landing at TNY in really lousy weather. TNY 
+is also home to the largest flight school in the region. 
+
+
+Smallville 
+
+
+Smallville is a beautiful city located between the ocean and Mount 
+Big. It has a downtown area with massive skyscrapers and many 
+parks, in which the inhabitants spend their free time. Smallville has 
+the largest commercial port in the region. If you are lucky, you might 
+just see some ships when flying over the ocean! 
+
+The Smallville airport (SMV) is mostly used for recreational flying. It 
+does not have an ILS and its proximity to the city makes it 
+unsuitable for large aircraft due to noise sensitivity of its 
+inhabitants. 
+
+
+M3IAY3AO 
+
+
+7 
+a 
+= 
+[ep] 
+O 
+2E 
+© 
+O 
+F 
+
+
+
+
+
+= TINY SIRES 
+
+
+Petite Île 
+
+
+This is a tiny island right off the coast of Smallville. Its founders were 
+French immigrants, which explains the name. Featuring white sandy 
+beaches and crystal clear water, it is a favorite weekend retreat for 
+the citizens of Smallville (at least, those who can afford itl). 
+
+Petite Ile airport (PTI) is a small island airport and you need to be 
+careful as the runway is short and narrow! 
+
+
+M3IAY3AO 
+
+
+Mount Big 
+
+
+Mount Big is a natural phenomenon. Scientists are unable to 
+explain, how the 7500 feet high mountain came into existence in an 
+otherwise perfectly flat terrain and in such proximity of the ocean 
+(Wikipedia says that it is of volcanic origins). Tens of thousands of 
+tourists visit the area every year to take a hike or just to sightsee 
+and take pictures. 
+
+
+7 
+a 
+= 
+[ep] 
+O 
+2E 
+© 
+O 
+F 
+
+
+No-fly Zone 
+
+
+Nobody has confirmed information about what is going on in the 
+no-fly zone southeast of TNY. There are rumours about secret 
+weapon tests and a UFO crash site. Best not to speak about it and 
+not to overfly it... 
+
+
+
+
+

@@ -1,0 +1,68 @@
+Lumdum Dare Page
+
+-CONTROL-
+<z> Open / Close The SHop
+<x> Swap to the next alive monster
+
+Hello all ! This is my entry for Ludum Dare 33
+I had a lot of problem with the gameplay of this one and I also hit the tokens limit faster than I expected.
+I still managed to make something playable. I hope you'll enjoy it.
+
+Since it's ludumdare I guess I wont update this one unless if some gamebreaking bugs are found.
+
+Because I had to remove most of the ingame help to gain some space for late code you should REALLy read this before play :
+
+MONSTERS :
+Goblin : Fast and weak. The only monster who can carry gold and orbs.
+Orc : Solid. Can dig faster than goblin
+Skeleton : Slow but revive really fast.
+Ghost : Hit hard and can't be targeted by projectiles. Can walk throught walls
+Zombi : Durable but sluggish.
+Dragon : Awesome at kicking heroes ass
+
+HEROES :
+Adventurer: Spirited and young enough to die.
+Mage : Fire one deadly fireball
+Knight : Hit hard and live long.
+Thief : Picklock any door and move quickly
+Archer : Fire up to 3x arrows
+
+ITEMS : ( designed for heroes only, yeah...too bad )
+Sword: Improve hero's attack
+Meat : Improve hero's resistance
+Boots : Improve hero's speed
+Key : Open one door.
+Spell : add one fireball spell
+Gold pile : hero will steal 3 gold from your treasure
+
+TEMPO BAR :
+
+    Each time you move the tempo bar decrease
+    When 0 is reached the next event occurd
+    Event Hero : a hero will be added to the party
+    Event Raid : the party will attack the dungeon
+    Event Item : an item will spawn in the dungeon.
+
+DIG TUNNELS :
+
+    Only dirt can be digged
+    Orc dig faster than goblins
+    Each time a dirt square have two open neighbours, it changes to a wall.
+    It wont apply if the two open neighbours are very distant allowing you to create loops
+    Items will tends to spawn in deadends. Create some to make item defense easier.
+
+GOLD :
+
+    Find gold by digging tunnels ( you should use orc for this )
+    Grab gold and bring it to the the master with goblins
+    If your dungeon contain the treasure items, protect it or heroes will steal your gold
+
+SHOP :
+
+    Can be opened/closed with <z> key
+    Shop content is randomly generated each game.
+    You can recycle shop content with the central slot
+    Recycle price decrease each time you buy something
+
+
+https://www.lexaloffle.com/bbs/?tid=2319

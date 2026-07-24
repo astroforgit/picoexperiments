@@ -1,0 +1,75 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Porter Patch JS</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: monospace;
+            overflow: hidden;
+        }
+        #game-container {
+            position: relative;
+        }
+        canvas {
+            border: 2px solid #555;
+            image-rendering: pixelated;
+            background: #000;
+        }
+        #ui {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            color: #0f0;
+            font-size: 11px;
+            text-shadow: 1px 1px 0 #000;
+            z-index: 10;
+        }
+        #stats {
+            display: none;
+        }
+        #start-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 15px 30px;
+            font-size: 18px;
+            font-family: monospace;
+            background: #222;
+            color: #0f0;
+            border: 2px solid #0f0;
+            cursor: pointer;
+            z-index: 10;
+        }
+        #start-btn:hover {
+            background: #333;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game" width="256" height="256"></canvas>
+        <div id="ui">
+            <div id="stats">
+                time: <span id="time">0:00</span> | 
+                level: <span id="level">1</span> | 
+                deaths: <span id="deaths">0</span> | 
+                tele: <span id="teleports">0</span>
+            </div>
+        </div>
+        <button id="start-btn">START GAME</button>
+        <img id="spritesheet" src="porterpatch1-1.png" style="display:none">
+    </div>
+    <script src="porterpatch-data.js"></script>
+    <script src="porterpatch.js"></script>
+</body>
+</html>

@@ -1,0 +1,1384 @@
+pico-8 cartridge // http://www.pico-8.com
+version 16
+__lua__
+-- dragon treasure
+-- noltisoft
+
+function _init()
+  create_game()
+end
+
+function init_run()
+  init_game()
+  create_world()
+  create_tiles()
+  create_dragon(200,1,1)
+  create_treasure_tiles()
+  create_sword_tile()
+  create_shield_tile()
+  create_skulls()
+  create_player()
+  create_dead()
+end
+
+function init_game()
+  game.level=1
+  game.skullwait=0
+  game.treasure=0
+  game.checkscore=0
+  game.bonus=false
+  game.lifeearned=false
+  game.waitcnt=0
+end
+
+function init_next_level()
+  game.level+=1
+  game.skullwait=0      
+  game.bonus=false
+  game.treasure=0
+  game.lifeearned=false
+  create_world()
+  create_tiles()
+  dragon_next_level()
+  create_treasure_tiles()
+  create_sword_tile()
+  create_shield_tile()
+  create_skulls()
+  player_next_level()
+end
+
+function dragon_next_level()
+  local fireprob=dragon.fireprob-20;
+  if fireprob<=60 then
+    fireprob=60
+  end
+  local dcolor=dragon.maincolor+1
+  if dcolor>16 then
+    dcolor=1
+  end
+  local maxhits=dragon.maxhits+1
+  create_dragon(fireprob,dcolor,maxhits)
+end
+
+function player_next_level()
+  player.sprite=player.minsprite
+  player.fcount=0
+  player.hassword=false
+  player.sword=nil
+  player.swordpos=0
+  player.sowrdrawn=false
+  player.hasshield=false
+  player.shielddrawn=false
+
+  init_player_startpos()
+end
+
+function create_game()
+  game={}
+  game.highscore=0
+  game.bgcolor=0
+  game.waitcnt=0
+  game.waitmax=50
+  game.level=1
+
+  game.states={}
+  game.states["start"]=0
+  game.states["run"]=1
+  game.states["player_hit"]=2
+  game.states["dragon_dead"]=3
+  game.states["game_over"]=4
+  game.states["next_level"]=5
+  game.state=game.states["start"]
+end
+
+function create_world()
+  world={}
+  world.xcamoffset=0
+  world.ycamoffset=14
+  world.xcam=0
+  world.ycam=0
+  world.tiles={}
+  world.width=25
+  world.height=25
+  world.obstacles=20
+
+  for y=1,world.height do
+    world[y]={}
+    if y==1 or y==world.height then
+      for x=1,world.width do
+        add(world[y],1)
+      end
+    else
+      add(world[y],1)
+      for x=2,world.width-1 do
+        add(world[y],0)
+      end
+      add(world[y],1)
+    end
+  end
+  
+  for i=1,world.obstacles do
+    local ox=-1
+    local oy=-1
+    while ox==-1 or world[ox][oy]==1 do
+      ox=flr(rnd(world.width))+1
+      oy=flr(rnd(world.height))+1
+    end
+    world[ox][oy]=1
+  end
+end
+
+function animate_object(o)
+  o.fcount+=1
+  if o.fcount>=o.aframe then
+    o.fcount=0
+    o.sprite+=1
+    if o.sprite>o.maxsprite then
+      o.sprite=o.minsprite
+    end
+    return true
+  end
+  return false 
+end
+
+function create_tiles()
+  for y=1,#world do
+    for x=1,#world[y] do        
+      xt,yt=((x-1)*8),((y-1)*8)
+    	 tile={}
+    	 tile.h,tile.w=8,8
+    	 tile.sprite=fetch_tile_sprite(x,y)
+      tile.xp,tile.yp=xt,yt
+      tile.value=world[y][x]
+      add(world.tiles,tile)        
+    end
+  end
+end
+
+function create_skulls()
+  skulls={}
+  hitskulls={}
+  local maxsk=game.level
+  if maxsk>5 then
+    maxsk=5
+  end
+  for l=1,maxsk do
+  		add(skulls, create_skull())
+  end
+end
+
+function create_treasure_tiles()  
+  local tp=nil
+  for tr=2,7 do
+    local drcol=true
+    while drcol or tp==nil or tp.value~=0 do
+      tp=world.tiles[flr(rnd(#world.tiles))+1]
+      drcol=intersect(tp,dragon)   
+    end
+    tp.value=tr
+    tp.sprite=fetch_tileval_sprite(tp.value)
+  end
+end
+
+function create_sword_tile()  
+  local tp=nil
+  local drcol,scol=true,true
+  while drcol or scol or tp==nil or tp.value~=0 do
+    tp=world.tiles[flr(rnd(#world.tiles))+1]
+    drcol=intersect(tp,dragon) 
+    scol=false
+    for s in all(skulls) do
+      scol=intersect(tp,s)
+      if scol then break end
+    end
+  end
+
+  tp.value=8
+  tp.sprite=fetch_tileval_sprite(tp.value)
+end
+
+function create_shield_tile()
+  local tp=nil
+  local scol,drcol=true,true
+  while scol or drcol or tp==nil or tp.value~=0 do
+    tp=world.tiles[flr(rnd(#world.tiles))+1]
+    drcol=intersect(tp,dragon)
+    scol=false
+    for s in all(skulls) do
+      scol=intersect(tp,s)
+      if scol then break end
+    end
+  end
+
+  tp.value=9
+  tp.sprite=fetch_tileval_sprite(tp.value)
+end
+
+function fetch_tileval_sprite(val)
+  if val==1 then
+    return 0
+  elseif val==2 then
+    return 4
+  elseif val==3 then
+    return 5
+  elseif val==4 then
+    return 6
+  elseif val==5 then
+    return 7
+  elseif val==6 then
+    return 8
+  elseif val==7 then
+    return 9
+  elseif val==8 then
+    return 27
+  elseif val==9 then
+    return 28
+  end    
+end
+
+function fetch_tile_sprite(x,y)
+  if world[y][x]==1 then
+    return 0
+  elseif world[y][x]==2 then
+    return 4
+  elseif world[y][x]==3 then
+    return 5
+  elseif world[y][x]==4 then
+    return 6
+  elseif world[y][x]==5 then
+    return 7
+  elseif world[y][x]==6 then
+    return 8
+  elseif world[y][x]==7 then
+    return 9
+  elseif world[y][x]==8 then
+    return 27
+  elseif world[y][x]==9 then
+    return 28
+  end    
+end
+
+function create_skull()
+  skull={}
+  skull.w,skull.h=8,8
+  skull.minsprite=48
+  skull.maxsprite=49
+  skull.sprite=skull.minsprite
+  skull.aframe=5
+  skull.fcount=0
+  skull.xd=(flr(rnd(1))-1)*1.2
+  skull.yd=(flr(rnd(1))-1)*1.2
+  
+  init_skull_startpos(skull)
+  return skull
+end
+
+function init_skull_startpos(skull)
+  local col=true
+  local x,y=-1,-1
+  while col do
+    skull.xp=flr(rnd(world.width))*tile.w
+    skull.yp=flr(rnd(world.height))*tile.h
+    col=false
+    for t in all(world.tiles) do
+      col=intersect(t,skull)
+      if col and t.value~=0 then break end
+    end
+    
+    if not col then
+      for s in all(skulls) do
+        col=intersect(s,skull)
+      end
+    end
+    
+    if not col then
+      col=intersect(skull,dragon)
+    end
+  end 
+end
+
+function create_player()
+  player={}
+  player.w,player.h=8,8
+  player.minsprite=1
+  player.maxsprite=3
+  player.sprite=player.minsprite
+  player.aframe=3
+  player.fcount=0
+  player.hassword=false
+  player.sword=nil
+  player.swordpos=0
+  player.sowrdrawn=false
+  player.hasshield=false
+  player.shieldsprite=28
+  player.shielddrawn=false
+  player.lives=3
+  player.score=0
+  
+  init_player_startpos()
+end
+
+function init_player_startpos()
+  local pcol=true
+  local px,py=-1,-1
+  while pcol do
+    player.xp=flr(rnd(world.width))*tile.w
+    player.yp=flr(rnd(world.height))*tile.h
+    pcol=false
+    for t in all(world.tiles) do
+      pcol=intersect(t,player)
+      if pcol and t.value~=0 then break end
+    end
+    
+    if not pcol then
+      for s in all(skulls) do
+        pcol=intersect(s,player)
+        if pcol then break end
+      end
+    end
+    
+    if not pcol then
+      pcol=intersect(player,dragon)
+    end
+  end 
+  
+  world.xcam=player.xp-(64-world.xcamoffset)
+  world.ycam=player.yp-(64-world.ycamoffset)
+end
+
+function create_sword(pos)
+  sword={}
+  sword.h=8
+  sword.w=8
+  if pos==1 then
+    sword.xp=player.xp+player.w
+    sword.yp=player.yp
+    sword.sprite=24
+  elseif pos==2 then
+    sword.xp=player.xp
+    sword.yp=player.yp+player.h
+    sword.sprite=25
+  elseif pos==3 then
+    sword.xp=player.xp-player.w
+    sword.yp=player.yp
+    sword.sprite=26
+  elseif pos==4 then
+    sword.xp=player.xp
+    sword.yp=player.yp-player.h
+    sword.sprite=27
+  end
+    
+  return sword
+end
+
+function create_dragon_dead()
+  dragon_dead={}
+  dragon_dead.w,dragon_dead.h=8,8
+  dragon_dead.xp,dragon_dead.yp=dragon.xp,dragon.yp
+  dragon_dead.minsprite=36
+  dragon_dead.maxsprite=39
+  dragon_dead.sprite=dragon_dead.minsprite
+  dragon_dead.aframe=10
+  dragon_dead.fcount=0
+  dragon_dead.cnt=0
+end
+
+function create_dead()
+  dead={}
+  dead.w,dead.h=8,8
+  dead.xp,dead.yp=player.xp,player.yp
+  dead.minsprite=20
+  dead.maxsprite=23
+  dead.sprite=dead.minsprite
+  dead.aframe=10
+  dead.fcount=0
+  dead.cnt=0
+end
+
+function create_hit_skull(skull)
+  local hitskull={}
+  hitskull.w,hitskull.h=8,8
+  hitskull.xp=skull.xp
+  hitskull.yp=skull.yp
+  hitskull.sprite=50
+  hitskull.minsprite=50
+  hitskull.maxsprite=52
+  hitskull.aframe=10
+  hitskull.fcount=0
+  hitskull.cnt=0
+  
+  return hitskull
+end
+
+function create_dragon(fireprob,maincolor,maxhits)
+  dragon={}
+  dragon.w=32
+  dragon.h=16
+  dragon.maincolor=maincolor
+  dragon.sprite=16
+  dragon.fire={}
+  dragon.fireprob=fireprob
+  dragon.firemax=3
+  dragon.hits=0
+  dragon.maxhits=maxhits
+
+  local col=true
+  while(col==true) do
+    dragon.xp=flr(rnd(world.width))*tile.w
+    dragon.yp=flr(rnd(world.height))*tile.h
+    col=false
+    for t in all(world.tiles) do
+      col=intersect(t,dragon)
+      if col and t.value~=0 then break end
+    end
+  end  
+  
+  fume={}
+  fume.w,fume.h=8,8
+  fume.xp=dragon.xp
+  fume.yp=dragon.yp
+  fume.sprite=53
+  fume.minsprite=53
+  fume.maxsprite=57
+  fume.aframe=20
+  fume.fcount=0
+end
+
+function create_dragon_fire()
+  if flr(rnd(dragon.fireprob)) ~=1 then
+    return
+  end 
+   
+  if #dragon.fire>=dragon.firemax then
+ 	  return
+  end	
+
+  fire={}
+  fire.h=8
+  fire.w=8
+  fire.fcount=1
+  fire.aframe=1
+  fire.minsprite=10
+  fire.maxsprite=14
+  fire.sprite=fire.minsprite
+  fire.dist=0
+  fire.xp=dragon.xp
+  fire.yp=dragon.yp
+  fire.plx=player.xp
+  fire.ply=player.yp
+  calc_fire_pos(fire,1)
+  add(dragon.fire,fire)
+  sfx(0)
+end
+
+function _draw()
+  if game.state==game.states["start"] then
+    draw_start()
+  elseif game.state==game.states["run"] 
+    or game.state==game.states["player_hit"]
+    or game.state==game.states["dragon_dead"] then    
+    draw_run()
+  elseif game.state==game.states["game_over"] then 
+    draw_game_over()
+  elseif game.state==game.states["next_level"] then 
+    draw_next_level()
+  end
+end
+
+function draw_start()
+  cls(game.bgcolor)
+  pal(7,3)
+  local xs,ys=14,2
+  local w,h=18,24
+  spr(64,xs,ys,2,2)
+  spr(66,xs+w-2,ys,2,2)
+  spr(68,xs+w*2-4,ys,2,2)
+  spr(70,xs+w*3-6,ys,2,2)
+  spr(72,xs+w*4-8,ys,2,2)
+  spr(74,xs+w*5-10,ys,2,2)
+
+  pal(7,8)
+  xs,ys=0,20
+  spr(76,xs,ys,2,2)
+  spr(66,xs+w-2,ys,2,2)
+  spr(78,xs+w*2-4,ys,2,2)
+  spr(68,xs+w*3-6,ys,2,2)
+  spr(96,xs+w*4-8,ys,2,2)
+  spr(98,xs+w*5-10,ys,2,2)
+  spr(66,xs+w*6-12,ys,2,2)
+  spr(78,xs+w*7-14,ys,2,2)
+  pal(7,7)
+  
+  xs,ys=20,40  
+  color(4)
+  print("by noltisoft (c) 2018",xs,ys)
+  
+  color(5)
+  rectfill(4,52,128,110)
+  color(9)
+  rectfill(2,54,124,114)
+  
+  xs,ys=5,58
+  color(0)
+  print("all hail adventurer! dragons",xs,ys)
+  print("  have ravaged the land and",xs,ys+7)
+  print("stolen the kingdom's treasure.",xs,ys+14)
+  print("collect the treasure items.",xs,ys+21)
+  print("use shield and sword and take",xs,ys+28)
+  print("revenge on the nefarious",xs,ys+35)
+  print("dragons. your valor will be",xs,ys+42)
+  print("be rewarded!",xs,ys+49)
+  
+  color(10)
+  local htxt="highscore: "..game.highscore
+  print(htxt,txt_hcenter(htxt),ys+60)
+end
+
+function txt_hcenter(s)
+  return 64-#s*2
+end
+
+function draw_game_over()
+  cls(game.bgcolor)
+  camera(0,0)
+  
+  color(5)
+  rectfill(4,20,128,41)
+  color(9)
+  rectfill(2,22,124,42)
+  color(0)  
+  local xs,ys=6,26
+  print("you have been defeated.",xs,ys)
+  print("                  game over!",xs,ys+9)
+  
+  local stxt="final score: "..player.score
+  color(10)
+  print(stxt,txt_hcenter(stxt),50)
+  
+  color(11)
+  if player.score>game.highscore then
+  print("a new highscore!",32,60) 
+  end
+end
+
+function draw_next_level()
+  cls(game.bgcolor)
+  camera(0,0)
+
+  color(5)
+  rectfill(4,20,128,31)
+  color(9)
+  rectfill(2,22,124,32)
+  color(0)  
+  local xs,ys=10,26
+  print("you have killed the dragon!",xs,ys)
+
+  color(10)
+  stxt="score: "..player.score
+  print(stxt,txt_hcenter(stxt),40)
+  
+  ys=50  
+  if game.lifeearned then
+    color(11)
+    print("extra life earned.",30,ys) 
+    ys+=8
+  end
+  
+  if game.bonus then
+    color(13)
+    print("all treasures captured bonus",10,ys)
+    print("    of 250 points earned.   ",10,ys+8)  
+  end
+end
+
+function draw_run()
+  draw_header()
+  draw_world()
+  draw_player()
+  draw_dragon()
+  draw_skulls()
+  draw_dragon_fire()
+end 
+
+function draw_header()
+  cls(game.bgcolor)
+  camera(0,0)
+  clip()
+  color(5)
+  rectfill(0,0,128,12)
+  color(10)
+  print("score: "..player.score,1,1)
+  color(9)
+  print("level: "..game.level,90,3)
+  color(11)
+  print("lives: "..player.lives,1,7)
+  color(5)
+  if player.hassword then
+    spr(27,52,2)
+  end
+  if player.hasshield then
+    spr(28,62,2)
+  end 
+end
+
+function draw_player()
+  camera(world.xcam-world.xcamoffset,world.ycam-world.ycamoffset)
+  if game.state==game.states["run"] or
+     game.state==game.states["dragon_dead"] then
+    if player.shielddrawn then
+      spr(player.shieldsprite,player.xp,player.yp)
+    else 
+      spr(player.sprite,player.xp,player.yp)
+    end
+  elseif game.state==game.states["player_hit"] then
+    spr(dead.sprite,dead.xp,dead.yp)
+  end
+  
+  if player.sword~=nil then
+    spr(sword.sprite,sword.xp,sword.yp)
+  end
+end
+
+function draw_world()
+  clip(0,world.ycamoffset,128,140)
+  camera(world.xcam-world.xcamoffset,world.ycam-world.ycamoffset)
+  for t in all(world.tiles) do
+    if t.value~=0 then
+      spr(t.sprite,t.xp,t.yp)
+    end
+  end
+end
+
+function draw_skulls()
+  for s in all(skulls) do
+    spr(s.sprite,s.xp,s.yp)
+  end
+  
+  for s in all(hitskulls) do
+    spr(s.sprite,s.xp,s.yp)
+  end
+end
+
+function draw_dragon()
+  camera(world.xcam-world.xcamoffset,world.ycam-world.ycamoffset)
+  if game.state==game.states["dragon_dead"] then
+    for y=0,1 do
+      for x=0,3 do
+        spr(dragon_dead.sprite,dragon_dead.xp+x*dragon_dead.w,dragon_dead.yp+y*dragon_dead.h)
+      end
+    end
+  else
+    pal(3,dragon.maincolor)
+    spr(dragon.sprite,dragon.xp,dragon.yp,4,2)
+    spr(fume.sprite,fume.xp-3,fume.yp-1) 
+  end
+end
+
+function draw_dragon_fire()
+  camera(world.xcam-world.xcamoffset,world.ycam-world.ycamoffset)
+  for f in all(dragon.fire) do
+    spr(f.sprite,f.xp,f.yp)
+  end
+end
+
+function _update()
+  if game.state==game.states["start"] then
+    update_start()
+  elseif game.state==game.states["run"] 
+    or game.state==game.states["player_hit"]
+    or game.state==game.states["dragon_dead"] then    
+    update_run()
+  elseif game.state==game.states["game_over"] then
+    update_game_over()
+  elseif game.state==game.states["next_level"] then
+    update_next_level()
+  end
+end
+
+function update_next_level()
+  if(game.waitcnt==0) then
+    music(10)
+  end
+  
+  if game.waitcnt<game.waitmax then
+    game.waitcnt+=1
+    return
+  end
+    
+  local b4,b5=btn(4),btn(5)
+  if b4 then
+    music(11)
+    init_next_level()
+    game.waitcnt=0
+    game.state=game.states["run"]
+  end
+end
+
+function update_game_over()
+  if(game.waitcnt==0) then
+    sfx(20)
+  end
+
+  if game.waitcnt<game.waitmax then
+    game.waitcnt+=1
+    return
+  end
+  
+  local b4,b5=btn(4),btn(5)
+  if b4 then
+    if player.score>game.highscore then
+      game.highscore=player.score
+    end
+    sfx(-1)
+    game.waitcnt=0
+    game.state=game.states["start"]
+  end
+end
+
+function update_start()
+  if(game.waitcnt==0) then
+    music(12)
+  end
+  if game.waitcnt<game.waitmax then
+    game.waitcnt+=1
+    return
+  end
+
+  local b4,b5=btn(4),btn(5)
+  if b4 then
+    music(13)
+    init_run()
+    game.state=game.states["run"]
+  end
+end
+
+function update_run()
+  game.bgcolor=0 
+  local xd=0;yd=0;
+  
+  local b0,b1,b2,b3=btn(0),btn(1),btn(2),btn(3)
+  local b4,b5=btn(4),btn(5)
+  
+  if b0 then  
+    xd=-1
+    player.swordpos=3
+  end 
+  if b1 then 
+    xd=1
+    player.swordpos=1
+  end
+  if b2 then 
+    yd=-1
+    player.swordpos=4
+  end
+  if b3 then 
+    yd=1
+    player.swordpos=2
+  end
+        
+  if b5 and player.hasshield then
+    if not player.shielddrawn then
+      sfx(1)
+    end
+    player.shielddrawn=true
+    xd,yd=0,0 
+  else
+    player.shielddrawn=false
+  end
+  
+  if player.hassword and player.sworddrawn then
+    check_skull_hit()  
+  end
+  
+  if player.hassword and
+     not b5 and b4 and game.state==game.states["run"] then
+    player.sword=create_sword(player.swordpos)  
+    if not player.sworddrawn then
+      check_dragon_hit()
+      sfx(1)
+      player.sworddrawn=true
+    end   
+  else
+    player.sworddrawn=false
+    player.sword=nil 
+  end
+    
+  if game.state==game.states["run"] then
+    update_world(xd,yd)
+  elseif game.state==game.states["player_hit"] then
+    update_player_hit()
+  elseif game.state==game.states["dragon_dead"] then
+    update_dragon_dead()
+  end
+  
+  update_dragon_fire()
+  update_skulls()
+  update_hit_skulls()
+end
+
+function update_hit_skulls()
+  for s in all(hitskulls) do
+    animate_object(s)
+    s.cnt+=1
+    if s.cnt>29 then
+      del(hitskulls,s)
+    end
+  end
+end
+
+function check_skull_hit()
+  for s in all(skulls) do
+    if intersect(player.sword,s) then
+      sfx(3)
+      del(skulls,s)
+      local hitskull=create_hit_skull(s)
+      add(hitskulls,hitskull) 
+      player.score+=25
+    end
+  end
+end
+
+function check_dragon_hit()
+  if intersect(player.sword,dragon) then
+    sfx(7)
+    dragon.hits+=1
+    game.bgcolor=4
+    if dragon.hits>dragon.maxhits then
+      sfx(4)
+      create_dragon_dead()
+      add_player_bonus()
+      add_player_life()
+      game.state=game.states["dragon_dead"]
+    end
+  end
+end
+
+function add_player_life()
+  local tscore=flr(player.score/1000)*1000
+  if tscore>game.checkscore then
+    player.lives+=1 
+    game.checkscore=tscore 
+    game.lifeearned=true 
+  end 
+end
+
+function add_player_bonus()
+  if game.treasure==6 then
+    player.score+=250
+    game.bonus=true
+  end
+end
+
+function update_skulls()
+  if game.skullwait<100 then
+    game.skullwait+=1
+    return
+  end
+  
+  for s in all(skulls) do
+    s.xp+=s.xd
+    s.yp+=s.yd
+    
+    local col=false
+    for t in all(world.tiles) do
+      if t.value>0 then
+        col=intersect(s,t)
+        if col then break end
+      end
+    end 
+    
+    if not col then
+      col=intersect(s,dragon)
+    end
+    
+    if col then
+      redirect_skull(s)
+    end
+    
+    animate_object(s)
+  end
+end
+
+function redirect_skull(s)
+  s.xp-=s.xd
+  s.yp-=s.yd
+  repeat
+    s.xd=(-1+flr(rnd(3)))*1.2
+    s.yd=(-1+flr(rnd(3)))*1.2
+  until s.xd~=0 or s.yd~=0
+end
+
+function update_dragon_fire()
+  animate_object(fume)
+  if game.state==game.states["run"] 
+    or game.state==game.states["player_hit"] then
+    create_dragon_fire()
+  end
+  for f in all(dragon.fire) do 
+    animate_object(f)
+    f.dist+=1
+    calc_fire_pos(f,2)
+    if f.xp<=0 or f.xp>=world.width*8-8 or 
+       f.yp<=0 or f.yp>=world.height*8-8 then  
+      del(dragon.fire,f)
+      return
+    end
+  end
+end
+
+function update_player_hit()
+  dead.cnt+=1
+  if dead.cnt >=40 then
+    if player.lives>0 then
+      if player.hassword then
+        player.hassword=false
+        create_sword_tile()
+      end
+      
+      if player.hasshield then
+        player.hasshield=false
+        create_shield_tile()
+      end
+    
+      game.skullwait=0
+      init_player_startpos()
+      for t in all(tiles) do
+        if t.value==0 then
+          del(tiles,t)
+        end
+      end
+      game.state=game.states["run"]
+    else
+      game.state=game.states["game_over"]  
+    end
+    return
+  end
+  animate_object(dead)
+end
+
+function update_dragon_dead()
+  dragon_dead.cnt+=1
+  if dragon_dead.cnt >=40 then
+    game.waitcnt=0
+    game.state=game.states["next_level"]    
+    return
+  end
+  animate_object(dragon_dead)
+end
+
+function update_world(xd,yd)
+  player.xp+=xd
+  player.yp+=yd
+  tilecol=player_tile_coll()
+  
+  if not player.shielddrawn then
+    player_fire_coll()
+    player_skull_coll()
+  end
+  
+  local dtouch=intersect(player,dragon)
+  if (tilecol~=nil and tilecol.value==1) or dtouch==true then
+    player.xp-=xd
+    player.yp-=yd
+  else
+    if tilecol~=nil and tilecol.value>=2 and tilecol.value<=9 then
+      sfx(2)
+      take_item(tilecol)
+    end  
+ 
+    world.xcam+=xd
+    world.ycam+=yd
+    if xd~=0 or yd~=0 then
+      if animate_object(player) then
+        sfx(6)
+      end
+    else
+      player.sprite=player.minsprite
+    end
+  end  
+end
+
+function take_item(tile)
+  if tile.value==2 then
+    player.score+=5
+    game.treasure+=1
+  elseif tile.value==3 then
+    player.score+=10
+    game.treasure+=1
+  elseif tile.value==4 then
+    player.score+=15
+    game.treasure+=1
+  elseif tile.value==5 then
+    player.score+=20
+    game.treasure+=1
+  elseif tile.value==6 then
+    player.score+=50
+    game.treasure+=1
+  elseif tile.value==7 then
+    player.score+=100
+    game.treasure+=1    
+  elseif tile.value==8 then
+    player.hassword=true
+  elseif tile.value==9 then
+    player.hasshield=true
+  end    
+  
+  tile.value=0
+  tile.sprite=nil
+end
+
+function intersect(obj1, obj2)
+  if obj1==nil or obj2==nil or
+     obj1.xp==nil or obj2.yp==nill or
+     obj1.yp==nil or obj2.yp==nil or
+     obj1.w==nil or obj2.w==nil or
+     obj1.h==nil or obj2.h== nil then
+    return false
+  end 
+     
+  if obj1.yp>=obj2.yp+obj2.h then
+    return false
+  elseif obj1.yp+obj1.h<=obj2.yp then
+    return false
+  elseif obj1.xp>=obj2.xp+obj2.w then
+    return false
+  elseif obj1.xp+obj1.w<=obj2.xp then
+    return false
+  end
+  return true
+end
+
+function player_fire_coll()
+  for f in all(dragon.fire) do
+    if intersect(player,f) then
+      sfx(5)
+      player.lives-=1
+      game.state=2
+      create_dead()
+      del(dragon.fire,f)
+    end   
+  end
+end
+
+function player_skull_coll()
+  for s in all(skulls) do
+    if intersect(player,s) then
+      sfx(5)
+      player.lives-=1
+      game.state=2
+      create_dead()
+    end
+  end
+end
+
+function player_tile_coll()
+  for t in all(world.tiles) do
+    if t.value>0 and intersect(t,player) then
+      return t
+    end
+  end
+  return nil
+end
+
+function calc_fire_pos(fire,speed)
+  local dx,dy=fire.plx-dragon.xp,fire.ply-dragon.yp
+  local d=speed/sqrt(dx*dx+dy*dy)
+  fire.xp+=dx*d
+  fire.yp+=dy*d
+end
+
+__gfx__
+44444044000990000009900000099000000ee000000cc0000000a000000ff0000aaaaaa0a00aa00a008880000099900000aaa000007770000000000000000000
+4444404400099000000990000009900000eee80000cccd00004a9a4400f00f000aaaaaa0a00aa00a00008008000090090000a00a000070070000000000000000
+000000000066660060666600006666060eeeee800cccccd0044a9a940f0000f009aaaaa0aa0aa0aa008888080099990900aaaa0a007777070000000000000000
+44044444666666666666666666666666eeeeee88ccccccdd4499a9440f0000f0009aaa00aaaaaaaa8888888099999990aaaaaaa0777777700000000000000000
+44044444606666060066660660666600eeeeee88ccccccdd444444440f0000f00009a0002a2aa2a28008880090099900a00aaa00700777000000000000000000
+000000000060060000600600006006000eeee8800ccccdd04444440400f00f000009a00022222222008008080090090900aa0a0a007707070000000000000000
+4444404406000060060006600660006000ee880000ccdd0044444404000bb0000009a00002222220008000880090009900a000aa007000770000000000000000
+4444404466000066660000000000006600088000000cd00004444400000bb000009aaa0000222200008800000099000000aa0000007700000000000000000000
+00000000000000000000000000000000000990000000000000000000000000000000000000066000000000000006600066666666000000000000000000000000
+00000000000000000000000000000000000980000009000000000000000000000000000000888800000000000006600066866866000000000000000000000000
+0003030003300000000000003330000000a8a80000a8a8a000000000000000000800000000066000000000800006600066866866000000000000000000000000
+00380830330033000000000333330000a88a9889080a980000000000000000006866666600066000666666860006600006866860000000000000000000000000
+00e83e8333333003300000033333300080a9aa0a80a90aa0000a0000000000006866666600066000666666860006600006688660000000000000000000000000
+00333333333333330000003330b3300000900a0000000a0909900a00000000000800000000066000000000800006600000688600000000000000000000000000
+033333bb3bb3b3333330003300033000080000a0080800a008080080000000000000000000066000000000000088880000666600000000000000000000000000
+33767bb3bbbbbb3b33330000000b3000aa000099aa000a99a0000a90000000000000000000066000000000000006600000066000000000000000000000000000
+7663333333bbbbbbb3333000000330000a0090a00a0800a000000000000000000000000000000000000000000000000000000000000000000000000000000000
+3333003333333333bbb33300000b3000008990080009000808000000000000000000000000000000000000000000000000000000000000000000000000000000
+030000333333333333bbb330000b300009a0a0a009a90a000000a000000000000000000000000000000000000000000000000000000000000000000000000000
+000000033333333333333b3300b33000908a98090000000900800090000000000000000000000000000000000000000000000000000000000000000000000000
+0000000333303333333333bb3bb30000800900a09090800000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000000333000033333300333333300000090a8090000080900000000000000000000000000000000000000000000000000000000000000000000000000000000
+000033330000333300000003333000000808a0a0089000000090a000000000000000000000000000000000000000000000000000000000000000000000000000
+000999300009990000000000000000000a000a0000000a0000000000000000000000000000000000000000000000000000000000000000000000000000000000
+07777770077777700007000700000700000000000000000000000000000000000006600000000000000000000000000000000000000000000000000000000000
+7e87e87777e87e870000000007000000070000000000000000666600006666000060060000000000000000000000000000000000000000000000000000000000
+7ee7ee7777ee7ee70707070000000000000007000000000006000060060000600006600000000000000000000000000000000000000000000000000000000000
+07777770077777700000007000070070000000000000000000600600006666000000000000000000000000000000000000000000000000000000000000000000
+00575700007575000007000007000700000000000006600000066000000000000000000000000000000000000000000000000000000000000000000000000000
+00757500005757000700000000000000007007000060060000600600000000000000000000000000000000000000000000000000000000000000000000000000
+00777700007777000070070000070070000000000006600000066000000000000000000000000000000000000000000000000000000000000000000000000000
+00077000000770007000707007000000000070000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+07777777700000000777777770000000000007777777700000000777777770000000777777700000007700000007770000777777777777000000007777770000
+07777777770000000777777777700000000077777777770000007777777777000007777777770000077770000077700007777777777777000777777777777700
+07770007777000000077000777770000000777700007770000077000000777000077700000077000007777000007700007770077770007700077777770007700
+07770000007770000077000000777000007777000000770000770000000077000077700000077000007777700007700000000077700000000077700000000000
+00777000000777000007000000077700007770000000770007777700007777000777700000007700007707770007700000000077700000000007700000000000
+00777700000777000007700000077700007700000000770007707777777777000777000000007700007700770007700000000007700000000007700007700000
+00777700000077000007777777777000007770000007770007700777770000000777000000007700007700777007700000000007700000000007707777700000
+00777700000077000007777777700000007777777777770007700000000777000777000000007700007700077707700000000007700000000007777770000000
+00777000000077000077777700000000007777777777770007700000777777000777000000007700007700007707700000000007700000000077770000000000
+07770000007777000077007700000000000770000007770007700000700077000077700000077000007700000777700000000007770000000077000000000000
+07770077777770000077000770077000000770000007770007770000000077000077700000077000007700000077700000000007770000000077000077777000
+07777777777000000077000077007000007770000000770000777700007777000077777777777000007770000007770000000077777000000077777777770000
+07777770000000000777000007777000077770000000777000077777777770000007777777770000077777000077770000000777777000000777777777700000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00007777777000000000777000007770000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00077777777770000007777000077700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00777000007777000007770000007700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+07700000000077000007700000007700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+07700000000000000077700000007700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00770000000000000077000000007700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00077700000000000077000000007700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00077777777000000077000000007700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00007777777770000077000000007700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000777000077700000077000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00770000000077000007700000077000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+07777700007770000007777777777000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00077777777700000007777777770000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__gff__
+0000000000000000000000000000000000000100000000000000000000000100000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__map__
+0000000000000000000000002800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000002800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__sfx__
+000200002f6503365033650346502e6502b650296502765025650216501d6501665013650116500f6500c65009650086500565006650076000760007600076000760007600066000660006600066000660003600
+00010000314502e4502c4502945020450154500c600096000660009600046000670001200012000e4000d40016300164000d400173000c400144001f3000b4001440013400144000000000000000000000000000
+000300003c7102d75018700177001670014700127000e7000a7000770005700057000470004700037000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+010500003a650346502d6501f6501e6500f6500d6500a650156001360011600106000e6000d600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000800000d6502765026650216501e6501f6501d65018650146500a6500d6500d6500e65013650106500a65007650056500465002600016000160005600036000360002600016000160001600016000160001600
+000d00001e5501855015550125500d550085500755005550035500155000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000100000751007600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000300001f2501e2501f250152500a250000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+010e10201a2751a27521275212751d2751d27518275182751a2751a27521275212751d2751d27518275182751c2751c27523275232751f2751f2751a2751a2751c2751c27523275232751f2751f2751a2751a275
+011000000c0700c0700e07111071130711307013070130700f0700f0700f0700f0700e0710e0700e0700e0700c0700c0700c0700c070130721307213072130720f0700f0700f0700f0700e0700e0700e0700e070
+0110000018070180701a0711c07123071230702307023070210712107021070210701f0711d0711c0711c0721c0721c0721d0711d0701d0702107121070210701f0711f0721f0721f0721c0711c0721c0721c072
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001400000755007550080000855008550010000e5500e550100001455014550090000705007050000000c0500c050000000205002050000000505005050000000315003150020000115001150000000000000000
+000c0000195101a40019550204002455010000245501d500145501350014550080001e5501e5001e550253001955008000195501f3002755027500275502e500225502250022550153001955018550145500d550
+000a00002175021050200002a7502a0501060024750247500e60023750230500a60020750207502970028750280501f7001775017050000000c7500c050000001675016050000000f7500f750290000d7500d750
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__music__
+00 41 42 43 44
+04 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 0a 42 43 44
+00 41 42 43 44
+03 41 42 0b 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44

@@ -1,0 +1,9 @@
+My first Pico 8 game made with help from @MBoffin Tutorial series on YouTube.
+
+Message for @MBoffin The series was great and i also hope you don't mind as I used some of your sprites from the example games you showed off at the end, as I thought they looked great :)
+
+Controls:
+Arrow keys to move
+"X" to show inventory 
+
+https://www.lexaloffle.com/bbs/?tid=38457

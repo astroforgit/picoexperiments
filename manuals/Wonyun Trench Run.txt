@@ -1,0 +1,17 @@
+Here's my first game on Pico-8 :D
+
+While I am no stranger to gamedev, this is the first time I work on Pico-8. This is also an emotional moment for me, because I finally get to complete a project I started 6 years ago. This is also the very first time, as unbelievable as it is, I have genuinely enjoyed playing my game and thinking as an audience :D
+
+Instructions are all in the game, I'd like to see how I have improved my tutorial skill. Let me know if you have any problem.
+
+(Remember, press P/Enter (default Pico-8 keybind) to access the pause menu.)
+
+If you are keen for poke around and/or learning, I thoroughly wrote this game to be readable and the codebase is moderately commented and put it on GitHub. This game implements an entity component system, not the usual standard object-oriented approach; let me know if I did it right. I have also created a boilerplate implementing these in case you'd like to use some of them. Code critiques and feedback are highly appreciated :D
+
+I have also learned a massively lot and fixed an insanity-inducing bug caused by the max integer value of 32767 hours before launch :D
+
+Update 2020 Jun 16: Remapped keys.
+Update 2020 Jun 17: Fixed an incorrectly mapped key in caption state.
+Update 2020 Jun 21: Minor refactoring and change in draw layer with no remarkable impact on the game.
+
+https://www.lexaloffle.com/bbs/?tid=38434

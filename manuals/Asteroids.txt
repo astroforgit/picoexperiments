@@ -1,0 +1,43 @@
+It could be a little flashier, but the game is fully playable by itself at this point. Have fun playing an Atari classic.
+
+Version 1.1:
+Made asteroid collision much more exact
+Added anti-aliasing (Thank you, Felice)
+Made extra lives available after every 5k points instead of 10k
+Made the extra lives indicator make more sense (Player has 3 extra lives plus their current one at start)
+
+Version 1.0:
+Added an invulnerability period after respawn
+
+Version 0.9:
+Added start and play again menu options
+Added more sounds (game over and extra life)
+Fixed controls working after death
+Added scoring system that works to the tens of millions of points
+Refactored some code
+
+Version 0.5:
+Added level spawning
+Fixed randomizing of asteroid velocities
+Added player death conditionals
+Added respawning
+Added a great deal more variation in velocities in general
+
+Version 0.4:
+Added randomly generated asteroids (yay!)
+Added collision-based asteroid spawning
+Added score increases
+Added thruster and asteroid explosion sounds
+
+Version 0.3:
+Fixed the controls
+Retooled how the velocity works (saved x,y velocity offsets)
+Added (lame) asteroids
+Added collisions
+Added explosions!
+Made explosions pretty
+
+Version 0.1:
+Initial preview posted
+
+https://www.lexaloffle.com/bbs/?tid=3560

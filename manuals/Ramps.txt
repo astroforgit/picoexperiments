@@ -1,0 +1,33 @@
+This is Ramps! A 3D racer inspired by Powerdrift, Stunt Car Racer, Hard Drivin'.
+
+Choose from 8 varied race tracks, and overtake the other drivers in 5 laps to win.
+As well as racing you'll need to navigate jumps, roller-coaster like ramps and occasionally even drive upside down.
+
+Includes 3 difficulty levels, plus a practice mode for getting the feel of the tracks.
+
+This all started as an experiment to see how well Pico-8 could render a Powerdrift-like scaled sprite racetrack (pretty well, as it turns out). Then it was about trying to implement a driving model that could handle the ramps, jumps and loops. And finally wrapping it up into a somewhat finished game.
+
+Like with Loose Gravel, I would have liked to add a championship mode, but there just aren't enough tokens :-)
+
+Big thanks to everybody who gave advice and feedback. Particularly @freds72 who even went as far as digging into the code and making some performance optimisations (~20% CPU improvement!).
+Tips
+
+Z = Accelerate
+X = Brake
+Left/Right to steer
+
+You don't have to wait to be automatically respawned after you fall of the track, select "Respawn" in the pause menu to get back into the race faster.
+
+The green and red lines on the speedometer are recommended minimum and maximum speeds.
+The green line (minimum speed) is particularly important for clearing jumps (and occasionally getting up steep hills), so make sure to keep your speed above it.
+The red line (maximum speed) is to prevent you from sliding out on sharp corners or overshooting the jumps. Typically this is just a suggested speed. Depending on your racing line, driving style etc you may be able to go faster.
+
+Enjoy,
+-Mot
+
+Update: Other cars' speeds now vary randomly throughout the race
+Update 2: Can knock other cars sideways a bit & they don't knock you sideways as much. Round road sprite corners a bit.
+Update 3: Fix game crashes in AI code when road is blocked.
+ramps
+
+https://www.lexaloffle.com/bbs/?tid=38221

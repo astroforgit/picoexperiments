@@ -1,0 +1,24 @@
+Overciew
+
+to spurn the titan god
+sacrifices must be made
+...
+This is a small arcade game made for Ludum Dare 43.
+How to play
+Goal
+
+complete the desired sacrifices as they appear by taking bread, coin, and pig from the bottom alters
+and placing them on the top alters. Make sure your offerings are in the correct order, or they don’t
+count. Don’t let your life hit zero or your band of zealots may become the sacrifice!
+Controls
+
+[left] [right]: move the zealots
+[X]: pick up a new sacrifice AND pass the items down the line
+[C] (pico-8 "O" button): pass the items down the line (without picking up a new one)
+Versions
+
+    0: initial release
+    1: remade title screen
+
+
+https://www.lexaloffle.com/bbs/?tid=32416

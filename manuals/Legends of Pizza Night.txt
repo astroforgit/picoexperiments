@@ -1,0 +1,42 @@
+UPDATE:
+version 1.4 - 2018
+Major update!
+
+    fixed major bugs concerning player alignment on the map (for real this time)
+    updated the title screen - it's flashier now
+    added more sound effects and audio cues
+    added more dialogue with more NPCs to talk to
+    some NPCs now say different things depending on player progress
+    sprinkled in a couple new easter eggs
+
+version 1.26 - 2016
+
+    added missing image flip when turning left towards obstacles. Thanks to dw817 for pointing that out.
+
+version 1.25 - 2016
+
+    minor improvements to marinara behaviors
+    fixed some positioning issues
+    made an in-game tip easier to discover
+    final boss is now slightly harder
+
+version 1.2 - 2016
+
+    Fixed slime behaviors. They no longer scale the walls when blocked in by the crate. Thanks to dw817 for pointing that bug out!
+
+version 1.1 - 2016
+
+    Fixed problem where entering the pizzeria caused the player to lose alignment with game map.
+    Fixed some grammatical errors.
+    moved a dungeon key slightly so it's more visible.
+
+Controls:
+
+Btn 4 (Z) to pull crate or turn 180(when not next to crate)
+Btn 5 (X) to use weapon
+
+This game took about a month to make. It's similar to my last game, EGGHUNT, in terms of the layout and walking, but is much more complex as this game has enemy AI, weapons, and crate pushing.
+
+ENJOY!
+
+https://www.lexaloffle.com/bbs/?tid=27645

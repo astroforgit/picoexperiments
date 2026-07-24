@@ -1,0 +1,9 @@
+Noeleste is a holiday-themed mod for Celeste Classic that adds new mechanics, levels, locations, and a bunch of penguins! Unlike my other mod, Everred, this one is a bit shorter, easier, and more linear; but it's also far more focused on exploring new ideas and mechanics rather than building on old ones.
+
+There's 5 Berries to collect (one of which is a secret).
+
+Special thanks to Meep for the original penguin sprites, as well as the santa hat.
+
+Lots of credit to Matt and Noel from Matt Makes Games (https://mattmakesgames.itch.io) for the original game, and to the Celeste Classic Discord (https://discord.gg/WgtDkq9) for all the help and feedback.
+
+https://www.lexaloffle.com/bbs/?tid=36251

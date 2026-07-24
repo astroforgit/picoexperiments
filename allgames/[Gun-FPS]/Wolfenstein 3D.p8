@@ -1,0 +1,1419 @@
+pico-8 cartridge // http://www.pico-8.com
+version 8
+__lua__
+--wolfenstein 3d
+--lovely!
+------------------------------
+-- all the constants
+------------------------------
+
+-- player stats
+score=0
+health=100
+ammo=8
+
+-- start position/rotation of player
+posx=29.55 posy=57.5
+angle=0
+
+-- player movement speed
+movespeed=0.05
+rotspeed=0.0075
+colwidth=0.2
+
+-- camera field of view
+fov=90
+
+-- camera direction/plane vectors
+fovsize=-sin((fov/2)/360)
+dirx=1 diry=0
+planex=0 planey=-fovsize
+
+-- player gun variables
+testgun=0
+gunframe=0
+machinegun=0
+shootdelay=25
+shoottimer=0
+btn4held=0
+btn5held=0
+
+-- wall rendering constants
+screenwidth=128
+wallscale=96
+texwidth=32
+
+-- map dimensions
+mapwidth=64
+mapheight=64
+
+-- door animation stats
+doordelay=120
+
+-- information about each object in the world
+objectstate={}
+objecttimer={}
+objectextra={}
+
+-- a table of active objects in the world
+objectactive={}
+-- a table of objects last seen
+objectsseen={}
+
+-- effect timers
+damageeffect=0
+deadtimer=0
+
+-- soldier info
+-- states
+soldierstateidle=0
+soldierstatealert=1
+soldierstateshoot=2
+soldierstatehit=3
+soldierstatedying=4
+soldierstatedead=5
+soldierstatedeadammo=6
+-- sprites for each state
+soldierstatesprites={38,35,35,37,37,36,36}
+
+-- x/y/w/h in the sprite sheet
+spritedata = 
+{
+ 76,45,5,5, --ammo
+ 88,0,12,16, --barrel
+ 56,0,16,17, --barrel2
+ 107,14,9,7, --chest
+ 95,47,7,9, --cross
+ 102,45,9,7, --crown
+ 107,57,6,7, --cup
+ 120,0,7,30, --flag
+ 74,24,14,5, --food
+ 61,30,15,16, --head1
+ 94,16,13,5, --health
+ 61,46,15,5, --hudammo
+ 27,59,20,5, --hudhealth
+ 43,30,18,21, --lamp
+ 0,32,27,31, --light
+ 0,0,31,32, --light2
+ 87,58,20,6, --machinegun
+ 85,29,3,5, -- numbers0
+ 85,34,3,5, -- numbers1
+ 85,39,3,5, -- numbers2
+ 113,9,3,5, -- numbers3
+ 102,52,3,5, --numbers4
+ 105,52,3,5, --numbers5
+ 108,52,3,5, --numbers6
+ 116,9,3,5, -- numbers7
+ 116,14,3,5, --numbers8
+ 111,49,3,5, --numbers9
+ 113,0,7,9, --pistolidle
+ 100,0,13,14, --pistolshoot
+ 27,32,16,27, --plant
+ 47,59,23,4, --puddle
+ 43,51,30,8, --rags
+ 70,59,17,5, --score
+ 81,45,5,5, --shot
+ 74,17,20,7, --skeleton
+ 88,24,12,23, --soldieraim
+ 73,51,22,7, --soldierdead
+ 72,0,16,17, --soldierdying3
+ 100,21,11,24, --soldierstand
+ 31,17,22,13, --table
+ 31,0,25,17, --tablechairs
+ 111,21,9,28, --vase
+ 76,29,9,16, --vase2
+ 53,17,21,13, --well
+}
+
+-- dereference table from map
+-- data into the sprite data
+objecttable=
+{
+ 0,16,3,4,6,8,10,0,5,0,
+ 0,0,0,0,0,0,0,0,0,0,
+ 38,0,0,0,0,0,0,0,0,0,
+ 0,0,0,0,0,0,0,0,0,0,
+ 1,34,0,14,30,40,13,15,0,29,
+ 0,41,42,39,0,42,0,0,31,0,
+ 43,43,0,7,2,36,0,0,0,0,
+}
+
+titledata=
+{
+"112502601119501601501105d02101501146",
+"111201502d0160150110520140110f501602701d02101501d01501601701601501145",
+"110401504d01701601501102201501d0250110a501d02601503d01501d02503d01e01501145",
+"10f201d07602101401501d02602501109501601d02501d02402d03501d0240111c501129",
+"10f401d03501d04f01101401d05601501108201d03101201401202d0340311c201d0110b401d0111c",
+"10f601d02501101601d03e01501d08108201d03502102201d0360111d201d0210a401501d0211b",
+"10f601d02201101d04401501d02501d05108201501d02502102201d0410150111a501401d0160110ad0150110150111b",
+"10fd01601201102d04e01d03501d04401102504102201501d02502101501401d04501d01501102502103502102503105501601503101401d02601502102503102502104502102503113",
+"10f501701201102d01603e01501601201501d01602d01201101201d02601701601503602503d02603d03101501d02701501101401d01702601501602701d01201401801d01601701602401605503d02601102201d01702501201d01601701601501d01601701d01111",
+"110d01401501101501603401101d01401501d01603202d01606501101602d01501d01607201401d01603701501401603d02604401d02604501d01604501401d01604d01501401604401604501604501110",
+"111d01501101501603401102502d01603201603402603401101602503d01501603d01101401606701201603d01604402602501d02401501d01603502607d01401603401201603501604401111",
+"114501603201103502603201603201401603401101602503101501604101d01607401608402602501002501101d01603502608201603401201608401111",
+"115703001d03502702601401703101401601701601d01101702502102501601701602101501703101601701601401601702601501702601d01101702d01101501102d01601701601502d01702d02702601401703402601702601501601702d01111",
+"114501d01602101501602501101602701401d01602501201101601701d01001d01601d01501104603101d02602d01101601d02501602d01101d01602d01001d01604501101d01501d01701502101603502601d01501d01602501d01101d01602501101602d01111",
+"114501007501003d01401003d01101002101d01003d01501102501101001101601101601003d01001d01501601003502002101d02005d01501601101001101d01501101002101501101d01101d01003d02003502002101d01111",
+"11450100bd02003601501201002d01003d01501102501201002601101d01004d01501101d01003101501003502d01201003201501601201002d01501201003201601102601201002601d01201002501d01003d01111",
+"11450120a401502203601501203601001202601d01101502203601101501204d01102d01203502203501102501203401d02203502204502102601203d01501203502203d01111",
+"114501804001804401d01101501803601501803d01101802401601d01201d01401802601102803601504803501101802401501101d03802401d01501401802502201802401601102d02803502401802d01501401802501111",
+"014501804101804d01103803d01803401501201805401d01803601102803401601501401501803601101803502401801201803d01501803601501401803f01d01401502803601501803601501803d01501110",
+"101004102002102002101001102001101502803401101803401102001101803401802401501101501805d01501803601101501805401d01501803401101803401501804401502101401802401501401805401d01501803e0150140180240110140180240150110220210c",
+"10100310100d101d01504101504103001101503102501d01102501d03e01d01502e03601101503d01e03d01501101401e01503d02503101f01502102502e01601501101503e03d01502201801e01d01501101501e01503d02501111",
+"101012503103501105001107501105505d01e01f02d01102502d01501101502103d01104d01101501102d01107d01102502d02501101501104601104501104d01112",
+"00310300310100110100310200510100410100210200210d501e02501601f02d01149",
+"00310400110200110100310200a10100310200110d501f01701f0270160150112b50211c",
+"00310600310200910100310200410dd01e02f01702e0120111cd0150260150110a201501601d01501201601501117",
+"10100210500510300110100910200210100210c601501101201e0160111d201d02502602501109503401502603501114",
+"00310600310100110200110100210100110200310200110200310b50110350211e201d05601d01105501401d08501d01602501112",
+"10100210700210200110100410100210100310100110300312f201801501001d04105401d0d601d01111",
+"003107002103001101003101002102003102001102002130202001d04104501401d03501d0a601111",
+"101002102001101003101005101006101004102005133d03501104201401d02101501d0a601111",
+"00310300410100910100210100b133602d01501104202601d01502d01602d01502d01603d01111",
+"00310400210100210200610100210200b132602d01501104501101601d01101501d01602d01501101501603501111",
+"00310400210100310101612fd01401101601d01101501401e01d03602d01101501601702601501101501702601501111",
+"003101001104004103002101506003102002133501d02701d02403d02602501601101201d01702601201102703501111",
+"101002101002103007101506403101001101003132502004d01201004502101501101201002101501201101003502111",
+"003101002101001101002101004506101501402501001102002131501601501004501201004502103201004201101003101d01111",
+"003103004101004102504004502101004131601504202001d01201102501104d01101001201002502001202001d01111",
+"00810100610550310200110400210d001122501401502101d01403d01108401501201402201501d01404501111",
+"00f10450340250200610200112d501401801503803501108401d01401802401601804401501111",
+"00f10250110150110150100150140200110200310100212d501401802502803501108402803402803401113",
+"00510100110200710350410100150100110100410100210d00111f501d01e02401501e03501107501401e09d01113",
+"00410100110500510250240450140150110100410200112e501f03d01f02502107501e01f08601114",
+"004101001105004101001503406501101004132501703d01502108501d02502101501103d01114",
+"004101001101001103003101501002504402502101001101003132502701601501107502102d0150311a",
+"004104005101501101002501405502102004134501109302120",
+"004104002102001502002102406501101001101003129502d0260150110eb0330111a304101",
+"00410300210200110150100210440610100110100310100111b303109503d0350110c301b01601f01d01b01114001102001101301c03501",
+"00410300210100110150110100210540500210100310100211a303109503d0260150110c301b01d02b01301114001102001101301c01302101",
+"00410500110250100110500110100110700611a303109501d03602501120001105001102001101301c01602501",
+"10100310200310250100110c50210300411b30310a501402501101d01118001101001105001102001101002102001101c01602c01501",
+"00910300150110350d10100111d303109501402e02502115001101002101002104001103003102001101301602c01501",
+"009103501101401104504d01501d0450210300111a301c01301109001403e01501111302103004101004102007102001101301c01601c01501",
+"009101001502106508d0350110100311a301c01301103001106404501101501b01301107001105c0160110100110100a103001102001103001101301c01601c01101",
+"00a101502401501401105503101504d01502101003119301c01301103001301106503101301c02303006101003101601c01001102001101003101001101003105002102001101301c02301101",
+"004103003101503101401104501101502103501d0350110100211a301c01301103001301102001103402102501301c01303108001102c02103002104001105003101002101002101302c01301101",
+"003105002101504401103001501102501103502d0250110100211a301601301104301502001101001101002d01101501d01401303105001105c0130110300310a002101002102001101301c02301101",
+"003101001101001101002501101501403101002101501101502001101501d0450110100211a301c01301001103503002501401502402e01401e01d01302105001102001102302103001102001101004104005102001101302c01301101",
+"004102001101002102502402502102002102001101502d0350110100211a301c01301104503101001408e01401302103001101001102001102302103001101002101003103001101002101002102001101302c01301101",
+"004102005101502101d05501102001102501d0450100311a301601301103001504001d01401501401501402501401e01d01301108002101302102002101001102001101002101005101002102001101302c01301101",
+"00c103d01501d04501104501d0450100311a301601301001103504102502404501401e01d01301104002102002101302102001102001102001104003101004102001101302c01301101",
+"004101006101002503d03501d02501001102502d0250100110100111a301601301104501102501401101001101404501402e01501108001102302102001105001109003101002101302c01301101",
+"00a102002101505d03504d04103001112001107d01601301103502102502401101001101403101501402d0b503106001101001101003105002105304101",
+"009102004102503d07501d0250100111dd01c01301103503001101503101002502101403d0e503105001109002105304101",
+"008102007501001101501d0950110100211bd01c01301103501401501004501d02101002101403d12502102001109001106304101",
+"008101009102502d01502d01501d0310200311ac02301102502401501001101002501d02101002501401e01401d15504106002106304101",
+"01510150710200411a601c01301101d02501402101501405502101403501d1b50210a304101",
+"01610450110150100110400111ac01302501d03402501405502402e02401d21502105304101",
+"01810150110200110200210100111a503d04402501404502403e01f01d24505304501",
+"01510100510150110100210100210a00110fd08501406503403d0660ed1a",
+"01510550210100310100211ad08501405501101502402d2f",
+"01110200310250110350110200111dd09405503403d11501101401105501d15",
+"00d10100210b502101003108001113d08501405501101501403d11501101901005501d15",
+"00c101002102505102503d02501101002101001119d09501405501101501403d0e201501201501101901504001501201501202501202501202502d01202502d04",
+"00e102501104505d03501101004102001114502d09405e01501101501403d0e201501201501101902101501901101501d01501202d01501201501203501d01202502d04",
+"00c109502d05502101005116501d0a407101501403d0e201501201501101902101001401502201d01501201d01501201502203d01202501201501d03",
+"00c107504d02502103006115501d0b502402501401103502401d11501101902101001401502d01502d01501d01506d01502d06",
+"00e103508101504001101003116d0c501001503001501001103d12501101902101501901101501d01204501205502202501d05",
+"00d103506102507101003115501d0d101004501003101d12501101504101001501d01501203501203501201502202501d05",
+"00f10d503101003114501d0e501003101501003501d12501007501d01502201502201502201504201501d05",
+"00a107002102505d01505003114d10003101501003501d13508d15",
+"00a102505101001102504101502d02502101002113d10501003101501003101d30",
+"009101002101504102001106503d02501101002112d0f503004101004d12501114501d08",
+"00a102505103001104505d02101002111501d0b506101003103001102d1250100310e003101d08",
+"00a102505103002104505d01501001112d0c505102003102503d13501003e03401e04401e04101003101d08",
+"00a101507102003103507111501d0b510d14501002101801401801402203402101401101004101d08",
+"00b102505102004101504d0150110150100210fd0c50dd17501002202802402201801001101801402002101002101d08",
+"00a102505103003101501102502d0150210200110e501d0d509d09201502201502207d01201501201501002401201802401101402101402201401101001401002101d08",
+"00a101507102002105502d0250110200110ed20201502202501201501205d01201501201501001101801401801401501402201401201401201401202f01101001101d08",
+"00a101507102003104502d0250110100110ed21201501202501207501d01201501201501001101401101402202408901701401201101d08",
+"009102507102005102503d0210100210cd33501001403e01803401007101201002101d08",
+"009102507102006101503d0210100210bd34501001201805009102002101d08",
+"009103506102006102502d0210100210a501d34501010101003101d08",
+"00a103504102006103502d02102001109501d35501115d08",
+"00b10800510200110150410cd37515d08",
+"00c10600810350310bd55"
+}
+
+showtitle=1
+titletimer=0
+
+------------------------------
+-- all the init functions
+------------------------------
+
+function _init()
+ showtitle=1
+ titletimer=0
+ drawtitle()
+end
+
+function hextoint(hex)
+ if(hex=="0") return 0
+ if(hex=="1") return 1
+ if(hex=="2") return 2
+ if(hex=="3") return 3
+ if(hex=="4") return 4
+ if(hex=="5") return 5
+ if(hex=="6") return 6
+ if(hex=="7") return 7
+ if(hex=="8") return 8
+ if(hex=="9") return 9
+ if(hex=="a") return 10
+ if(hex=="b") return 11
+ if(hex=="c") return 12
+ if(hex=="d") return 13
+ if(hex=="e") return 14
+ if(hex=="f") return 15
+ printh("bad")
+ printh(hex)
+ return 0
+end
+
+function drawtitle()
+ clip(0,0,128,128)
+ rectfill(0,0,127,127,0) 
+ 
+ -- decode the rld onto screen
+ for y=0,94 do
+  data=titledata[y+1]
+  offset=1 
+  x=0
+  while offset<#data do
+   c=hextoint(sub(data,offset,offset))
+   l=hextoint(sub(data,offset+1,offset+1))*16
+   l+=hextoint(sub(data,offset+2,offset+2))
+   line(x,y,x+l,y,c)
+   x+=l
+   offset+=3
+  end
+ end
+end
+
+function initgame()
+ score=0
+ health=100
+ ammo=8
+ posx=29.55 posy=57.5
+ angle=0
+ dirx=1 diry=0
+ planex=0 planey=-fovsize
+ machinegun=0
+
+ inittiles()
+ initdrawhud()
+end
+
+-- create a table containing a
+-- value that represents each
+-- object's state
+function inittiles()
+ objectactive={}
+ objectsseen={}
+ objectstate={}
+ objecttimer={}
+ objectextra={}
+ 
+ -- look for all the objects in the map
+ for y=0,mapheight do
+  for x=0,mapwidth do
+   index=y*mapheight+x
+   tile=peek(0x2000+index)-2
+   --is this tile solid
+   if(tile<8)then
+   else
+    --this must be an object
+    objectstate[index]=0
+	objecttimer[index]=0	
+    objectextra[index]=0
+	-- give soldiers some health
+	if(tile==59)objectextra[index]=2
+   end
+  end
+ end
+end
+ 
+-- draw some initial stuff for
+-- the hud that never changes
+-- so we don't have to do it at
+-- run time
+function initdrawhud()
+ clip(0,128-15,128,15)
+ palt(0,false)
+ rectfill(0,128-15,127,127,1)
+ 
+ drawsprite(9,58,128-15)
+ print("score",5,128-14,12)
+ print("health",30,128-14,12)
+ print("ammo",80,128-14,12)
+ 
+ drawscore()
+ drawhealth()
+ drawammo()
+end
+
+------------------------------
+-- all the update functions
+------------------------------
+
+function _update60()
+ if(showtitle==1)then
+  rectfill(0,95,127,127,0)
+  titletimer+=1
+  if(titletimer%30<20)then
+   print("press z to start!", 32, 114,12) 
+  end
+  -- z to start
+  if(btn(4))then
+   btn4held=1
+   showtitle=0
+   initgame()
+  end
+ else
+  checkbuttons()
+  checkcollection()
+  updategun()
+  updateobjects()
+  updatedead()
+ end
+end
+
+-- is a tile at the given tile x/y 
+-- solid to the player?
+function gettilesolid(x,y)
+ -- get the tile
+ index=flr(y)*mapwidth+flr(x)
+ tile=peek(0x2000+index)-2
+ 
+ -- is this a solid tile
+ if(tile>=0 and tile<8) return true
+ 
+ -- is this a door tile
+ if(tile==8 or tile==9)then
+  if(objectstate[index]==0) return true
+ end
+ 
+ return false
+end
+
+-- process player input
+function checkbuttons()
+ -- move forward
+ if(btn(2))then
+  posx+=dirx*movespeed
+  if(gettilesolid(posx-colwidth,posy)) posx=flr(posx-colwidth)+1+colwidth
+  if(gettilesolid(posx+colwidth,posy)) posx=flr(posx+colwidth)-colwidth
+  posy+=diry*movespeed
+  if(gettilesolid(posx,posy-colwidth)) posy=flr(posy-colwidth)+1+colwidth
+  if(gettilesolid(posx,posy+colwidth)) posy=flr(posy+colwidth)-colwidth
+ end
+ -- move back
+ if(btn(3))then
+  posx-=dirx*movespeed
+  if(gettilesolid(posx-colwidth,posy)) posx=flr(posx-colwidth)+1+colwidth
+  if(gettilesolid(posx+colwidth,posy)) posx=flr(posx+colwidth)-colwidth
+  posy-=diry*movespeed
+  if(gettilesolid(posx,posy-colwidth)) posy=flr(posy-colwidth)+1+colwidth
+  if(gettilesolid(posx,posy+colwidth)) posy=flr(posy+colwidth)-colwidth
+ end
+ -- turn left
+ if(btn(1))then
+  angle-=rotspeed
+  dirx=cos(angle)
+  diry=sin(angle)
+  planex=cos(angle+0.25)*fovsize
+  planey=sin(angle+0.25)*fovsize
+ end
+ -- turn right
+ if(btn(0))then
+  angle+=rotspeed
+  dirx=cos(angle)
+  diry=sin(angle)
+  planex=cos(angle+0.25)*fovsize
+  planey=sin(angle+0.25)*fovsize
+ end
+
+ -- is button4 still held
+ if(btn4held==1 and machinegun==0)then
+  if(not btn(4))btn4held=0
+ else
+  -- shoot
+  if(btn(4) and ammo>0 and shoottimer==0)then
+   if(machinegun==1)then
+    shoottimer=10
+   else
+    shoottimer=shootdelay
+   end
+   gunframe=1
+   btn4held=1
+   testgun=1
+   ammo-=1
+   drawammo()
+   sfx(0,0,0)
+  end
+ end
+
+ -- is button5 still held
+ if(btn5held==1)then
+  if(not btn(5))btn5held=0
+ else
+  -- open door
+  if(btn(5))then
+   testdoor()
+   btn5held=1
+  end
+ end
+end
+
+-- look ahead for a door and
+-- activate it if possible
+function testdoor()
+
+ -- look ahead to next tile
+ x=flr(posx)
+ y=flr(posy)
+ if(abs(dirx)>abs(diry))then
+  if(dirx>0)then
+   x+=1
+  else
+   x-=1
+  end
+ else
+  if(diry>0)then
+   y+=1
+  else
+   y-=1
+  end
+ end
+
+ -- get the tile 
+ index=y*mapwidth+x
+ tile=peek(0x2000+index)-2
+ 
+ -- is this a door
+ if(tile==8 or tile==9)then
+  timer=objectstate[index]
+  -- is the door full closed
+  if(timer==0) then
+   objectstate[index]=doordelay
+   objectactive[index]=1
+   sfx(2,0,0)
+  else
+   -- is the door closing
+   if(timer<20) then
+    objectstate[index]=doordelay-timer
+    sfx(2,0,0)
+   end
+  end
+ end
+end
+
+-- check if the player has
+-- collected something
+function checkcollection()
+ index=flr(posy)*mapwidth+flr(posx)
+ 
+ tile=peek(0x2000+index)-1
+ -- is this a soldier
+ if(tile==60)then
+  -- does the soldier still have ammo
+  if(objectstate[index]==soldierstatedeadammo)then
+    if(ammo==99) return
+    sfx(1,0,0)
+    objectstate[index]=soldierstatedead
+    ammo+=4
+    if(ammo>99) ammo=99
+    drawammo()
+  end
+ end
+ 
+ -- is this a collectable
+ if(tile>=40 and tile<50) then
+  -- has the object already been collected
+  if(objectstate[index]==0) then
+   -- ammo?
+   if(tile==40)then
+    if(ammo==99) return
+    ammo+=4
+    if(ammo>99) ammo=99
+    drawammo()
+   end
+   -- machine gun?
+   if(tile==41)then
+    machinegun=1
+   end
+   -- treasure?
+   if(tile==42)then
+    score+=1000
+    drawscore()
+   end
+   -- cross?
+   if(tile==43)then
+    score+=100
+    drawscore()
+   end
+   -- cup?
+   if(tile==44)then
+    score+=500
+    drawscore()
+   end
+   -- food?
+   if(tile==45)then
+    if(health==100)return
+    health+=10
+    if(health>100) health=100
+    drawhealth()
+   end
+   -- health?
+   if(tile==46)then
+    if(health==100)return
+    health+=20
+    if(health>100) health=100
+    drawhealth()
+   end
+   -- crown?
+   if(tile==48)then
+    score+=1000
+    drawscore()
+   end
+
+   sfx(1,0,0)
+   -- mark object as collected
+   objectstate[index]=1
+  end
+ end
+end
+
+-- update gun animation
+function updategun() 
+ if(shoottimer>0)then
+  shoottimer-=1
+  if(machinegun==1)then
+   if(shoottimer==5)then
+    gunframe=0
+   end
+  else
+   if(shoottimer==shootdelay-10)then
+    gunframe=0
+   end
+  end
+ end
+end
+
+-- update all the active objects
+function updateobjects()
+ removeobject=0
+ -- run through all active objects
+ for key,value in pairs(objectactive) do
+  -- get the object type
+  tile=peek(0x2000+key)-2
+  
+  -- is this a door
+  if(tile==8 or tile==9)then
+   -- make sure the player isn't inside 
+   -- the door when it's closing
+   ok=true
+   if(objectstate[key]==20)then
+    x=key%mapwidth
+	y=flr(key/mapwidth)
+	if(x==flr(posx) and y==flr(posy)) ok=false
+   end
+   
+   if(ok)then
+    if(objectstate[key]==20) sfx(3,0,0)
+    -- reduce timer
+    objectstate[key]-=1
+    -- end of animation?
+    if(objectstate[key]==0)then
+     objectactive[key]=2
+	 removeobject=1
+    end
+   end
+  end
+  
+  -- is this a soldier
+  if(tile==59)then
+   -- is idle
+   if(objectstate[key]==soldierstateidle)then
+    objecttimer[key]+=1
+    if(objecttimer[key]==30)then
+	 objecttimer[key]=30
+	 objectstate[key]=soldierstatealert
+	end
+   else   
+    -- update the state timer
+    objecttimer[key]-=1
+    if(objecttimer[key]==0)then
+     -- end the current state
+	 if(objectstate[key]==soldierstatehit)then
+	  objectstate[key]=soldierstateidle
+	  objectactive[key]=2
+ 	  removeobject=1
+	 elseif(objectstate[key]==soldierstatedying)then
+	  objectstate[key]=soldierstatedeadammo
+	  objectactive[key]=2
+ 	  removeobject=1
+	 elseif(objectstate[key]==soldierstatealert)then
+	  -- is the soldier still on screen (and player still alive)
+	  if(objectsseen[key] and health>0)then
+	   -- shoot
+	   objectstate[key]=soldierstateshoot
+	   objecttimer[key]=30	  
+       sfx(4,0,0)
+	   damageeffect=5
+	   -- lose some health
+       health-=5
+       if(health<=0)then
+	    health=0
+	   end
+       drawhealth()
+	  else
+	   -- go back to idle
+	   objectstate[key]=soldierstateidle
+	   objectactive[key]=2
+ 	   removeobject=1
+	  end
+	 elseif(objectstate[key]==soldierstateshoot)then
+	   objectstate[key]=soldierstatealert
+ 	   objecttimer[key]=30
+	 end
+    end
+   end
+  end
+ end
+
+ -- do any objects need to be removed from the list 
+ while removeobject==1 do
+  removeobject=0
+  -- run through all active objects
+  for key,value in pairs(objectactive) do
+   if(objectactive[key]==2)then
+	 objectactive[key]=nil
+	 removeobject=1
+	 break
+   end
+  end 
+ end
+end
+
+function updatedead()
+ if(health==0)then
+  deadtimer+=1
+  if(deadtimer==120)then
+   _init()
+  end
+ end
+end
+
+------------------------------
+-- all the render functions
+------------------------------
+
+function _draw()
+ if(showtitle==1)then
+ else
+  clip(0,0,128,128-15)
+  clearscreen()
+  drawwalls()
+  drawgun()
+  draweffects()
+ end
+end
+
+function clearscreen()
+ rectfill(0,0,127,55,5)
+ rectfill(0,56,127,127,13)
+end
+
+rayposx=0
+rayposy=0
+raydirx=0
+raydiry=0
+mapx=0
+mapy=0
+stepx=0
+stepy=0
+tile=0
+perpwalldist=0
+wallx=0
+index=0
+
+function renderdoor()
+ timer=objectstate[index]
+ 
+ -- calc distance to wall
+ if (side==0) then
+  perpwalldist=(mapx-rayposx+(1-stepx)/2)/raydirx
+ else
+  perpwalldist=(mapy-rayposy+(1-stepy)/2)/raydiry
+ end
+
+ -- work out the wall x fraction
+ if(side==0)then
+  wallx=rayposy+perpwalldist*raydiry
+ else
+  wallx=rayposx+perpwalldist*raydirx
+ end
+ wallx-=flr(wallx)
+ 
+ -- work out percent the door is open
+ dooropenpercent=0
+ if(timer>0)then
+  dooropenpercent=1
+  if(timer>doordelay-20) dooropenpercent=1-(timer-(doordelay-20))/20
+  if(timer<20) dooropenpercent=timer/20
+ end
+ wallx+=dooropenpercent
+ 
+ solid=false
+ if(wallx<1) solid=true
+
+ -- flip door for other side 
+ if(tile==8 and mapy<posy) wallx=1-wallx
+ if(tile==9 and mapx>posx) wallx=1-wallx
+ 
+ return solid
+end
+ 
+function drawwalls()
+ tempobjectsseen={}
+ distances={}
+  
+ palt(0,false)
+ for x=0,screenwidth do
+  --calculate ray pos/dir
+  camerax=2*x/screenwidth-1
+  rayposx=posx
+  rayposy=posy
+  raydirx=dirx+planex*camerax
+  raydiry=diry+planey*camerax
+  
+  -- which map tile
+  mapx=flr(rayposx)
+  mapy=flr(rayposy)
+  
+  --length of ray
+  rds=raydirx*raydirx
+  if(rds>0.0001)then
+   deltadistx=sqrt(1+(raydiry*raydiry)/rds)
+  else
+   deltadistx=1000
+  end
+  rds=raydiry*raydiry
+  if(rds>0.0001)then
+	  deltadisty=sqrt(1+(raydirx*raydirx)/rds)
+	 else
+	  deltadisty=1000
+	 end
+
+  if(raydirx<0)then
+   stepx=-1
+   sidedistx=(rayposx-mapx)*deltadistx
+  else
+   stepx=1
+   sidedistx=(mapx+1-rayposx)*deltadistx
+  end  
+  if(raydiry<0)then
+   stepy=-1
+   sidedisty=(rayposy-mapy)*deltadisty
+  else
+   stepy=1
+   sidedisty=(mapy+1-rayposy)*deltadisty
+  end  
+
+  --cast the ray until we hit a wall
+  while true do
+   --move to the next tile edge
+   if(sidedistx<sidedisty)then
+    sidedistx+=deltadistx
+    mapx+=stepx
+    side=0
+   else
+    sidedisty+=deltadisty
+    mapy+=stepy
+    side=1
+   end
+   
+   --fetch the tile from the map data
+   tile=peek(0x2000+mapy*mapwidth+mapx)
+   if(tile!=1)then
+    tile-=2
+    --is this tile solid
+    if(tile<8)then
+     -- calc distance to wall
+     if (side==0) then
+      perpwalldist=(mapx-rayposx+(1-stepx)/2)/raydirx
+     else
+      perpwalldist=(mapy-rayposy+(1-stepy)/2)/raydiry
+     end
+	 
+     -- work out the wall x fraction
+     if(side==0)then
+      wallx=rayposy+perpwalldist*raydiry
+     else
+      wallx=rayposx+perpwalldist*raydirx
+     end
+     wallx-=flr(wallx)
+
+     --stop ray casting
+     break
+    else
+     --is this a door
+     if(tile<10)then
+      index=mapy*mapwidth+mapx
+	  if(renderdoor()) break	  
+     else
+      index=mapy*mapwidth+mapx
+      --this must be an object
+      if(tempobjectsseen[index]==nil) then
+       -- has the object been collected
+       if(tile==59 or objectstate[index]==0) then
+        tempobjectsseen[index]=tile
+       end
+      end
+     end
+    end
+   end
+  end
+   
+  -- remember the distance to the wall
+  distances[x]=perpwalldist
+ 
+  -- calc line height
+  lh=flr(flr(wallscale/perpwalldist)/2)
+
+  -- calc the texture x coord
+  texx=flr(wallx*texwidth)
+  if(side==0 and raydirx>0)then
+   texx=texwidth-texx-1
+  end
+  if(side==1 and raydiry<0)then
+   texx=texwidth-texx-1
+  end
+
+  -- calc sprite coords from tile type
+  if(tile==8 or tile==9) tile=6
+  texx+=tile*texwidth
+  texy=flr(texx/128)*texwidth
+  texx=(texx%128)
+  -- and draw sprite
+  sspr(texx,texy,1,texwidth,127-x,56-lh,1,lh*2)
+ end
+ 
+ drawobjects(tempobjectsseen,distances)
+end
+
+function soldierhit(key)
+ -- reduce health
+ objectextra[key]-=1
+ 
+ -- is soldier dead
+ if(objectextra[key]==0)then
+  objectstate[key]=soldierstatedying
+  objecttimer[key]=10
+  -- award score
+  score+=100
+  drawscore()
+ else
+  objectstate[key]=soldierstatehit
+  objecttimer[key]=10
+ end 
+ -- make sure soldier is active
+ if(objectactive[key]==nil) objectactive[key]=1
+end
+
+function drawsoldier(key,x,y,size)
+ -- make sure soldier is active
+ if(objectactive[key]==nil) objectactive[key]=1
+ 
+ -- do we need to test shooting this
+ if(testgun==1)then
+  -- is soldier in a state to be shot
+  state=objectstate[key]
+  if(state!=soldierstatedying and state!=soldierstatedead and state!=soldierstatedeadammo) then
+   -- calc screen width of soldier
+   width=14*size
+   if(width<20) width=20
+   x1=x-width/2
+   x2=x+width/2
+   -- does the shot hit the player 
+   -- (is soldier in the middle of the screen)
+   if(x1<64 and x2>=64)then
+    -- no more gun testing
+    testgun=0
+	soldierhit(key)
+   end
+  end
+ end
+
+ -- get the soldier's state
+ state=objectstate[key]
+ -- get the sprite for this state
+ sprite=soldierstatesprites[state+1]
+ drawspriteworld(sprite,x,y,size)
+ 
+ -- is there ammo spawned
+ if(state==soldierstatedeadammo)then
+  drawspriteworld(0,x,y,size)
+ end
+ 
+ -- is there soldier shooting
+ if(state==soldierstateshoot and objecttimer[key]>20)then
+  drawspriteworld(33,x,y-14*size,size)
+ end
+end
+
+function sort(a)
+ i=1
+ while (i<=#a) do
+  local j = i
+  i+=2
+  while j > 2 and a[j-2] < a[j] do
+   a[j],a[j-2] = a[j-2],a[j]
+   a[j+1],a[j-2+1] = a[j-2+1],a[j+1]
+   j = j - 2
+  end
+ end
+end
+
+function drawobjects(objects,distances)
+ palt(0,true)
+
+ -- build a 'sorted by distance' 
+ -- table of the objects
+ sortedobjects={}
+ for key,value in pairs(objects) do
+  dx=key%mapwidth+0.5-posx
+  dy=flr(key/mapwidth)+0.5-posy
+  distance=sqrt(dx*dx+dy*dy)
+  add(sortedobjects, distance)
+  add(sortedobjects, key)
+ end
+ sort(sortedobjects)
+
+ invdet=1.0/(planex*diry-dirx*planey)
+ 
+ -- render all the objects we saw
+ i=2
+ objectsseen={}
+ while (i<=#sortedobjects) do
+  key=sortedobjects[i]
+  -- calc world coords from tile coords
+  spritex=key%mapwidth+0.5-posx
+  spritey=flr(key/mapwidth)+0.5-posy
+
+  -- xform to camera space
+  transx=invdet*(diry*spritex-dirx*spritey)
+  transy=invdet*(-planey*spritex+planex*spritey)
+  
+  -- infront of the camera
+  if(transy>0) then  
+   -- xform to screen space
+   sx=127-flr((screenwidth/2)*(1+transx/transy))
+   -- is the object on screen
+   if(sx>0 and sx<screenwidth-1) then
+    -- is the object closer than the wall
+    if(transy < distances[127-sx]) then
+     sy=56+(wallscale/2)/transy  
+     size=3/transy
+ 	 
+	 -- get the object type
+     tile=objects[key]
+	 
+	 -- add this to the seen table
+	 objectsseen[key]=1
+	 
+	 -- is this a soldier
+     if(tile==59)then
+	  drawsoldier(key,sx,sy,size)
+	 else	 
+      -- get sprite from tile  
+      index=tile-38
+      sprite=objecttable[index]
+      drawspriteworld(sprite,sx,sy,size)
+	 end
+    end
+   end
+  end
+  i+=2
+ end
+ 
+ -- don't need to test gun anymore
+ testgun=0
+end
+
+function drawgun()
+ palt(0,true)
+ if(gunframe==0)then
+  drawspriteworld(27,64,128-15,2)
+ else
+  drawspriteworld(28,64,128-15,2)
+ end
+end
+ 
+function drawscore() 
+ clip(0,128-15,128,15)
+ drawnumber(5,128-7,score,5)
+ clip(0,0,128,128-15)
+end
+
+function drawhealth()
+ clip(0,128-15,128,15)
+ drawnumber(34,128-7,health,3)
+ clip(0,0,128,128-15)
+end
+
+function drawammo()
+ clip(0,128-15,128,15)
+ drawnumber(84,128-7,ammo,2)
+ clip(0,0,128,128-15)
+end
+
+function drawnumber(x,y,value,digits)
+ spacing=4
+ x+=(digits-1)*spacing
+ for i=0,digits do
+  rectfill(x,y,x+spacing-1,y+5,1)
+  if(i>0 and value==0) then
+  else
+   digit=value%10
+   value=flr(value/10)
+   print(digit,x,y,7)
+  end
+  x-=spacing
+ end
+end
+
+-- draw a sprite on the 2d hud
+function drawsprite(index, x, y)
+ offset=index*4+1
+ sx=spritedata[offset+0]
+ sy=spritedata[offset+1]+64
+ w=spritedata[offset+2]
+ h=spritedata[offset+3]
+ sspr(sx,sy,w,h,x,y,w*1,h*1)
+end
+
+-- draw a sprite in the 3d world
+function drawspriteworld(index, x, y, size)
+ offset=index*4+1
+ sx=spritedata[offset+0]
+ sy=spritedata[offset+1]+64
+ w=spritedata[offset+2]
+ h=spritedata[offset+3]
+ sw=w*size
+ sh=h*size
+ sspr(sx,sy,w,h,x-sw/2,y-sh,sw,sh)
+end
+
+-- draw the collect/damage effect
+function draweffects()
+ if(damageeffect>0)then
+  damageeffect-=1
+  rectfill(0,0,127,15,8)
+  rectfill(0,15,15,128-15,8)
+  rectfill(128-15,15,127,128-15,8)
+  rectfill(15,128-30,128-15,128-15,8)
+ end
+ if(health==0)then
+  rectfill(0,0,127,127-15,8)
+ end
+end
+if(_update60)_update=function()_update60()_update_buttons()_update60()end 
+__gfx__
+11111111111111111111111111111111555555ddddddd55ddddd5111111555554444444444444444444444444444444411111111111111111111111111111111
+01111111101000011110000111110110dddd5d6666666556ddddd15666dd55555555045555555045504555045555545511111111111111011111101111110110
+01111111100000011100000111100000666d1d66d6ddd15ddddd5156666666665555045555555045504555045555545511111111111111011111101111110110
+011110111000000110000001111000006dd51d6dddddd15ddddd1156dddddddd5555045555555045504555045555545511111111111111011111101111110110
+00100000000000010010000111100000ddd51d6dddddd51551111156dddddddd5555045555555045504555045555545511111111111111011111101111110110
+000101000000000100000001111001105551156dddddd51515555556ddd555555555045555555045504555045555545501111111111111011111101111110110
+000000000000000000000001110001001111156dddddd5156666d155555111115555045555555045504555045555545501111111111111011111101111110110
+00000000000000000000000111000000511115ddddddd51d6dddd1155111555555550455555550455045550455555455000000d5555555555555555555110000
+11111110000000000000000111000111666651d6ddddd51d6dddd156d56666665555045555555045504555045555545511111151111111111111111115110111
+11110000011110000010000111000111dddd515ddddd551ddd5551d65d6666d65555045555555045504555045555545511111151010010001001001015110111
+11100100011100000010000110000111dddd51555111111551111166556ddddd5555045555555045504555045555545511111151050011005001101115110111
+11100110011100000000000110000111dddd51ddd5515ddd666d556d556ddddd5555045555555045504555045555545511111151050011005001101155110111
+10100000011001000111000110000111dddd116ddd556666666d156d55dddddd5555045555555045504555045555545511111151050011005001101155110111
+111100000011110001100001110001115551116ddd556ddddddd156d151111555555045555555045504555045555545511111151050011005001101155110111
+101100000011110001100001100001111555556ddd516ddddddd156d155555115555045555555045504555045555545511111151050011005001101155110111
+11000000000110000110000110000111d666656ddd5166ddddd5156d1d66ddd55555045555555045504555045555545511111151050011005001101155110111
+11000000000000000100000111000111d6ddd56ddd51d6ddddd5156d1dddddd55555045555555045504555045555545511111155555011005001101155110111
+00000000000000000100000110000111d6ddd16ddd5156ddddd5156d1dddddd55555045555555045504555045555545511111155555011005001101155110111
+00000000000100000110000110000111d6ddd16ddd5156dddd55155555dddd515555045555555045504555045555545511111151115011005001101155110111
+00000000001000000110000110000011ddddd16ddd51555111111555551111115555045555555045504555045555545511111155115011005001101155110111
+00000000000000000100000000000000d6ddd1dddd51155555555dddddddddd55555045555555045504555045555545500000155555011005001101155110000
+01111111111100000100000000000000d6ddd1dddd511d6666666777666666d15555045555555045504555045555545511111155555011005001101155100110
+01111111111000100000000000000000dddd51dddd511d666d6666dddddddd515555045555555045504555045555545511111151111011005101101155111110
+01111111101000100000000111111110ddd511dddd511d6ddddddddddddddd51555504555555504550455504555554551111115105001105d501105155111110
+01111111100000000111100111111100511515555551156ddddddddddddddd51555504555555504550455504555554551111115105001105d1011dd155111110
+011111110000000000000001111110005dd555111111155555dddddddddddd51555504555555504550455504555554551111115105001100515515d555111110
+01111111000000111111000111110100d66666dddd555555511555555111111155550455555550455045550455555455111111510500110050551d5555111110
+01111111000000111111000110001000d6ddd66666666666555111111111115555550455555550455045550455555455111111510500110051555d5155111110
+01110000000000110110000110000000d6dddddddddddd6d55d66d55dddddd555555045555555045504555045555545511111151050011005155111155111110
+01011000000000100000000111000000d55555555555555551d66ddd6dddddd15555045555555045504555045555545511111151050011115115555155111110
+01000000000000000000000100000000511111111111111111555555dddddd5155550455555550455045550455555455111111551555555d5555555555111111
+11111111111111111111111111011111555555111111111111555115111111115555045555555045504555045555545551111111111111111111111111111111
+44444444444444444444444444444444555555ddddddd55ddddd51111115555511111111111111111111111111111111d33ddddddddddddddd33333333333333
+55555555555555555555555555555554ddd55d6666666556ddddd15666dd55551333333333cc33c333333333333333c3cc63ccccccccccccccccccccccccc633
+55555555555555555555555555555514666f465aaaaa644a6aa6444aad6a7a6613333333333333d333333333333333c3ccc333cccccccccccccccccccccccc33
+556aaaaaaaaaaaaaaaaaaaaaaaaaa4146d49552005555555555555550014445d1c333333333333333333333333333cc3c33333333c3cccccccccccccccccccc3
+55945555555555555555555555554415ddd51548840224d425522248845ddddd133333333cccccccccccc3333333c631c33333333333333333333333336cccc3
+5594133cccdd555555555ddd3333d415551115e888448ed84542888884555555133333333cccccccccccccc33333c6c3c3c3333333333ccccccccccccc6c6633
+55943ccc6eee888888888eee6333d4151111154888448ed845428888841111111333333333ccccccccccccccc333c6c3c333333333333333cccccccccc6ccc33
+55943cc4eeee888888888eeee4ccd4155111154888448ed845428888841155551c333333333cccccccccccccccc3c6c3d33333333333333333cccccccc6cccc3
+55943cc2844555522555524482ccd4156666514888448ed845428888845d6666133333333333ccccccccccccccccc631d3333333333333333333cccccc6cccc3
+55941cc2205dd15dd533dd5022ccd414dddd5148884446d76d554888845d66d61333333333333cccccccccccccccc6c3c3333333333333333333333ccc6cc633
+55941de8457d51d76dd356d248ecd414dddd5148884d5dddd5515488845ddddd13c3333333333cccccccccccccccc6c3c333333333333333333333333c6ccc33
+559418ee56d15156d551517d5ee8d414dddd51488845d67766d15488845ddddd1c333333333333ccccccccccccccc6c3333333333333333333333333336cccc3
+5594148437515d576d5551663484d415ddd511e888556615615d55e88455dddd133333333333333cccccccccccccc631333333333333333333333333336333c3
+5594114016511d7777dd15665043d41555511166d5556100000555dd551111151333333333333333cccc6666cccc66c33333333333333333333333333363c633
+55943c100651116666511566005cd415155551fe44d561000005d5fe4415551113333333333333333ccd6dd53c6d66c33333333333333333333333333363cc33
+55943cd4065111dddd51156628dcd415d66661e888d56600005dd5e8845dddd513333333333333333ccddd551c91c6c3c3333333333333333333333333633333
+55941ce8265111d555515d6628ecd415d6ddd566d5d5676005ddd5dd555dddd5133333333333333333cdd4451c95363133333333333333333333333333633333
+559415825d5111d515d5567d1285d415d6ddd1fe4455677656dd55fe445dddd51333333333333333333d55011c9536c33333333333333333333333333363c633
+559433422561116515d156650243d414d6ddd1488845d77766d555488455dd511333333333333333333d54511c95366d3333333333333333333333333363cc33
+55941c1102d5116d1d6117d20133d414ddddd148884d6d6766155488841111111c33333333333333333d51111c95366d33333333333333333333333333633333
+55941ce2242554666445151422edd415d6ddd1488844ddddd5514888845dddd51333333333333333333d5551133336c333333333333333333333333333633333
+559418820005affe4a9951000288d415d6ddd14888448fde45d28888845666d11333333333333333333d555113c3366d3333333333333333333333333363c633
+5594128230219a40002513001282d415dddd514888448ed845428888845ddd5113333333333333333333333333cc3c6d33333333333333333333333333c33c33
+5594131100119a00004513100113d415ddd5114888448ed845428888845ddd511c333333333333333333333cccccc66d33333333333333333333333333c33333
+55941d4212019a80024511021245d4155111154888448ed845428888845ddd5113333333333333333333333cccccc63133333333333333333333333333c33333
+559414e224219a982255112422e4d4155dd5552888448ed845428888845ddd51133333333333333333333333ccccc6c333333333333333333333333333c33c33
+5594154011154ff9944551111043d415d666664888448ed84542888884111111133333333333333333333333ccccc6c333333333333333333333333333c33c33
+55941312413496f9944451314213d414d6ddd64888448ed845428888841111551c33333333333333333333333cccc6c33333333333333333333333333cc33333
+559411111359fff9944455111333d414d6ddddd55555555221511242225ddd551333cccccccccc3333cccccccccc663133333333333333333333333333333333
+55999999999999999999999999999414d55555555555555551dddd55ddddddd113c3cc6666cccccccccc666666666cc333c33333333333333333333333333c33
+55511111111111111111111111111114511111111111111111555555dddddd5113ccd3ccd333333333333333d3ccd3c333333333333333333333333333333333
+555555555555555555555555555555141111111111111111111111111111111153dd33dd333333331133333333dd33d5d5555555555555555555555555553555
+0000000000009afa9994000000000000000000000008080000000000000dddddddddd0000000000000000400b3133bbbbd630000088000000000d00000094000
+00000000000009fa999000000000000040009000000808000900004000d11111115555000000000000000400b666bbbb333100008ee8000000056500000f9006
+000000000090990aa9f900000000000044444000000800000949994004ddddd555551150dd5d1500099408003bbbb33311110002e66e2000001d155000094006
+0000000009f9999990a9990000000000400040000006d500090000400444444445455550d560010055540000b66bbbbb31110000866800000016d510000e5006
+0000000000a999995a9799000000000040999999999999999999999404444444444455501d000014eeee4e40333333331111000061160000001d5110000e5006
+00000000009a09f99f90a900000000004004444444444444444444505dddddddd555511515011411114454443bbb333311110000666600000ef51154000e8006
+00000000000fa9f99f9af0000000000044444000000551000555555045dddd5555555115d11044e4ee4150443bbbb33311110000155140000ff444e4000e8006
+0000000000000070070000000000000040004000000050000500005044444444444455550000454444554004bbbbb3331111000f111140000fffff9400088006
+000000000000000aa000000000000000400090000000500005000050444444444444555500004ee44e4550053bbbbbb33111000ff44e44000f9fff9400084107
+000000000000000000000000000000009994444400005044444444504444444444445555000009e5544520003b331111111100feffffe40007717776000e4107
+00000000000000000000000000000000400540040000504004400450d444444444445555000004451ee500003bbbb333111100ef9ff9e4000117117600e76107
+000000000000000000000000000000004005400400005040044004505dddddddd55555110000e91110550000bbbbb3331111006dd44d6d500171171600674107
+00000000000000000000000000000004400540040000504004400450055ddd555555511500011551105000003bbbbbb3311106ddd55dddd50117171600e74107
+00000000000000000000000000000004500540040444555504400450044444444445555001110051110000003b331111111166ddd555d6d55771171600e70107
+000000000000000000000000000000095115111445554555554111510d444444454555500110000011000000bbbb33331111666677709a7b0f00171600760107
+0000000000000000000000000000000000000045451445115551111100dddddd5555110000110000000000000bb3311111116666777894a111f9717600760117
+000000000000000000000000000000000000000000045111111111150005555511111000001100000000000066666606777f8f777600991111191717086d0116
+00000000000000000000000000000000009999999999999999000000006660606666600000000007000000000000006778888888776099449394717708e60116
+0000000000000000000000000000000999999999999999999994507765ddd5d5ddd66d66d0000606700000000000007777778777777999419394171708e60106
+0000000000000000000000000000000009944444444444555550067d511111111111115d7d00676d67d776d0000d60ddddddddddddd999999999777708860106
+00000000000000000000000000000000000000005511000000000d77d6dcc11111cc66d66d766000767d667676667d1111111111111000990000777708855006
+0000000000000000000000000000000000000000d5110000000006dd56676667766d6d5d556dddddd665557717700066777700006d51000000400000080e5006
+00000000000000000000000000000000000000006d510000000006d77d76dddddd51556d15000000005111661d60006677770001dd51000000e00000080e5006
+00000000000000000000000000000000000000007651000000000656656666d76ddd51dd150000d77777766511500066777700054ec1100000e00000000e5006
+00000000000000000000000000000000000000006651000000000d66d515111555111111510000994000000000006d51000000014e95000000440000000e5007
+0000000000000000000000000000000000000000675100000000076d766d66666d66dd555100099444466d000000dd51000000004f91000044445000000e5007
+000000000000000000000000000000000000000067d100000000067dd55661111155111115cc6664443b3100000d111110000000d11600004e455000000e5007
+000000000000000000000000000000000000000067d1000000000d6dd7666dd6666d6d1515cc776d3bb3313300005f4e000005e514444440e444500000074007
+000000000000000000000000000000000000d77767d11111111110d55dddd15dddddd5151100333333333355000e1dd11400045414445544494440409f7a9457
+000666666666666666666666666600000000667676d551111111100000555555555555555577006111d001710fef411199400e14414450404444440409999457
+66666666677777777777776666666667666666667770000003333330000005554444999455550dd1111107170f44f4f454404e55441150444444444477777777
+066666666666666666666666666666676666666677700003bbbbbbbb30000555444444995555d666cc1117170555115541104e1157d111444445445077777777
+000000000000000000000000000000000b3000000000003bbbb66bbbb3000554455555944555d666cc1117170005111441000451444515404944554066666666
+0000000000003331000000000000000000133000000000003bb66bb3000005554ffe444e5555666dc1111171000e514150000404444450509445444566666666
+00000000001bbbb33100000000000000b1b3b10000000000000aa00000000555fffff4ff555566dcc11111710005155110000f04444440404444444066666666
+0000000001bd77f7db100000000000031131100000000000000aa00000000511555ffe1f155566dcc1111771004e455551000054415455044554455066666666
+00000000003bddddb300000000000b3bb31bbb3330000000000aa00000000514e164417e015566dcc111117100ee425441000044415445044445445066666666
+000000000000000000000000000003111b33033100000000000aa00000000514f7ffff7ff155d6dcc11111710045111110000044455445004544440066666666
+0000000000000000000000000000033bb313331b01000000000aa00000000554ff944fff4555d6dcc111177704e940049400005e414e45000555540066666666
+0000000000000000000000000000bbbbb3b1b1111130000000099000000005549f9ffff94555d6dcc111177104f5500549100054415441000045000066666666
+000000000000000000000000000b31b3b3b11333300000000009900000000551fffffeff155506dcc111011704f5100549500001151150000111100077777777
+000000000000000000000000000003b13331b1100000000000099000000005514fffff7f15550ddcc11101710e94000044500001151150000111100077777777
+0000000000000000000000000000b11b1335310111100000000990000000055154ee4ee415550cdcc11107110111000011000001151150000611100077777777
+0000000000000000000000000000003330b53333001000000009900000000551554444fe555500ccc11107770111000011000001151150001111110077777777
+00000000000000000000000000000003b365b31010000000000990000000055554eef4ff55550011111006660111000011100011151111001111110077777777
+00000000000000000000000000000b00006d0000000000000004400000000555549efff45555003330080066111000001110660000a000001111110077777777
+00000000000000000000000000000000006d00000000000000099000000001c11c1c1c1c11c10333300e00661110000001116600009000001111110077777777
+00000000000000000000000000000000006600000000d6667faffaf7666d0c1c1ccc1ccc1c1c033338e7e86677777770007000aa8aaa88a01111110077777777
+0000000000000000000000000000000000666000000d6679f777777f9666dccc1c1c1c1c1c1c0333300e0077666666600719009888a828800111100066666666
+0000000000000000000000000000000000676000000d6666799999976666dc1c1c1c1c1c1c1c333310080077666666607eae7042889288017177777766666666
+000000000000000000000000000000000067d0000000d66666666666666ddc1c1c1c1c1c11c1666677777777666666671a8a1904129121071777777766666666
+000000000000000000000000000000000067d00000000000000000660000000000000000000dd555000000000000000090a0900499999c017777777766666666
+000000000000000000000000000000000066d00000000000006d076d667d006600700000000d551100ffff900000000000a00071177717711777777766666666
+0000000000000000000000000000000f9567d5540000000006dd7655d7d5d6556d7600000066dd9f4fffff48f902020000a00071171171117177777766666666
+00000000000000000000000000000007515651141000000006657777dd6666ddd6006666082f4510144411548449990000600071717177167777777766666666
+0000000000000000000000000000000a9555111100060676075776666d77715d66d66d6d00801111145111022424444000105577711771767777777766666666
+0000000000000000000000000000000a77a995550000000dd6dd1551d61116566d7d666660001111100111110000000766666611777117176666666677777777
+0000000000000000000000000000000a77a99445111000605576557d556765d665d6dd0000000000000001110000000766666666777f99aa7666666677777777
+00000000000000000000000000000000aa9995511110000000000076dd67611d5d05550007777777666666611111111111d5dd00000fff822666666677777777
+000000000000000000000000000c1c1cc11c11c1ccc1c1c000000000000000000000001cc11c11c11cc11cc666666616666666666d00ffa95666666677777777
+000000000000000000000000000c1c1c11c1c1c11c11c1c000c1111111111111111cc1c111c11c1c1c1c1c155555551555555555510009510666666677777777
+000000006666666666660000000ccc1cc1ccc1c11c11ccc1c111111111111111111c001c11c11c1c1cc11cc0000000033301111111000a400666666677777777
+666666666666666666666666666c1c1c11c1c1c11c11c1c01cccccc11111111111110011c1c11c1c1c1c1c100000000333000001113004400666666677777777
+066666667777777766666666777c1c1cc1c1c1cc1c11c1c76666666677777777666666cc111c11c11c1c1cc00000003331000000111077a95666666677777777
+__gff__
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__map__
+0303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303
+0303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303
+0303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303
+0303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303040404060404040404060404040303030303030303030303030303030303030303030303
+03030303030303030303030303030303030303030303030303030303045d0101010101010101015d04030303030303030303030303030303030303030303030303030303030329292c2c03030303030303030303030303030307030306010156013d560101560101060404040403030303030303030303030303030303030303
+03030303030329292b2c030303030303030301010101010101010101040101010101010101010101042c2c2d040303030303030303030303030303030303030303030303030329292b2b0103030303030303015401010101015401010b010101010101010101013d0b013d2c0603030303030303030303030303030303030303
+03030303030329292b01010303030303030301010101010101010101040101010101010101010101042d2d2d0403030303030303030303030303030303030303030303030303030703030a0303070303030301010103030303070303060101010101010101010101060404040403030303030303030303030303030303030303
+030303030303012c2d5a015a2d01010303030101010303030303030304010101010101010101010104030303030303030303030303030303030303030303030303030303030701570101012c01573d070303010101030303030303030404040604040a0404060404040303030303030303030303030303030303030303030303
+03030303030301013d010101010101030101013d01010103030303030303030304010101040303030303030303030303030303030303030303030303030303030303030303036801010156013d01010b0101015401010103030303030303030304013d0104030303030303030303030303030303030303030303030303030303
+0303030303030101010101010101010301010101013d0103030303030303030306015401060303030303030303030303030303030303030303030303030303030303030303072b573d01010101570107030303070303030303030303030303030401010104030303030303030303030303030303030303030303030303030303
+03012f6903032b2b0101010101013d03030303030303030303030303030303030401010104030303030303030303030303030303030303030303030303030303030154010303030703030a0303070303030303030303030303030304040404040401010104040403030303030303030303030303030303030303030303030303
+0301010103030303030101010303030303030303030303030303030401010b3d010154010160040303030303030303030303030303030303030303030303030303030a03030303030701540107030303030303030303030303030304290104040401010104040403030303030303030303030303030303030303030303030303
+03010101030303030301010103030303030303030303030303030304292f04030401010104030303030303030303030303030303030303030303030303030303030154010301012e03010101030303030303030303030303030303042a2f04030401010104030303030303030303030303030303030303030303030303030303
+030101010b01543d0701540107030303030303030303030303030304040404030601540106030303030303030303030303030303030303030303030303030303030101010301012d03013d0103030303030303030303030303030303030303030401010104030303030303030303030303030303030303030303030303030303
+030101010303030303030a03030303030303030303030303030303030303030304060a06040303030303030303030303030303030303030303030303030303030701540107033d01010101010101010303030303030303030303030303030307035c015c03070303030303030303030303030303020202020202020202020303
+030101010303015c01010101015c01070303030303030303030303035c013d0101010101010101015c0303030303030303030303022e0101015569696902030303010101030301015401010154010103030303030303030303030307010101010101010101010101010702020202020202020202020101010101010169020303
+030101010103010101010101010101030303030303030303030303030101010101010101010101010101020101010101010101010201010101013d010102030303010101010b0101010101010101010703030303030303030303030301015801010158010101580101010b0101010101010101010b0101010101010101050303
+03010101010301010101010101010103030303030303030303030303010101010101010101010101010102010101010101010101020101010101010101020303030101010303010154010101540101030303030303030303030303070101010101010101010101010107020202010101010202020201015e2e015e013d020303
+030101010303015c01010101015c01070303030303030303030303035c01010101010101010101015c0303030202010102020303020101010101010101020303030101010303010101010101013d0103030303030303030303030303030703030301010103030307030303030302010102030303020101010101012e01020303
+070154010703030303030a03030303030303030303030303030303030303030302020a020203030303030303030201010203030302020265020266020202030303010101030303030301010103030303030303030303030303030303030303030201010102030303030303030302010102030303030302020202020203030303
+0301010103030303030101010303030303030303030303030303030303030303020154010203030303030303030201010203030303030303030303030303030303010101033d01510301010103030303030303030303030303030303030303030201010102030303030303030302013d02020202020202020202020303030303
+0301010101015401070154010703030303030303030303030303030303030303020101010203030303030303030201010202020102010201023002020303030303010101032e01010301010103030303030303030303030303030303030303030201010102030303030303030302010101020101013d01010101010203030303
+030154010303030303010101030303030303030303030303030303030303030302015401020303030303030303020101010b0101010101013d01010503030303030101010303030303010101030303030303030303070303030303030303030302013d0102030303030303030302013d01020101010101010101010203030303
+03010101010101010101010101010101010301010101013d0709030303030303020101010203030303030303030202020202020102010201020102020303030303010101010154010101010101015401010b0101013d01010b010803030303030201010102030303030303030303030303030202020202020202020303030303
+03010101010101010101010101010101010301010101013d070903030303030302015401020303030303030303030303030303030303030303030303030303030303030303030303030307030303030303030a030307030303030303030303030201010102030303030303030303030303030303030303030303030303030303
+030303030303030303030907010103010101012f03030303030303020202020202020a020202020202020303030303030303030303030303030303030303030303030303030303030308010101010301010301010303030303030302522e01010201010102010101010203030303030303030303030303030303030303030303
+03030303030303030303090701010101010303030303030303030302010101010b0154010b01630101020303030303030303030303030303030303030303030303030303030303030303030303010303030303030303030303030302010101010201010102010101010203030303030303030303030303030303030303030303
+0303030303030303030303030329290303030303030303030303030201010101020101010201010101020303030303030303030303030303030303030303030303030303030303030303030303293203030303030303030303030302020202020201010102020202020203030303030303030303030303030303030303030303
+03030303030303030303030303030303030303030303030303030302010101010201010102010101010203030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303020101016a0b0154010b2e0101520203030303030303030303030303030303030303030303
+0303030303030303030303030303030303030303030303030303030201010101020101010201010101020303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030302020202020201010102020202020203030303030303030303030303030303030303030303
+030303030303030303030303030303030303030303030303030303020101010101010101010101010102030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030201015401010154010101543d290203030303030303030303030303030303030303030303
+030303030303030303030303030303030303030303030303030303023d01010101012e010101010101020303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030302050202050202020202050202050203030303030303030303030303030303030303030303
+__sfx__
+000000002465024650246502465023650226601f6501d6501a650186401564013630106200e6200d6200a62008620056100461003610016100161001010010100101001610010100101001010000100001000010
+000200002875028750287500000000000347503475034740347303472034710347003470034700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00020000073230832308323206122061204612016120160002600046000361202612026120161201612016120261203612036120161201612036120361201600036000b610116103d61033210292213c2213b221
+0002000036211362113c21106600056100561008612086120561204612036120261204612046120a6120a6120b61206612076120000000000000000000002610016100c3100b3100b31020613063130731307313
+000000003d6503c6503a650396503865037660336502f6502a65026640226401f6301c6201a6201662012620106200c6100a61006610026100161001010010100101001610010100101001010000100001000010
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__music__
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00
+00 00 00 00 00

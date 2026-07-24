@@ -1,0 +1,7 @@
+Press Z to frog. Go do frog stuff.
+
+This is now a complete game and solvable. It'll tell you when it's over.
+
+Puzzle games are meant to have solid mechanics, so unless a frog starts floating, you're probably not actually stuck and it's probably not a bug.
+
+https://www.lexaloffle.com/bbs/?tid=2796

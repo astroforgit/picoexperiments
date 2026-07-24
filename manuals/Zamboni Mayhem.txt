@@ -1,0 +1,4 @@
+Been working on this off and on for quite a while and it's the most complicated one I've ever written. Needed to learn camera, palettes, and modulo math. I'm probably the most proud of the dynamic music queuing when the Zamboni shows up, and during the game over screen. Thanks Gruber for all your publicly published music tutorials.
+endless
+
+https://www.lexaloffle.com/bbs/?tid=40562

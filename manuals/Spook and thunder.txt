@@ -1,0 +1,12 @@
+Can you conquer the storm?
+
+Spook and thunder is a top down shooter with an creepy and ambient atmosphere.
+
+-Arrow keys for movement
+-X to shoot
+-Hold and release X to throw a granade
+-C to dash
+
+Thank you for playing ; Þ
+
+https://www.lexaloffle.com/bbs/?tid=30927

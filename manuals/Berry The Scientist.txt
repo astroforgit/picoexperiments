@@ -1,0 +1,24 @@
+Berry The Scientist is alternative version of my entry to #ProcJam "Terry The Skeleton" that I submitted couple of days ago. The idea was suggested by @dw817 and ( @mtrc)[https://twitter.com/mtrc]. In Berry, the player can move up to three moves before the enemies can move. The goal is to see how fast you can finish the game in number of enemy steps. I hope it make you smile while playing :)
+
+Controls:
+
+    Arrows: to move/dash around based on the movement type
+    X or Z: to change the movement type between normal movement (1 tile move) or dashing (tile it reach a wall)
+
+Tips:
+
+    Player can do three actions before enemies react.
+    You can kill enemies by walking in them during your turn.
+    The game follows the following sequence: player turn, enemies attack, then enemies move.
+    The highlighted tiles are tiles that you should stay away during the enemies attack turn as they signify where the enemies will strike.
+    Always pay attention where will you land after you final action.
+    The rotating stars shows where the player will land if they took that action, if a certain direction doesn't have a star then it means you can't move in that direction but sometimes you can attack if you are beside the enemy.
+    Pay attention to the player eye color as it determine the type of movement (beside the rotating stars).
+    Each enemy type have an easy movement patterns and a clear attack area so try to learn them when they first appear.
+    Kill all the enemies so you can proceed to the next room.
+    You gain 1 health when you advance to the next level.
+    I know it is not much and might have some bugs but I hope you will enjoy it :)
+
+Ahmed Khalifa
+
+https://www.lexaloffle.com/bbs/?tid=35880

@@ -1,0 +1,7 @@
+Picoball is a deck-building game.
+Manage your own football club and lead it to victory in an 17 round competition.
+Your progress will be saved automatically after each round.
+
+Post a screenshot of your finish!
+
+https://www.lexaloffle.com/bbs/?tid=30607

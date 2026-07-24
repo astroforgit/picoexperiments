@@ -1,0 +1,24 @@
+My first complete PICO8 game, for the Ludum Dare 37.
+
+A small twist on the "factory" genre, you have a limited time to
+play, and must make as much money as possible in that time.
+What is the optimal build order?
+
+If you enjoy this cart, submit a screenshot with your highscore! :-)
+
+Updates:
+2016-01-08: v1.3.1 -- Fixed menu bug, added bignum, super-buffed sandwiches
+2016-12-25: v1.3 -- Rebalanced costs, added two new items, added overwriting
+2016-12-19: v1.2 -- Changed the input, added some messages
+2016-12-12: v1.1 -- Initial ld 37 version
+
+TODO:
+
+    Add Music
+    Modify the Graph to be log-based
+    Challenge Modes: Blocked tiles, unique machines, free build mode
+    Improve sprites and add tile variations
+    Figure out why the game is getting slow
+
+
+https://www.lexaloffle.com/bbs/?tid=28192

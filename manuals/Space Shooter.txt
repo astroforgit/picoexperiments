@@ -1,0 +1,13 @@
+I decided to learn pico-8 and this is my first attempt at a game. Many of the components of this game have come from posts and ideas in the forum. The main inspiration was the shooter in 16 gifs. The music is also from another cartridge -- credit given for both in the code and in the scrolling credits.
+
+I haven't tested this out on different devices yet... so let me know if there are any issues.
+
+Scott
+
+update 2017/13/01
+
+Ok, made a few minor updates as well as the suggestion to make the game over not transition right away. Hmmm, I thought I had a screen shot, but it doesn't seem to have made it -- the game is still tuned for a score of about 1000 and/or level 10 (if starting at level 1). It starts slow, but gets crazy quickly. My screenshot was a typical game for me (with laptop keyboard) -- level 17, normal speed, 1250 or so score and 12% accuracy (that's what the game's tuned for).
+
+While at the menu -- use arrows left and right to get more hearts... arrows up and down to change starting level.
+
+https://www.lexaloffle.com/bbs/?tid=28402

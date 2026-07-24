@@ -1,0 +1,8 @@
+To play follow the instructions and press the shown direction faster than your opponent. Use "x" to confirm and "c" to go back in menu.
+
+For ethical reasons a vegan mode is included and can be activated via the settings.
+(However we promise in our production and testing phase no animals were harmed.)
+
+Feel free to comment and write us critics etc, as we are still learning and this is our first project.
+
+https://www.lexaloffle.com/bbs/?tid=32652

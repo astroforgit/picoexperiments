@@ -1,0 +1,8 @@
+Second game created using the Pico-8 fantasy console. Loosely based off the board game Heroquest with some adaptations and workarounds for the limited space. 4 different characters, 6 different levels.
+
+Update: Added in a bunch of quality of life changes when inside the game so you have a better idea of what's going on. Changed the scenario around so hopefully a little more epic (and difficult) ending to the 6 levels. Uses a different cart ID as removed one item so items got renumbered. Unless any major defects are present should be last version (speaking of which, I think there might be a random bug with the ambush code which I've not been able to track down yet).
+
+Update 2: After the last update including Split(), I reworked the code a bit to allow music and sound effects.
+Update 2 - part 2: Made a minor error with the coding, uploaded a fixed version so it should now no longer crash on scenario 3!
+
+https://www.lexaloffle.com/bbs/?tid=38530

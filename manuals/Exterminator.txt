@@ -1,0 +1,10 @@
+🐛 EXTERMINATOR 🐛
+
+Kill bugs before they kill you.
+Controls
+
+    ▲/▼/◄/► - move
+    X - shoot
+    Z/C - use bomb, skip shop
+
+https://www.lexaloffle.com/bbs/?tid=38540

@@ -1,0 +1,31 @@
+
+Tetrolled
+BBS
+PICO-8Cartridges
+	
+8
+
+Cart #55036 | 2018-08-12 | Code ▽ | Embed ▽ | License: CC4-BY-NC-SA
+8
+
+It's like Tetris except the game doesn't really care.
+
+.
+Made in 2 hours for Ludum Dare 42 compo!
+
+.
+Controls:
+
+    Left Right to move tetramino horizontally
+    Hold Down to make fall faster
+    Double-Tap Down to plummet
+    Up to rotate
+    or Z and X to rotate
+    On game over, hold Z and X to start again!
+
+.
+Thanking my Patreon supporters for their continued support allowing me to keep on making video games and other weird stuff! Here are some names!
+
+Alan Oliver, amy, Andreas Bretteville, Andrew Reist, Andrew Reitano, Anne Le Clech, Austin East, berkfrei, Bitzawolf, Brent Werness, Chris McCluskey, Christian Östman, Cole Smith, Collin Caldwell, Dan Lewis, Dan Rees-Jones, Dave Hoffman, Finn Ellis, Flo Devaux, Giles Graham, HERVAN, hushcoil, Jacel the Thing, Jakub Wasilewski, Jearl, Jefff, Jeremy Bouin, Jesse Bergerstock, Joel Jorgensen, Joseph White, Marcin Majewski, Marty Kovach, Max Cahill, Meru, Paul Nguyen, Pierre B., Qristy Overton, Reza Esmaili, rotatetranslate, Ryan Malm, Sasha Bilton, Sean S. LeBlanc, Thomas Wright, Tim and Alexandra Swast, vaporstack, Zachary Cook
+
+https://www.lexaloffle.com/bbs/?tid=31658

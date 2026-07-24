@@ -1,0 +1,12 @@
+Rolly
+
+Jump, Roll, Hop and Dive your way through sharp caves to rescue your friends.
+
+Huge thanks to everybody who helped us make this - for contributions big or small. Also, a massive thank you to the Pico 8 community for showing us how it's done!
+
+Controller recommended - here's a link to the game on itch.io which supports xbox controller in browser.
+https://davbo.itch.io/rolly
+
+Davbo and Rory~
+
+https://www.lexaloffle.com/bbs/?tid=31526

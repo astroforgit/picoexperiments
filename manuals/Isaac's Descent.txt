@@ -1,0 +1,8 @@
+For Ludum Dare 36! The theme is "ancient technology", though it didn't exactly take center stage here.
+
+Tiny puzzle-platformer with some less common mechanics.
+
+Once again, to fit within the compressed size limit, I had to strip out all the comments. :(
+Original source here: https://c.eev.ee/isaacs-descent/isaac-pristine.p8
+
+https://www.lexaloffle.com/bbs/?tid=27559

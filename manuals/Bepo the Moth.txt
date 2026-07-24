@@ -1,0 +1,9 @@
+A platformer I made for the Brackey jam, the theme was "light". The game can be played on itch, and here is the rating page. Source code is on github
+
+Guide Bepo the Moth to the exit by turning on lights.
+
+The physics are very much inspired by celeste, as I took a few days to take apart how gravity and sliding is handled. The camera shake is from one of trasevol_dog's doodles.
+
+I wish I had had more time for levels.
+
+https://www.lexaloffle.com/bbs/?tid=31788

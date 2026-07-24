@@ -1,0 +1,14 @@
+Trick or treat through the underworld, spooking monsters into fleeing and looting their candy along the way!
+
+Controls:
+
+Up/down keys to navigate menus
+Z or C to preform an action
+X to back out of a menu
+Stats:
+
+Spook (white) - Character runs away if their spook gets too low. Chocolate recovers it.
+Sugar (orange)- Used for powerful tricks. Gained through eating candy corn.
+Made in a week for GBJam7.
+
+https://www.lexaloffle.com/bbs/?tid=35180

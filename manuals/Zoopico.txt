@@ -1,0 +1,22 @@
+This is a PICO-8 remake of Zoop, a puzzle game released for a ton of different platforms in 1995.
+
+It's fairy simple, coloured shapes push in from the edge of the screen, and if any reach the centre square, the game ends. You control the pointer thing in the middle, and you can shoot it at the shapes. If you hit a shape of the same colour, it's cleared from the grid. If you hit a shape of a different colour, you swap colours.
+
+There are 3 power-ups. A spinny wheel thing that clears a whole column:
+
+A lighting bolt that clears a 3x3 square:
+
+And a paint splotch that clears all shapes of the target colour from one side of the grid:
+
+If you collect 5 poorly drawn springs, everything gets cleared from the grid.
+
+The top left number is the score, bottom right is the level, and top right is the number of shapes to clear to finish the current level.
+
+Level mode: everything is cleared at the end of a level. Continual mode: it isn't.
+The speed is based on the level, and the difficulty setting just controls how full the grid is when you start.
+
+Clear chains of the same colour for higher scores.
+
+And that's everything.
+
+https://www.lexaloffle.com/bbs/?tid=38352

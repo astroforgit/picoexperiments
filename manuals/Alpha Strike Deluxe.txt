@@ -1,0 +1,36 @@
+OVERVIEW
+
+Alpha Strike Deluxe is a shoot-em-up in the classic NES style. Shoot your way through 5 levels, destroy everything that moves and save the world from danger. It's a remake of my 2016 game Alpha Strike, now with better code, silky smooth 60FPS and swanky graphical effects!
+WHAT WAS CHANGED?
+
+    no more grid! Every object in the game moves smoothly and isn't bound to the grid now!
+    separate scores and lives for both players!
+    graphical improvements! New sprites for all enemies, some terrain sprites, and swanky graphical effects like trails and explosions! No more 8x8 explosions and tiny spaceship trails!
+    balance fixes! The difficulty curve is now smoother and the game is a bit easier (but not too easy!)
+    that new-fangled fancy 60FPS thing you apparently wanted! Back in the 90s, everyone was happy with 30FPS and no one complained!
+
+CONTROLS
+
+Pico-8 D-Pad/arrow keys - move ship
+Pico-8 (X) button/X key - shoot bullets
+TIPS
+
+Every 10000 points net you an extra life.
+Collect powerups to enhance your weapon.
+When you die, you lose your weapon.
+When you get a game over, you can use one of the two continues you have.
+CHEAT CODES
+
+Use only if you want to ruin your fun! Those are the same as in the original Alpha Strike.
+
+Enter those at title screen.
+U,R,D,D - invincibility
+U,D,D,R - full power
+L,U,D,D,R - 10 lives
+R,R,L,U - 99 continues
+U,L,U - stage 2
+U,L,L - stage 3
+U,L,D - stage 4
+U,L,R - stage 5
+
+https://www.lexaloffle.com/bbs/?tid=32773

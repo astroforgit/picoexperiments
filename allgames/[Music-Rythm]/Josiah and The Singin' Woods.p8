@@ -1,0 +1,1026 @@
+pico-8 cartridge // http://www.pico-8.com
+version 29
+__lua__
+-- rhythm game
+-- by mac
+
+function _init()
+
+	gamestate="title"
+	
+	--title screen
+	words="josiah and the singin' woods"
+	words2="press x"
+	words3=""
+	
+	--where the notes go?
+	x=16 y=95
+	
+	--this is where the character is
+	cx=32 cy=56
+	
+	beat=0 -- current musical beat
+	frame=0 --updated every frame
+	latency=7 --sound/visual lag
+ fps=60 --frames per sec
+ bps=5 --beats per sec
+ fpb=fps/bps --frames per beat
+	target=0 --current target frame
+	targetsindex=1 --advances on target hit
+	score=0 --???
+	counts={0,0,0,0} --how many: awesome,great,close,miss (used at the end screen)
+	
+	hearts=3 --lives
+	stars=1 --current difficulty
+	starsd={1,1,1,1,1,1,1,1,1,1,1,1,} --star delta, tracks the recent accuracy to adjust difficulty
+	
+	menu="play" --controls the menu selection
+	menut={"play","latency"} --fine! i made this a table! are you happy now?!
+	menusel=1
+	
+	--targets:
+	good=fps/4 --15
+	great=fps/10 --6
+	awesome=fps/30 --2
+	hype=""
+	hypetimer=0
+	
+	--buttons
+	bp=false --button pressed
+	targetheight={}
+	targetheight[—]=1
+	targetheight[]=5
+	targetheight[ƒ]=21
+	targetheight[‘]=13
+	targetheight[‹]=17
+	targetheight[”]=9
+	
+	--stepcharts:
+	targets={} --note frame targets
+	chart1score={} --note scores
+	chart1={} --stepchart
+	chart1sym={} --symbols to draw
+	chart1len=500 --how many beats are in chart1
+	for i=1,chart1len do
+	 chart1[i]=""
+	end
+	--output from spreadsheet goes here!
+	chart1[33]="x" chart1[39]="x" chart1[41]="x" chart1[47]="l" chart1[49]="r" chart1[55]="u" chart1[57]="u" chart1[59]="l" chart1[65]="d" chart1[71]="l" chart1[73]="u" chart1[75]="l" chart1[77]="x" chart1[79]="o" chart1[81]="u" chart1[95]="x" chart1[97]="x" chart1[103]="x" chart1[105]="x" chart1[111]="l" chart1[113]="r" chart1[119]="u" chart1[121]="u" chart1[123]="l" chart1[129]="d" chart1[135]="r" chart1[137]="l" chart1[139]="d" chart1[141]="l" chart1[143]="r" chart1[145]="u" chart1[161]="x" chart1[167]="x" chart1[169]="x" chart1[175]="l" chart1[177]="r" chart1[183]="u" chart1[185]="u" chart1[189]="l" chart1[193]="d" chart1[199]="l" chart1[201]="u" chart1[203]="l" chart1[205]="x" chart1[207]="o" chart1[209]="u" chart1[223]="x" chart1[225]="x" chart1[231]="x" chart1[233]="x" chart1[239]="l" chart1[241]="r" chart1[247]="u" chart1[249]="u" chart1[253]="l" chart1[257]="d" chart1[263]="r" chart1[265]="l" chart1[267]="d" chart1[269]="l" chart1[271]="r" chart1[273]="u" chart1[289]="x" chart1[297]="x" chart1[299]="x" chart1[301]="x" chart1[305]="l" chart1[307]="l" chart1[309]="l" chart1[313]="r" chart1[315]="r" chart1[317]="r" chart1[321]="d" chart1[329]="r" chart1[331]="l" chart1[333]="r" chart1[337]="x" chart1[345]="d" chart1[349]="u" chart1[353]="r" chart1[355]="l" chart1[357]="r" chart1[361]="l" chart1[363]="r" chart1[365]="l" chart1[369]="d" chart1[377]="u" chart1[379]="d" chart1[381]="u" chart1[385]="d" chart1[387]="d" chart1[389]="d" chart1[391]="r" chart1[393]="l" chart1[395]="d" chart1[397]="l" chart1[399]="r" chart1[401]="u" chart1[407]="o" chart1[409]="x" chart1[415]="x" chart1[417]="x"
+	--repeat the first verse and chorus
+	for i=0,243 do
+		if(chart1[i+31]!=nil) then
+			chart1[415+i]=chart1[i+31]
+		end
+	end
+			
+	--animation
+	bframe=0 --moves the background
+	
+	curanim="w" --which animation should be playing?
+	aframe=0 --resets when moving to a new animation, and follows framerate
+	
+	anim1={}
+	--output from spreadsheet goes here
+	anim1[33]="j" anim1[65]="c" anim1[97]="j" anim1[123]="c" anim1[145]="j" anim1[161]="j" anim1[193]="c" anim1[209]="j" anim1[225]="j" anim1[257]="c" anim1[273]="j" anim1[289]="j" anim1[321]="c" anim1[337]="j" anim1[369]="c" anim1[409]="j"
+	--repeat the first verse and chorus
+	for i=0,243 do
+		if(anim1[i+31]!=nil) then
+			anim1[415+i]=anim1[i+31]
+		end
+	end
+
+	for i=1,#chart1 do
+	 --store targets
+	 if(chart1[i]!="") then
+	  targets[targetsindex]=i*fpb
+	  targetsindex+=1
+	 end
+	 
+	 --create symbol chart
+		chart1sym[i]=""
+	 if(chart1[i]=="x") chart1sym[i]="—"
+	 if(chart1[i]=="o") chart1sym[i]=""
+	 if(chart1[i]=="l") chart1sym[i]="‹"
+	 if(chart1[i]=="r") chart1sym[i]="‘"
+	 if(chart1[i]=="u") chart1sym[i]="”"
+	 if(chart1[i]=="d") chart1sym[i]="ƒ"
+	 
+	 --change to symbols
+	 if(chart1[i]=="x") chart1[i]=—
+	 if(chart1[i]=="o") chart1[i]=
+	 if(chart1[i]=="l") chart1[i]=‹
+	 if(chart1[i]=="r") chart1[i]=‘
+	 if(chart1[i]=="u") chart1[i]=”
+	 if(chart1[i]=="d") chart1[i]=ƒ
+		
+	end
+	
+	--target sprites
+	tsprites={}
+	for i=0,5 do
+		tsprites[i]=160+i*16
+	end
+
+	--debug?
+	targets[targetsindex]=16959
+
+	--reset
+	targetsindex=1
+
+	target=targets[targetsindex]
+
+	--dog animation frames
+	dogf={}
+	dogf[0]=12
+	dogf[1]=12
+	dogf[2]=14
+	dogf[3]=44
+	dogf[4]=44
+	dogf[5]=14
+
+	--fade to black tables
+	fade={0,1,1,1,0,5,6,2,4,9,3,1,1,2,9}
+	fadein={0,1,1,1,0,5,6,2,4,9,3,1,1,2,9}
+
+
+end
+-->8
+--handler
+--tells _draw and _update what to do
+
+function _update60()
+	
+ if(gamestate=="play") then
+  play()
+ elseif(gamestate=="title") then
+  title()
+ elseif(gamestate=="ending") then
+ 	ending()
+ end
+ 
+end
+
+function _draw()
+
+ if(gamestate=="play") then
+  drawplay()
+ elseif(gamestate=="title") then
+  drawtitle()
+ end
+
+end
+-->8
+--play
+--called by _update if it's time to play the game
+
+function play()
+	
+	--inc frame and animations
+	frame+=1
+	aframe+=1
+	
+	--set beat
+	beat=flr(frame/fpb)
+ 
+	--adjust difficulty/stepchart based on stars
+	stars=-0.5
+	for i=1,#starsd do
+	 stars+=starsd[i]
+	end
+	stars=ceil(stars/#starsd)
+	
+	if((frame/fpb)%12==0) then
+		if(stars<3) then
+			for i=beat+15,beat+27,4 do
+			 if(anim1[i]==nil) then
+			 	chart1[i]=""
+			 	del(targets,i*fpb)
+			 end
+			end
+		end
+ end
+ 
+ --see if the player missed the target note
+ if(target+good<frame) then
+		hit()
+ end
+	
+	--see if we're out of hearts
+	if(hearts==0) then
+		_init()
+		words="try again!"
+	end
+	
+	--hitting the target:
+	if(btn(chart1[target/fpb])) then
+		if(bp==false) then
+			--is the target close?
+			if(abs(target-frame)<good) then
+				--did we already record a score?
+				if(chart1score[target/fpb]==nil) then
+					hit()
+				end
+			end
+ 	end
+ 	bp=true
+ else
+ 	bp=false
+ end
+	
+	--advance hype animation
+	if(hypetimer>0) hypetimer-=1
+	
+--	debug click
+--	if(frame%24==12) sfx(0)
+	
+	--play music
+	if((frame-latency)%192==0) then
+	 music((frame-latency)/192)
+	end
+	
+	--is the game over yet?
+	if(frame/192>=43) then
+		gamestate="ending"
+		frame=0
+	end
+	
+end
+-->8
+--drawplay
+
+function drawplay()
+
+	cls()
+
+	--draw background
+	drawbackground()
+
+	--draw stars	
+ for i=1,stars do
+		spr(137+((beat+i)%2)*2,128-i*16,0,2,2,flr((beat-1)/2)%2==1)
+	end
+
+	--draw hearts
+	--transparency
+	palt(0,false)
+	palt(13,true)
+	
+	if(hearts>0) then
+		for i=1,hearts do
+			spr(163+((beat+i)%2)*2,i*16-16,0,2,2)
+		end
+	end
+	
+	pal()
+	
+	--draw the note frame+lines
+	rectfill(0,96,127,127,0)
+	line(x-1,y,x-1,y+32,5)
+	line(x,y,x,y+32,7)
+	line(x+1,y,x+1,y+32,5)
+
+	for i=0,4 do
+		line(0,y+8*i,127,y+8*i,7)
+	end
+	
+	--draw the stuff attached to beats
+	for i=beat-16,beat+24 do
+	 --setup beat x position
+	 local xpos=i*8-(frame/(fps/bps))*8+x-3
+
+		--draw the "important beat" flashy thing and animations
+		if(anim1[i]!=nil) then
+			rectfill(xpos-1,y+targetheight[chart1[i]],xpos+7,y+targetheight[chart1[i]]+7,5+(frame/4)%3)
+		end
+	 
+	 --dim hit notes
+	 if(i*fpb<target) then
+	 	pal(14,2)
+	 	pal(12,1)
+	 	pal(10,9)
+	 	pal(6,5)
+	 	pal(8,2)
+	 	pal(11,3)
+	 end
+	 --draw the targets
+	 if(chart1[i]!=nil)and(chart1[i]!="") then
+			spr(tsprites[chart1[i]],xpos,y+targetheight[chart1[i]])
+		end
+		pal()
+		
+		--draw obstacles
+		
+		--transparency
+		palt(0,false)
+		palt(13,true)
+
+		--if we're close to the next animation, draw obstacles
+		if(anim1[i]!=nil) then
+			if(anim1[i]=="j") then
+				spr(211,(i*8-(frame/(fps/bps))*8+x)*0.75+32,87,1,1)
+				for j=0,2 do
+					spr(212,(i*8-(frame/(fps/bps))*8+x)*0.75+40+j*8,87,1,1)
+				end
+				spr(213,(i*8-(frame/(fps/bps))*8+x)*0.75+64,87,1,1)
+			elseif(anim1[i]=="c") then
+				spr(128+(frame%3)*3,(i*8-(frame/(fps/bps))*8+x)*1.25+32,48,3,2)
+			end
+		end
+
+		pal()
+
+	end
+
+	--draw hype
+ if(hypetimer>0) then
+ 	if(hypetimer<=4) pal(7,5)
+	 print(hype,x+32,y+12+hypetimer/3,7)
+ 	pal()
+	end
+	
+	--draw animation
+	
+	--transparency
+	palt(0,false)
+	palt(13,true)
+	
+	--idle
+	if(curanim=="i") then
+		spr(0,cx,cy,2,4)
+		if(aframe==60) curanim="w"
+
+	elseif(curanim=="ifail") then
+		spr(0,cx,cy,2,4)
+		if(aframe==60) curanim="w"
+	
+	--walking
+	elseif(curanim=="w") then
+		spr(0+2*(flr((frame+4)/12)%4),cx,cy,2,4)
+		bframe+=1
+	elseif(curanim=="wfail") then
+		spr(0+2*(flr(frame*0.1)%4),cx,cy,2,4)
+		--moveterrain(1)
+		
+	--jumping
+	elseif(curanim=="j") then
+		spr(72,cx,cy-aframe+(aframe/10)^2,3,4)
+		bframe+=1
+		if(-aframe+(aframe/10)^2>0) curanim="w"
+	elseif(curanim=="jfail") then
+  spr(8,cx,cy-aframe+(aframe/4)^2,3,4,(frame/10)%2<1)
+  bframe+=1
+		if(aframe==60) then
+			hearts-=1
+		 curanim="w"
+		end
+	
+	--crouching	
+	elseif(curanim=="c") then
+		spr(80,cx,cy+8,2,3)
+		if(aframe==60) curanim="w"
+	elseif(curanim=="cfail") then
+		spr(8,cx,cy-aframe+(aframe/4)^2,3,4,(frame/10)%2<1)
+		if(aframe==60) then
+			curanim="w"
+			hearts-=1
+		end
+		
+	--slingshot
+	elseif(curanim=="s") then
+		spr(66+3*(flr(aframe/20)),cx,cy,3,4)
+		--moveterrain(2)
+		if(aframe==2*20-1) curanim="i"
+
+	elseif(curanim=="sfail") then
+		spr(8,cx,cy-aframe+(aframe/4)^2,3,4,(frame/10)%2<1)
+		if(aframe==60) curanim="w"
+--moveterrain(2)
+	end
+
+	--reset transparency
+	pal()
+
+--debug
+--print score (debug)
+--print("score: "..score.."/"..100*(targetsindex-1),10,0,7)
+--for i=1,4 do
+--print(counts[i],56,0+i*8,7)
+--end
+-- if(xp) print("xp!",10,8,7)
+--print("frame "..frame,10,8,7)
+--print("beat "..beat,10,16,7)
+--print("beat? "..flr(beat/4),10,24,7)
+--print("bframe "..bframe,10,32,7)
+-- print("target "..target,10,32,7)
+-- print("chart1sym[1] "..chart1sym[1],10,40,7)
+--	for i=1,#targets do
+--		print(targets[i],76,i*8,7)
+--	end
+--	for i=1,#chart1 do
+--		print(chart1[i],100,i*8,7)
+--	end
+--	for i=1,#starsd do
+--		print(starsd[i],64,i*8,7)
+--	end
+--	for i=1,#chart1 do
+--		print(chart1score[i],116,i*8,7)
+--	end
+--	print(flr((beat-1)/4)%2,0,0,7)
+
+end
+-->8
+--title
+
+function title()
+
+	frame+=1
+
+	if(btnp(ƒ))and(menusel<#menut) then
+	 menusel+=1
+	end
+	if(btnp(”))and(menusel>1) then 
+		menusel-=1
+	end
+	menu=menut[menusel]
+
+	if(menu=="play") then
+		if(btn(—)) then
+		 gamestate="play"
+		 frame=0
+		end
+		
+	elseif(menu=="latency") then
+		if(btnp(‘)) latency+=1
+		if(btnp(‹)) latency-=1	
+	
+	elseif(menu=="difficulty") then
+		if(btnp(‘))and(stars<3) then
+			stars+=1
+		elseif(btnp(‹))and(stars>1) then
+			stars-=1
+		end
+				
+	end
+
+end
+-->8
+--drawtitle
+
+function drawtitle()
+
+	cls()
+	
+	drawbackground()
+
+	rectfill(2,32,128-2,64,0)
+	rectfill(5,35,128-5,61,6)
+	for k=1,#words do
+		for i=-1,1 do
+			for j=-1,1 do
+				print(sub(words,k,k),60-#words*2+i+1+k*4,47+j+sin(((frame*-1+k)/50)%2)*2,0)
+			end
+		end
+		print(sub(words,k,k),60-#words*2+1+k*4,47+sin(((frame*-1+k)/50)%2)*2,7)	
+	end
+
+	rectfill(0,96,127,127,0)
+ 
+ for i=1,#menut do
+	 print(menut[i],32,92+i*7,7)
+	 if(menut[i]=="latency") print("latency: "..latency,32,92+i*7,7)
+	 if(menut[i]=="difficulty") print("difficulty: "..stars.." star",32,92+i*7,7)
+	end
+	
+	print("‘",24,92+menusel*7,9+flr(frame/15%2))
+	
+end
+-->8
+--hit
+
+function hit()
+	chart1score[target/fpb]=abs(target-frame)
+ hype="miss!"
+	if(chart1score[target/fpb]<=good) then
+		hype="close!"
+		score+=ceil(100*(good/(good+great+awesome)))
+		if(chart1score[target/fpb]<=great) then
+			hype="great!"
+			score+=flr(100*(great/(good+great+awesome)))
+			if(chart1score[target/fpb]<=awesome) then
+				hype="awesome!"
+				score+=flr(100*(awesome/(good+great+awesome)))
+			end
+		end
+	end
+	
+	--count for the score and adjust difficulty delta
+	deli(starsd,1)
+
+	if(hype=="awesome!") then
+		counts[1]+=1
+		add(starsd,3)
+	elseif(hype=="great!") then
+		counts[2]+=1
+		add(starsd,2)
+	elseif(hype=="close!") then
+		counts[3]+=1
+		add(starsd,1)
+	elseif(hype=="miss!") then
+	 counts[4]+=1
+	 add(starsd,0)
+	end
+	
+	--start hype animation
+	hypetimer=fpb*1.5
+
+	--see if this was an animation target
+	local a=target/fpb	
+	if(anim1[a]!=nil) then
+		curanim=anim1[a]
+		aframe=0
+		if(hype=="miss!") curanim=curanim.."fail"
+	end
+	
+ targetsindex+=1
+ target=targets[targetsindex]
+ 
+end
+-->8
+--drawbackground
+
+function drawbackground()
+
+	--backdrop
+	rectfill(0,16,127,95,0)
+
+	--background
+	pal(4,0)
+	pal(3,0)
+	pal(13,1)
+	map(0,16,0-(bframe/3)%256,-4)
+	pal()
+
+	--foreground:
+	
+	palt(0,false)
+	palt(13,true)
+	map(0,0,0-(bframe/2)%256,0)
+	pal()
+		
+--	--dirt,grass
+--	for i=0,16 do
+--		spr(124,i*8-ts*(frame%16)/2,88)
+--		spr(111,i*8-ts*(frame%16)/2,80)	
+--	end
+--	
+--	--sometimes make a tree
+--	--trunk
+--	local tx=(128-ts*(frame/2)%256)
+--
+--	for i=0,2 do
+--		spr(109,tx,72-i*16,2,2,i%2)
+--	end
+--	--leaves
+--	for i=0,1 do
+--		spr(124,tx+i*8,32)
+--	end
+--	for i=0,1 do
+--		spr(122+i,tx+i*24-8,32)
+--	end
+--	for i=1,4 do
+--		spr(108,tx+i*8-16,24)
+--	end
+--	pal(4,0)
+--	for i=0,1 do
+--		spr(124,tx+i*40-16,24)
+--	end
+--	pal()
+--	for i=0,1 do
+--		spr(122+i,tx+i*56-24,24)
+--	end
+--	
+	
+	--midground:black trees
+	
+	
+	--background:dark blue sky
+	
+	
+end
+-->8
+--ending
+
+function ending()
+
+
+	 
+	flag1=180
+	flag2=flag1+180
+	flag3=flag2+180
+	 
+	cls()
+
+	frame+=1
+
+	--<flag1: boy walks toward dog
+	if(frame<flag1) then
+		drawbackground()
+		bframe+=1
+		
+		--draw the note frame+lines
+		rectfill(0,96,127,127,0)
+		line(x-1,y,x-1,y+32,5)
+		line(x,y,x,y+32,7)
+		line(x+1,y,x+1,y+32,5)
+		for i=0,4 do
+			line(0,y+8*i,127,y+8*i,7)
+		end
+		
+		--boy and dog
+		palt(0,false)
+		palt(13,true)
+		spr(0+2*(flr((frame+4)/12)%4),cx,cy,2,4)
+		spr(dogf[flr(0.2*frame)%6],128-(frame/(fps/bps))*6+32,72,2,2)
+		pal()
+
+	--<flag2: boy stops in front of dog			
+	elseif(frame<flag2) then
+		drawbackground()
+		
+		--draw the note frame+lines
+		rectfill(0,96,127,127,0)
+		line(x-1,y,x-1,y+32,5)
+		line(x,y,x,y+32,7)
+		line(x+1,y,x+1,y+32,5)
+		for i=0,4 do
+			line(0,y+8*i,127,y+8*i,7)
+		end
+		
+		palt(0,false)
+		palt(13,true)
+		spr(0,cx,cy,2,4)
+		spr(dogf[flr(0.2*frame)%6],128-(flag1/(fps/bps))*6+32,72,2,2)
+		pal()
+		
+	--<flag3: curtain falls
+	elseif(frame<flag3) then
+		drawbackground()
+		
+		--draw the note frame+lines
+		rectfill(0,96,127,127,0)
+		line(x-1,y,x-1,y+32,5)
+		line(x,y,x,y+32,7)
+		line(x+1,y,x+1,y+32,5)
+		for i=0,4 do
+			line(0,y+8*i,127,y+8*i,7)
+		end
+
+		palt(0,false)
+		palt(13,true)
+		
+		spr(0,cx,cy,2,4)
+		spr(dogf[flr(0.2*frame)%6],128-(flag1/(fps/bps))*6+32,72,2,2)
+
+		pal()
+	
+		if(frame>flag2) then
+			rectfill(0,0,127,(frame-flag2)*2,1)
+		end
+
+	-->flag3: curtain rises
+	elseif(frame>=flag3) then
+	
+		--transparency
+		palt(0,false)
+		palt(13,true)
+		
+		--backdrop
+		rectfill(0,0,127,127,12)
+		map(0,11,0,88)
+		rectfill(0,96,127,127,0)
+		line(0,88,127,88,0)
+
+		--words
+		for i=-1,1 do
+			for j=-1,1 do
+				print("the end",50+i,24+j,0)
+			end
+		end
+		print("the end",50,24,7)
+
+		print("awesome: "..counts[1],6,100,7)
+		print("great:   "..counts[2],6,107,7)
+		print("close:   "..counts[3],6,114,7)
+		print("miss:    "..counts[4],6,121,7)
+		
+		print("score: ",64,112,7)
+		print(score.."/"..100*(targetsindex-1),64,120,7)
+		
+		--dog+boy
+		spr(0,44,56,2,4)
+		spr(163+(flr(0.1*frame)%2)*2,56,36,2,2)
+		spr(dogf[flr(0.2*frame)%6],68,72,2,2)
+		
+		pal()
+
+		--curtain		
+		rectfill(0,-1,127,(flag3+128-frame)*2,1)
+		
+	end
+
+end
+__gfx__
+ddddddddddddd000ddddddddddddddddddddddddddddd000dddddddddddddddddddddddd0000000000dddddddddddddddddddddddddddddddddddddddddddddd
+ddddd0000ddd0080ddddddddddddd000ddddd0000ddd0080ddddddddddddd000ddddddd000888888000dddddddddddddddd00000ddddddddddd00000dddddddd
+ddd0008800000880ddddd0000ddd0080ddd0008800000880ddddd0000ddd0080dddddd00888888888800dddddddddddddd00fff00ddddddddd00fff00ddddddd
+dd00888888008800ddd0008800000880dd00888888008800ddd0008800000880dddddd08888888888880dddddddddddddd0ff4440ddddddddd0ff4440ddddddd
+d008888888c8800ddd00888888008800d008888888c8800ddd00888888008800ddddd0088888888888800ddddddddddddd0ff4440dd000dddd0ff4440ddd000d
+d08088888c8800ddd008888888c8800dd08088888c8800ddd008888888c8800dddddd0888888888888880ddddddddddd000fc4440dd0f00d000fc4440ddd0f0d
+d0888888c8800dddd08088888c8800ddd0888888c8800dddd08088888c8800ddddddd08888fffff888880ddddddddddd04fff44f0dd0ff0d04fff44f0ddd0f0d
+d008888c88ff0dddd0888888c8800dddd008888c88ff0dddd0888888c8800dddddddd0888fffffff88880ddddddddddd0ffff4ff0dd00f0d0ffff4ff0ddd0f0d
+dd0888c88fcf0dddd008888c88ff0ddddd0888c88fcf0dddd008888c88ff0ddddddd00888fcfffcf88880ddddddddddd00efff4400000f0d00efff4400000f0d
+dd008c88ffcf00dddd0888c88fcf0ddddd008c88ffcf00dddd0888c88fcf0dddddd00ff8ffcfffcff8800dddddddddddd0e044ffffffff0dd00044ffffffff0d
+ddd0088fffcff0dddd008c88ffcf00ddddd0088fffcff0dddd008c88ffcf00ddddd0fff8ffcfffcff8800dddddddddddd000afffffffff0dddd0afffffffff0d
+dd0088fffffff0ddddd0088fffcff0dddd0088fffffff0ddddd0088fffcff0ddddd0fff88ffffffff8000dddddddddddddd0ffffffffff0dddd0ffffffffff0d
+d008800fffff00dddd0088fffffff0ddd008800fffff00dddd0088fffffff0ddddd0ffff8fffffff80ff00ddddddddddddd0ffffffffff0dddd0ffffffffff0d
+00880008ff000dddd008800fffff00dd00880008ff000dddd008800fffff00ddddd00ffff088ff880ffff0ddddddddddddd00ff00000ff0dddd00ff00000ff0d
+088000888f80dddd00880088ff000ddd088000888f80dddd00880088ff000ddddddd00ff8c88ff88c8fff0ddddddddddddd00ff0dd00ff0dddd00ff0dd00ff0d
+000008cccf00dddd08800c888f880ddd000008cccf00dddd088008c8ffcc00ddddddd0f88c888888c8fff0ddddddddddddd0fff0dd0fff0dddd0fff0dd0fff0d
+ddd08c888c880dddd0088cc88c8800ddddd08c888c880ddd00008c888c8880ddddddd0088c888888c88f00ddddddddddddddddddddddddddddd00000dddddddd
+ddd08c8ff8c800dd00ff88c888c8f00dddd08c8ff8c800ddd00ffcc8c8fff0dddddddd088c888888c8800dddddddddddddd00000dddddddddd00fff0dddddddd
+ddd0c8fffccc80dd0fff88cc88ccff00ddd0c8fffccc80dd00fffc8cc8fff00ddddddd008cc8888cc800dddddddddddddd00fff00ddddddddd0ff4440ddddddd
+ddd0c8fffccc80dd0ffffccc88ccfff0ddd0c8fffccc80dd0fffccccccffff00dddddd08cc8cccc8cc80dddddddddddddd0ff4440ddddddddd0ff4440ddddddd
+ddd0c8ffffcc80dd0ffffcc8cccccff0ddd0c8ffffcc80dd0fffcccccc8ffff0dddddd0cccccccccccc0dddddddddddddd0ff4440dddd000000fc4440dd000dd
+ddd0cccfffccc0dd00fffccccccccf00ddd0cccfffccc0dd0ff0ccccccc8fff0dddddd0cccccccccccc00ddddddddddd000fc4440dddd0f004fff44f0dd0f00d
+ddd0ccccffccc0ddd000ccccccccc00dddd0ccccffccc0dd0000cccccccccff0ddddd00ccccccccccccc0ddddddddddd04fff44f0ddd00f00ffff4ff0dd0ff0d
+ddd0ccccccccc0dddd00ccccccccc0ddddd0ccccccccc0dddd00ccccccccc000ddddd0cccccccc0ccccc0ddddddddddd0ffff4ff0ddd0ff000efff440dd00f0d
+ddd0ccccccccc0dddd0cccccccccc0ddddd0ccccccccc0dddd0cccccccccc0ddddddd0cccccc00ccccc00ddddddddddd00efff4400000f00d0e044ff00000f0d
+ddd00cccccccc0ddd00cccccccccc00dddd00cccccccc0ddd00cccccccccc00dddddd0ccccccc0ccccc0ddddddddddddd0e044ffffffff0dd000afffffffff0d
+dddd0ccccccc00ddd0cccccccccccc0ddddd0ccccccc00ddd0ccccccc0cccc0dddddd00cccccc00cccc0ddddddddddddd000afffffffff0dddd0ffffffffff0d
+dddd00cccccc0ddd00ccccc0cccccc0ddddd00cccccc0ddd00cccccc0ccccc0ddddddd0cccccc008cc80ddddddddddddddd0ffffffffff0dddd0ffffffffff0d
+ddddd0cccccc0ddd0ccccccc0ccccc00ddddd0cccccc0ddd0ccccccc0ccccc00dddddd0cc888c0008800ddddddddddddddd0ffffffffff0dddd00ff00fffff0d
+ddddd0ccccc00ddd08cccccc0ccccc80ddddd0ccccc00ddd0cccccc0cccccc80dddddd08888880d0000dddddddddddddddd00ff00000ff0dddd00ff00000ff0d
+ddddd00cc8800ddd008cccc000cc8880ddddd00cc8800ddd088cccc00cccc880dddddd00888800ddddddddddddddddddddd00ff0dd00ff0dddd0fff0dd00ff0d
+ddddd08888880dddd008880000888000ddddd08888880ddd0088800000888800ddddddd000000dddddddddddddddddddddd0fff0dd0fff0dddd00000dd0fff0d
+dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+ddddddddddddddddddddddddddddd000ddddddddddddddddddddd000dddddddddddddddddddddd000ddddddddddd0000d00000dddddddddddddddddddddddddd
+ddddddddddddddddddddd0000ddd0080ddddddddddddd0000ddd0080dddddddddddddd0000ddd0080dddddddddd008800088800ddddddd0000d00000dddddddd
+ddddddddddddddddddd0008800000880ddddddddddd0008800000880dddddddddddd0008800000880ddddddddd0088880888880dddddd008800088800ddddddd
+ddddddddddddddddd000888888008800dddddddddd00888888008800ddddddddddd00888888008800dddddddd0088888c8888800dddd0088880888880ddddddd
+ddddddddddddddddd008888888c8800dddddddddd008888888c8800ddddddddddd008888888c8800ddddddddd08088888c888880ddd0088888c8888800dddddd
+ddddddddddddddddd08088888c8800ddddddddddd08088888c8800dddddddddddd08088888c8800dddddddddd08888888c888880ddd08088888c888880dddddd
+ddddddddddddddddd0888888c8800dddddddddddd0888888c8800ddddddddddddd0888888c8800ddddddddddd0888888c8888800ddd08888888c888880dddddd
+ddddd0000ddd000dd008888c88ff0dddddddddddd008888c88ff0dddd00000dddd008888c88ff0ddddddddddd008888c8888800dddd0888888c8888800dddddd
+ddd000880000080ddd0888c88fcf0ddddddddddddd0888c88fcf0ddd006660ddddd0888c88fcf0dddddddddd00888cc88888f0ddddd008888c8888800ddddddd
+dd0088888800880ddd008c88ffcf00dddddddddddd008c88ffcf00d00600600dddd008c88ffcf00ddddddddd0888c888888cf00ddd00888cc88888f0dddddddd
+d008888888c8800dddd0088fffcff0000000000dddd0088fffcff0d06000060ddddd0088fffcff0ddddddddd0888888888fcff0ddd0888c888888cf00ddddddd
+d08088888c8800dddd0088fffffff0002200220dddd088fffffff0d02200220dddd0088fffffff0ddddddddd08888888fffcff0ddd0888888888fcff0ddddddd
+00888888c8800dddd00ff5555555555622662200000880ffffff00d02200220dd0008800fffff00ddddddddd0088888fffffff0ddd088888888fffff0ddddddd
+0888888c88ff0ddd008fff0ffff0000002022000ff88000fff0000000202200d00f880008ff00000000dddddd000000ffffff000dd00888888fffff00ddddddd
+008888c88fcf0ddd08ffffc8ff88ffff022200d0fff008c8ff88ffff022200dd0fff008c8ff88fffff0dddddddd008ccff00fff0ddd000c8cc8ff000dddddddd
+d0088c88ffcf00dd0ffff88c88c88fffff2f0dd0ffff888c88c88fffff2f0ddd0ffff888c88c88ffff0ddddddd0088c88c88fff0dd00888c888c88800ddddddd
+dd008c8fffcff0dd0ffff88c888c8fffff2f0dd00ffff88c888c8fffff2f0ddd00fffff8c888c8fff00dddddd0088c888c8ffff0d00888c8888c88880ddddddd
+d00888c8fffff0dd0fffff8cc88c88fff02f0ddd0ffff88cc88c88fff02f0dddd00ffff8c888c88000ddddddd0f88c88c88ffff000ff88c888c8888800dddddd
+d088cc888fff00dd00fff888c888c80000f00ddd000f8888c888c80000f00ddddd000f888c888c80dddddddd00ffccc8c888ff000ffff8cc8cc8888ff00ddddd
+008cc8888cf8800dd0008888c888c80dd000dddddd008888c888c80dd000dddddddd00888c888c80dddddddd0fffccccc888880d00ff08cccc8888ffff00dddd
+08cc888c8c8c880dddd008cc8ccc8c0dddddddddddd008cc8ccc8c0dddddddddddddd08cc8ccc8c000dddddd0ffccccccc88000dd00000ccccc88cfffff0dddd
+08c888c88fc8c80dddd00ccccccccc00ddddddddddd00ccccccccc00ddddddddddddd0ccccccccccc00ddddd00fcccccccccc0dddd00cc0ccccccccffff0dddd
+0cc8c8ccffffcc0dddd0ccccccccccc0ddddddddddd0ccccccccccc0dddddddddddd00cccccccccccc000dddd00cccccccccc0ddd008ccc0ccccccccff00dddd
+0ccc8ccccffffc0ddd00ccccccccccc00ddddddddd00ccccccccccc00ddddddddddd0ccccccccccccc080ddddd0cccccccccc00dd088cccccccccccc000ddddd
+00ccccccccfff00ddd0ccccccccccccc0ddddddddd0ccccccccccccc0ddddddddd000ccccccccccccc880ddddd00cccccccccc0d0888cccccccccccc0ddddddd
+d0cccccccccfc0ddd00ccccccccccccc00ddddddd00ccccccccccccc00ddddddd00ccccccccccccccc880dddd00ccccccccccc00088ccccccccccccc0ddddddd
+d000cccccccc00ddd0ccccccc00cccccc0ddddddd0ccccccc00cccccc0ddddddd0ccccccccccccccc8800ddd00cccccc0ccccc800880ccccccccc0cc0ddddddd
+ddd00cccccc0c0dd00cccccc000cccccc00ddddd00cccccc000cccccc00dddddd0ccccccccc000cc8800dddd0ccccccc0cccc8800000ccccccc00ccc0ddddddd
+dd00cccccc0c00dd088ccccc0d00ccccc800dddd088ccccc0d00ccccc800ddddd08ccccccc00d008800ddddd088cccc0ccccc880ddd0000ccc0cccc00ddddddd
+dd0cccc88c8800dd0888ccc00dd0cccc8880dddd0888ccc00dd0cccc8880ddddd088ccccc00ddd0000dddddd0888ccc0cccc8800dddddd0000ccc880dddddddd
+dd0c888888c880dd08888800ddd008888880dddd08888800ddd008888880ddddd008880000dddddddddddddd008888000c88800dddddddddd0888800dddddddd
+dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd00000000000000000000000000000000000000000000000000000000
+dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd00000000000000000000000000000000000000000000000000000000
+dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd0000000a0000000000000000a0000000000000000000000000000000
+dddddddd000dddd000dddddddddddddddddddddddddddddddddddddd000dddd000dddddd0000000a000000000000000aa0000000000000000000000000000000
+dddddddd070ddd0070dddddddddddddddddddddddddddddddddddddd070ddd0070dddddd000000aaa00000000000000aaa000000000000000000000000000000
+dddddddd0700d007700ddddddddddddddddddddddddddddddddddddd0700d00760dddddd000000aaa000000000aaa0aaaa000000000000000000000000000000
+dddddddd077000777700dddddddddddddddddddddddddddddddddddd0760007600dddddd00000aaaaaaaa000000aaaaaaaa00000000000000000000000000000
+ddd0000d07600777677000ddddd0000dddddd000000000ddddd0000d07600760000000dd0aaaaaaaaaaa00000000aaaaaaaaaa00000000000000000000000000
+0000660007600777667670dd00006600ddd000aaaa6670dd000066000760066aaa6670dd00aaaaaaaaa0000000000aaaaaaaa0000444440d00000000dd044440
+0660006007607777767000dd066000600000aaaaaaa000dd06600060070076aaaaa000dd0000aaaaaaa000000000aaaaaaa000000044440d00000000dd004440
+0006006007a777777670dddd0006006067a7666aaaa0dddd0006006007a76aaaaaa0dddd0000aaaaaaaa00000000aaaaaaa00000d044440000000000ddd04440
+dd0060600aaaa0777670dddddd0060607aaa7766aa00dddddd0060600aaaa0aaaa00dddd000aaaa0aaaa0000000aaaa00aaa0000d044444000000000ddd04440
+ddd00aa0aaaaa0a77770ddddddd00aa0aaaaa076600dddddddd00aa0aaaaa0aaa00ddddd000aaa0000aaa000000aa00000aa0000d044444000000000d0004440
+dddd0a8a0aaa00007700dddddddd0a8a0aaa0007770ddddddddd0a8a0aaa000000dddddd00aa00000000a00000a00000000a0000d04444400000000000444440
+dddd0aaa00000dd0070ddddddddd0aaa00000d00000ddddddddd0aaa00000ddddddddddd00a00000000000000000000000000000d04444400000000004444400
+dddd00000ddddddd000ddddddddd0000dddddddddddddddddddd0000dddddddddddddddd00000000000000000000000000000000d0044440000000000444400d
+000e00000000000000000000dddddddddddddddddd00000ddddddddd000000000000000000330333003303330033033330ddddddd04440400ddddd00044440dd
+00eeeee00000000000000000dddddddddd0000dd00088800dd000ddd0008800000000000d0030333000303330003033330ddddddd04440440dddd004400440dd
+0eeeeee02222222222222220d000000dd008800d088888800008000d0088880000000000dd030030000000300000003000ddddddd04040440ddd0044404440dd
+eeeeeee0222222222222ee200088880000888800088777880888880d0887788000000000dd0000003330000033300000000dddddd04040040dd00444004440dd
+2eeeeee02e2e2e2e2e2eee20088888880888888008878888888888000887888008888000dd03300333333003333330033300ddddd04044040dd04444044440dd
+02eeeee0222222222222ee20088778888888888008888888888888800888888888888800dd00330003333300033333003330ddddd044440400004444444440dd
+002e22202222222222222220088788888888888008888888888888800888888888888800ddd03300003333000033330033300dddd044440440044444444440dd
+000200000000000000000000088888888888888008888888888888800888888888888800ddd03330000333300003333033330dddd044440444444444444400dd
+000c00000000000000000000008888888888880000888888888888000088888888888800ddd03330030033300300333003330dddd044444444444444444400dd
+ccccc0000000000000000000d00888888888880dd08888888888880d0088888888888000ddd00330033033300330333003330dddd004444444444444404400dd
+cccccc001111111111111100dd0088888888800dd00888888888800d0088888888888000ddd00330333003303330033000330dddd004444444440444404400dd
+ccccccc011111111111cc110ddd00888888800dddd008888888800dd0008888888880000dd003330333003003330030000300ddddd04444444440444404400dd
+cccccc101c1c1c1c1c1ccc10dddd000888880dddddd0008888800ddd0008888888000000dd033000033030000330300d0300dddddd04444444440444400000dd
+ccccc10011111111111cc110dddddd0008800dddddddd0088800dddd0000888800000000dd0000dd03300030033000dd000ddddddd00444444440444440000dd
+111c10001111111111111100dddddddd0080dddddddddd00800ddddd0000880000000000dddddddd0330033303300ddddddddddddd00444444440444440400dd
+000100000000000000000000ddddddddd000ddddddddddd000dddddd0000000000000000dddddddd0033033300330dddddddddddddd0444444440044444400dd
+000a00000000000000000000333333333333333333333333dddddddddddddddddddddddddddddddd00000000ddd0444444444044444400dddddddddd44444444
+00aaa0000000000000000000333333333333333330333333dddddddddddddddddddddddddddddddd00000000ddd004444044400444440ddddddddddd44444444
+0aaaaa009999999999999900033330333333333303333033dddddd00000000dd00000000dddddddd00000000dddd04440004440444440ddddddddddd44444444
+aaaaaaa0999999999999a990000330033333333333333303dddd00033333300003333330000ddddd00000000dddd04440004440444440ddddddddddd44444444
+9aaaaa909a9a9a9a9a9aaa90033333333333333333333333ddddd0333330003300333333330ddddd00000000dddd04440004444444440ddddddddddd44444444
+0aaaaa0099999999999aaa90333333333333333333000003ddd00003333333333333333333000ddd00000000dddd044440044444044400dd0000dddd40444000
+0aaaaa009999999999999990333003333333333300044400ddd033000033333333033330033300dd00000000dddd044440044444044440dd04400ddd04444000
+099999000000000000000000000000003333333304444440ddd003333000330330000330333330dd00000000ddd0044440444444004440dd04440ddd04444000
+0666660000000000000000003000000000000000000000030dd000000003300333300033330000dd33333333ddd0444004444000000440dd004400dddddddddd
+06666600000000000000000033000000000000000000003300003303333330333330333330030ddd33333333ddd0444004444400000440ddd00440dddddddddd
+066666005555555555555550330cccccccccccccccccc033003333000300003330003330003300d033333033ddd0400044444440000040dddd04400ddddd0000
+666666605555555555566650330cccccccccccccccccc033000330030003300000333300333330d033333003ddd0400444444440040040dddd00440dddd00440
+566666505656565656566650330cccccccccccccccccc0330d00003330333033000000003000000033333333ddd0400444444444040040ddddd0440ddd004440
+056665005555555555556550330cccccccccccccccccc0330dd0300330330033300303300033000333333333dd00404444444444040040ddddd0030ddd044400
+005650005555555555555500300cccccccccccccccccc0030000330000000330003303330333003333300330d004444004444440040040dddddd030dd004400d
+00050000000000000000000000cccccccccccccccccccc0000333303333003303330003303333003000000000044444004444440044040dddddd030dd04400dd
+000000000000000000000000ddddd000000ddddd33333333d04044444444040d0000dd0003300330ddddddd00444400044444440044040dddddd030d00440ddd
+088888000000000000000000dddd00333300dddd33333303d04044044444040d0330000303330000dddddd004444000044444440444440dddddd030d0300dddd
+882228802222222222222200dd000333333000dd33333033d04044044440040d0033033300000330ddddd0044440000044444444444440ddd0000300030ddddd
+882828802222222222888220d00333333333300d33333333d04044044440440d3003330000330333ddd000444000000444044444444440ddd0300030030ddddd
+882228808282828282828220d03333333333330d33333333004044044440400d0303330000330030ddd044440000000440004444444440ddd0330030030ddddd
+288888202222222222888220003033333333030030333333044044044440400d0303300303300000dd0044440000004440000444444440ddd0033030030ddddd
+022222002222222222222200033303333330333033033333044044044440440d0303303300001000d004400000004444400000444444400ddd003030300ddddd
+000000000000000000000000033333333333333033333333004044044440040d0303303000111100004400dd00044444400000000444400dddd0333030000ddd
+000000000000000000000000000000333330000000333300d04040444440040000000330dddddddddddd00000004444444400dd04444440dddd0033030030ddd
+0bbbbb000000000000000000003300300000330033330000d04000444440444003003330ddddddddddd00444004444404400ddd04444440ddddd033030330ddd
+bb3b3bb03333333333333300d03330003003330d00003300d04404444440444033300000dddddddddd00444444444440000dd0004004440ddddd033300330ddd
+bbb3bbb03333333333b3b330d00300303000000d33033300d00444044440444033303303ddddddd000044440444444400dddd0444004440ddddd003303300ddd
+bb3b3bb0b3b3b3b3b33b3330dd0003330033000d33033003d00444044440044033003303dddddd004444440044044440dddd004400044400ddddd0333300dddd
+3bbbbb303333333333b3b330dddd0033033300dd30000003d04444044440440030000300ddddd0044444044044004440dd00044000044440ddddd033330ddddd
+033333003333333333333300ddddd00003300ddd00004000d04444044440440d000d0000dd00004444000440440044400004444000044440ddddd033300ddddd
+000000000000000000000000ddddddd00000dddd00444400d04444444444440d00dddd00dd044444400d0044444004444004400000004440ddddd03330dddddd
+__gff__
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f0000000000000000000001d01c868f0d0ff0000000000000000401d01c868f0d0ffff00000000000000
+__map__
+4040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+4040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+c4c4daf4404040d6c3c4c4c4c4dad94040f3c3c4c4dadac4c4c4c4c4c4c4c4c4c4c4daf4404040d6c3c4c4c4c4dad9404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+c4daf440404040f3f8c3c4c4daf8f4404040f3f5f5f4d6c3c4c4daf4f3c3c4c4c4daf440404040f3f8c3c4c4daf8f4404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+f5f440404040404040f3f5f5f4404040404040e6e740f3f5f5f8f44040f3f8f5f5f440404040404040f3f5f5f44040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+e7404040404040404040e6e740404040404040f6f74040e6e7404040404040e6e7404040404040404040e6e7404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+f7404040404040404040f6f740404040404040e6e74040f6f7404040404040e6f7404040404040404040f6f7404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+e7404040404040404040e6e740404040404040f6f74040e6e7404040404040f6e7404040404040404040e6e7404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+f7404040404040404040f6f740404040404040e6e74040f6f7404040404040e6f7404040404040404040f6f7404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+e740c6c7c8c940404040e6e740c6c7c8c94040e6e74040e6e7404040404040e6e740c6c7c8c940404040e6e740c6c7c84040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+f7e8d6d7d8d9e8e8e8e8f6f7e8d6d7d8d9e8e8f6f7e8e8f6f7e8e8e8e8e8e8f6f7e8d6d7d8d9e8e8e8e8f6f7e8d6d7d84040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c54040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e54040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e54040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e54040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e54040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e54040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e54040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+e5e5e5e5e5e5e5e5f8f8e5e5e5e5e5e5e5e5e5e5f8e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5f8f8e5e5e5e5e5e54040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+e5e5e5e5e5e5e5f44040f3e5e5e5e5e5e5e5e5f440f3e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5f44040f3e5e5e5e5e54040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+f3e5e5e5f8f8f440404040f3f8e5e5e5f8e5f4404040f3e5e5e5e5e5e5f8f8f4f3e5e5e5f8f8f440404040f3f8e5e5e54040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+40f3f5f4404040e3e8e4404040f3f5f440f64040404040f3f8e5e5e5f440404040f3f5f4404040e3e8e4404040f3f5f44040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+4040e640404040f3f5f440404040e64040e640404040404040f3f5f4404040404040e640404040f3f5f440404040e6404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+4040f64040404040e64040404040f64040f64040404040404040e640404040404040f64040404040e64040404040f6404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+4040e64040e3e440f64040404040e64040e64040e3e440404040f640404040404040e64040e3e440f64040404040e6404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+4040f640e3e5e5e4e64040404040f64040f640e3e5e5e4e3e440e640404040404040f640e3e5e5e4e64040404040f6404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+e8e8e5e8e5e5e5e5e5e8e8e8e8e8e5e8e8e5e8e5e5e5e5e5e5e8e5e8e8e8e8e8e8e8e5e8e5e5e5e5e5e8e8e8e8e8e5e84040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e54040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e54040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e54040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e54040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e54040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
+__sfx__
+01060000243501110011100091000000011100000000e100000001110011100091000000011100000000e100000001110011100091000000011100000000e1000000011100111001510000000091000000000000
+011000001c1551c1551c1551c155000001e1552115500000000002115500000000002515525155251552515500000251552315500000211552015500000231552110021100211002110000000000000000000000
+011000002115521155211552115500000000000000000000211552515500000281552d1552d1552d1552d15500000000000000000000000001c5501c550000000000000000000000000000000000000000000000
+011000001c5501c5501c5521c5521c5521c5521c55500000000001c5501c550000001c5501c5501c5521c5521c5521c5521c5521c55500000155501555000000000001c5001c500000001c5001c5001c5001c500
+011000001755017550175521755217552175521755217555000001955019550000001755019550175501555015550155521555215552155501555015555000000000000000000000000000000000000000000000
+011000001055010550105521055210552105521055210555000001555015550000001955019550000001555015550000001a5501a550195501955019550000001750017500175001750017500175000000000000
+011000001755017550175521755217552175521755217552175521755217552175521755217552175501755500000000000000000000000001c5501c550000000000000000000000000000000000000000000000
+011000001055010550105501055010552105521055210555000001555015550000002005020050000001c0501c050000001e0501e050200502005000000000000000000000000000000000000000000000000000
+011000001555015550155521555215552155521555215552155521555215552155521555215552155501555500000000000000000000000000000000000000000000000000000000000000000000000000000000
+010c000015050000000000000000191550000000000000001005000000000000000019155000000000000000150500000000000000001c0500000000000000002105000000000000000000000000000000000000
+010c00001505000000000000000019155000000000000000100500000000000000001915500000000000000014050000000000000000171550000000000000001005000000000000000017155000000000000000
+010c00001505000000000000000019155000000000000000100500000000000000001915500000000000000015050000000000000000191550000000000000001005000000000000000019155000000000000000
+010c00001a0500000000000000001e155000000000000000150500000000000000001e1550000000000000001a0500000000000000001e155000000000000000150500000000000000001e050000000000000000
+010c00001405000000000000000017155000000000000000100500000000000000001715500000000000000014050000000000000000171550000000000000001005000000000000000017155000000000000000
+011000002815528155281552815500000281552815500000000002a15500000000002815528155281552815500000281552515500000000002115500000000000000000000000000000000000000000000000000
+011000002315523155231552315500000231552315500000000002515500000000002315525155231552115521155211552115500000000001e15500000000000000000000000000000000000000000000000000
+011000001c1551c1551c1551c155000001c1551c15500000000002115500000000002515523155211551c15500000251552615500000281552515500000211550000000000000000000000000000000000000000
+011000002315500000000001c15520155231551c15500000231552815500000251552815500000000000000000000000003415500000000002815500000000000000000000000000000000000000000000000000
+0110000028155281552a15528155000002a15528155000000000021155000000000028155281552815528155000002a1552815500000000002115500000000000000000000000000000000000000000000000000
+01100000231552315525155231550000025155231550000000000251550000000000231552515523155211551c1551e1552115500000000001e15500000000000000000000000000000000000000000000000000
+011000001c1551c1551c1551c155023001c1551c15502400000002115505400025002015504600056001c15504700000001e15502000040002015502700047000570028200292002b20026300283000000000000
+011000002115500000000002115525155281552d15500000000002d15531155341553915500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+011000002155021550215522155221552215522155500000000002355023550000002155021550215522155221552215522155221555000001c5501c550000000000000000000000000000000000000000000000
+011000001e5501e5501c5521a5521a5521a5521a5521a555000001a5501a550000001c5501c5501c5501c5501c5501c5521a5521a5521a5501a5501a555000000000000000000000000000000000000000000000
+011000001555015550155521555215552155521555215555000001755017550000001555015550000001555015550000001555015550155501555015555000000000000000000000000000000000000000000000
+011000001c5501c5501c5521c5521c5521c5521c5521c5521c5521c5521c5521c5521c5521c5521c5550000000000000000000000000000002155021550000000000000000000000000000000000000000000000
+011000001c5501c5501c5501c5501c5521c5521c5521c555000001c5501c550000001c5501c550000001c5501c550000001c5501c5501c5501c55500000000000000000000000000000000000000000000000000
+011000001955019550195521955219552195521955219552195521955219552195521955219552195501955500000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__music__
+00 0a 01 43 44
+00 0b 02 43 44
+00 0b 03 43 44
+00 0c 04 43 44
+00 0b 05 43 44
+00 0d 06 43 44
+00 0b 03 43 44
+00 0c 04 43 44
+00 0a 07 43 44
+00 0b 08 43 44
+00 0b 03 17 44
+00 0c 04 18 44
+00 0b 05 19 44
+00 0d 06 1a 44
+00 0b 03 17 44
+00 0c 04 18 44
+00 0a 07 1b 44
+00 0b 08 1c 44
+00 0b 0e 43 44
+00 0c 0f 43 44
+00 0b 10 43 44
+00 0d 11 43 44
+00 0b 12 43 44
+00 0c 13 43 44
+00 0a 14 43 44
+00 0b 02 43 44
+00 0b 03 43 44
+00 0c 04 43 44
+00 0b 05 43 44
+00 0d 06 43 44
+00 0b 03 43 44
+00 0c 04 43 44
+00 0a 07 43 44
+00 0b 08 43 44
+00 0b 03 17 44
+00 0c 04 18 44
+00 0b 05 19 44
+00 0d 06 1a 44
+00 0b 03 17 44
+00 0c 04 18 44
+00 0a 07 1b 44
+00 09 08 1c 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44

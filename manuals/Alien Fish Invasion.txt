@@ -1,0 +1,13 @@
+My first Pico-8 game...
+
+I wanted to make an old-fashioned arcade shooter, like Defender but not as difficult to play.
+
+The end result differs quite a bit from Defender - except for its difficulty level. ;)
+
+Tip 1: Completely wipe out a cluster of aliens and you'll earn an extra life. Survival means earning lives faster than you lose them (and you will lose them very fast).
+
+Tip 2: If you already have three lives, an extra life will power up your smartbomb meter instead. When it's full - BOOM! Humanity's future depends on you triggering as many smartbombs as you can.
+
+Tip 3: Those speedy pink loner aliens? Hunt them down! They're the last of their cluster, so that's where your extra lives/smartbombs come from.
+
+https://www.lexaloffle.com/bbs/?tid=27852

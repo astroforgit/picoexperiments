@@ -1,0 +1,27 @@
+Introduction
+
+In Don't tank it!, players take on the role of a tiny tank that likes to shoot around randomly.
+
+The goal of the game is to have as many bullets active without getting destroyed.
+
+Each level gives you one more bullet to handle.
+To help you stay alive for longer, the tank is equipped with a shield, but after you use it you have to recharge it by moving and have bullets active!
+Controls
+Move
+
+Keyboard: Arrow keys
+Controller: D-pad or Joystick
+Shoot
+
+Keyboard: Z
+Controller: A / Y
+Shield
+
+Keyboard: X
+Controller: B / X
+
+Have fun and good luck! Do not hesitate to leave a comment about anything!
+
+/Sebastian Lind @Elastiskalinjen
+
+https://www.lexaloffle.com/bbs/?tid=39147

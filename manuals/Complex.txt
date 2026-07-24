@@ -1,0 +1,26 @@
+I'm proud to introduce Complex, my second Pico-8 game, inspired by Commodore-64 Citadel, a game I deeply loved during my childhood.
+
+All security droids have gone mad, you need to reach the lowest level to deactivate them by hacking the mainframe.
+How to Play
+
+Complete every level by reaching the passage to the next one. Then, hack the mainframe to deactivate all the security droids.
+You can capture droids and use the switch to open doors, but be careful because it costs power.
+Controls
+
+D-pad / Arrow Keys = move
+X button + D-Pad / Z key + arrows key = shoot
+O button + D-Pad / X key + arrows key = interact with objects or capture and move an enemy droid
+X+O buttons / Z+X keys = destroy a captured droid
+Interactable Objects
+
+= Power Recharge
+= Energy Shield Recharge
+= Activate Defensive Droid
+= Bullet upgrade
+= Open door if standing next to the switch
+= Capture Enemy Droid
+Music
+
+Pico-8 Tunes vol. 2 - Into the belt by @Gruber
+
+https://www.lexaloffle.com/bbs/?tid=38611

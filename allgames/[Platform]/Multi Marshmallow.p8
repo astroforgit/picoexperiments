@@ -1,0 +1,1405 @@
+pico-8 cartridge // http://www.pico-8.com
+version 18
+__lua__
+-- multi marshmallow
+-- by cubee ‚
+
+--[[
+
+=== changes ===
+
+- up to 5 players
+  (anything above 4 might get slow)
+- each player has own palette
+- smoke disappears over time
+- [p] no high score
+- [p] last player to die wins
+- increased chance of odd coins
+   being life-ups
+- odd coins appear more often
+- minor chunk changes
+
+]]
+
+cartdata("cubg-marshmallow-multiplayer")
+function _init(m)
+ reload()
+ t=0
+ x=4
+ y=96
+ yv=0
+ cx=0
+ spd=0
+ acc=0.1
+ grv=0.1
+ jmp=3
+ jpow=0
+ jump=true
+ squish=0
+ die=false
+ burnt=false
+ mode=m or "splash"
+ dx={}
+ dy={}
+ ds={}
+ dc={}
+ wait=0
+ wait2=0
+ for ix=0,127 do
+  for iy=96,127 do
+   if sget(ix,iy)==0 and sget(ix,iy+1)==7 then
+    if rnd(8)<1 then
+     sset(ix,iy,rnd(3))
+    end
+   end
+  end
+ end
+ for i=0,1 do
+  if i==1 then
+   new_tiles()
+  end
+  new=ceil(rnd(8))-1
+  for ix=0,15 do
+   for iy=8,23 do
+    mset(ix+16*i,iy,sget(ix+new*16,iy-8+64))
+   end
+  end
+ end
+ ps=18
+ if mode=="game" then
+  music(14)
+  fade=0
+  show=false
+ end
+ fade=128
+ fadev=0
+ hat=false
+ hats={104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127}
+ a={"c","u","b","e","e"," ","g","a","m","e","s"}
+ ty={}
+ tl={}
+ title=0
+ title_t=0
+ life=3
+ inv=0
+ shake=0
+ air=true
+ d=1
+
+ _init_multi()
+ st=false
+end
+
+function _update60()
+
+ if mode=="splash" then
+  if (t==300 or (btnp()~=0 and not btn(6))) st=true
+  if st and abs(lh)<1 then
+   mode="story"
+   fade=128
+   show=true
+   t=0
+   sfx(-1)
+   music(10)
+  end
+  if t==1 then
+   sfx(22)
+  end
+
+	elseif mode=="story" then
+	 if t%240==1 then
+	  if text[#ty+1] then
+	   add(ty,128)
+	   add(tl,1)
+	  else
+	   if (ty[#ty] or 0)<-8 then
+	    mode="game"
+     music(14)
+     sfx(4)
+	   end
+	  end
+	 end
+	 for i=1,#ty do
+	  if ty[i] then
+	   ty[i]-=0.1
+	   tl[i]+=0.2
+	  end
+	 end
+	 if btnp(4) then
+	  ty={}
+	  mode="game"
+   music(14)
+   sfx(4)
+	 end
+
+	elseif mode=="game" then
+	 -- menu buttons
+	 --menuitem(2,"original music",function() music(5) end)
+	 --menuitem(3,"new music",function() music(14) end)
+
+	 -- add players by pressing Ž
+	 for p=0,7 do
+	  if btnp(4,p) then
+	   if p>=current_p then
+	    current_p=p
+	    init_char(p+1)
+   	 -- hide title if button pressed
+	    title_t=128
+
+	   end
+	  end
+	 end
+
+  -- update smoke
+  max_smoke=100/instance
+  for i=1,#dx do
+   if dx[i] then
+    dy[i]-=ds[i]*dc[i]/100
+    if fget(mget(dx[i]/8,(dy[i]+3)/8),0) or dy[i]<0 or dx[i]<0 then
+     if mget(dx[i]/8,(dy[i]+4)/8)~=9 then
+      del_smoke(i)
+     end
+    elseif i<#dx-max_smoke then
+     ds[i]-=0.1
+     if ds[i]<1 then
+      del_smoke(i)
+     end
+    end
+   end
+  end
+
+	 -- update players
+	 for i=1,instance do
+	  if char[i].x then
+	   id=i-1
+
+    get_vars(i)
+
+			 -- cooked
+			 if die then
+			  if t==30 then
+			   sfx(2)
+			  end
+			  if t>30 then
+			   yv+=grv
+			   y+=yv
+			   burnt=true
+			  end
+			  if y>256 then
+			   die="over"
+			   dead=0
+					 for a=1,instance do
+					  if char[a].x then
+				    if char[a].die then
+				     dead+=1
+				    end
+					  end
+					 end
+
+					 if dead>=instance then
+					  mode="over"
+					 end
+			  end
+		
+			 -- alive
+			 else
+
+				 -- random hat button
+				 if btnp(5,id) then
+				  hat=mid(1,int(rnd(#hats)),#hats)
+				  sfx(0)
+				 end
+
+			  max_spd=min(max(life/2.5,0.5),1.5)
+
+			  -- idle animation
+			  if spd==0 and yv==0 then
+			   wait+=1
+			   wait2+=1
+			   if wait>300 then
+			    if rnd(5)<4 then
+			     wait=260
+			    else
+			     if rnd(2)<1 then
+			      wait=150
+			     else
+			      wait=0
+			     end
+			    end
+			   end
+			   if wait2==900 then
+		     music(-1,3000)
+		    end
+			  else
+				  if wait2>=1200 then
+				   music(14)
+				  end
+			   wait=0
+			   wait2=0
+			  end
+			  if wait2==1200 then
+			   music(20)
+			  end
+
+		   -- player movement
+		   if air then
+		    acc=0.06
+		    frc=40
+		   else
+		    acc=0.1
+		    frc=10
+		   end
+
+			  if btn(0,id) and jpow==0 then
+			   if spd>-max_spd then
+			    spd-=acc
+			   end
+			  elseif btn(1,id) and jpow==0 then
+			   if spd<max_spd then
+			    spd+=acc
+			   end
+			  else
+			   spd-=sgn(spd)/frc
+			   if abs(spd)<acc+0.1 then
+			    spd=0
+			   end
+			  end
+			
+			  -- player sprite
+			  ps=18+spd*2
+			  ps=mid(16,ps,20)
+			
+			  -- smoke increases with more damage
+			  if life<3 and rnd(life*10+5)<1 then
+			   make_smoke(x,y)
+			  end
+			
+			  -- move x
+			  x+=spd
+			  if spd>0 then
+			   d=1
+			  elseif spd<0 then
+			   d=-1
+			  end
+			
+			  -- move y
+			  yv=min(yv,3)
+			  if not roof then
+				  yv+=grv
+			   y+=yv
+			  end
+
+			  -- floor collision and jump charging
+			  air=true
+			  squish-=0.2
+			  squish=max(squish)
+			  if fget(mget((x-3)/8,(y+4)/8),0) or fget(mget((x+3)/8,(y+4)/8),0) then
+			   air=false
+			   if yv>0.5 then
+			    sfx(5)
+			    squish=yv
+			   end
+			   yv=0
+			   y=flr(y/8)*8+4
+			   jump=false
+			
+			   -- charge jump
+			   if btn(4,id) then
+			    jpow+=1
+			    jpow=min(jpow,20)
+			   end
+			
+			   -- die if touching hot surface
+			   if mget((x-3)/8,(y+4)/8)==9 or mget((x+3)/8,(y+4)/8)==9 then
+			    m_die()
+			   end
+			  else
+			   jpow=0
+			  end
+			
+			  -- roof collision
+			  roof=false
+			  if fget(mget(x/8,(y-4)/8),0) then
+			   yv=0
+			   y=ceil(y/8)*8-4
+			   if btn(2,id) and life<2 then
+			    roof=true
+			    y-=1
+			   end
+			  end
+
+		   -- right collision
+		   if fget(mget((x+4)/8,y/8),0) then
+		    spd=0
+		    x=flr(x/8)*8+4
+		   end
+		
+		   if fget(mget((x+5)/8,y/8),0) then
+		    -- wall jump
+		    wall=-1
+		    if btnp(4,id) and life<3 and yv~=0 then
+		     walljump()
+		    end
+		
+		    -- wall climb
+		    if (btn(1,id) or wjump) and life<3 and jump then
+		     climb=true
+		    end
+		   end
+		
+		   -- left collision
+		   if fget(mget((x-4)/8,y/8),0) then
+		    spd=0
+		    x=ceil(x/8)*8-4
+		   end
+		
+		   if fget(mget((x-5)/8,y/8),0) then
+		    -- wall jump
+		    wall=1
+		    if btnp(4,id) and life<3 and yv~=0 then
+		     walljump()
+		    end
+		
+		    -- wall climb
+		    if (btn(0,id) or wjump) and life<3 and jump then
+		     climb=true
+		    end
+		   end
+		
+		   if climb and not roof then
+		    if yv>0 then
+		     yv/=3-life
+		    end
+		    if btn(2,id) then
+		     y-=max_spd
+		     cyt=-y+64
+		     ps=34
+		    elseif btn(3,id) then
+		     y+=max_spd
+		     cyt=-y+64
+		     ps=50
+		    end
+		    if not (fget(mget((x-4)/8,y/8),0) or fget(mget((x+4)/8,y/8),0)) then
+		     climb=false
+		    end
+		   end
+		
+			  x=max(x,4)
+			
+			  -- save from being trapped
+			  if fget(mget((x)/8,(y)/8),0) then
+			   y+=8*sgn(yv)
+			  end
+			
+			  -- die if off bottom
+			  if y>128+64 then
+			   m_die(true)
+			  end
+			
+			  -- jumping
+			  if not btn(4,id) and jpow>0 then
+			   yv=-jmp/20*max(jpow,9)
+			   if btn(0,id) then
+			    spd=yv/4
+			   elseif btn(1,id) then
+			    spd=-yv/4
+			   end
+			   jump=true
+			   sfx(1)
+			   jpow=0
+			  end
+
+			  -- jumping sprites
+			  if not climb then
+			   if yv>0.5 then
+			    ps+=32
+			   elseif yv<-0.5 then
+			    ps+=16
+			   end
+			  end
+			
+			  -- get coins
+			  if mget((x)/8,(y)/8)==10 then
+			   mset((x)/8,(y)/8,0)
+			   score+=1
+			   sfx(6)
+			  end
+			
+			  -- get health pickups
+			  if mget((x)/8,(y)/8)==11 then
+			   mset((x)/8,(y)/8,0)
+			   life+=1
+			   sfx(7)
+			  end
+
+			  -- get odd coins
+			  if mget((x)/8,(y)/8)==12 then
+			   mset((x)/8,(y)/8,0)
+			   if rnd(2)<1 then
+			    life+=1
+			    sfx(7)
+			   else
+			    score+=1
+			    sfx(6)
+			   end
+			  end
+
+			  -- die if touching fire
+			  if fget(mget((x-3)/8,y/8),1) or fget(mget((x+3)/8,y/8),1) then
+			   m_die()
+			  end
+
+			  -- stop at edge
+			  x=max(x)
+
+				 -- invincibility
+				 inv-=1
+				 inv=max(inv)
+
+				 -- screen shake
+				 shake-=1
+				 shake=max(shake)
+
+				 ps+=0.5
+
+		  end
+
+	   char[i].x=x
+	   char[i].y=y
+	   char[i].spd=spd
+	   char[i].yv=yv
+	   char[i].d=d
+	   char[i].life=life
+	   char[i].max_spd=max_spd
+	   char[i].acc=acc
+	   char[i].frc=frc
+	   char[i].air=air
+	   char[i].jump=jump
+	   char[i].jpow=jpow
+	   char[i].wait=wait
+	   char[i].wait2=wait2
+	   char[i].ps=ps
+	   char[i].die=die
+	   char[i].squish=squish
+	   char[i].roof=roof
+	   char[i].wall=wall
+	   char[i].climb=climb
+	   char[i].inv=inv
+	   char[i].shake=shake
+    char[i].burnt=burnt
+    char[i].hat=hat
+	   char[i].score=score
+		 end
+
+		 -- stop at edge
+	  cx=max(x-64)
+
+   -- check if all in next chunk
+   yes=0
+		 for i=1,instance do
+		  if char[i].x then
+		   if char[i].x>128+64 or char[i].die then
+		    yes+=1
+		   end
+		  end
+		 end
+
+	  -- add new chunk if everyone
+	  -- is out of first one
+	  if cx>128 and yes==instance then
+	
+	   -- move chunk back
+	   for ix=0,15 do
+	    for iy=8,23 do
+	     mset(ix,iy,mget(ix+16,iy))
+	    end
+	   end
+	
+	   -- place new chunk
+	   new_tiles()
+	   new=ceil(rnd(8))-1
+	   for ix=0,15 do
+	    for iy=8,23 do
+	     mset(ix+16,iy,sget(ix+new*16,iy-8+64))
+	    end
+	   end
+	
+	   -- move objects back
+			 for i=1,instance do
+			  if char[i].x then
+		    char[i].x-=128
+		   end
+		  end
+	   for i=1,#dx do
+	    if dx[i] then
+	     dx[i]-=128
+	    end
+	   end
+	   cx=0
+
+	  else
+
+	   -- keep players on map
+			 for i=1,instance do
+			  if char[i].x then
+		    char[i].x=min(char[i].x,252)
+		   end
+		  end
+	  end
+
+	  -- animate fire and make smoke
+	  if t%8/2==0 then
+	   for ix=0,32 do
+	    for iy=8,23 do
+	
+	      -- fire
+	     if fget(mget(ix,iy),1) then
+	      mset(ix,iy,int(rnd(3))*16+8)
+	      if rnd(7)<1 then
+	       make_smoke(ix*8+4,iy*8+4)
+	      end
+	
+	      -- hot surface
+	     elseif mget(ix,iy)==9 then
+	      if rnd(12)<1 then
+	       make_smoke(ix*8+4,iy*8+4)
+	      end
+	     end
+	    end
+	   end
+	  end
+
+	 end
+
+	 -- roller door effect
+	 fadev=(fade+10)/20
+	 fade-=fadev
+
+	 -- title screen move
+	 title_v=(title+title_t)/20
+	 title-=title_v
+	 if title<-64 then
+	  show=false
+	 end
+
+ elseif mode=="over" then
+  music(-1,1000)
+  top=0
+  win_id=1
+  for i=1,instance do
+   if char[i].x then
+    if char[i].score>top then
+     top=char[i].score
+     win_id=i
+    end
+   end
+  end
+
+  if btnp(4) then
+   run()
+  end
+	end
+
+ -- timer
+ t+=1
+ t=max(t)
+
+end
+
+
+
+
+function _draw()
+ fillp()
+	cls()
+
+ if mode=="splash" then
+	 -- reset colours
+	 pal()
+	 palt(10,true)
+	 if st then
+	  lh-=sgn(lh)
+	  lw+=abs(lh/4)
+	 else
+	  lw=min(abs(sin(t/300)*16)+t/3,64)--96
+	  lh=min(abs(cos(t/400)*16)+t/6-32,16)
+	 end
+	 sspr(64,32,64,16,64-lw/2,64-lh/2,lw,lh)
+	 palt(10,false)
+
+ elseif mode=="story" then
+	 for i=1,#ty do
+	  if ty[i] then
+	   ty[i]-=0.2
+	   print(sub(text[i],1,tl[i]),8,ty[i],6)
+	  end
+	 end
+
+	elseif mode=="game" then
+
+		pal(1,129,1)
+	 cls()
+	 -- draw each player's screen
+	 for i=1,instance do
+	  camera()
+
+	  -- clip to area
+	  clip(pos[instance][i*2-1],pos[instance][i*2],res[instance][i*2-1],res[instance][i*2])
+	  cx2=( pos[instance][i*2-1]-char[i].x+res[instance][i*2-1]/2 )
+	  cy2=( pos[instance][i*2]-char[i].y+res[instance][i*2]/2 )
+
+	  get_vars(i)
+	  cx2=-cx2
+	  cy2=-cy2
+	  --cx2=mid(-1,cx2,129)
+	  --cy2=max(pos[instance][i*2],cy2)+pos[instance][i*2]
+	  --cy2=min(cy2)
+
+	  camera(cx2,cy2+rnd()*shake/4)
+
+	  pal()
+	  scr_x=cx2+pos[instance][i*2-1]
+	  scr_y=cy2+pos[instance][i*2]
+
+   if die=="over" then
+    cprint("game over",scr_x+res[instance][i*2-1]/2,scr_y+res[instance][i*2]/2-3,7)
+
+    -- score
+			 palt(14,true)
+    spr(10,scr_x+1,scr_y+1)
+				print(score,scr_x+9,scr_y+2,7)
+
+   else
+
+			 -- draw background smoke
+		  fillp(0b1010010110100101.1)
+			 for a=1,#dx do
+			  if dx[a] and dc[a]==5 then
+			   if dx[a]>scr_x and dx[a]<scr_x+res[instance][i*2-1] then
+			    circfill(dx[a],dy[a],ds[a],dc[a])
+			   end
+			  end
+			 end
+
+		  -- char sprites
+		  for i2=1,instance do
+		   get_vars(i2)
+		   id=i2-1
+		   pal()
+
+					-- marshmallow when not cooked
+			  set_m_pal(i2)
+				 palt(0,false)
+				 palt(14,false)
+				 palt(15,true)
+				 if spd~=0 and yv==0 then
+				  yo=min(t%10/5-1,1)
+				 else
+				  yo=0
+				 end
+				 if not die then
+				  if roof then
+					  spr(ps+32,x-4,y-3-yo)
+
+				  elseif inv==0 or (inv>0 and t%2==1) then
+
+					  -- charge jump
+					  if btn(4,id) and not jump then
+					   if hat then
+					    spr(hats[hat],x-4,y-10-yo)
+					   end
+					   j=20-jpow
+					   spr(53+max(flr(t%j/(j/2))*4),x-8,y-4-yo,2,1)
+
+			    -- sleep
+					  elseif wait2>1200 then
+					   if hat then
+					    spr(hats[hat],x-4,y-10-yo+flr(wait2%120/60))
+					   end
+					   if spd<0 then
+					    s=25
+					   elseif spd>0 then
+					    s=41
+					   else
+					    s=37
+					   end
+					   spr(14+flr(wait2%120/60)*32,x-8,y-4-yo,2,1)
+
+					  -- duck
+					  elseif squish>0 or (wait>260 and wait<270) or (btn(3,id) and spd==0 and yv==0) then
+					   if hat then
+					    spr(hats[hat],x-4,y-10-yo)
+					   end
+					   if spd<0 then
+					    s=25
+					   elseif spd>0 then
+					    s=41
+					   else
+					    s=37
+					   end
+					   spr(s,x-8,y-4-yo,2,1)
+
+					  -- look up
+					  elseif (wait>280 and wait<290) or (btn(2,id) and spd==0 and yv==0) then
+					   if hat then
+					    spr(hats[hat],x-4,y-14-yo)
+					   end
+					   spr(23,x-4,y-12-yo,1,2)
+					
+					  -- normal
+					  else
+					   if hat then
+					    spr(hats[hat],x-4,y-12-yo)
+					   end
+					   spr(ps,x-4,y-4-yo)
+					  end
+					 end
+					end
+
+			 end
+
+		  get_vars(i)
+
+			 -- draw foreground smoke
+			 pal()
+		  fillp(0b0101101001011010.1)
+			 for a=1,#dx do
+			  if dx[a] and dc[a]==6 then
+			   if dx[a]>scr_x and dx[a]<scr_x+res[instance][i*2-1] then
+			    circfill(dx[a],dy[a],ds[a],dc[a])
+			   end
+			  end
+			 end
+			 palt(14,true)
+			 palt(0,false)
+
+			 -- draw level
+	   rectfill(-8,scr_y,-1,scr_y+res[instance][i*2],12)
+	   rectfill(256,scr_y,263,scr_y+res[instance][i*2],12)
+			 fillp()
+			 map()
+
+		  -- char sprites
+		  for i2=1,instance do
+		   get_vars(i2)
+
+		   id=i2-1
+		   pal()
+
+			  set_m_pal(i2)
+				 palt(0,false)
+				 palt(14,false)
+				 palt(15,true)
+
+				 -- marshmallow when cooked
+			  if die then
+			   if hat then
+			    spr(hats[hat],x-4,y-12)
+			   end
+				  if burnt then
+				   spr(22,x-4,y-4)
+				  else
+				   spr(21,x-4,y-4)
+				  end
+				 end
+
+			 end
+
+		  get_vars(i)
+
+    pal()
+
+    -- score
+			 palt(14,true)
+    spr(10,scr_x+1,scr_y+1)
+				print(score,scr_x+9,scr_y+2,7)
+
+ 		 -- life bar
+			 palt(14,false)
+			 palt(15,true)
+    palt(0,false)
+		  set_m_pal(i)
+		  for a=1,life+1 do
+		   if wait2>1200 then
+		    spr(13,flr(scr_x)+a*7-6,flr(scr_y)+res[instance][i*2]-9)
+		   else
+		    spr(55,flr(scr_x)+a*7-6,flr(scr_y)+res[instance][i*2]-10+abs(sin((t+a*20)/100)-0.5))
+		   end
+		  end
+		  pal()
+		 end
+
+	  -- screen outline
+	  camera()
+	  rect(pos[instance][i*2-1],pos[instance][i*2],pos[instance][i*2-1]+res[instance][i*2-1]-1,pos[instance][i*2]+res[instance][i*2]-1,0)
+	 end
+	
+	 clip()
+	 camera()
+
+  pal()
+
+	 -- title screen
+	 if show then
+	  rectfill(0,title+16,127,title+79,0)
+
+	  rect(30,title+17,97,title+52,5)
+	  spr(64,32,title+27,8,3)
+	  spr(27,44,title+19,5,1)
+	  cprint("„ an endless platformer „",60,title+55)
+	  cprint("„     by cubee games     „",60,title+64)
+	  cprint("„    now multiplayer!   „",60,title+73)
+	 end
+
+	 rectfill(0,0,127,fade,0)
+
+ elseif mode=="over" then
+  camera()
+  set_m_pal(win_id or 0)
+  spr(18,60,60)
+  pal()
+  cprint("game over",64,32)
+  cprint("player "..(win_id or " ").." wins!",64,89)
+
+ end
+end
+
+-->8
+-- functions
+
+function _init_multi()
+ -- list of screen positions
+ -- for each amount of players
+ pos={
+  {0,0},
+  {0,0,0,64},
+  {0,0,0,64,64,64},
+  {0,0,64,0,0,64,64,64},
+  {0,1,0,43,64,43,0,85,64,85},
+  {0,1,64,1,0,43,64,43,0,85,64,85},
+  {0,1,64,1,1,43,43,43,85,43,0,85,64,85},
+  {0,1,64,1,1,43,43,43,85,43,1,85,43,85,85,85}
+ }
+ -- list of screen resolutions
+ -- for each amount of players
+ res={
+  {128,128},
+  {128,64,128,64},
+  {128,64,64,64,64,64},
+  {64,64,64,64,64,64,64,64},
+  {128,42,64,42,64,42,64,42,64,42},
+  {64,42,64,42,64,42,64,42,64,42,64,42},
+  {64,42,64,42,42,42,42,42,42,42,64,42,64,42},
+  {64,42,64,42,42,42,42,42,42,42,42,42,42,42,42,42}
+ }
+
+ -- init variables
+ t=0
+ a=0
+
+ -- init player object
+ char={}
+
+ -- init game
+ instance=0
+ current_p=0
+ --init_char(8)
+end
+
+function init_char(i)
+ instance=min(i,5)
+ for i=1,instance do
+  if not char[i] then
+   char[i]={x=4,y=96+64,spd=0,yv=0,d=0,score=0,life=3,max_spd=0,acc=0,frc=0,air=false,jump=false,jpow=0,wait=0,wait2=0,ps=0,die=false,squish=0,roof=false,wall=false,climb=false,inv=0,shake=0,burnt=false,hat=false}
+  end
+ end
+end
+
+function get_vars(i)
+ x=char[i].x
+ y=char[i].y
+ spd=char[i].spd
+ yv=char[i].yv
+ d=char[i].d
+ life=char[i].life
+ max_spd=char[i].max_spd
+ acc=char[i].acc
+ frc=char[i].frc
+ air=char[i].air
+ jump=char[i].jump
+ jpow=char[i].jpow
+ wait=char[i].wait
+ wait2=char[i].wait2
+ ps=char[i].ps
+ die=char[i].die
+ squish=char[i].squish
+ roof=char[i].roof
+ wall=char[i].wall
+ climb=char[i].climb
+ inv=char[i].inv
+ shake=char[i].shake
+ burnt=char[i].burnt
+ hat=char[i].hat
+ score=char[i].score
+end
+
+-- integer function
+function int(i)
+ n=i-flr(i)
+ if n<0.5 then
+  return flr(i)
+ else
+  return ceil(i)
+ end
+end
+
+-- centre print with border
+function cprint(t,x,y)
+ w=#t*4
+ for ix=-1,1 do
+  for iy=-1,1 do
+   print(t,x-w/2+ix,y+iy,5)
+  end
+ end
+ print(t,x-w/2,y,7)
+end
+
+-- make smoke
+function make_smoke(x,y)
+ add(dx,x+rnd(6)-3)
+ add(dy,y+rnd(6)-3)
+ add(ds,rnd(4)+2)
+ add(dc,int(rnd())+5)
+end
+
+-- remove smoke
+function del_smoke(i)
+ dx[i]=""
+ dy[i]=""
+ ds[i]=""
+ dc[i]=""
+ del(dx,"")
+ del(dy,"")
+ del(ds,"")
+ del(dc,"")
+end
+
+-- kill marshmallow
+function m_die(instant)
+ if inv==0 or instant then
+	 sfx(3)
+	 for i=1,10 do
+	  make_smoke(x,y)
+	 end
+	 if life<1 or instant then
+	  yv=-3
+	  die=true
+	  t=0
+	  --music(-1)
+	 else
+	  life-=1
+	  inv=60
+	  yv=-2
+	  spd=-d
+	 end
+ end
+end
+
+-- choose a tileset or keep current one
+function new_tiles()
+ if rnd(2)<1 then
+  a=96
+ elseif rnd(2)<1 then
+  a=80
+ else
+  a=112
+ end
+ for ix=0,127 do
+  for iy=0,15 do
+   p=sget(ix,iy+a)
+   sset(ix,iy+64,p)
+  end
+ end
+end
+
+function set_m_pal(i)
+ if i==5 then
+  pal(6,1)
+  pal(7,12)
+  if life==2 then
+   pal(6,0)
+  elseif life==1 then
+   pal(6,0)
+   pal(7,13)
+  elseif life<=0 then
+   pal(6,0)
+   pal(7,1)
+  end
+ elseif i==4 then
+  pal(6,9)
+  pal(7,10)
+  if life==2 then
+   pal(6,4)
+  elseif life==1 then
+   pal(6,4)
+   pal(7,9)
+  elseif life<=0 then
+   pal(6,2)
+   pal(7,4)
+  end
+ elseif i==3 then
+  pal(6,3)
+  pal(7,11)
+  if life==2 then
+   pal(6,13)
+  elseif life==1 then
+   pal(6,13)
+   pal(7,3)
+  elseif life<=0 then
+   pal(6,5)
+   pal(7,13)
+  end
+ elseif i==2 then
+  pal(6,2)
+  pal(7,14)
+  if life==2 then
+   pal(6,5)
+  elseif life==1 then
+   pal(6,1)
+  elseif life<=0 then
+   pal(6,1)
+   pal(7,13)
+  end
+ else
+  pal(6,6)
+  pal(7,7)
+  if life==2 then
+   pal(6,13)
+  elseif life==1 then
+   pal(6,13)
+   pal(7,6)
+  elseif life<=0 then
+   pal(6,5)
+   pal(7,6)
+  end
+ end
+end
+
+function walljump()
+ if btn(0,id) or btn(1,id) or wjump then
+  cyt=-y+64
+  yv=-jmp/1.5
+  spd=wall
+  jump=true
+  wjump=true
+  sfx(5)
+ end
+end
+
+-->8
+-- story
+
+text={
+"one day in 2020...",
+"a marshmallow factory caught\nfire.",
+"most of the marshmallows were\ndestroyed.",
+"a group of the survivors\nrealised what happened.",
+"they set off to try and escape\nthe endless factory.",
+"",
+"cubee games ‚ presents..."
+}
+__gfx__
+66666666eeeeeeeeeeeeeeeeeeeeeeeeedeee5eeedeee5eeddddddd577777776ee28e2ee89999998eeeeeeeeeeeeeeeeeeeeeeeeffffffffffffffffffffffff
+67777776eeeeeeeeeeeeeeeeeeeeeeeeedeee5eeede6e5eed55555517666666d2e8828ee28888882eeeaaeeeeee7beeeeedccdeeffffffffffffffffffffffff
+67077076eeeeeeeeeeeeeeeeeeeeeeeeee555eeeee5d5eeed511155176ddd66d8288888e22822822eea7aaeeeeebbeeeedc7ccdef666666fffff66666666f77f
+67077076eee22ee0eeeeeeee1eeeeeeeeeeeeeeeeeedeeeed5155d5176d6676d88898882d2222225ea7aa9aee7bbbb3eec7ccdcef677776fffff67777776ff7f
+67077076ee222200ee2ee221122eeeeeeeeeeeeeeee5eeeed5155d5176d6676d888999880ddd5550eaaaa9aeebbb333eeccccdce60077006fff6677777766fff
+67777776e15002200222022000222200eeeeeeeeee65deeed55ddd517667776d899aa998d0000005eea99aeeeeeb3eeeedcddcde67777776fff6700770076fff
+67777776152255500555205005205550eeeeeeeee6e5e5eed55555517666666d89aa7a9900d55500eeeaaeeeeee33eeeeedccdee66666666fff6777777776fff
+66666666000000022000000000000012eeeeeeeeedeee5ee511111116ddddddd9a7777a900000000eeeeeeeeeeeeeeeeeeeeeeeefffffffffff6666666666fff
+66666666666666666666666666666666666666666666666666666666ffffffffeee2e82effffffffffffffff07aaaa9007900a900790000007aaaa9007aaaa90
+67777776677777766777777667777776677777766777777667777776ffffffffee28288effffffffffffffff0a9a9a900a900a900a900000099a9990099a9990
+60707776670707766707707667707076677707066777777667777776ffffffff2e888882ffff66666666ffff0a9a9a900a900a900a900000000a9000000a9000
+60707776670707766707707667707076677707066707707660777706ffffffff22889888ffff60770776ffff0a9a9a900a900a900a900000000a9000000a9000
+60707776670707766707707667707076677707066777777667077076ffffffff88899988fff6607707766fff0a999a900a900a900a900000000a9000000a9000
+67777776677777766777777667777776677777766777777667777776ffffffff8899a988fff6707707776fff0a900a900a900a900a900000000a9000000a9000
+67777776677777766777777667777776677777766777777667777776f666666f899aa998fff6777777776fff0a900a900aaaaa900aaaaa90000a90000aaaaa90
+66666666666666666666666666666666666666666666666666666666f607706f9aa77a98fff6666666666fff0990099009999990099999900009900009999990
+6666666666666666666666666666666666666666fffffffffffffffff607706feeeee28effffffffffffffff000000000000000000110100fffffffffffff777
+6070777667070776670770766770707667770706fffffffffffffffff607706fe2ee2882ffffffffffffffff000001000100000001111110fffffffffffffff7
+6070777667070776670770766770707667770706ffff66666666fffff677776fe2288888ffff66666666ffff000111111111100000110100fffffffffffff7ff
+6070777667070776670770766770707667770706ffff67077076fffff677776fe8888888ffff67707706ffff001101000100010000110100ffff66666666f777
+6777777667777776677777766777777667777776fff6670770766ffff677776f28889988fff6677077066fff001111111111010000110100fff6677777766fff
+6777777667777776677777766777777667777776fff6770770776ffff677776f88899a98fff6777077076fff011111111111111001111110ff667777777766ff
+6777777667777776677777766777777667777776fff6777777776ffff677776f899aaa98fff6777777776fff001101100111010000110100ff677007700776ff
+6666666666666666666666666666666666666666fff6666666666ffff666666f99a777a9fff6666666666fff001101000011010000110100ff666666666666ff
+6666666666666666666666666666666666666666ffffffffffffffffffffffffeee2ee2effffffffffffffff0011010000110100001101000011010000000000
+6777777667777776677777766777777667777776fffffffffffffffff666666fee282e82ffffffffffffffff0111111001111110011111100111111001000100
+6777777667777776677777766777777667777776ffff66666666fffff677776f2e888288ffff99999999ffff0011011111110100001101111111010011111111
+6070777667070776670770766770707667770706ffff67777776fffff607706f28889888ffff9aaaaaa9ffff0011010001000100001101000100010001000100
+6070777667070776670770766770707667770706fff6607777066ffff607706f88899988fff990aaaa099fff0011111111111100001101111111010011111111
+6070777667070776670770766770707667770706fff6770770776ffff677776f8899a998fff9aa0aa0aa9fff0001111111111000011111111111111011111111
+6777777667777776677777766777777667777776fff6777777776ffff666666f889aa998fff9aaaaaaaa9fff0000010001000000001101000111010001000100
+6666666666666666666666666666666666666666fff6666666666fffffffffff89a77aa9fff9999999999fff0000000000000000001101000011010000000000
+0000000000000000000000000000000000000000000000000000000000000000aaaa11111aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+0000066666006666602222222222033333333000999999990111111111100000aaa1ccccc1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+0000067776006777602eeeeeeee203bbbbbb33099aaaaaa901ccc11ccc100000aa1c55555c1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+0000067776666777602ee2222ee203bb333bb309aaaaaaa901ccc11ccc100000a1c5555555c111a1a111aa1111a1111aaaaa111aaa11aa11aaa1a1111aa111aa
+0000067777777777602ee2002ee203bb3033b309aaaaaaa901ccc11ccc1000001c555ccc55c1cc1c1ccc11cccc1cccc1aaa1ccc1a1cc11cc1a1c1cccc11ccc1a
+0000067777777777602ee2002ee203bb3033b309aa99999901ccc11ccc1000001c55c111cc1c55c5c555cc5555c5555c1a1c555c1c55cc55c1c5c5555cc555c1
+0000067777777777602ee2222ee203bb333bb309aaaaaaa991cccccccc1000001c11c1aa111c55c5c55c5c55ccc55cc1a1c55cc5c55c5c555c55c55ccc55cc1a
+0000667766776677662eeeeeeee223bbbbbb33099aaaaaaa91cccccccc1100001c11c1aaaa1c11c1c111cc111cc111c1a1c11cccc11c1c11c1c1c111cc111c1a
+000067776677667776eeeeeeeeee2bbbb3bbb339999999aa9ccc1111ccc100001c11c1aaaa1c11c1c11c1c11c1c11c1aa1c11c11c1111c11ccc1c11c11cc11c1
+000067776666667776eee2222eee2bbbb3bbbb3aaaaaaaaa9ccc1001ccc100001c11c1aa111c00c0c00c0c00ccc00cc1a1c00cc0c00c0c00c1c0c00cc1cc00c1
+000067776000067776eee2002eee2bbbb3bbbb3aaaaaaaaa9ccc1001ccc100001c00c111cc11c00cc000cc0000c0000c1a1c0000c00c0c00c1c0c0000c000c1a
+000067776000067776eee2002eee2bbbb3bbbb3aaaaaaaa99ccc1001ccc100001c000ccc00c11cc11ccc11cccc1cccc1aaa1cccc1cc1c1cc1a1c1cccc1ccc1aa
+0666666666666622222222222333333339999339911111111116666111166666a1c0000000c1a11aa111aa1111a1111aaaaa1111a11a1a11aaa1a1111a111aaa
+067776006777602eeeeeeee203bb300009aa900001cccccccc17776000067776aa1c00000c1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+067776666777602ee2222ee203bb300009aa900001cc1111cc17776000067776aaa1ccccc1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+067777777777602ee2002ee203bb300009aa900001cc1001cc17776666667776aaaa11111aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+067777777777602ee2002ee203bb300009aa900001cc1001cc17776677667776ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+067777777777602ee2222ee203bb300009aa900001cc1001cc17776677667776ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+667766776677662eeeeeeee223bb330099aa990011cc1001cc11777777777766fffffffffffffffffffffffffffffffffffffffffffffffff111111fffffffff
+67776677667776eeeeeeeeee2bbbb3333aaaa9999ccc1001ccc1777777777760fffffffffdddd55ffffffffffffffffffffffffffffffffff1cccc1fffffffff
+67776666667776eee2222eee2bbbbbbb3aaaaaaa9ccc1111ccc1777777777760ffdd55fffffd5fff4ffffffaffffffffff8bb8fffff82ffff10cc01ffff88fff
+67776000067776eee2002eee2bbbbbbb3aaaaaaa9cccccccccc1777666677760ffd555ffff7878ff2aaffaa9dffffffdfbbbbb3ff777676ff10cc01fff8782ff
+d666d0000d666d22210012221333333319999999411111111110666d00d666d0ffd555fff788762ff9aaa99fd5ffffd5fb13313ff662266ff1cccc1fff2222ff
+1555100001555111100001110111111114444444200000000000555100155510fdddd55ff622662fff9999ff5e5ffde5f376763ff422222ff111111ffddd555f
+fffffffffffffffffffffffffffffffffffffffffff88fffffccccfffffffffffffa9fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+fffffffffffffffffffffffffffffffffffaaffffff82ffffcdffcdffffffffffffbbffffffffffffffffffffffffffffffffffffffffffffffb3fffffffffff
+f77ff77ffaaaaa9fffffffffffffffffffaaa9fffff82ffffddffcdff333333fff8b33fffffffffff4ffff4ffffffffff222222ff999999ff999999ff666666f
+fe7ff7effa49942fffffffffffffb3fffaaa999ffff22ffffffccdfff3bbbb3ffff31ffffffffffff4ffff2ffffffffff2eeee2ff9aaaa9ff909404ff677776f
+fe6ff7effa94992ffffffffffff88fffffa999fffffffffffffffffff30bb03ffbbb323fffff8876ff4ff4ffff77777ff20ee02ff90aa09ff909404ff607706f
+fe6ff6effa99492ffeeeee8fff8782fffa9ff99ffff82ffffffcdffff30bb03fff3111fffff882264f2ff4f4ff7776f6f20ee02ff90aa09ff949494ff607706f
+fe6ff6effa49942ffe88882fff8822fff99ff99ffff22ffffffddffff3bbbb3ffb83332fff82222f422ff422ff76666ff2eeee2ff9aaaa9ff909004ff677776f
+fe6ff6eff422222ff822222ffff22ffffffffffffffffffffffffffff333333ffff44ffff777666fff2ff2fffff66ffff222222ff999999ff440044ff666666f
+66666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+77677776677776777777776777766777777667777677777777766777777667777777777777777777777777777777777777777777777777777777777777777777
+07670076670076700000076700766700007667007670000000766700007667000005000000005000000005000000005005000000005000000005050000505000
+0767aa7667aa767000000767aa766700007667aa7670000000766700007667000005000aa0005000000005000aa0005005000aa0005000000005050000505000
+07670076670076700000076700766700007667007670000000766700007667000005000000005000000005000000005005000000005000000005050000505000
+07670076670076700000076700766700007667007670000000766700007667000005000880005000000005000880005005000880005000000005050880505000
+07670076670076700000076700766700007667007670000000766700007667000005077777705000000005077777705005077777705000000005077777705000
+07670076670076700000076700766700007667007670000000766700007667000005007667005000000005007667005005007667005000000005007667005000
+07670076670076700000076700766700007667007670000000766700007667000005007667005000000005007667005005007667005000000005007667005000
+07770077770077700000077700777700007777007770000000777700007777000005007667005000000005007667005005007667005000000005007667005000
+00000000000000000000000000000000000000000000000000000000000000000007777667777000000007777667777007777667777000000007777777777000
+00000000000000000000000000000000000000000000000000000000000000000000007667000000000000007667000000007667000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000007667000000000000007667000000007667000000000000a0a00a0a0000
+00000008800000000000000000088000000880000000000000088000000880000000007667000000000000007667000000007667000000000000000000000000
+77777777777777777777777777777777777777777777777777777777777777777777777667777777777777777667777777777667777777777777977777797777
+66666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+66666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+77777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777776777777776777
+05005005000500500000500000500000050050005005005000050050050005000050000005000000000005000400050050000500000005000076700000076700
+05005005000500500000500000500000050050005005005000050050050005000040000005000000000005000000050050000400000005000076700000076700
+050050050005005000005000005000000500500050050050000500500500050000000000050aa000000005000000050050000000000005000076700000076700
+05005805000500500000500000500000050050005085005000050999050005000007770007777700000005000000050050000000000004000076700aa0076700
+05007777000500500000500a0050000005005000777700500005000005000500000767000007670000000500000004004000000000000000007770c00c077700
+050000000007777000005000005000000777700000000050000500a0050005000007670000076700000005000000000000000000000000000000000000000000
+040000000000aa00000050000777000000aa000000000040000500000500050000076700000767000000a5a00a0a0000000000000000000000000a0000a00000
+000000000000000000005000000000000000000000000000000500007770050007776700c0076700000004000000000000000000000000000000000000000000
+07779999999977700007770000000c0007779999999977700005000000007770000767000007670000000000000000000000000000c000000077700000077700
+07666666666666700000000000000000076666666666667000777000000000000007670000076700000000000000000000000000000000000076700000076700
+07666666666666700000000000000000076666666666667000000000000000000007670000077700000077700777000000000000077700000076700000077700
+076666666666667000000000000000000766666666666670000000000000000008876788000000000000767007670000000a0000076777000076788888800000
+77666666666666777700000000000077776666666666667779999999999999977777677777777777779976799767997777777000076667777776777777777777
+66666666666666666700000000000076666666666666666666666666666666666666666666666666666666666666666666678888876666666666666666666666
+66666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+77777777777777777777777777777777777666666666667777777777777777777777777777777777777777777777777777777777777777777777666666666777
+00050004000500000050000005000050057677777777767007700050005000770050000000500005005000500500500000500050000050000007777777777700
+0005000000050000005000000500004005767005050076700770005000500077005000000040000500500c5c0500500000500040000050000007a5a0a0a5a700
+0005000000050000005000000500000005767005b500767007700050005000770050000000000005005000500500500000500000000050000007050000050700
+00050000000500000050aaaa05000000047670050500767007700050c05000770040000000000005005000500500500000400000000050000007077777770700
+00040000000500000077777777000000007670077700767007700050005000770000000000000004005000500500500000000000000050000007000767000700
+000000000005000000000cc000000000007670076700767000000050005000550000000000000000005000500500500000000007780040000007aa07670aa700
+00000a0a00a5a0000000000000007770007777077707777000000050805000550000000000000000005007770500500000000077778000000007770767077700
+000000000004000000000000000076700005000500000500077700777770077700000a0000000000005000000507770000000776677800000000050767050000
+000000000000000000000880000076700005000400000500076700005000076700000770000000000050000005000000000077666677a0000000050767050000
+0000000000000000077777777777767000077777977777000767000040000767000077700000000007770000050000000007766666677a000000077777770000
+00000777007770000766666666666670000777777777770007670000000007770007767000000000000000009990000000776666666677a00000000000000000
+0000076700767000076666666666667000000000000000000767888888888000007766700000a000000000000b000000077666666666677a0000000888000000
+77799767997679977766666666666677777777777777777777677777777777777776667000077799799999977777799777666666666666777997777777777799
+66666666666666666666666666666666666666666666666666666666666666666666667888887666666666666666666666666666666666666666666666666666
+66666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666
+77777777777777777776777777777777777777777777677777777777777777777777777777777777777777777777777777777777777777777777777777777777
+005000050500005000767050050000000050000050076700077005000050077000000005500000500000050000500000000770077c0000000770000505000000
+005000050500005000767050050000000040000050076700077005aaaa50077000000005500000500000050000500000000770077000000007700005a5000000
+005000050500005000767050050aa000000000005007670007700777777007700000000770000050000005000050000000077000000000000770000505000000
+00500005050000500076705007777700000777004007670007700766667007700000000000000050000005000050000000077c00000000000770000777007770
+00500005050000500076705000076700000767000007670007700777777007700000000000000050000005000050000000077000000770000770000505000770
+00500077750000500076705000076700000767000007670000000500005000000000008888000040000005000050000000000000000770000770000505000770
+005000000500004000767050000767000007670000076700000005000050000000000777777000000000050aa0500000000000000007700007700005a5000770
+00500000050000000077777000076700077767000007770007770777777077700000076666700000000005000050000000000007700770000770000505000770
+077700000500000000000000000767000007670000000000076707666670767000a0876666788800000007777770000000000007700770000770007779900770
+00000000c50000000000000000076700000767000000000007670777777076700077776666777700000000000000000000000007700770000000000000000770
+00000000777000000000000000076700000767000000000007670500005076700076666666666700000000000000000000077007700770000000000000000770
+00000000000000a00a00000a08876788088767c880a0000a07670500005076700076666666666700000000000000000000077007700770a00000000000000770
+79999999999997777777997777776777777767777777977777677777777776777776666666666777777700000000777777777007700777777777779999999777
+66666666666666666666666666666666666666666666666666666666666666666666666666666666666788888888766666667887788766666666666666666666
+__gff__
+0000000000000101020100000000000000000000000000000200000000000000000000000000000002000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__map__
+0606060606060606060606060606060606060606060606060606060606060606000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060606060606060606060606060606060000000000000000000000000000000000002d002d0000000000000000000000
+0606060606060606060606060606060606060606060606060606060606060606000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060606060606060606060606060606060000000000000000000000000000000000002d002d0000000000000000000000
+0606060606060606060606060606060606060606060606060606060606060606000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060606060606060606060606060606060000000000000000000000000000000000003d3f3e0000000000000000000000
+0606060606060606060606060606060606060606060606060606060606060606000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060606060606060606060606060606060000000000000000000000000000000000002d002d0000000000000000000000
+0606060606060606060606060606060606060606060606060606060606060606000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060606060606060606060606060606060000000000000000000000000000000000002d003b3f2c000000000000000000
+0606060606060606060606060606060606060606060606060606060606060606000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060606060606060606060606060606060000000000000000000000000000000000002d0000002d000000000000000000
+060606060606060606060606060606060606060606060606060606060606060600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006060606060606060606060606060606000000000000000000000000000000003f3f3e002b3f3f3f0000000000000000
+0606060606060606060606060606060606060606060606060606060606060606000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060606060606060606060606060606060000000000000000000000000000000000002d002d002d000000000000000000
+000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006060606060606060606060606060606000000000000000000000000000000002b3f2d3f3c002d000000000000000000
+000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006060606060606060606060606060606000000000000000000000000000000002d002d0000002d000000000000000000
+000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006060606060606060606060606060606000000000000000000000000000000002d002d0000002d000000000000000000
+000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006060606060606060606060606060606000000000000000000000000000000002d002d0000002d000000000000000000
+000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006060606060606060606060606060606000000000000000000000000000000003c003d3f3f3f2d3f0000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000606060606060606060606060606060600000000000000000000000000000000002b3c0000002d000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000606060606060606060606060606060600000000000000000000000000000000002d000000002d000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000606060606060606060606060606060600000000000000000000000000000000002d000000002d000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0606060606060606060606060606060606060606060606060606060606060606000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0606060606060606060606060606060606060606060606060606060606060606000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0606060606060606060606060606060606060606060606060606060606060606000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0606060606060606060606060606060606060606060606060606060606060606000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0606060606060606060606060606060606060606060606060606060606060606000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0606060606060606060606060606060606060606060606060606060606060606000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0606060606060606060606060606060606060606060606060606060606060606000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0606060606060606060606060606060606060606060606060606060606060606000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__sfx__
+000100000905010050150501e05026050320502d05027000040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0001000009750147501b750217502b750307400070000700007000070000700007000070000700007000070000700007000070000700007000070000700007000070000700007000070000700007000070000700
+0004000034750337502f7502b7502975024740227401f7301c73018720167202b74027740237301f7301c7201872014720107100c71009720097201b7301873015720117200d7200a71007710047100371000700
+00040000036300463007640086400865009650096500965009650096500a6500a6400a6400a640096400963008630046300362002620016100000000000000000000000000000000000000000000000000000000
+000a00000855108551085510855108551085510854108541085410854108541085410853108531085310853108531085310852108521085210852108521085210851108511085110851108511085110851108511
+000600000665500005000050000500005000050000500005000050000500005000050000500005000050000500005000050000500005000050000500005000050000500005000050000500005000050000500005
+00040000280502a0502a0502a0502a0502a0502a0402a0402a0302a0302a0202a0202a0102a010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0004000020552225522455226552285522a5522c5422e54220542225422454227532295322c5322e5321f5322252225522295222d52231512375023b5023d5020050200502005020050200502005020050200502
+00300000267550070500705007051e75500705127050070520755007050070500705167550070500705007051a7551e7050070500705127550070500705007051875500705007050070514755007050070500705
+000a00001473500705007050070500705007050070500705007050070500705007050070500705007050070500705007050070500705007050070500705007050070500705007050070500705007050070500705
+001000002f7500000000000237001f750000001870000000117500d70000000000001b75000000167001370023750000000d70000000137501770000000000000d75000000000002070018750000002670000000
+011000001935511355173350a355153351b35516335243551d33511355003050a33510355003051434500305083550a3550c35511355153550c355073550e355123550d355003051333519355003051434500305
+0130000000005260250000500005000051e02500005000050000520025000050000500005160250000500005260051a0251e005000051e00512025160051e0051a00518025000050000518005130251300500005
+0010000009551005010f5510050113551005010a55105501055510050103501035511750117551075510050109551005010f5510050113551005010a551055010555100501035010355117501175510755100501
+01100000045510050117551005010d5510050110551055010755100501035010c55117501175510755100501045510050117551005010d5510050110551055010755100501035010c55117501175510755100501
+001000003b6150000532615000052a61529605166150000502615026050261500005026150000502615000053b6150000532615000052a6152960516615000050261502605026150000502615000050261500005
+001000002d6252d625176052d62511605000050000500005000052d625000052d6252d625000052d6252d6252d625000052d625000052d625000052d625000050000500005000050000500005000050000500005
+0010000034355003052a35500305213550030518355003050030500305003051235504355043550c3550030534355003052a35500305213550030518355003050030500305003051235504355043550c35500305
+0020000017555005050050515555005051755500505005051a55500505005051a5550050513555005050050515555005050c505155550050517555005050d50512555085050050512555065050e5551b50505505
+0120000017605176250060515605156251760517625006051a6051a625006051a6051a62513605136250060515605156250c605156051562517605176250d60512605126250060512605126250e6050e62505605
+0020000017004170041703415004150041503417004170341a0041a0041a0341a0041a0041a034130041303415004150041503415004150041503417004170341200412004120341200412004120340e0040e034
+01f000001303500005000050000500005000050000500005000050000500005000050000500005000050000500005000050000500005000050000500005000050000500005000050000500005000050000500005
+001500001216012160121601216012150131501315013150131401314012140121301213012130121200e1200e1200e1100e1100e110121001110011100111001110011100111001010010100101001110000100
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__music__
+00 11 42 0f 44
+00 0b 42 0f 44
+00 11 42 0f 44
+00 0c 42 0f 44
+04 10 42 43 44
+01 11 42 0f 44
+00 0b 42 0f 44
+00 11 42 0f 44
+02 0c 42 0f 44
+04 10 42 43 44
+00 12 42 43 44
+00 12 13 43 44
+00 12 13 14 44
+04 15 42 43 44
+01 12 42 43 44
+00 12 13 43 44
+00 12 13 14 44
+00 12 14 43 44
+00 41 13 14 44
+02 41 13 43 44
+03 08 0c 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44

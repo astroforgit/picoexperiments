@@ -1,0 +1,57 @@
+UPDATE 2017-05-16:
+
+VEKTOR2089 is now up for early access on itch.io!
+
+Features:
+
+    Split screen multiplayer
+    Trackmania style hotseat multiplayer
+    Track editor
+    60 fps
+    Multiple cars to choose from with different feels and styles
+    4 speed classes
+    Maybe a story mode, we'll see!
+
+New in 1.5.0beta:
+
+    8 set looping tracks, 3 laps each
+    Level editor (needs some more work)
+
+Missing some stuff from the previous version that still needs to be fixed up:
+
+    Boosters
+    Narrowing tracks
+    Time attack replays
+
+Wipeout inspired racing game!
+
+Z to ACCEL
+X to BRAKE
+UP to BOOST
+LEFT and RIGHT to STEER
+
+Q for MENU
+
+Update 1.2.0:
+
+    Reduced token usage
+    Multiple difficulty levels (Easy, Medium, Hard (original difficulty))
+
+Update 1.1.0:
+
+    Somewhat easier AI, might actually be possible to beat them now
+    Sharper turning circle
+    Nerfed boosting a bit
+    Boosted normal acceleration
+    Reduced ship size slightly
+    Warnings about upcoming turns and narrowing
+    Performance improvements
+
+Challenge your ghost or AI racers.
+
+now with music + sound!
+5 difficulty levels
+in game menu
+parallax scrolling foreground
+
+https://www.lexaloffle.com/bbs/?tid=2243

@@ -1,0 +1,1735 @@
+pico-8 cartridge // http://www.pico-8.com
+version 5
+__lua__
+--about 1600mm
+--by trasevol_dog, for #p8jam1
+
+e={}
+e.c=0
+fb={}
+eb={}
+fb.c=0
+eb.c=0
+
+rk={}
+rk.c=0
+
+bs=3
+
+p={}
+p.c=0
+
+boom={}
+boom.c=0
+smok={}
+smok.c=0
+
+
+star={}
+star.c=0
+cloud={}
+cloud.c=0
+
+
+ew={} -- actually
+eh={} -- half
+ew[0]=4 eh[0]=4
+ew[1]=8 eh[1]=4
+ew[2]=8 eh[2]=4
+ew[3]=8 eh[3]=8
+ew[4]=8 eh[4]=8
+ew[5]=16 eh[5]=8
+ew[6]=32 eh[6]=16
+
+
+pts={}
+pts[0]=5
+pts[1]=15
+pts[2]=20
+pts[3]=90
+pts[4]=100
+pts[5]=250
+pts[6]=2000
+
+
+camspd=0
+camx=0
+
+shkx=0
+shky=0
+
+px=64
+py=112
+pa=-0.15
+
+pw=4 -- actually
+ph=4 -- half
+
+plife=100
+pllife=plife
+
+wpnc=0
+wpnn=1
+
+cldwn=0
+ 
+score=0
+scoreb=0
+combo=0
+combop=0
+combol=0
+
+fadeout=false
+fadein=true
+fade=3
+
+pr=16
+prr=0
+
+pdead=true
+
+win=false
+
+function _init()
+ camx=0
+
+ floor={}
+ for i=0,31 do
+  floor[i]=rnd(8)
+ end
+ grassturn=0
+
+ create_stars()
+ create_clouds()
+ 
+
+ t=-0.01
+ 
+end
+
+function _update()
+ t+=0.01
+ 
+ if pdead then camspd=max(camspd-0.1,0) end
+ 
+ camx+=camspd
+ 
+ k=camx/8 k-=k%1 k=(k+17)%32
+ floor[k]=rnd(8)
+ 
+ if not pdead then
+  process_input()
+ 
+  if not win then
+   update_pr()
+  else
+   if t%0.02==0 then
+    create_explo(rnd(128),rnd(96),rnd(16))
+   end
+  end
+ end
+ 
+ update_enemies()
+ 
+ update_bullets()
+ 
+ update_rockets()
+ 
+ update_pickup()
+ 
+ checkcol_fbullets()
+ checkcol_fbulletsrk()
+ 
+ if not pdead then
+  checkcol_ebullets()
+  checkcol_rockets()
+  checkcol_pickup()
+ end
+ 
+ update_explos()
+ 
+ update_smokes()
+ update_shake()
+ 
+ update_stars()
+ update_clouds()
+ 
+ update_combo()
+ 
+ if pdead then
+  if btn(2) then
+   score=max(score-1000,0)
+   fadeout=true
+  elseif btn(3) then
+   pr=16
+   score=0
+   wpnn=1
+   wpnc=0
+   fadeout=true
+  end
+ end
+end
+
+function _draw()
+ rectfill(0,0,127,127,0)
+ 
+ draw_stars()
+ draw_clouds()
+ 
+ draw_pickup()
+ 
+ draw_bullets()
+ 
+ draw_rockets()
+
+ if not pdead then
+  draw_tank()
+ end
+ 
+ draw_enemies()
+ 
+ draw_smokes()
+
+ draw_floor()
+ 
+ --line(px+10*sin(pa)+shkx,112-10*cos(pa)+shky,px+16*sin(pa)+shkx,112-16*cos(pa)+shky,8)
+ 
+ draw_lifebar()
+ 
+ draw_explos()
+ 
+ draw_weapons()
+ 
+ draw_score()
+ 
+ if pdead then
+  draw_text("about 1600mm",40,23)
+  draw_text("by trasevol_dog",34,32)
+  draw_text("press up -> continue (1000pts)",2,55)
+  draw_text("press down -> restart",22,64)
+ else
+  draw_combo()
+ 
+  draw_pr()
+ end
+ 
+ if win then
+  draw_text("meteo guy says rain is over",10,55)
+  draw_text("nice job!",46,64)
+ end
+ 
+ draw_fade()
+ 
+ --debug:
+ 
+ --draw_text(stat(0),1,9)
+ --draw_text(stat(1),1,17)
+ --draw_text(ttt,1,17)
+ 
+end
+
+--inits
+
+cannonanch=192
+rocketanch=208
+
+--updates
+
+function update_shake()
+
+ if(abs(shkx)<0.5 and abs(shky)<0.5) then
+  shkx=0 shky=0
+ else
+  shkx*=-0.8-rnd(0.2)+0.1
+  shky*=-0.8-rnd(0.2)+0.1
+ end
+end
+
+function process_input()
+ if(btn(0)) then
+  px=max(px-1.5,0)
+ end
+ if(btn(1)) then
+  px=min(px+1.5,128)
+ end
+ 
+ if(btnp(2)) then
+  wpnc=(wpnc-1)%wpnn
+ end
+ if(btnp(3)) then
+  wpnc=(wpnc+1)%wpnn
+ end
+ 
+ if(not btn(5)) then
+  if(btn(0)) then
+   pa=min(pa+0.01,0.15)
+  elseif(pa>0) then
+   pa=max(pa-0.01,0)
+  end
+  if(btn(1)) then
+   pa=max(pa-0.01,-0.15)
+  elseif(pa<0) then
+   pa=min(pa+0.01,0)
+  end
+ end
+ 
+ if(btn(4)) then
+  shoot()
+ end
+ 
+end
+
+function shoot()
+ cldwn-=0.01
+ 
+ if cldwn<=0 then
+  if wpnc==0 then
+   create_bullet(0,px,112,pa+0.25,0.95,10,5,3)
+   add_shake(0.5)
+   sfx(1,2)
+   cldwn=0.02
+  elseif wpnc==1 then
+   for i=-1,1 do
+   create_bullet2(0,px,112,pa+0.25,i*0.1,0.98,10,5,3)
+   end
+   add_shake(1.5)
+   sfx(1,2)
+   cldwn=0.03
+  elseif wpnc==2 then
+   xx=rnd(8)-4
+   create_bullet(0,px+xx*cos(pa),112+xx*sin(pa),pa+0.25,1,10,5,3)
+   add_shake(0.5)
+   sfx(1,2)
+  elseif wpnc==6 then
+   for i=-4,4 do
+    create_bullet2(0,px,112,pa+0.25,0.02*i,1,10,5,3)
+   end
+   add_shake(5)
+   sfx(2,2)
+   cldwn=0.1
+  elseif wpnc==5 then
+   for i=1,10 do
+    create_bullet(0,px,112,pa+0.25,1,10,i,11-i)
+   end
+   add_shake(5)
+   sfx(2,2)
+   cldwn=0.2
+  elseif wpnc==7 then
+   for i=0,79 do
+    k=1+rnd(7)
+    create_bullet(0,px,112,pa+0.25,0.5,10,k,9-k)
+   end
+   add_shake(10)
+   sfx(2,2)
+   cldwn=0.8
+  elseif wpnc==3 then
+   for i=0,14 do
+    create_bullet(0,px,112,pa+0.25,0.9,10,4+rnd(2),5)
+   end
+   add_shake(4)
+   sfx(2,2)
+   cldwn=0.15
+  elseif wpnc==4 then
+   for i=0,4 do
+    create_bullet(0,px,112,pa+0.25,0.6,10,4+rnd(2),0.5)
+   end
+   add_shake(0.5)
+   sfx(1,2)
+  end
+ end
+end
+
+function update_bullets()
+
+ k=0
+
+ for m=0,fb.c-1 do
+  n=m+k
+  bb=fb[n]
+  
+  bb.x=bb.x+bb.vx
+  bb.y=bb.y+bb.vy
+
+  bb.l=bb.l-0.1
+  if(bb.l<=0) then
+   delete_fromarray(fb,n)
+   k=k-1
+  elseif(bb.y>112) then
+   if(rnd(5)<1)then
+    create_explo(bb.x,112,1+rnd(2))
+   end
+   delete_fromarray(fb,n)
+   k=k-1
+  end
+ end
+ 
+ k=0
+ 
+ for m=0,eb.c-1 do
+  n=m+k
+  bb=eb[n]
+  
+  bb.x=bb.x+bb.vx
+  bb.y=bb.y+bb.vy
+
+  bb.l=bb.l-0.1
+  if(bb.l<=0) then
+   delete_fromarray(eb,n)
+   k=k-1
+  elseif(bb.y>112) then
+   if(rnd(5)<1)then
+    create_explo(bb.x,112,1+rnd(2))
+   end
+   delete_fromarray(eb,n)
+   k=k-1
+  end
+ end
+end
+
+function update_rockets()
+ k=0
+
+ for m=0,rk.c-1 do
+  sfx(3,3)
+  n=m+k
+  
+  rrkk=rk[n]
+  
+  rrkk.x+=2*cos(rrkk.a)
+  rrkk.y+=2*sin(rrkk.a)
+
+  if rnd(4)<1 then
+   create_smoke(rrkk.x-4*cos(rrkk.a),rrkk.y-4*sin(rrkk.a),1+rnd(2))
+  end
+   
+  pda=atan2(px-rrkk.x,py-rrkk.y)
+  
+  a=rrkk.a-pda
+  a=((a+1)%2)-1
+  
+  if(a<0) then
+   rrkk.a=rrkk.a+0.01
+  elseif(a>0) then
+   rrkk.a=rrkk.a-0.01
+  end
+  
+  rrkk.a=rrkk.a%1
+  
+  if(rrkk.y>112) then
+   delete_fromarray(rk,n)
+   create_explo(rrkk.x,rrkk.y,8+rnd(4))
+   k=k-1
+  end
+ end
+end
+
+function update_enemies()
+ for n=0,e.c-1 do
+
+  en=e[n]
+
+  en.cldwn-=0.01
+  
+  if(en.t==0) then
+   if en.y<8 then en.vy=0.5 end
+   if(en.cldwn<0) then
+    create_bullet(1,en.x,en.y,-0.25,0.9,4,5,3)
+    add_shake(0.1)
+	sfx(1,1)
+	en.cldwn=0.1
+    en.vy-=0.1
+   end
+   
+  elseif(en.t==1 and en.cldwn<0) then
+    for i=-1,1 do
+     create_bullet(1,en.x,en.y,-0.25+i*0.1,0.98,4,2,8)
+	end
+    add_shake(0.2)
+	sfx(1,1)
+	en.cldwn=0.2
+
+  elseif(en.t==2 and en.cldwn<0) then
+    create_bullet(1,en.x+rnd(16)-8,en.y,-0.25,0.95,4,10,3)
+    add_shake(0.1)
+	sfx(1,1)
+	en.cldwn=0.05
+   
+  elseif(en.t==3) then
+   if en.y<16 then en.vy=0.5
+   elseif en.y>32 then en.vy=-0.5 end
+   if(en.cldwn<0) then
+    for i=0,2 do
+     create_rocket(en.x+rnd(16)-8,en.y,-0.25,0.8,4)
+	end
+    add_shake(1)
+	en.cldwn=0.5
+   end
+   
+  elseif(en.t==4) then
+   if en.x<16 then en.vx=1
+   elseif en.x>112 then en.vx=-1 end
+   if(en.cldwn<0 and en.x>=0) then
+    create_rocket(en.x+rnd(16)-8,en.y,-0.25,0.8,4)
+    add_shake(0.5)
+   	en.cldwn=0.1
+   end
+   
+  elseif(en.t==5) then
+   if en.x<32 then en.vx=0.5 en.vy=0
+   elseif en.x>96 then en.vx=-0.5 en.vy=0.25
+   elseif en.x>63 and en.x<65 and en.vy~=0 then en.vy=-0.25 end
+   if(en.cldwn<0.08 and en.cldwn%0.04<0.01 and en.x>0) then
+    create_rocket(en.x-12,en.y,-0.375,0.99,4)
+    add_shake(0.5)
+   elseif(en.cldwn<0.08 and en.cldwn%0.04<0.02 and en.x>0) then
+    create_rocket(en.x-7,en.y+5,-0.375,0.99,4)
+    add_shake(0.5)
+   end
+
+   if(en.cldwn<0) then
+	en.cldwn=0.5
+   end
+   
+  elseif(en.t==6) then
+   if en.y<24 then en.vy=0.2
+   elseif en.y>40 then en.vy=-0.2 end
+   if(en.cldwn<2.5) then
+    if(en.cldwn%0.32<0.01) then
+	 for i=0,1 do
+      create_rocket(en.x-30+i*60,en.y-2,-0.375+i*0.25,0.99,4)
+	 end
+     add_shake(2)
+    elseif(en.cldwn%0.32<0.09 and en.cldwn%0.16>=0.08) then
+	 for i=0,1 do
+      create_rocket(en.x-28+i*56,en.y+7,-0.375+i*0.25,0.99,4)
+	 end
+     add_shake(2)
+	end
+   elseif(en.cldwn<5) then
+    if(en.cldwn%0.1<0.01) then
+     k=rnd(4) k-=k%1
+	 if     k==0 then x=-20
+  	 elseif k==1 then x=-12
+	 elseif k==2 then x=12
+	 elseif k==3 then x=20 end
+	 for i=0,8 do
+      create_bullet(1,en.x+x,en.y+12,-0.25,0.97,4,4+rnd(4),3)
+	 end
+     add_shake(3)
+	 sfx(1,1)
+	end
+   elseif(en.cldwn<7.5) then
+    create_bullet(1,en.x+rnd(8)-4,en.y+10,-0.25,1,4,5,3)
+	create_bullet(1,en.x+rnd(8)-4,en.y+10,-0.25,1,4,5,3)
+    add_shake(2)
+	sfx(1,1)
+   end
+
+   if(en.cldwn<0) then
+    en.cldwn=10
+   end
+  end
+
+  
+  en.x+=en.vx
+  en.y+=en.vy
+  
+  if(en.x>150) then
+   delete_fromarray(e,n)
+  end
+  
+ end
+end
+
+function update_pickup()
+ for i=0,p.c-1 do
+  pp=p[i]
+  pp.vy+=0.1
+  pp.y+=pp.vy
+  if pp.y>113 then
+   pp.y=113
+   pp.vy=-pp.vy+1
+  end
+ end
+end
+
+
+function update_combo()
+ combol-=0.1
+ if(combol<0)then
+  combo=0
+ end
+end
+
+
+function checkcol_fbullets()
+ for n=0,fb.c-1 do
+  for m=0,e.c-1 do
+   dx=e[m].x-fb[n].x
+   dy=e[m].y-fb[n].y
+
+   if(abs(dx)<bs+ew[e[m].t] and abs(dy)<bs+eh[e[m].t]) then
+    create_explo(fb[n].x,fb[n].y,2+rnd(2))
+    delete_fromarray(fb,n)
+	e[m].l-=1
+	
+	if(e[m].l <= 0)then
+	 create_explo(e[m].x,e[m].y,ew[e[m].t]+rnd(ew[e[m].t]))
+	 add_combo()
+	 get_pts(e[m].t)
+	 if e[m].t==6 then
+	  win=true
+	 end
+     delete_fromarray(e,m)
+    end
+   end
+  end
+ end
+end
+
+function checkcol_fbulletsrk()
+ for n=0,fb.c-1 do
+  for m=0,rk.c-1 do
+   dx=rk[m].x-fb[n].x
+   dy=rk[m].y-fb[n].y
+
+   if(abs(dx)<bs+2 and abs(dy)<bs+2) then
+    create_explo(fb[n].x,fb[n].y,2+rnd(2))
+    delete_fromarray(fb,n)
+	rk[m].l-=1
+	
+	if(rk[m].l <= 0)then
+	 create_explo(rk[m].x,rk[m].y,8+rnd(4))
+     delete_fromarray(rk,m)
+    end
+   end
+  end
+ end
+end
+
+function checkcol_ebullets()
+ for n=0,eb.c-1 do
+  
+  dx=px-eb[n].x
+  dy=py-eb[n].y
+
+  if(abs(dx)<bs+pw and abs(dy)<bs+ph) then
+   create_explo(eb[n].x,eb[n].y,2+rnd(2))
+   delete_fromarray(eb,n)
+
+   plife=max(plife-5,0)
+   verify_death()
+  end
+ end
+end
+
+function checkcol_rockets()
+ for n=0,rk.c-1 do
+  rrrk=rk[n]
+  if(abs(px-rrrk.x)<2+pw and abs(py-rrrk.y)<2+ph) then
+   create_explo(rrrk.x,rrrk.y,8+rnd(4))
+   delete_fromarray(rk,n)
+
+   plife=max(plife-15,0)
+   verify_death()
+  end
+ end
+end
+
+function verify_death()
+ if plife==0 then
+  pdead=true
+  create_explo(px,py,16)
+  add_shake(16)
+ end
+end
+
+function checkcol_pickup()
+ for i=0,p.c-1 do
+  pp=p[i]
+  if(abs(px-pp.x)<4+pw and abs(py-pp.y)<4+ph) then
+   if pp.t==8 then
+    plife=min(plife+20,100)
+   else
+    wpnn=9-pr/2
+   end
+   delete_fromarray(p,i)
+  end
+ end
+end
+
+
+function update_explos()
+ for i=0,boom.c-1 do
+  boom[i].s=boom[i].s+1
+  
+  if boom[i].s==1 and boom[i].r>4 then
+   sfx(0,0)
+  end
+  
+  if(boom[i].s>=2) then
+   delete_fromarray(boom,i)
+  else
+   add_shake(boom[i].r/8)
+   create_smoke(boom[i].x+rnd(boom[i].r*2)-boom[i].r,boom[i].y+rnd(boom[i].r*2)-boom[i].r,boom[i].r/2+rnd(boom[i].r/2))
+  end
+  
+  if(boom[i].s==1 and boom[i].r>=16) then
+   n=2+rnd(3)
+   for k=0,n-1 do
+    create_explo(boom[i].x+rnd(40)-20,boom[i].y+rnd(40)-20,8+rnd(8))
+   end
+  elseif(boom[i].s==1 and boom[i].r>=8) then
+   n=2+rnd(3)
+   for k=0,n-1 do
+    create_explo(boom[i].x+rnd(20)-10,boom[i].y+rnd(20)-10,rnd(8))
+   end
+  elseif(boom[i].s==1 and boom[i].r>=4) then
+   n=2+rnd(3)
+   for k=0,n-1 do
+    create_explo(boom[i].x+rnd(14)-7,boom[i].y+rnd(14)-7,rnd(4))
+   end
+  end
+ end
+end
+
+function update_smokes()
+ for i=0,smok.c-1 do
+  smok[i].x+=rnd(0.2)-0.1-camspd
+  smok[i].y-=1
+  
+  smok[i].l-=0.1
+  if(smok[i].l<=0) then
+   delete_fromarray(smok,i)
+  end
+ end
+end
+
+
+ttt=160
+
+function update_pr()
+ ttt-=0.01
+
+ if ttt%1<0.01 then
+  for u=0,3 do
+   k=mget(pr,u)
+   
+   if k==1 then
+    for i=0,3 do
+     create_enemy(-32-rnd(32),32+rnd(32),0)
+    end
+   elseif k==2 then
+    for i=1,2 do
+     create_enemy(-u*64-i*32,i*32+rnd(8)-4,1)
+    end
+   elseif k==3 then
+    for i=1,4 do
+     create_enemy(-u*64-i*16,32+i%2*32+rnd(16)-8,2)
+    end
+   end
+  end
+
+ end
+
+ if ttt%2<0.01 then
+  for u=0,3 do
+   k=mget(pr,u)
+
+   if k==4 then
+    create_enemy(32+rnd(64),-8-rnd(16),3)
+   elseif k==5 then
+    create_enemy(-16-rnd(64),16+rnd(32),4)
+   elseif k==6 then
+    create_enemy(-16-rnd(64),16+rnd(32),5)
+   end
+  end
+ end
+
+ if ttt<10 and ttt>=9.99 then
+  create_enemy(64,-16,6)
+ end
+
+ if ttt%5<0.01 then
+  for i=0,4 do
+   create_pickup(60+rnd(8),-4-rnd(16),8)
+  end
+ end
+
+ if ttt%20<0.01 and ttt>10 then
+  create_pickup(60+rnd(8),-4-rnd(16),ttt/20)
+ end
+ 
+ if ttt%10<0.01 and pr>0 then
+  pr=ttt/10 pr-=pr%1
+  prr=0
+ end
+
+end
+
+
+function update_stars()
+ k=0
+
+ for m=0,star.c-1 do
+  n=m+k
+  star[n].x-=camspd/8
+  if(star[n].x<0) then
+   delete_fromarray(star,n)
+   k=k-1
+  end
+ end
+ 
+ k*=-1
+ for i=0,k-1 do 
+  create_star(256+rnd(4)-2, 1+rnd(100))
+ end
+end
+
+function update_clouds()
+ k=0
+
+ for m=0,cloud.c-1 do
+  n=m+k
+  cloud[n].x-=camspd/4+0.1
+  if(cloud[n].x<-16) then
+   delete_fromarray(cloud,n)
+   k=k-1
+  end
+ end
+ 
+ k*=-1
+ for i=0,k-1 do 
+  create_cloud(256+rnd(8)-4, rnd(80))
+ end
+end
+
+--draws
+
+function draw_floor()
+
+ k=camx/8
+ k=k-k%1
+ for i=0,16 do
+  n=(k+i)%32
+  spr(48+floor[n],k*8-camx+i*8+shkx,112+shky)
+ end
+ 
+ rectfill(0,112+8+shky,127,127,0)
+end
+
+function draw_tank()
+
+ if(plife < pllife) then
+  whiten_pal()
+ end
+
+ palt(8,true)
+ 
+ if(pa==0) then
+  spr(4,px-4+0+shkx,108-4+shky)
+ else
+  aa=pa*100+15
+  aa/=2
+  aa-=aa%1
+  
+  if(aa>=7)then aa+=1 end
+  
+  spr(192+aa,px-4+4*sin(pa)+shkx,108-4*cos(pa)+shky)
+ end
+
+ palt(0,false)
+
+ if(t%0.04<0.02) then
+  sspr(16,8,16,8,px-8+shkx,108+shky)
+ else
+  sspr(32,8,16,8,px-8+shkx,108+shky)
+ end
+
+ palt(0,true)
+ palt(8,false)
+ 
+ if(plife < pllife) then
+  reset_pal()
+ end
+
+end
+
+function draw_bullets()
+ for n=0,fb.c-1 do
+  draw_bullet(0,fb[n])
+ end
+ 
+ for n=0,eb.c-1 do
+  draw_bullet(1,eb[n])
+ end
+end
+
+function draw_bullet(fe,b)
+
+ if(fe==0) then
+  bcol0=8
+  bcol1=14
+ elseif(fe==1) then
+  bcol0=1
+  bcol1=12
+ end
+ 
+ circfill(b.x-sin(b.a)+shkx,b.y+cos(b.a)+shky,3,bcol0)
+ circfill(b.x+sin(b.a)+shkx,b.y+sin(b.a)+shky,3,bcol0)
+ circfill(b.x-sin(b.a)+shkx,b.y+cos(b.a)+shky,1,bcol1)
+ circfill(b.x+sin(b.a)+shkx,b.y+sin(b.a)+shky,1,bcol1)
+ 
+end
+
+function draw_rockets()
+ for n=0,rk.c-1 do
+  draw_rocket(rk[n])
+ end
+end
+
+function draw_rocket(rrk)
+ palt(8,true)
+ 
+ if(rrk.ll>rrk.l)then
+  whiten_pal()
+ end
+
+ k=((rrk.a-0.25)%1)*25
+ k-=k%1
+ 
+ spr(rocketanch+k,rrk.x-4+shkx,rrk.y-4+shky)
+ 
+ if(rrk.ll>rrk.l)then
+  reset_pal()
+  rrk.ll=rrk.l
+ end
+ 
+ palt(8,false)
+end
+
+function draw_enemies()
+ for n=0,e.c-1 do
+
+  en=e[n]
+
+  if(en.ll>en.l)then
+   whiten_pal()
+  end
+  
+  if(en.t==0) then
+   spr(22,en.x-4+shkx,en.y-4+shky)
+  
+  elseif(en.t==1) then
+   sspr(112,6+(t%0.02)*100*4,16,3,en.x-8+shkx,en.y-4+shky)
+   sspr(48,3,16,5,en.x-8+shkx,en.y-1+shky)
+   
+  elseif(en.t==2) then
+   sspr(64,0,16,8,en.x-8+shkx,en.y-4+shky)
+  
+  elseif(en.t==3) then
+   sspr(112,(t%0.02)*100*4,16,3,en.x-8+shkx,en.y-8+shky)
+   sspr(80,3,16,13,en.x-8+shkx,en.y-5+shky)
+   
+  elseif(en.t==4) then
+   sspr(112,(t%0.02)*100*4,16,3,en.x-8+shkx,en.y-8+shky)
+   sspr(112+(t%0.02)*100*4,12,3,2,en.x-8+shkx,en.y+shky)
+   sspr(112+(t%0.02)*100*4,12,3,2,en.x+5+shkx,en.y+shky)
+   sspr(96,3,16,13,en.x-8+shkx,en.y-5+shky)
+   
+  elseif(en.t==5) then
+   sspr(112,(t%0.02)*100*4,16,3,en.x-16+shkx,en.y-11+shky)
+   sspr(112,((t+0.01)%0.02)*100*4,16,3,en.x+shkx,en.y-11+shky)
+   sspr(96,16,32,16,en.x-16+shkx,en.y-8+shky)
+   
+  elseif(en.t==6) then
+   sspr(112,6+(t%0.02)*100*4,16,3,en.x-20+shkx,en.y-15+shky)
+   sspr(112,6+(t%0.02)*100*4,16,3,en.x+4+shkx,en.y-15+shky)
+   sspr(112,(t%0.02)*100*4,16,3,en.x-36+shkx,en.y-17+shky)
+   sspr(112,(t%0.02)*100*4,16,3,en.x+20+shkx,en.y-17+shky)
+   sspr(0,32,64,32,en.x-32+shkx,en.y-16+shky)
+  end
+  
+  if(en.ll>en.l)then
+   reset_pal()
+   en.ll=en.l
+  end
+
+ end
+end
+
+function draw_pickup()
+ for i=0,p.c-1 do
+  pp=p[i]
+  x=pp.x-4+shkx
+  y=pp.y-4+shky
+  if pp.t==8 then
+   spr(23,x,y)
+  else
+   spr(34+pr/2,x,y)
+  end
+ end
+end
+
+
+function draw_explos()
+ for i=0,boom.c-1 do
+ 
+ bbboom=boom[i]
+ 
+ if(bbboom.s==0) then
+  circfill
+  (bbboom.x+shkx,
+   bbboom.y+shky,
+   bbboom.r,
+   7)
+ elseif(bbboom.s==1) then
+  circfill
+  (bbboom.x+shkx,
+   bbboom.y+shky,
+   bbboom.r,
+   0)
+ end
+ 
+ end
+end
+
+function draw_smokes()
+ for i=0,smok.c-1 do
+  smokk=smok[i]
+ 
+  circfill(smokk.x,smokk.y,smokk.r,smokk.c)
+ end
+end
+
+
+function draw_stars()
+ for i=0,star.c-1 do
+  pset(star[i].x+shkx/8,star[i].y+shky/8,15)
+ end
+end
+
+function draw_clouds()
+ for n=0,cloud.c-1 do
+ 
+  clood=cloud[n]
+
+  x=clood.x+shkx/4
+  y=clood.y+shky/4
+
+  for i=0,4 do
+   circfill(clood[i].x+x,
+            clood[i].y+y+2,
+            clood[i].r+2,
+            13)
+  end
+
+  for i=0,4 do
+   circfill(clood[i].x+x,
+            clood[i].y+y,
+            clood[i].r,
+            6)
+  end
+ end
+end
+
+
+function draw_lifebar()
+
+ rectfill(0,120,127,127,0)
+
+ palt(8,true)
+ palt(0,false)
+ 
+ fw=pllife*128/100
+ rectfill(0,120,fw,127,7)
+ 
+ fw=plife*128/100
+ rectfill(0,120,fw,127,8)
+ 
+ pllife=plife
+ 
+ spr(32,0,120)
+ spr(33,120,120)
+ 
+ sspr(3,16,2,8,4,120,116,8)
+ 
+ palt(8,false)
+ palt(0,true)
+
+end
+
+function draw_weapons()
+ for i=0,wpnn-1 do
+  if i==wpnc then pal(11,8)
+  else pal(11,3) end
+  spr(34+i,119,16+1+12*i)
+  if i==wpnc then pal(11,14)
+  else pal(11,11) end
+  spr(34+i,119,16+12*i)
+  if i==wpnc then pal(11,11) end
+ end
+end
+
+function draw_score()
+ draw_text("score:",1,1)
+ if scoreb<1 then
+  draw_text(score,26,1)
+ else
+  xx=scoreb/10
+  xx-=xx%1
+  draw_text(score,26+xx*4,1)
+  draw_text(scoreb,26,1)
+ end
+end
+
+function draw_combo()
+ if combo>1 then
+  if(combop==1)then
+   whiten_pal()
+  end
+ 
+  if(combol>=3 or
+    (combol>=1 and combol%0.4 < 0.2) or
+	(combol>=0 and combol%0.2 < 0.1))then
+   draw_text("combo x",89,1)
+   draw_text(combo,118,1)
+  end
+  
+  if(combop==1)then
+   reset_pal()
+   combop=0
+  end
+ end
+end
+
+function draw_pr()
+ if prr>0.99 then
+  whiten_pal()
+ end
+
+ if pr==16 and prr<1 then
+  draw_text("meteo guy says",36,46)
+  draw_text("it's gonna be a rainy night",10,55)
+  draw_text("he says",50,64)
+  draw_text("about",40,73)
+  draw_text(pr*100,64,73)
+  draw_text("mm",80,73)
+ elseif pr<16 and pr>0 and prr<1 then
+  draw_text("meteo guy says",36,64-9)
+  draw_text("about",30,64)
+  draw_text(pr*100,54,64)
+  draw_text("mm left",70,64)
+ end
+ 
+ if prr>0.98 then
+  reset_pal()
+ end
+ 
+ prr+=0.01
+end
+
+function draw_text(blah,x,y,c0,c1,c2)
+ c0=c0 or 7
+ c1=c1 or 9
+ c2=c2 or 4
+
+ c=c2
+ for i=0,3 do
+  for j=0,2 do
+   print(blah,x+j,y+3-i,c)
+  end
+  c=c1
+ end
+ 
+ print(blah,x+1,y+1,c0)
+end
+
+function draw_fade()
+ if fade>2 then
+  rectfill(0,0,127,127,0)
+ elseif fade>1 then
+  for i=0,127 do
+  for j=0,127 do
+   if (i+j)%2==0 then
+    pset(i,j,0)
+   end
+  end
+  end
+ elseif fade>0 then
+  for i=0,127 do
+  for j=0,127 do
+   if i%2==0 and j%2==0 then
+    pset(i,j,0)
+   end
+  end
+  end
+ end
+ 
+ if fadein then
+  fade-=0.5
+ elseif fadeout then
+  fade+=0.5
+ end
+ 
+ if fade==3 then
+  fadein=true
+  fadeout=false
+  ttt=pr*10
+  prr=0
+  wpnn=9-pr/2
+  pdead=false
+  plife=100
+  px=64
+  camspd=4
+  e.c=0
+  fb.c=0
+  eb.c=0
+  rk.c=0
+  p.c=0
+  smok.c=0
+  boom.c=0
+  star.c=0
+  cloud.c=0
+  create_stars()
+  create_clouds()
+ elseif fade==0 then
+  fadein=false
+ end
+
+end
+
+function whiten_pal()
+ for i=0,15 do
+  pal(i,7)
+ end
+end
+
+function reset_pal()
+ for i=0,15 do
+  pal(i,i)
+ end
+end
+
+--creates
+
+function create_bullet(fe,x,y,a,acc,offset,s,l)
+--fe==0 -> friendly
+--else -> enemy
+ 
+ b={}
+ 
+ b.x=x+offset*cos(a)
+ b.y=y+offset*sin(a)
+ 
+ acco=(1-acc)*1000
+ a=a+(rnd(acco)-acco/2)/1000
+ 
+ b.a=(a-0.25)%1
+ b.vx=s*cos(a)
+ b.vy=s*sin(a)
+ b.l=l
+ 
+ if(fe==0) then
+  add_toarray(fb,b)
+ else
+  add_toarray(eb,b)
+ end
+end
+
+function create_bullet2(fe,x,y,a,aos,acc,offset,s,l)
+ b={}
+ 
+ b.x=x+offset*cos(a)
+ b.y=y+offset*sin(a)
+ 
+ acco=(1-acc)*1000
+ a=a+(rnd(acco)-acco/2)/1000
+ 
+ b.a=(a+aos-0.25)%1
+ b.vx=s*cos(a+aos)
+ b.vy=s*sin(a+aos)
+ b.l=l
+ 
+ if(fe==0) then
+  add_toarray(fb,b)
+ else
+  add_toarray(eb,b)
+ end
+end
+
+function create_rocket(x,y,a,acc,offset)
+ nr={}
+
+ nr.x=x+offset*cos(a)
+ nr.y=y+offset*sin(a)
+ 
+ acco=(1-acc)*1000
+ a=a+(rnd(acco)-acco/2)/1000
+ 
+ nr.a=a%1
+ 
+ nr.l=3
+ nr.ll=3
+
+ add_toarray(rk,nr)
+end
+
+function create_enemy(x,y,type)
+ ne={}
+ 
+ ne.x=x
+ ne.y=y
+ 
+ ne.t=type
+ 
+ if(type==0) then
+  ne.vx=1
+  ne.vy=-0.5
+  ne.l=2
+  ne.cldwn=rnd(0.1)
+ elseif(type==1) then
+  ne.vx=1
+  ne.vy=0
+  ne.l=5
+  ne.cldwn=rnd(0.2)
+ elseif(type==2) then
+  ne.vx=1.5
+  ne.vy=0
+  ne.l=5
+  ne.cldwn=rnd(0.05)
+ elseif(type==3) then
+  ne.vx=0
+  ne.vy=0.2
+  ne.l=6
+  ne.cldwn=rnd(0.5)
+ elseif(type==4) then
+  ne.vx=1
+  ne.vy=0
+  ne.l=10
+  ne.cldwn=rnd(0.1)
+ elseif(type==5) then
+  ne.vx=0.5
+  ne.vy=0
+  ne.l=20
+  ne.cldwn=rnd(0.5)
+ elseif(type==6) then
+  ne.vx=0
+  ne.vy=0.1
+  ne.l=1000
+  ne.cldwn=8
+ else
+  ne.vx=0
+  ne.vy=0
+  ne.l=1
+ end
+ 
+ ne.ll=ne.l
+ 
+ add_toarray(e,ne)
+end
+
+function create_pickup(x,y,t)
+ np={}
+ np.t=t
+ np.x=x
+ np.y=y
+ np.vy=0
+ np.l=3
+ 
+ add_toarray(p,np)
+end
+
+
+function create_explo(x,y,r) 
+ nb={}
+ nb.x=x
+ nb.y=y
+ nb.r=r
+ nb.s=-1
+
+ add_toarray(boom,nb)
+end
+
+function create_smoke(x,y,r)
+ ns={}
+ ns.x=x
+ ns.y=y
+ ns.r=r
+ if win then
+  ns.c=7+rnd(8)
+ else
+  ns.c=5+rnd(2)
+ end
+ ns.l=1+rnd(1)
+ 
+ add_toarray(smok,ns)
+end
+
+
+function create_stars()
+ for i=0,64 do
+  create_star(i*4+rnd(8)-4,1+rnd(100))
+ end
+end
+
+function create_star(x,y)
+ ns={}
+ ns.x=x
+ ns.y=y
+ 
+ add_toarray(star,ns)
+end
+
+function create_clouds()
+ for i=0,8 do
+  create_cloud(i*32+rnd(16)-8,rnd(80))
+ end
+end
+
+function create_cloud(x,y)
+ nc={}
+ nc.x=x
+ nc.y=y
+ for i=0,4 do
+  nc[i]={}
+  nc[i].x = rnd(20)-10
+  nc[i].y = rnd(10)-5
+  nc[i].r = rnd(4)+4
+ end
+ 
+ add_toarray(cloud,nc)
+end
+
+function add_toarray(ar,e)
+ ar[ar.c]=e
+ ar.c+=1
+end
+
+--deletes
+
+function delete_fromarray(ar,iii)
+ ar.c=ar.c-1
+ 
+ for i=iii,ar.c-1 do
+  ar[i]=ar[i+1]
+ end
+end
+
+--misc
+
+function add_shake(p)
+ a=rnd(100)/100
+ shkx+=p*cos(a)
+ shky+=p*sin(a)
+end
+
+function get_pts(t)
+ score+=pts[t]*combo
+ if score>10000 then
+  scoreb=score/10000
+  scoreb-=scoreb%1
+  score=score%10000+10000
+ end
+end
+
+function add_combo()
+ combo=min(combo+1,20)
+ combop=1
+ combol=6
+end
+__gfx__
+000880000001100088888888cccccccc888888889999999900000002200000000000000000000000000000044000000000000000000000000000000440000000
+00888800001dd10088888888cccccccc883333889999999922222222222222220222222222200000444444444444444400000000000000000000004444000000
+088ee88001dd7d1088888888cccccccc883b73889999999900000002200000002dddddddddd22200000000044000000000000000000000000000000440000000
+08ee7e8001dddd1088888888cccccccc883bb38899999999020002222222000002d22222dddd7720000044444444000000004444444400000000000440000000
+08eeee800111111088888888cccccccc883bb388999999992d222ddddd77200002d22222222dddd2000499999999400004449999999944404444444444444444
+088ee88001dddd1088888888cccccccc883bb388999999992dddddddddd772002dddddddddddddd2004999999999940049999999777999940000000440000000
+008888000111111088888888cccccccc883bb388999999992d2222dddddddd200222222222222220049999999779994049999999977999940000000220000000
+000880000000000088888888cccccccc883bb3889999999902000022222222000000000000000000049494999779994049499999999994940000002222000000
+00011000000000008888833333388888888883333338888800222200007777000000000000000000049949999999994004044999499440400000000220000000
+001111000000000088883bbb77b3888888883bbb77b3888802dddd20077887700000000000000000049494999999994000000494994000000000000220000000
+011cc1100000000088883bbbbbb3888888883bbbbbb388882ddd77d2777887770000000000000000049999999999994000004999499400002222222222222222
+01cc7c1000000000865656565656565885656565656565682dddd7d2788888870000000000000000049999444499994000049999999940000000000220000000
+01cccc1000000000500000000000000660000000000000052dddddd2788888870000000000000000044444000044444000049444444940000400400000000000
+011cc11000000000605505055050550550550505505055062dddddd2777887770000000000000000000000000000000000044000000440004440400000000000
+00111100000000005000000000000006600000000000000502d22d20077887700000000000000000000000000000000000000000000000000000000000000000
+00011000000000008656565656565658856565656565656800200200007777000000000000000000000000000000000000000000000000000000000000000000
+000000000000000000bbbb0000bbbb0000bbbb0000bbbb0000bbbb0000bbbb0000bbbb0000bbbb00000000000000000000044444444444444444444444000000
+00666666666666000bb7b7b00bb77bb00bb77bb00bbbbbb00bbbbbb00bbb7bb00bbbbbb00b7777b0000000000000000000499999999999999999999999440000
+0688888888888860bbb77bbbbbbbbbbbbb7777bbbb77b7bbbbbbbbbbbbbb7bbbb777777bb777777b000000000000000004999999999999999999999999994000
+0677777777778760bb7b77bbb77bb77bbbb77bbbbb7b7bbbbbbbbbbbbbbb7bbbbbbbbbbbb777777b000000000000000004999999999999999999997777999400
+0688888888888860bbb77bbbbbbbbbbbbbb77bbbbbb77bbbbb7777bbbbb7bbbbbb7777bbb777777b000000000000000000499999999999999999997777779940
+0688888888888860bbb7bbbbbbbbbbbbbbb77bbbbbbbbbbbbb7777bbbbb7bbbbbbbbbbbbb777777b000000000000000000049999999999999999997777779940
+05666666666666500bbb7bb00bbbbbb00bb77bb00bbbbbb00bb77bb00bb7bbb00bb77bb00b7777b0000000000000000000499999999999994499999777777994
+005555555555550000bbbb0000bbbb0000bbbb0000bbbb0000bbbb0000bbbb0000bbbb0000bbbb00000000000000000000049999999999994499999977777994
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004949999999949949999999999994
+00000000000000000000000000000000000000000000000000300000000000000000000000000000000000000000000000000404999999994499999999999994
+00030000000800000000000000330000000000000000900003000000000300000000000000000000000000000000000000000000499999949949999999999994
+00300300000300030030000003333030003300030000300003030030003b00300000000000000000000000000000000000000004999999999999999999999994
+33bb33b33b33333b333333b3333bbb3333b3333bb33333b33bb333b333bbb3330000000000000000000000000000000000000000499999999999999999999994
+44444444445444444444444445444444445444444544444444444454444444450000000000000000000000000000000000000000049499999999999999999940
+44444544444444544445444444454444444444444444454444544444445444440000000000000000000000000000000000000000004044444444999999999400
+45444444444444444444445444444444454445444444444444445444444454440000000000000000000000000000000000000000000000000000444444444000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00444400000000000000000000000000000000000000000000000000004444000000000000000000000000000000000000000000000000000000000000000000
+04997740000000000000000000000000000000000000000000000000049977400000000000000000000000000000000000000000000000000000000000000000
+04999940000000000022220000000000000000000022220000000000049999400000000000000000000000000000000000000000000000000000000000000000
+049999940000000002dd7720000000000000000002dd772000000000499999400000000000000000000000000000000000000000000000000000000000000000
+004999940000000002dddd20000000000000000002dddd2000000000499994000000000000000000000000000000000000000000000000000000000000000000
+00499999444424222dddddd222222222222222222dddddd222424444999994000000000000000000000000000000000000000000000000000000000000000000
+0004999999999dddddddddddddddddddddddddddddddddddddd99999999940000000000000000000000000000000000000000000000000000000000000000000
+000499999999d9dd22ddddddddd2222222222ddddddddd22dd9d9999999940000000000000000000000000000000000000000000000000000000000000000000
+0049994949999ddd22dddddddd2ddddddd7772dddddddd22ddd99994949994000000000000000000000000000000000000000000000000000000000000000000
+049999949999d9d2dd2dddddd2dddddddddd772dddddd2dd2d9d9999499999400000000000000000000000000000000000000000000000000000000000000000
+4999994949999ddd22dddddd2dddddddddddd772dddddd22ddd99994949999940000000000000000000000000000000000000000000000000000000000000000
+049999999999d9d2dd2ddddd2ddd22dddd22dd72ddddd2dd2d9d9999999999400000000000000000000000000000000000000000000000000000000000000000
+0049499999999ddddddddddd2dd222dddd222d72ddddddddddd99999999494000000000000000000000000000000000000000000000000000000000000000000
+000404999999d9dddddddddd2dd222dddd222dd2dddddddddd9d9999994040000000000000000000000000000000000000000000000000000000000000000000
+0000049999999dddddd22ddd2dddddddddddddd2ddd22dddddd99999994000000000000000000000000000000000000000000000000000000000000000000000
+000004999999d9ddddd22ddd2dddddd22dddddd2ddd22ddddd9d9999994000000000000000000000000000000000000000000000000000000000000000000000
+0000049494999ddddd2dd2ddd2dddd2222dddd2ddd2dd2ddddd99949494000000000000000000000000000000000000000000000000000000000000000000000
+000049994999d9ddddd22ddddd2ddd2dd2ddd2ddddd22ddddd9d9994999400000000000000000000000000000000000000000000000000000000000000000000
+00049994949d9ddddd2dd2ddddd2dddddddd2ddddd2dd2ddddd9d949499940000000000000000000000000000000000000000000000000000000000000000000
+004999999999d9ddddddddddddd2dddddddd2ddddddddddddd9d9999999994000000000000000000000000000000000000000000000000000000000000000000
+00049999999d9d22ddddddddddd2d2dddddd2ddddddddddd22d9d999999940000000000000000000000000000000000000000000000000000000000000000000
+0000494999d9dd22ddddddd2ddd2d2dddd2d2ddd2ddddddd22dd9d99949400000000000000000000000000000000000000000000000000000000000000000000
+000004049d9dd2dd2ddddddd2ddd22222222ddd2ddddddd2dd2dd9d9404000000000000000000000000000000000000000000000000000000000000000000000
+00000004d9dddd22ddddddd2dddddddddddddddd2ddddddd22dddd9d400000000000000000000000000000000000000000000000000000000000000000000000
+000000029dddd2dd2ddddddddd2dddddddddd2ddddddddd2dd2dddd9200000000000000000000000000000000000000000000000000000000000000000000000
+000000004dddddddddddddddd202dddddddd202dddddddddddddddd4000000000000000000000000000000000000000000000000000000000000000000000000
+000000002dddddd22dddddd22002dddddddd20022dddddd22dddddd2000000000000000000000000000000000000000000000000000000000000000000000000
+0000000002dddd2002dddd200002d222222d200002dddd2002dddd20000000000000000000000000000000000000000000000000000000000000000000000000
+00000000002222000022220000002000000200000022220000222200000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000300000003000000330000003000000030000003300000033000000330000000330000003300000330000003000000003000000330000003000000030000
+000033300000333000003330000333300003b3300003b3300003b3300003b3300033730000337300033730000337300000333300003330000033300000333000
+0033b7300003b7330003b7330003b7330003b7300003b7300003b7300003b730003bb300003bb30003bb300003bb3000033b7300033b7300033b7300003b7330
+033bbb33003bbb30003bbb30003bbb30003bbb30003bbb30003bbb30003bbb30003bbb30003bbb3003bbb30003bbb300003bbb30003bbb30003bbb30033bbb33
+3bbbb33003bbb30003bbb300033bb300003bb300003bb300003bb300003bb3000003bb300003bb30003bb300003bb3000003bb330003bbb30003bbb30033bbbb
+0bb330000bbb300003bb300003bb330003bbb300003bb300003bb300003bb3000003bb300003bb30003bb300003bbb3000033bb300003bb300003bbb000033bb
+0033000000b3000000b3300000bb300003bb300003bbb300003bb300003bb3000003bb300003bb30003bbb300003bb3000003bb0000033b0000003b000000330
+00001000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0001d1000001d1000011100000111100000110000001100000011000000011100000110000011100000111000001100000111000000011100000111000001100
+001ddd10001d7d1000dd7d1001ddd11001ddd110011dd111001dd11100111d1000111d100011d1100011d110001dd110001dd1110111dd100111dd100011dd10
+001dd7d101dddd1000dddd1001dddd1101d7d1d101d7d1d101d7d1d101dd1d1000dd1d10011d1d1101111d1100111dd100111dd101dd111001dd111001dd1110
+01111dd101dd111101dd111101dd11d101dd11d101dd11d11ddd11d11d7d11d1017d11d101dd11d101dd11d101dd111101dd111101111dd101111dd101d11dd1
+01dd111000111dd100111dd101111d1101dd1d1001dd1d1001dd1d1101ddd1d101ddd1d101ddd11101d7dd1100d7dd1001d7dd10001dddd1001dddd1001dddd1
+0111dd10001dd111001dd1100011d1100011dd1000111d1000111d10001dd111011dd11001ddd11000ddd110001ddd10001ddd10001d7d10001d7d10001dddd0
+0000111000111000000110000001110000001100000011100000111000011000000010000001110000111100001110000001d1000001d1000001111000011110
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00011100000110000011100000001100000011000000100000010110000011100001d10000000000000000000000000000000000000000000000000000000000
+0011d110001d1110001d11100111dd100111dd100011ddd10011ddd1001dddd0001ddd1000000000000000000000000000000000000000000000000000000000
+011d1d11001d1dd0001d1dd101d1ddd101d1ddd111d1ddd10111d7d1001dd7d0001dd7d100000000000000000000000000000000000000000000000000000000
+01d11dd101d11dd101d11ddd01d11d7d01d11d7d01d11dd111d11dd001d11dd101111dd100000000000000000000000000000000000000000000000000000000
+0111d7d101d1d7d101d1d7d1001d1dd1001d1dd1001d1dd0011d111111dd111001dd111000000000000000000000000000000000000000000000000000000000
+0011ddd10011ddd10111dd10001d1110001d1110001dd1100011d1100011dd100111dd1000000000000000000000000000000000000000000000000000000000
+00011110000010000000110000111000001110000001100000011100000011000000111000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__gff__
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__map__
+0000010201030102010403010103010201000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000020401060602050203040203020201000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000060501000102000403010300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000060401000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0020202020202020202020202020202020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000020000000200000002000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__sfx__
+0108000035675356761f670286751367014676166750a670216000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+010800000e67510675000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+010800000c675306761c6770c6751d6071d6060000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0110000028676286761c6761c67600006000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__music__
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44

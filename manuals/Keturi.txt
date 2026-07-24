@@ -1,0 +1,7 @@
+Hi,
+
+This is my first pico-8 game! It's also LD37 submission for a theme "one room".
+
+The game is a highly minimalistic roguelike. I'm not very good with graphics or sound, but I tried to make gameplay fun and balanced. The core mechanic is weapons - there are three different ones (won't spoil it here) and they have "charges". If you ran out of charges, you cannot attack! I'm quite happy with how it turned out. It's not very difficult to win for a roguelike, but you'll very likely die a few times.
+
+https://www.lexaloffle.com/bbs/?tid=28197

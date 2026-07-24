@@ -1,0 +1,48 @@
+ Calling it done :D
+
+Working on a futuristic imagining of Joust as my first PICO-8 project :P
+
+-Controls-
+
+    "O" to recharge lance (when it breaks)
+    "X" to ready/put away lance
+    Arrow keys to move
+
+-Version 1.0.0- Latest
+
+    Added a small bit of polish to Game Over screen
+    Added Instructions screen
+
+-Version 0.7.0-
+
+    Added placeholder music (credit Zep)
+    Fixed collision bug
+
+-Version 0.6.0-
+
+    Updated map
+    Arena Hazards
+    Scoring and Game Over
+    Added health
+    Adjusted UI
+    Fixed collision bug
+    Sorry for the fast update
+    Fixed memory issue
+    Fixed support for spawn positions and animations
+    Added spawn positions and animated tiles to map
+    Increased version number
+    Title screen w/ transitions
+    Chained Enemy spawning
+    Support for map-defined spawn points and animated tiles (untested)
+    Screen shake
+    Particles
+    Radar
+    Decoupled AI
+    Lance "breaks" when colliding with obstacles
+    Recharge Lance with Z (and then ready/put away as usual)
+    Move with arrow keys
+    Ready/put away lance with X
+    Collision response with map obstacles
+
+
+https://www.lexaloffle.com/bbs/?tid=30848

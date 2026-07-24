@@ -1,0 +1,19 @@
+CONTROLS
++==================+
+Z - shoot
+X - change monster fusion
+Left/Right - move
+
+MONSTER HULL
++==================+
+You embark on an epic space battle, with 2 Hull Monsters at your disposal. As the Hook into your ships core, it trembles and shifts gaining aspects of the monsters spirit, and changing its abilities.
+
+As a particular monster gets stronger through continued use, your ship will gain permanent enhancements based on that monsters attribute. Jakrabit will increase Hull Power, Heartwal will increase power, and who knows what other monsters you will discover along the way!
+
+CREDITS
++==================+
+Code + Game Art + Game Design: William Anderson
+Music + SFX: Brendan Byrne
+Promo Illustrations: Yi-Ting Anderson
+
+https://www.lexaloffle.com/bbs/?tid=3908

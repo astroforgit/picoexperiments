@@ -1,0 +1,15 @@
+A canoe battling game. Use the ancient technologies of CANOE and SPEAR to defeat your rival canoes! Complete 7 levels of canoe mayhem, or battle against your friends in versus mode.
+
+Controls:
+LEFT to paddle left
+RIGHT to paddle right
+Z to throw a spear
+
+Supports 1 to 4 players.
+
+Made in 48 hours for Ludum Dare 36! Also my first PICO-8 game.
+
+Updated (8/30/2016 19:26 EST) to fix a bug that made the versus AI mode unwinnable if you tried to continue after losing. Also fixed a bug where you could select a non-existent menu option.
+ld36
+
+https://www.lexaloffle.com/bbs/?tid=27558

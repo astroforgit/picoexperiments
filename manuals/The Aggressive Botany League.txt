@@ -1,0 +1,27 @@
+Hello!
+This is the prototype version of:
+
+---- The Aggressive Botany League ----
+
+a local multiplayer plant based deathmatch
+
+Plant seeds into walls to push your opponent into the ocean (or to squish him!)
+
+--- Controls ---
+
+    Movement
+    Player1: arrows
+    Player2: EDSF
+
+    Wall breaking:
+    Face a wall and press Z (player2: TAB) 3 times to break it
+    Plant seed:
+    Face a wall and press X (player2: Q) to plant a seed into it
+    There are 4 types of seed (green, yellow, red and black) each with a different effect
+    You can carry only one seed at a time
+
+best played with 2-4 gamepads
+
+enjoy!
+
+https://www.lexaloffle.com/bbs/?tid=1978

@@ -1,0 +1,28 @@
+About
+
+Tera: Mind Over Matter is a modern puzzle action game about dropping blocks of different shapes to clear lines. The game has a rapid difficulty curve that emphasizes speed and accuracy. Get as many Teras as you can!
+Controls
+
+Left/right - shift pieces left and right
+Down - soft drop
+Up - hard drop (locking behavior can be changed in options)
+Z/X - rotate pieces (direction can be changed in options)
+Z+X - hold piece
+Changelog
+v1.2 | 3/5/19
+
+    Don't reset key repeat for left/right shift inputs when placing a Teramino
+
+v1.1 | 2/17/19
+
+    Fixed incorrect spawn delay curve which caused pieces to stop spawning at high levels
+    Score display is no longer limited to 4 digits
+    Time display is now minutes:seconds
+
+v1.0 | 2/7/19
+
+    Initial release
+
+Source
+
+https://www.lexaloffle.com/bbs/?tid=33170

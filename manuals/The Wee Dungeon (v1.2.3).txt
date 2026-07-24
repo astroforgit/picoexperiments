@@ -1,0 +1,74 @@
+A game about impractical architecture.
+
+I wanted to see if I could make big levels by randomly connecting 16x16 tile chunks. If I can manage to optimize this thing a little bit, I'd like to add more items, monsters and map bits and consider adding local co-op (that would be pushing it, token-wise).
+
+There are a few collision issues that might cause game-breaking failures.
+
+In any event, I learned a ton. I'd love to hear what you guys think of it!
+
+Quick Update: I removed some of the background clutter. It felt way too busy.
+
+P1
+z - attack
+x - shield (if you have one)
+left and right - move
+up - jump
+down - enter open doors
+P2
+w - attack
+q - shield (if you have one)
+s and f - move
+e - jump
+d - enter open doors
+
+----v0.8.0-----
+-skeletons now have shields
+-skeletons will now stop, attack and block instead of just running around
+-added red slimes that are slightly tougher for some variety
+
+----v0.8.5----
+-I've improved the collisions (still needs work!), so hopefully the player can't escape in ways they're not meant to.
+-if item drops do manage to fly out of the map, they're destroyed instead of crashing the game
+-player now only lunges forward during an attack if they are also defending (shield out)
+-player continues to face the enemy if they are knocked back
+-I reorganized a lot of the code and managed to shrink my token use from 7933 to 7018, so I've got more room to build new stuff. Still considering local 2player co-op
+-Boom. The Pico-8 is rad.
+
+----v0.8.6----
+-I've added some new equipment
+-fixed the player shield
+-added code to start thinking about local co-op, but I'll have to consider some kind of new HUD to show both players equipment and health. If you want to mess with the early implementation, uncomment the init_object(player, 24, 112) functions on lines 742 and 754
+
+----v0.9.5----
+-tons of new stuff!
+-still tweaking the collision detection against objects!
+-local co-op!
+-10 new map chunks!
+-including new graveyard areas!
+-some new equipment!
+-exclamation points!
+
+Unless any crazy bugs pop up that I just have to fix, I'll probably fill up the space I've saved for equipment, update the HUD and Death screens to work with 2 players and call this thing completed.
+
+----v1.0.0----
+-I think The Wee Dungeon now contains everything I'd hoped to implement. Time for a new project!
+
+----v1.2.0----
+-Maybe I lied about being done. Been thinking about the game and how much more I can squeeze into it
+-hitpoints are shown on attacks
+-there's now a progression to item drops, so you don't pick up weaker equipment
+-spikes don't kill you immediately anymore if you have equipment (otherwise they do)
+-added a few enemies
+-probably created a few more bugs, we'll see!
+
+----v1.2.2----
+-inching ever closer to the token limit, i fixed the kickback that happens when you're touched by a monster.
+
+After looking through one more time, I'm calling the Wee Dungeon done!
+
+----v1.2.3----
+revised the unfair trap room.
+
+--Thanks as always for looking! Any and all feedback is most appreciated.
+
+https://www.lexaloffle.com/bbs/?tid=3072

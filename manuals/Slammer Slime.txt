@@ -1,0 +1,10 @@
+Objective:
+
+Destroy the enemy red slime by slamming bullets back to it.
+Controls:
+
+    arrow keys/d-pad: move the green slime around avoiding red bullets
+    z key: every 10 seconds you can jump and slam down on bullets within a radius around you to send them back to the enemy
+
+
+https://www.lexaloffle.com/bbs/?tid=42570

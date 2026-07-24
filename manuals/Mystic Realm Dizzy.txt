@@ -1,0 +1,32 @@
+~ Story: ~
+Oh no! Zaks the evil wizard has once again captured Dizzy's girlfriend, Daisy! And the other yolkfolk need help too, looks like another adventure for Dizzy!
+
+~
+
+~ Controls: ~
+[ Left ]/[ Right ] - Move
+[ Z ] - Jump
+[ Down ] - Drop from ledge
+[ Up ] - Cycle through inventory
+[ X ] - Interact/pick up item/drop item
+
+~
+
+~ Music: ~
+Huge thanks to @gruber_music for making a brilliant pico-8 version of the Amiga Magicland Dizzy theme :D
+
+~
+
+~ About: ~
+I wanted there to be a Dizzy game for Pico-8, so now there is! Heads up though; I've tried to be faithful to the classic Dizzy games - that means limited lives, rubbish platforming, cheesy dialogue and a kidnapped damsel.
+
+Obviously this is a fan project and not an official dizzy game, they don't make those anymore :(
+
+~
+
+~ Changelog: ~
+beta1: First Release
+beta2: Added music & minor fixes
+1.0: Animated water
+
+https://www.lexaloffle.com/bbs/?tid=29388

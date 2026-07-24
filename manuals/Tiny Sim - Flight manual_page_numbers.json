@@ -1,0 +1,241 @@
+{
+    "identifier": "/var/tmp/autoclean/derive/picowesome-v1.1/pico8/manuals/tiny sim - flight manual",
+    "confidence": 0,
+    "pages": [
+        {
+            "leafNum": 1,
+            "ocr_value": [],
+            "confidence": 0,
+            "pageNumber": ""
+        },
+        {
+            "leafNum": 2,
+            "ocr_value": [
+                "1",
+                "11"
+            ],
+            "confidence": 0,
+            "pageNumber": ""
+        },
+        {
+            "leafNum": 3,
+            "ocr_value": [
+                "m",
+                "114",
+                "20"
+            ],
+            "confidence": 0,
+            "pageNumber": ""
+        },
+        {
+            "leafNum": 4,
+            "ocr_value": [],
+            "confidence": 0,
+            "pageNumber": ""
+        },
+        {
+            "leafNum": 5,
+            "ocr_value": [
+                "11"
+            ],
+            "confidence": 0,
+            "pageNumber": ""
+        },
+        {
+            "leafNum": 6,
+            "ocr_value": [
+                "55",
+                "79"
+            ],
+            "confidence": 0,
+            "pageNumber": ""
+        },
+        {
+            "leafNum": 7,
+            "ocr_value": [
+                "8"
+            ],
+            "confidence": 0,
+            "pageNumber": ""
+        },
+        {
+            "leafNum": 8,
+            "ocr_value": [
+                "5"
+            ],
+            "confidence": 0,
+            "pageNumber": ""
+        },
+        {
+            "leafNum": 9,
+            "ocr_value": [],
+            "confidence": 0,
+            "pageNumber": ""
+        },
+        {
+            "leafNum": 10,
+            "ocr_value": [
+                "25"
+            ],
+            "confidence": 0,
+            "pageNumber": ""
+        },
+        {
+            "leafNum": 11,
+            "ocr_value": [
+                "m"
+            ],
+            "confidence": 0,
+            "pageNumber": ""
+        },
+        {
+            "leafNum": 12,
+            "ocr_value": [],
+            "confidence": 0,
+            "pageNumber": ""
+        },
+        {
+            "leafNum": 13,
+            "ocr_value": [],
+            "confidence": 0,
+            "pageNumber": "1"
+        },
+        {
+            "leafNum": 14,
+            "ocr_value": [
+                "I",
+                "75"
+            ],
+            "confidence": 0,
+            "pageNumber": "2"
+        },
+        {
+            "leafNum": 15,
+            "ocr_value": [],
+            "confidence": 0,
+            "pageNumber": "3"
+        },
+        {
+            "leafNum": 16,
+            "ocr_value": [],
+            "confidence": 0,
+            "pageNumber": "4"
+        },
+        {
+            "leafNum": 17,
+            "ocr_value": [],
+            "confidence": 0,
+            "pageNumber": "5"
+        },
+        {
+            "leafNum": 18,
+            "ocr_value": [
+                "500"
+            ],
+            "confidence": 0,
+            "pageNumber": "6"
+        },
+        {
+            "leafNum": 19,
+            "ocr_value": [],
+            "confidence": 0,
+            "pageNumber": "7"
+        },
+        {
+            "leafNum": 20,
+            "ocr_value": [
+                "1200"
+            ],
+            "confidence": 0,
+            "pageNumber": "8"
+        },
+        {
+            "leafNum": 21,
+            "ocr_value": [
+                "10"
+            ],
+            "confidence": 0,
+            "pageNumber": "9"
+        },
+        {
+            "leafNum": 22,
+            "ocr_value": [],
+            "confidence": 0,
+            "pageNumber": "10"
+        },
+        {
+            "leafNum": 23,
+            "ocr_value": [],
+            "confidence": 0,
+            "pageNumber": "11"
+        },
+        {
+            "leafNum": 24,
+            "ocr_value": [],
+            "confidence": 0,
+            "pageNumber": "12"
+        },
+        {
+            "leafNum": 25,
+            "ocr_value": [
+                "500"
+            ],
+            "confidence": 0,
+            "pageNumber": "13"
+        },
+        {
+            "leafNum": 26,
+            "ocr_value": [],
+            "confidence": 0,
+            "pageNumber": "14"
+        },
+        {
+            "leafNum": 27,
+            "ocr_value": [
+                "CDI"
+            ],
+            "confidence": 0,
+            "pageNumber": "15"
+        },
+        {
+            "leafNum": 28,
+            "ocr_value": [
+                "16"
+            ],
+            "confidence": 0,
+            "pageNumber": "16"
+        },
+        {
+            "leafNum": 29,
+            "ocr_value": [],
+            "confidence": 0,
+            "pageNumber": "17"
+        },
+        {
+            "leafNum": 30,
+            "ocr_value": [
+                "18"
+            ],
+            "confidence": 0,
+            "pageNumber": "18"
+        },
+        {
+            "leafNum": 31,
+            "ocr_value": [],
+            "confidence": 0,
+            "pageNumber": "19"
+        },
+        {
+            "leafNum": 32,
+            "ocr_value": [],
+            "confidence": 0,
+            "pageNumber": "20"
+        },
+        {
+            "leafNum": 33,
+            "ocr_value": [],
+            "confidence": 0,
+            "pageNumber": "21"
+        }
+    ]
+}

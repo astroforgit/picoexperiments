@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Porter Patch — Level Editor</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: monospace; background: #1a1a2e; color: #e0e0e0; display: flex; flex-direction: column; height: 100vh; }
+.toolbar { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: #16213e; border-bottom: 1px solid #0f3460; flex-wrap: wrap; }
+.toolbar label { font-size: 12px; }
+.toolbar button { padding: 4px 10px; font-family: monospace; font-size: 12px; cursor: pointer; background: #0f3460; color: #e0e0e0; border: 1px solid #533483; border-radius: 3px; }
+.toolbar button:hover { background: #533483; }
+.toolbar .sep { width: 1px; height: 20px; background: #533483; }
+.toolbar .level-nav { display: flex; align-items: center; gap: 4px; }
+.toolbar .level-nav span { min-width: 50px; text-align: center; }
+.main { display: flex; flex: 1; overflow: hidden; }
+.left-panel { width: 290px; min-width: 290px; background: #16213e; border-right: 1px solid #0f3460; display: flex; flex-direction: column; overflow-y: auto; padding: 6px; }
+.left-panel h3 { font-size: 12px; margin-bottom: 4px; color: #a0a0c0; }
+#paletteCanvas { cursor: crosshair; border: 1px solid #0f3460; image-rendering: pixelated; }
+.palette-info { font-size: 11px; margin-top: 4px; color: #8080a0; }
+.center-panel { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 10px; overflow: auto; }
+#levelCanvas { cursor: crosshair; border: 2px solid #533483; image-rendering: pixelated; }
+.bottom-panel { background: #16213e; border-top: 1px solid #0f3460; padding: 8px 10px; display: flex; gap: 20px; flex-wrap: wrap; font-size: 12px; }
+.bottom-panel fieldset { border: 1px solid #0f3460; padding: 4px 8px; }
+.bottom-panel legend { color: #a0a0c0; font-size: 11px; }
+.bottom-panel label { margin-right: 10px; }
+.bottom-panel input[type="number"] { width: 48px; background: #0a0a1a; color: #e0e0e0; border: 1px solid #0f3460; padding: 2px 4px; font-family: monospace; font-size: 12px; }
+.bottom-panel input[type="checkbox"] { accent-color: #533483; }
+.drop-overlay { position: fixed; inset: 0; background: rgba(83,52,131,0.7); display: none; align-items: center; justify-content: center; font-size: 24px; z-index: 100; pointer-events: none; }
+.drop-overlay.active { display: flex; }
+.file-status { font-size: 11px; color: #6a6a8a; }
+.file-status .ok { color: #00e436; }
+.file-status .missing { color: #ff004d; }
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <label>PNG: <input type="file" id="fPng" accept=".png"></label>
+  <label>levels.dat: <input type="file" id="fLevels" accept=".dat"></label>
+  <label>meta.dat: <input type="file" id="fMeta" accept=".dat"></label>
+  <label>flags.dat: <input type="file" id="fFlags" accept=".dat"></label>
+  <div class="sep"></div>
+  <div class="level-nav">
+    <button id="btnPrev">&lt;</button>
+    <span id="levelLabel">-- / 29</span>
+    <button id="btnNext">&gt;</button>
+  </div>
+  <div class="sep"></div>
+  <button id="btnUndo" title="Undo (Z)">Undo</button>
+  <button id="btnRedo" title="Redo (Shift+Z)">Redo</button>
+  <div class="sep"></div>
+  <label><input type="checkbox" id="chkGrid" checked> Grid</label>
+  <label><input type="checkbox" id="chkMeta" checked> Markers</label>
+  <div class="sep"></div>
+  <button id="btnExport">Export .dat</button>
+  <span class="file-status" id="fileStatus"></span>
+</div>
+<div class="main">
+  <div class="left-panel">
+    <h3>Tiles</h3>
+    <canvas id="paletteCanvas" width="256" height="256"></canvas>
+    <div class="palette-info" id="paletteInfo">No tile selected</div>
+  </div>
+  <div class="center-panel">
+    <canvas id="levelCanvas" width="384" height="384"></canvas>
+    <div style="font-size:11px;color:#6a6a8a;" id="hoverInfo"></div>
+  </div>
+</div>
+<div class="bottom-panel">
+  <fieldset>
+    <legend>Tile Flags (global for tile ID)</legend>
+    <label><input type="checkbox" id="fSolid"> Solid</label>
+    <label><input type="checkbox" id="fHazard"> Hazard</label>
+    <label><input type="checkbox" id="fBlock"> Block</label>
+    <span id="flagTileId" style="color:#8080a0;">(no tile selected)</span>
+  </fieldset>
+  <fieldset>
+    <legend>Level Metadata</legend>
+    <label>Start X:<input type="number" id="mStartX" min="0" max="127"></label>
+    <label>Start Y:<input type="number" id="mStartY" min="0" max="127"></label>
+    <label>Coin X:<input type="number" id="mCoinX" min="-1" max="127"></label>
+    <label>Coin Y:<input type="number" id="mCoinY" min="-1" max="127"></label>
+    <label>Origin X:<input type="number" id="mOriginX" min="0" max="127" disabled></label>
+    <label>Origin Y:<input type="number" id="mOriginY" min="0" max="127" disabled></label>
+    <label>End:<input type="checkbox" id="mEnd"></label>
+    <label>Next:<input type="number" id="mNext" min="-1" max="28"></label>
+  </fieldset>
+</div>
+<div class="drop-overlay" id="dropOverlay">Drop files anywhere</div>
+
+<script>
+'use strict';
+
+// --- Constants ---
+const ROOM = 16;
+const TILE_PX = 8;
+const LEVEL_COUNT = 29;
+const ZOOM_PAL = 2;
+const ZOOM_LVL = 3;
+const FLAG_SOLID = 0x01;
+const FLAG_HAZARD = 0x04;
+const FLAG_BLOCK = 0x08;
+
+const PICO_PAL = [
+  [0x00,0x00,0x00],[0x1d,0x2b,0x53],[0x7e,0x25,0x53],[0x00,0x87,0x51],
+  [0xab,0x52,0x36],[0x5f,0x57,0x4f],[0xc2,0xc3,0xc7],[0xff,0xf1,0xe8],
+  [0xff,0x00,0x4d],[0xff,0xa3,0x00],[0xff,0xec,0x27],[0x00,0xe4,0x36],
+  [0x29,0xad,0xff],[0x83,0x76,0x9c],[0xff,0x77,0xa8],[0xff,0xcc,0xaa],
+];
+
+// --- State ---
+let sheetImg = null;          // HTMLImageElement of the PNG
+let sheetPixels = null;       // Uint8Array of palette indices, 128*128
+let levels = null;            // Uint8Array(29*256)
+let levelMeta = null;         // Uint8Array(29*8)
+let tileFlags = null;         // Uint8Array(256)
+let currentLevel = 0;
+let selectedTile = 0;
+let showGrid = true;
+let showMarkers = true;
+let painting = false;
+let undoStack = [];
+let redoStack = [];
+let filesLoaded = { png: false, levels: false, meta: false, flags: false };
+
+// --- Elements ---
+const elPalette = document.getElementById('paletteCanvas');
+const elLevel = document.getElementById('levelCanvas');
+const ctxPal = elPalette.getContext('2d');
+const ctxLvl = elLevel.getContext('2d');
+const elLevelLabel = document.getElementById('levelLabel');
+const elPaletteInfo = document.getElementById('paletteInfo');
+const elHoverInfo = document.getElementById('hoverInfo');
+const elFileStatus = document.getElementById('fileStatus');
+
+const elStartX = document.getElementById('mStartX');
+const elStartY = document.getElementById('mStartY');
+const elCoinX = document.getElementById('mCoinX');
+const elCoinY = document.getElementById('mCoinY');
+const elOriginX = document.getElementById('mOriginX');
+const elOriginY = document.getElementById('mOriginY');
+const elEnd = document.getElementById('mEnd');
+const elNext = document.getElementById('mNext');
+const elSolid = document.getElementById('fSolid');
+const elHazard = document.getElementById('fHazard');
+const elBlock = document.getElementById('fBlock');
+const elFlagTileId = document.getElementById('flagTileId');
+
+// --- Utility ---
+function updateFileStatus() {
+  const parts = [];
+  for (const [k, v] of Object.entries(filesLoaded)) {
+    parts.push(`<span class="${v ? 'ok' : 'missing'}">${k}: ${v ? 'OK' : '--'}</span>`);
+  }
+  elFileStatus.innerHTML = parts.join(' ');
+}
+
+function palCss(i) {
+  const [r, g, b] = PICO_PAL[i];
+  return `rgb(${r},${g},${b})`;
+}
+
+// --- File Loading ---
+function loadPngFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      if (img.width !== 128 || img.height !== 128) {
+        alert('PNG must be 128x128'); return;
+      }
+      sheetImg = img;
+      // Extract palette indices from image
+      const tc = document.createElement('canvas');
+      tc.width = 128; tc.height = 128;
+      const tctx = tc.getContext('2d');
+      tctx.drawImage(img, 0, 0);
+      const data = tctx.getImageData(0, 0, 128, 128).data;
+      sheetPixels = new Uint8Array(128 * 128);
+      for (let i = 0; i < 128 * 128; i++) {
+        const r = data[i * 4], g = data[i * 4 + 1], b = data[i * 4 + 2];
+        let best = 0, bestD = Infinity;
+        for (let p = 0; p < 16; p++) {
+          const dr = r - PICO_PAL[p][0], dg = g - PICO_PAL[p][1], db = b - PICO_PAL[p][2];
+          const d = dr * dr + dg * dg + db * db;
+          if (d < bestD) { bestD = d; best = p; }
+        }
+        sheetPixels[i] = best;
+      }
+      filesLoaded.png = true;
+      updateFileStatus();
+      renderAll();
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function loadDatFile(file, cb) {
+  const reader = new FileReader();
+  reader.onload = () => cb(new Uint8Array(reader.result));
+  reader.readAsArrayBuffer(file);
+}
+
+document.getElementById('fPng').addEventListener('change', e => {
+  if (e.target.files[0]) loadPngFile(e.target.files[0]);
+});
+document.getElementById('fLevels').addEventListener('change', e => {
+  if (e.target.files[0]) loadDatFile(e.target.files[0], d => {
+    if (d.length < LEVEL_COUNT * ROOM * ROOM) { alert('levels.dat too small'); return; }
+    levels = d;
+    filesLoaded.levels = true;
+    updateFileStatus();
+    renderAll();
+  });
+});
+document.getElementById('fMeta').addEventListener('change', e => {
+  if (e.target.files[0]) loadDatFile(e.target.files[0], d => {
+    if (d.length < LEVEL_COUNT * 8) { alert('level_meta.dat too small'); return; }
+    levelMeta = d;
+    filesLoaded.meta = true;
+    updateFileStatus();
+    renderAll();
+  });
+});
+document.getElementById('fFlags').addEventListener('change', e => {
+  if (e.target.files[0]) loadDatFile(e.target.files[0], d => {
+    if (d.length < 256) { alert('tile_flags.dat too small'); return; }
+    tileFlags = d;
+    filesLoaded.flags = true;
+    updateFileStatus();
+    renderAll();
+  });
+});
+
+// --- Drag & Drop ---
+const dropOverlay = document.getElementById('dropOverlay');
+let dragCounter = 0;
+document.addEventListener('dragenter', e => { e.preventDefault(); dragCounter++; dropOverlay.classList.add('active'); });
+document.addEventListener('dragleave', e => { e.preventDefault(); dragCounter--; if (dragCounter <= 0) { dragCounter = 0; dropOverlay.classList.remove('active'); } });
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', e => {
+  e.preventDefault();
+  dragCounter = 0;
+  dropOverlay.classList.remove('active');
+  for (const f of e.dataTransfer.files) {
+    const name = f.name.toLowerCase();
+    if (name.endsWith('.png')) loadPngFile(f);
+    else if (name === 'levels.dat') loadDatFile(f, d => { levels = d; filesLoaded.levels = true; updateFileStatus(); renderAll(); });
+    else if (name === 'level_meta.dat') loadDatFile(f, d => { levelMeta = d; filesLoaded.meta = true; updateFileStatus(); renderAll(); });
+    else if (name === 'tile_flags.dat') loadDatFile(f, d => { tileFlags = d; filesLoaded.flags = true; updateFileStatus(); renderAll(); });
+  }
+});
+
+// --- Tile Palette Rendering ---
+function renderPalette() {
+  if (!sheetPixels) return;
+  const imgData = ctxPal.createImageData(256, 256);
+  const d = imgData.data;
+  for (let ty = 0; ty < 16; ty++) {
+    for (let tx = 0; tx < 16; tx++) {
+      const tid = ty * 16 + tx;
+      for (let py = 0; py < 8; py++) {
+        for (let px = 0; px < 8; px++) {
+          const si = (ty * 8 + py) * 128 + (tx * 8 + px);
+          const ci = sheetPixels[si];
+          const [r, g, b] = PICO_PAL[ci];
+          for (let sy = 0; sy < ZOOM_PAL; sy++) {
+            for (let sx = 0; sx < ZOOM_PAL; sx++) {
+              const dx = (tx * 8 + px) * ZOOM_PAL + sx;
+              const dy = (ty * 8 + py) * ZOOM_PAL + sy;
+              const off = (dy * 256 + dx) * 4;
+              d[off] = r; d[off + 1] = g; d[off + 2] = b; d[off + 3] = 255;
+            }
+          }
+        }
+      }
+      // Flag overlays
+      if (tileFlags) {
+        const flags = tileFlags[tid];
+        let overlayA = 0;
+        let overlayR = 0, overlayG = 0, overlayB = 0;
+        if (flags & FLAG_HAZARD) { overlayR = 255; overlayA = 100; }
+        else if (flags & FLAG_SOLID) { overlayB = 255; overlayA = 80; }
+        if (flags & FLAG_BLOCK) { overlayR = 180; overlayG = 0; overlayB = 180; overlayA = Math.max(overlayA, 80); }
+        if (overlayA > 0) {
+          for (let py = 0; py < 8 * ZOOM_PAL; py++) {
+            for (let px = 0; px < 8 * ZOOM_PAL; px++) {
+              const dx = tx * 8 * ZOOM_PAL + px;
+              const dy = ty * 8 * ZOOM_PAL + py;
+              const off = (dy * 256 + dx) * 4;
+              const a = overlayA / 255;
+              d[off] = d[off] * (1 - a) + overlayR * a;
+              d[off + 1] = d[off + 1] * (1 - a) + overlayG * a;
+              d[off + 2] = d[off + 2] * (1 - a) + overlayB * a;
+            }
+          }
+        }
+      }
+    }
+  }
+  ctxPal.putImageData(imgData, 0, 0);
+  // Selected tile highlight
+  const sx = (selectedTile % 16) * 8 * ZOOM_PAL;
+  const sy = Math.floor(selectedTile / 16) * 8 * ZOOM_PAL;
+  const sz = 8 * ZOOM_PAL;
+  ctxPal.strokeStyle = '#fff';
+  ctxPal.lineWidth = 2;
+  ctxPal.strokeRect(sx + 1, sy + 1, sz - 2, sz - 2);
+  ctxPal.strokeStyle = '#000';
+  ctxPal.lineWidth = 1;
+  ctxPal.strokeRect(sx, sy, sz, sz);
+}
+
+// --- Level View Rendering ---
+function renderLevel() {
+  if (!levels || !sheetPixels) {
+    ctxLvl.fillStyle = '#0a0a1a';
+    ctxLvl.fillRect(0, 0, 384, 384);
+    ctxLvl.fillStyle = '#555';
+    ctxLvl.font = '14px monospace';
+    ctxLvl.textAlign = 'center';
+    ctxLvl.fillText('Load PNG + levels.dat to view', 192, 192);
+    return;
+  }
+  const imgData = ctxLvl.createImageData(384, 384);
+  const d = imgData.data;
+  const base = currentLevel * ROOM * ROOM;
+  for (let ty = 0; ty < ROOM; ty++) {
+    for (let tx = 0; tx < ROOM; tx++) {
+      const tid = levels[base + ty * ROOM + tx];
+      const srcX = (tid % 16) * 8;
+      const srcY = Math.floor(tid / 16) * 8;
+      for (let py = 0; py < 8; py++) {
+        for (let px = 0; px < 8; px++) {
+          const ci = sheetPixels[(srcY + py) * 128 + (srcX + px)];
+          const [r, g, b] = PICO_PAL[ci];
+          for (let sy = 0; sy < ZOOM_LVL; sy++) {
+            for (let sx = 0; sx < ZOOM_LVL; sx++) {
+              const dx = (tx * 8 + px) * ZOOM_LVL + sx;
+              const dy = (ty * 8 + py) * ZOOM_LVL + sy;
+              const off = (dy * 384 + dx) * 4;
+              d[off] = r; d[off + 1] = g; d[off + 2] = b; d[off + 3] = 255;
+            }
+          }
+        }
+      }
+    }
+  }
+  ctxLvl.putImageData(imgData, 0, 0);
+
+  // Grid
+  if (showGrid) {
+    ctxLvl.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctxLvl.lineWidth = 1;
+    for (let i = 0; i <= ROOM; i++) {
+      const p = i * 8 * ZOOM_LVL;
+      ctxLvl.beginPath(); ctxLvl.moveTo(p, 0); ctxLvl.lineTo(p, 384); ctxLvl.stroke();
+      ctxLvl.beginPath(); ctxLvl.moveTo(0, p); ctxLvl.lineTo(384, p); ctxLvl.stroke();
+    }
+  }
+
+  // Markers
+  if (showMarkers && levelMeta) {
+    const mbase = currentLevel * 8;
+    // Player spawn
+    const spX = levelMeta[mbase + 0];
+    const spY = levelMeta[mbase + 1];
+    ctxLvl.fillStyle = 'rgba(0,228,54,0.5)';
+    ctxLvl.strokeStyle = '#00e436';
+    ctxLvl.lineWidth = 2;
+    const spPx = spX * ZOOM_LVL;
+    const spPy = spY * ZOOM_LVL;
+    ctxLvl.fillRect(spPx - 4, spPy - 4, 8, 8);
+    ctxLvl.strokeRect(spPx - 5, spPy - 5, 10, 10);
+    // Label
+    ctxLvl.fillStyle = '#00e436';
+    ctxLvl.font = '9px monospace';
+    ctxLvl.fillText('P', spPx - 3, spPy + 3);
+
+    // Coin
+    const cX = levelMeta[mbase + 2];
+    const cY = levelMeta[mbase + 3];
+    if (cX !== 0xFF) {
+      ctxLvl.fillStyle = 'rgba(255,236,39,0.5)';
+      ctxLvl.strokeStyle = '#ffec27';
+      ctxLvl.lineWidth = 2;
+      const cPx = cX * ZOOM_LVL;
+      const cPy = cY * ZOOM_LVL;
+      ctxLvl.fillRect(cPx - 4, cPy - 4, 8, 8);
+      ctxLvl.strokeRect(cPx - 5, cPy - 5, 10, 10);
+      ctxLvl.fillStyle = '#ffec27';
+      ctxLvl.fillText('C', cPx - 3, cPy + 3);
+    }
+  }
+}
+
+// --- Metadata Panel ---
+function renderMeta() {
+  if (!levelMeta) return;
+  const b = currentLevel * 8;
+  elStartX.value = levelMeta[b + 0];
+  elStartY.value = levelMeta[b + 1];
+  elCoinX.value = levelMeta[b + 2] === 0xFF ? -1 : levelMeta[b + 2];
+  elCoinY.value = levelMeta[b + 3] === 0xFF ? -1 : levelMeta[b + 3];
+  elOriginX.value = levelMeta[b + 4];
+  elOriginY.value = levelMeta[b + 5];
+  elEnd.checked = levelMeta[b + 6] !== 0;
+  elNext.value = levelMeta[b + 7] === 0xFF ? -1 : levelMeta[b + 7];
+}
+
+// --- Flags Panel ---
+function renderFlags() {
+  if (!tileFlags) return;
+  const f = tileFlags[selectedTile];
+  elSolid.checked = !!(f & FLAG_SOLID);
+  elHazard.checked = !!(f & FLAG_HAZARD);
+  elBlock.checked = !!(f & FLAG_BLOCK);
+  elFlagTileId.textContent = `(tile #${selectedTile} / 0x${selectedTile.toString(16).padStart(2,'0')})`;
+}
+
+// --- Combined Render ---
+function renderAll() {
+  renderPalette();
+  renderLevel();
+  renderMeta();
+  renderFlags();
+  elLevelLabel.textContent = `${String(currentLevel + 1).padStart(2, '0')} / ${LEVEL_COUNT}`;
+  const tid = selectedTile;
+  const f = tileFlags ? tileFlags[tid] : 0;
+  const flagStr = [];
+  if (f & FLAG_SOLID) flagStr.push('solid');
+  if (f & FLAG_HAZARD) flagStr.push('hazard');
+  if (f & FLAG_BLOCK) flagStr.push('block');
+  elPaletteInfo.textContent = `Tile #${tid} (0x${tid.toString(16).padStart(2,'0')})` + (flagStr.length ? ` [${flagStr.join(', ')}]` : '');
+}
+
+// --- Level Navigation ---
+document.getElementById('btnPrev').addEventListener('click', () => {
+  currentLevel = (currentLevel - 1 + LEVEL_COUNT) % LEVEL_COUNT;
+  undoStack = []; redoStack = [];
+  renderAll();
+});
+document.getElementById('btnNext').addEventListener('click', () => {
+  currentLevel = (currentLevel + 1) % LEVEL_COUNT;
+  undoStack = []; redoStack = [];
+  renderAll();
+});
+
+// --- Palette Click ---
+elPalette.addEventListener('click', e => {
+  const rect = elPalette.getBoundingClientRect();
+  const x = Math.floor((e.clientX - rect.left) / (8 * ZOOM_PAL));
+  const y = Math.floor((e.clientY - rect.top) / (8 * ZOOM_PAL));
+  if (x < 0 || x >= 16 || y < 0 || y >= 16) return;
+  selectedTile = y * 16 + x;
+  renderAll();
+});
+
+// --- Level Painting ---
+function paintTile(canvasX, canvasY) {
+  if (!levels) return;
+  const tx = Math.floor(canvasX / (8 * ZOOM_LVL));
+  const ty = Math.floor(canvasY / (8 * ZOOM_LVL));
+  if (tx < 0 || tx >= ROOM || ty < 0 || ty >= ROOM) return;
+  const offset = currentLevel * ROOM * ROOM + ty * ROOM + tx;
+  const oldVal = levels[offset];
+  if (oldVal === selectedTile) return;
+  undoStack.push({ level: currentLevel, offset, oldVal, newVal: selectedTile });
+  redoStack = [];
+  levels[offset] = selectedTile;
+  renderLevel();
+}
+
+elLevel.addEventListener('mousedown', e => {
+  if (e.button !== 0) return;
+  painting = true;
+  const rect = elLevel.getBoundingClientRect();
+  paintTile(e.clientX - rect.left, e.clientY - rect.top);
+});
+elLevel.addEventListener('mousemove', e => {
+  const rect = elLevel.getBoundingClientRect();
+  const cx = e.clientX - rect.left;
+  const cy = e.clientY - rect.top;
+  const tx = Math.floor(cx / (8 * ZOOM_LVL));
+  const ty = Math.floor(cy / (8 * ZOOM_LVL));
+  if (tx >= 0 && tx < ROOM && ty >= 0 && ty < ROOM && levels) {
+    const tid = levels[currentLevel * ROOM * ROOM + ty * ROOM + tx];
+    elHoverInfo.textContent = `(${tx},${ty}) tile #${tid}`;
+  } else {
+    elHoverInfo.textContent = '';
+  }
+  if (painting) paintTile(cx, cy);
+});
+document.addEventListener('mouseup', () => { painting = false; });
+
+// --- Undo/Redo ---
+function undo() {
+  if (undoStack.length === 0) return;
+  const entry = undoStack.pop();
+  levels[entry.offset] = entry.oldVal;
+  redoStack.push(entry);
+  currentLevel = entry.level;
+  renderAll();
+}
+function redo() {
+  if (redoStack.length === 0) return;
+  const entry = redoStack.pop();
+  levels[entry.offset] = entry.newVal;
+  undoStack.push(entry);
+  currentLevel = entry.level;
+  renderAll();
+}
+document.getElementById('btnUndo').addEventListener('click', undo);
+document.getElementById('btnRedo').addEventListener('click', redo);
+
+// --- Keyboard Shortcuts ---
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+  if (e.key === 'z' && e.shiftKey) { e.preventDefault(); redo(); }
+  if (e.key === 'Z') { e.preventDefault(); redo(); }
+  if (e.key === 'ArrowLeft') { currentLevel = (currentLevel - 1 + LEVEL_COUNT) % LEVEL_COUNT; undoStack = []; redoStack = []; renderAll(); }
+  if (e.key === 'ArrowRight') { currentLevel = (currentLevel + 1) % LEVEL_COUNT; undoStack = []; redoStack = []; renderAll(); }
+});
+
+// --- Grid / Markers Toggles ---
+document.getElementById('chkGrid').addEventListener('change', e => { showGrid = e.target.checked; renderLevel(); });
+document.getElementById('chkMeta').addEventListener('change', e => { showMarkers = e.target.checked; renderLevel(); });
+
+// --- Metadata Inputs ---
+function metaChanged() {
+  if (!levelMeta) return;
+  const b = currentLevel * 8;
+  levelMeta[b + 0] = Math.max(0, Math.min(127, parseInt(elStartX.value) || 0));
+  levelMeta[b + 1] = Math.max(0, Math.min(127, parseInt(elStartY.value) || 0));
+  const cx = parseInt(elCoinX.value);
+  const cy = parseInt(elCoinY.value);
+  levelMeta[b + 2] = (isNaN(cx) || cx < 0) ? 0xFF : Math.min(127, cx);
+  levelMeta[b + 3] = (isNaN(cy) || cy < 0) ? 0xFF : Math.min(127, cy);
+  levelMeta[b + 6] = elEnd.checked ? 1 : 0;
+  const nx = parseInt(elNext.value);
+  levelMeta[b + 7] = (isNaN(nx) || nx < 0) ? 0xFF : Math.min(255, nx);
+  renderLevel();
+}
+[elStartX, elStartY, elCoinX, elCoinY, elNext].forEach(el => el.addEventListener('change', metaChanged));
+[elEnd].forEach(el => el.addEventListener('change', metaChanged));
+
+// --- Flag Inputs ---
+function flagChanged() {
+  if (!tileFlags) return;
+  let f = 0;
+  if (elSolid.checked) f |= FLAG_SOLID;
+  if (elHazard.checked) f |= FLAG_HAZARD;
+  if (elBlock.checked) f |= FLAG_BLOCK;
+  tileFlags[selectedTile] = f;
+  renderPalette();
+}
+[elSolid, elHazard, elBlock].forEach(el => el.addEventListener('change', flagChanged));
+
+// --- Export ---
+document.getElementById('btnExport').addEventListener('click', () => {
+  if (!levels || !levelMeta || !tileFlags) {
+    alert('Load all data files first.'); return;
+  }
+  function download(name, data) {
+    const blob = new Blob([data], { type: 'application/octet-stream' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+  download('levels.dat', levels.slice(0, LEVEL_COUNT * ROOM * ROOM));
+  download('level_meta.dat', levelMeta.slice(0, LEVEL_COUNT * 8));
+  download('tile_flags.dat', tileFlags.slice(0, 256));
+});
+
+// --- Auto-load from server ---
+async function autoLoad() {
+  // Load PNG
+  try {
+    const resp = await fetch('data/porterpatch1-1.png');
+    if (resp.ok) {
+      const blob = await resp.blob();
+      const file = new File([blob], 'porterpatch1-1.png');
+      loadPngFile(file);
+    }
+  } catch (e) { console.warn('Could not auto-load PNG:', e); }
+
+  // Load .dat files
+  async function fetchDat(path, cb) {
+    try {
+      const resp = await fetch(path);
+      if (resp.ok) { cb(new Uint8Array(await resp.arrayBuffer())); }
+    } catch (e) { console.warn('Could not auto-load', path, e); }
+  }
+  await fetchDat('data/levels.dat', d => {
+    if (d.length >= LEVEL_COUNT * ROOM * ROOM) { levels = d; filesLoaded.levels = true; updateFileStatus(); renderAll(); }
+  });
+  await fetchDat('data/level_meta.dat', d => {
+    if (d.length >= LEVEL_COUNT * 8) { levelMeta = d; filesLoaded.meta = true; updateFileStatus(); renderAll(); }
+  });
+  await fetchDat('data/tile_flags.dat', d => {
+    if (d.length >= 256) { tileFlags = d; filesLoaded.flags = true; updateFileStatus(); renderAll(); }
+  });
+}
+
+// --- Init ---
+updateFileStatus();
+autoLoad();
+renderAll();
+</script>
+</body>
+</html>

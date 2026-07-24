@@ -1,0 +1,23 @@
+Introduction
+
+In FIGHTY LONG LEGS, players take on the role of small blobs that wants to be the champion of stretching. To do that they need to knock each other out from the arena. The more damage you have taken, the easier is for you to be knocked out so be careful. Also attacking too much will send you into a fatigue state were you can't attack anymore so keep in track of your stamina is crucial to win. When no hearts are left one victor will emerge!
+
+To make this more interesting powerups will spawn during the match. I won't spoil what happens when you pick them up though!
+
+You can play this game both by yourself or with a friend/nemesis.
+Controls
+Move player
+
+Keyboard: Arrow keys | Controller: D-pad or Joystick
+Fast attack (Press)
+
+Keyboard: Z | Controller: A / Y
+Stretch attack (Hold, move then release)
+
+Keyboard: X | Controller: B / X
+
+Have fun and good luck! Do not hesitate to leave a comment about anything! If you enjoy the game then donations are welcome on my itch.io page, it supports further development of more games.
+
+/ Sebastian Lind Twitter
+
+https://www.lexaloffle.com/bbs/?tid=38711

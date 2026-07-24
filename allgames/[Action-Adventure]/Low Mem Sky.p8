@@ -1,0 +1,1807 @@
+pico-8 cartridge // http://www.pico-8.com
+version 16
+__lua__
+-- low mem sky (#demakejam)
+-- paul nicholas
+a=0
+b={1,7,23}
+c=-1
+function _init()
+cartdata("pn_lowmemsky")
+d()
+if a<=1 then e()
+elseif a==2 then f()
+elseif a==3 then g()
+end
+menuitem(5,"! delete save !",function()
+for h=1,64 do
+dset(h,0)
+end
+end)
+end
+function _draw()
+if a<=1 then i()
+elseif a==2 then
+j()
+elseif a==3 then k()
+end
+if(l>=0) m(l,n,7,1)
+end
+function _update60()
+o+=.1
+if a<=1 then p()
+elseif a==2 then q()
+elseif a==3 then r()
+end
+end
+function s(u)
+return flr(rnd(u))
+end
+function d()
+v={247,247}
+w={247,248}
+x={
+spr=247,
+y=0,
+z=1,
+ba=6,
+bb=v,
+}
+bc=0
+bd=0
+be={}
+bf=1
+for h=1,50 do be[h]=0 end
+bg={
+bh=3,
+}
+bi=0
+bj=0
+bk=1
+bl=1
+bm=0
+bn=0
+bo=0
+bp=0
+bq=false
+br=false
+load()
+end
+bs={}
+bt={}
+bu=0
+bv={}
+bw={12,7,6,5,2,1,1}
+bx=nil
+by=nil
+bz={"korvax","gek","vy'keen"}
+ca=0
+cb=0
+cc=0
+ce=0
+cf=0
+cg=nil
+ch=nil
+o=0
+ci=320+rnd"100"
+cj=false
+ck=-2
+function e()
+camera()
+cb=ce
+cc=cf
+cl=0
+cm=0
+if(a==0) music"0"
+for cn=1,6 do
+bv[cn]={
+co=0,
+cp=0,
+cq=0,
+cr=0,
+cs={[1]=
+ct(0,0,cn,7)}
+}
+end
+end
+function i()
+cls()
+fillp()
+cu=nil
+cv=nil
+if a==0 and cj and ce!=0 then
+cb=ce
+cc=cf
+end
+for cn=6,1,-1 do
+camera(cb,cc)
+local cw=bv[cn]
+for cx=1,4 do
+local cy=cw.cs[cx]
+if(cy==nil) return
+for cz in all(cy.da) do
+cz.db=cz.u-(cb/cn)/.0001
+cz.dc=cz.dd-(cc/cn)/.0001
+if cz.de
+and cz.db>=59 and cz.db<=69
+and cz.dc>=59 and cz.dc<=69 then
+cz.df=df(cz.db,cz.dc,64,64)
+if cu==nil or cz.df<cu.df then
+cu=cz
+end
+end
+pset(cz.db,cz.dc,cz.dg)
+if a==0 and cz.dh<100 then
+print(cz.de,cz.db-10,cz.dc-7,cz.dg)
+end
+if bx and bx.de==cz.de then
+cv=cz
+end
+end
+end
+end
+if a==0 then
+di()
+if(cj and cu and l>=16) dj(cu)
+else
+print(dk("galactic core\n"..abs(flr(32000-bv[1].cq*124)).." ly"),2,2,5)
+if cv then
+circ(cv.db,cv.dc,3,7)
+end
+if cu then
+dl=false
+if cv then
+if(cg==nil) cg=df(cv.db,cv.dc,cu.db,cu.dc)
+local dm=bk%2==0 and 40 or 20
+dn=flr(cg/dm)+1
+if cu.de==bx.de then
+print("you are here",2,121,2)
+elseif cg<=be[21]*dm then
+line(cv.db,cv.dc,cu.db,cu.dc,9)
+print("press ó to warp ("..flr(cg).."ly)",2,121,9)
+dl=true
+else
+local dp=flr((cg-be[21]*dm)/dm)+1
+fillp(0x5a5a)
+line(cv.db,cv.dc,cu.db,cu.dc,9)
+fillp()
+print("requires "..dp.." more warp cells",2,121,9)
+end
+end
+print(cu.de,cu.db-10,cu.dc-7,cu.dg)
+circ(cu.db,cu.dc,1,cu.dg)
+print(cu.de..dk(" system"),2,98,7)
+print(cu.dq..dk(" planets"),2,105,6)
+print(dk(cu.dr),2,112,6)
+if(not ch or cu.de!=ch.de) ch=cu cg=nil
+end
+camera()
+spr(255,61,61)
+end
+end
+function dj(ds)
+bx=ds
+ce=cb
+cf=cc
+f()
+by=dt>0 and bx.du[dt] or bx.du[1]
+a=3
+g()
+dv=true
+bq=true
+bf=2
+end
+function p()
+dw=cb
+bu=cc
+if a==0 then
+cb+=.0004
+if(btnp"5"or o>ci) and not cj then
+cj=true
+l=0
+end
+if(l>=0) l+=.25
+else
+if(btn"0") cl-=.00002
+if(btn"1") cl+=.00002
+if(btn"2") cm-=.00002
+if(btn"3") cm+=.00002
+if(btnp"4"and ca==0) a=2 f()
+if btnp"5"
+and cu
+and dl then
+ce=cb
+cf=cc
+dx=cu
+a=2
+f()
+ca=1
+be[21]-=dn
+dy-=dn
+sfx(47,3)
+end
+if(not btn"0"and not btn"1") cl/=1.001
+if(not btn"2"and not btn"3") cm/=1.001
+cl=mid(-.0004,cl,.0004)
+cm=mid(-.0004,cm,.0004)
+end
+cb+=cl
+cc+=cm
+for cn=1,6 do
+local cw=bv[cn]
+local dz=
+flr((cb+127+(cb/cn)/.0001)/127)
+local ea=
+flr((cc+127+(cc/cn)/.0001)/127)
+local eb=
+flr((cb+(cb/cn)/.0001)/127)
+local ec=
+flr((cc+(cc/cn)/.0001)/127)
+if dz!=cw.co
+or ea!=cw.cp
+or eb!=cw.cq
+or ec!=cw.cr
+then
+cw.cs[1]=ct(eb,ec,cn,7)
+cw.cs[2]=ct(eb+1,ec,cn,7)
+cw.cs[3]=ct(dz-1,ea,cn,7)
+cw.cs[4]=ct(dz,ea,cn,7)
+cw.cq=eb
+cw.cr=ec
+cw.co=dz
+cw.cp=ea
+end
+end
+end
+ed={
+"    by paul nicholas",
+" ç by chris donnelly",
+"inspired by no man's sky"
+}
+ee={
+"      @liquidream",
+"     @gruber_music",
+"     by hello games"
+}
+function di()
+camera()
+if(o<16) m(16-o,ef,0,0)
+if(o>12) spr(80,13,50,13,3)
+pal()
+if o>15 and o<105 then
+eg(ed[flr((o-15)/30)+1],17,100,6,1)
+eg(ee[flr((o-15)/30)+1],17,109,12,1)
+elseif o>15 then
+eg("press ó to start",30,100,6,1)
+end
+end
+function ct(eh,ei,ej,ek)
+local el={}
+el.da={}
+el.em=ej*1000+eh+ei/1000
+srand(el.em)
+for h=1,ek do
+local ds={
+u=eh*127+rnd"127",
+dd=ei*127+rnd"127",
+dg=bw[ej+s"2"],
+eh=eh,
+ei=ei,
+de=en(
+eh,ei,rnd"32000"),
+dh=rnd"32000",
+dr=bz[s"3"+1],
+eo=max(0,rnd"10"-6),
+dq=s"8"+1,
+du=nil
+}
+add(el.da,ds)
+end
+return el
+end
+function en(eh,ei,em)
+local ep=
+{"en","la","can","be",
+"and","phi","eth","ol",
+"ve","ho","a","lia",
+"an","ar","ur","mi",
+"in","ti","qu","so",
+"ed","ess","ex","io",
+"ce","ze","fa","ay",
+"wa","da","ack","gre"}
+local de=""
+for h=1,s"1"+3 do
+de=de..dk(ep[s(#ep)+1])
+end
+return de
+end
+function df(eq,er,es,et)
+return abs(sqrt(((eq-es)/1000)^2+((er-et)/1000)^2)*1000)
+end
+eu=100
+dv=false
+l=-2
+function f()
+menuitem(1,"")
+srand(bx.dh)
+ev()
+if bx.du==nil then
+bx.du={}
+pal()
+cls"15"
+for h=1,bx.dq do
+local cx=ew(rnd"32000",h)
+ex(cx)
+add(bx.du,cx)
+end
+memcpy(0x4300,0x6000,0x1000)
+reload()
+bx.ey={
+bh=2,
+ez=0,
+fa=rnd"16",
+fb=rnd"16"
+}
+ex(bx.ey)
+end
+end
+function ex(fc)
+repeat
+local fd=true
+fc.u=rnd"1000"-500
+fc.dd=rnd"1000"-500
+for cx in all(bx.du) do
+if(df(fc.u,fc.dd,cx.u,cx.dd)<100) fd=false
+end
+until fd
+end
+function q()
+if ca>0 then
+ca+=(bx==dx and-.5 or 1)
+l=(ca>40) and(ca-40)/3 or-2
+if ca==50 then
+ca=49
+bx=dx
+f()
+save()
+bp=5
+end
+if ca<0 then
+ca=0
+l=-2
+end
+end
+if fe then
+l-=.25
+if l<=0 then
+fe=false
+l=-2
+end
+elseif dv then
+l+=.25
+if(l>=5) a=3 g() bp=0
+end
+ff()
+if not bq then
+for cz in all(da) do
+fg(cz,bm,bn)
+end
+local fh=-sin(bo)*4.5
+local fi=-cos(bo)*4.5
+local fj={7,12,12,1}
+fk(bs,bi+fh+3.5,bj+fi+3.5,0,0,0,
+fj,3.2+rnd"2.5",1,.99,1,1,1)
+fl(bs)
+end
+end
+function fm(fn)
+for cz in all(da) do
+if fn=="1"and cz.cn>=2.25
+or fn=="2"and cz.cn<2.25 then
+line(cz.u,cz.dd,bp>.5 and cz.u+bm or cz.u,bp>.5 and cz.dd+bn or cz.dd,cz.fo)
+end
+end
+end
+function j()
+cls(bx.eo)
+fm"1"
+camera(bi-60,bj-60)
+memcpy(0x0,0x4300,0x1000)
+fp=nil
+fq=9999
+for cx in all(bx.du) do
+local fr=df(cx.u,cx.dd,bi,bj)
+if fr<128+(eu) then
+fs(cx,cx.u,cx.dd,cx.ft)
+palt(3,0)
+if(bx.eo>0) palt(1,true)
+for fu in all(cx.fv) do
+spr(fu.spr,cx.u+fu.u,cx.dd+fu.dd,1,1,fu.fw,fu.fx)
+end
+end
+if(not dv and fr<(cx.ft*16)+20 and fr<fq) fp=cx fq=fr
+end
+fy=df(bx.ey.u,bx.ey.dd,bi,bj)
+if(fy<30 and fy<fq) fp=bx.ey fq=fy
+if fy<100 then
+local fz=bx.ey
+pal()
+palt(0,false)
+pal(1,fz.fa)
+pal(13,fz.fb)
+ga(0,64,fz.u-20,fz.dd-20,fz.ez,6,3)
+fz.ez+=.0025
+pal()
+end
+for cx in all(bx.du) do
+if cx.gb then
+print(cx.de,
+cx.u,
+cx.dd-(cx.ft*16)-16,7)
+end
+if not cx.gb then
+print("unknown",
+cx.u,
+cx.dd-(cx.ft*16)-16,7)
+print("unmapped",
+cx.u,
+cx.dd-(cx.ft*16)-8,9)
+end
+end
+gc(bs)
+camera()
+gd(60,60)
+fm"2"
+ge()
+if(not bq) gf()
+end
+function ff()
+srand(t())
+gg=gh[3][bk][10]
+if bf==1 and not dv then
+local gi=gh[3][bk][11]
+local gj=0.01*gi
+local gk=.0075*gi*1.2
+bp-=gj
+if btn"4"then
+if(bp<.5) sfx(49,2)
+bp+=gj*5
+end
+if(btn"0") bo-=gk
+if(btn"1") bo+=gk
+if(br and not btn"3") and l<0 and ca==0 then
+e()
+p()
+a=1
+br=false
+return
+end
+br=btn"3"
+if btnp"5"and fp and ca==0 then
+if(fp.bh==1) by=fp dt=fp.gl dv=true l=0 sfx(50,3)
+if(fp.bh==2) gm=fp bf=3 bq=true gn=1 go=1 sfx(46,2)
+end
+if ca==0 or bx==dx then
+bp=mid(.5,bp,1.75*gi)
+else
+bp=min(bp*1.1,20)
+end
+bm=-sin(bo*-1)*bp
+bn=cos(bo*-1)*bp
+bi+=bm
+bj+=bn
+elseif bf==3 then
+gp()
+elseif bf==2 then
+local gq=1
+local gr,gs=0,0
+local gt=0
+gu=#bt>4 and 2 or btn"4"and 1 or 2
+x.ba=btn"4"and 4 or 6
+if(btn"0") gr=-gq gt+=1
+if(btn"1") gr=gq gt+=1
+if(btn"2") gs=-gq gt+=1
+if(btn"3") gs=gq gt+=1
+if btnp"5"then
+if fp then
+if fp.bh==3 then
+fe=true
+l=0
+by.gv=gw
+by.gx=gy
+save()
+sfx(51,3)
+ck=-2
+elseif(fp.bh==4 or fp.bh==5)
+and dy<gg then
+local gz=(gw+11).."."..(gy+12)
+by.ha[gz]=true
+fp.ha=true
+hb=fp
+hc=1
+be[fp.hd]+=1
+dy+=1
+sfx(54,3)
+end
+end
+end
+if(gt>0) then
+he+=1
+if(x.bb!=w) sfx(52,3)
+x.bb=w
+else
+if(x.bb==w) sfx(-1,3)
+x.bb=v
+end
+if(he>gu) then
+he=0
+bc+=gr
+bd+=gs
+cb+=gr
+cc+=gs
+end
+local hf=hg["11.12"]
+if hf.hh<-.57 or hf.hi==0 then
+local hj={7,hk}
+fk(bt,bc+5+rnd"3",bd+14+rnd"3",0,0,0,
+hj,3+rnd"3",rnd(),1.01,1,0,2)
+end
+fp=nil
+hl=df(bc,bd,bi-2,bj-10)
+if hl<10 then
+fp=bg
+else
+if hf.bh and not hf.ha then
+fp=hf
+end
+end
+end
+end
+function gp()
+local hm=go-gh[gn][1][1]+1
+local hn=gh[gn][hm]
+local ho=hn[1]
+if btnp"1"and hp>=hn[8]
+and be[ho]<(hn[7] or 999)
+and dy<gg then
+be[ho]+=1
+if(ho<30) dy+=1
+hp-=hn[8]
+sfx(62,3)
+if(hn.hq!=nil) hn.hq(hn)
+end
+if btnp"0"and be[ho]>0
+and(gn!=3 or hn[9]) then
+be[ho]-=1
+if(ho<30) dy-=1
+hp+=hn[8]
+sfx(61,3)
+if(hn.hq!=nil) hn.hq(hn)
+end
+if(btnp"2") go-=1
+if(btnp"3") go+=1
+go=mid(gh[gn][1][1],go,gh[gn][#gh[gn]][1])
+if btnp"5"then
+gn+=1
+if(gn>3) gn=1
+go=gh[gn][1][1]
+end
+if(btnp"4") bf=1 gm=nil bq=false sfx(-1,2) save()
+end
+function gf()
+local hr,hs=63,13
+rectfill(50,0,75,25,5)
+rectfill(51,1,74,24,0)
+rectfill(52,2,73,23,1)
+clip(51,1,24,24)
+if a==2 then
+for cx in all(bx.du) do
+local ht=hr+(cx.u-bi)*.1
+local hu=hs+(cx.dd-bj)*.1
+ht=mid(50,ht,75)
+hu=mid(0,hu,25)
+circfill(ht,hu,2,13)
+end
+local fz=bx.ey
+ht=hr+(fz.u-bi)*.1
+hu=hs+(fz.dd-bj)*.1
+ht=mid(50,ht,74)
+hu=mid(0,hu,24)
+fillp(0x5a5a,ht,hu)
+rectfill(ht,hu,ht+1,hu+1,148)
+fillp()
+elseif a==3 then
+for hv,hf in pairs(hg) do
+if hf.bh>=4 and hf.hw then
+local hx=hf.hw+4-cb
+local hy=hf.hz+4-cc
+local ht=hr+(hx-55)*.17
+local hu=hs+(hy-55)*.17-2
+pset(ht,hu,hf.ha and 5 or hf.ia)
+end
+end
+ht=hr+(bi-bc)*.1
+hu=hs+(bj-bd)*.1
+ht=mid(50,ht,74)
+hu=mid(0,hu,24)
+fillp(0x5a5a,ht,hu)
+rectfill(ht,hu,ht+1,hu+1,135)
+fillp()
+end
+pset(63,13,7)
+clip()
+end
+function gd(u,dd)
+pal()
+palt(0,false)
+pal(8,ib[bl][1])
+pal(2,ib[bl][2])
+ga(72+8*bk,120,u,dd,bo,1,3)
+pal()
+end
+ic={"resources","component","shipyard"}
+function ge()
+palt(3,true)
+local id=""
+if a==2 and o<30 then
+id="é to boost\n\nÉ to warp"
+end
+if fp then
+if fp.bh==1 and not bq then
+id="ó to land"
+elseif fp.bh==2 and not bq then
+id="ó to dock"
+elseif fp.bh==3 and bq then
+id="ó take-off"
+elseif fp.bh==4 or fp.bh==5 then
+id=dy<gg and dk(fp.de).."\n\nó to pick-up"or"inventory full"
+end
+end
+eg(id,40,80,6,1)
+if hb then
+rectfill(38,31,41,34,hb.ia)
+rectfill(39,32,40,33,hb.ie)
+eg(dk(hb.de),44,30,7)
+eg(dk("cargo "..dy.."/"..gg),83,2,7)
+hc-=.01
+if(hc<=0) hb=nil
+end
+if ck>=0 then
+rectfill(24,80,104,98,0)
+print(by.de,48,82,7)
+line(28,89,100,89,5)
+print(bx.de..dk(" system"),34,91,7)
+ck+=.1
+if(ck>20) ck=-2
+end
+if bf==3 then
+eg("$"..hp,1,1,10,4)
+srand(bx.dh)
+rectfill(10,10,118,117,5)
+rectfill(11,20,117,116,0)
+eg(ic[gn].." market",15,12,7,1)
+eg("ó=next",87,12,9,1)
+print("item           cargo "..dy.."/"..gg,13,25,12)
+for h=1,#gh[gn] do
+local ig=gh[gn][h]
+local dd=28+h*7
+rectfill(14,dd+1,15,dd+3,ig[3])
+rect(13,dd,16,dd+4,ig[2])
+print(ig[4],19,dd)
+ig[8]=flr(ig[5]*(1+rnd".2"-.1))
+print(" $"..ig[8],19+(#ig[4]*4),dd)
+print(be[ig[1]],97,dd,be[ig[1]]>0 and 6 or 1)
+if(ig[1]==go) eg("ã   ë",87,dd,9,1)
+end
+eg("ã=sell ë=buy é=exit",20,108,9,1)
+end
+if bf==1 then
+print(flr(bp*100).."U/S",2,121,7)
+elseif bf==2 then
+eg(by.de,2,114,7,1)
+eg(by.ih.." f",2,121,7,1)
+end
+if(btn"4") pal(7,8)
+if(bf<3) spr(bf==2 and 244 or 237,119,119)
+pal(7,7)
+palt()
+end
+function ii(ij,ik,hn)
+for h=ij,ik do
+if(hn[1]!=h) be[h]=0
+end
+end
+function ev()
+da={}
+for h=1,50 do
+local cz={
+u=rnd"128",
+dd=rnd"128",
+cn=rnd"10"
+}
+cz.fo=cz.cn+5
+add(da,cz)
+end
+end
+function fg(cz,ht,hu)
+cz.u-=ht/cz.cn*5
+cz.dd-=hu/cz.cn*5
+if(cz.u<0 or cz.u>128) then
+cz.u=cz.u<0 and 128 or 0
+cz.dd=rnd"128"
+elseif(cz.dd<0 or cz.dd>128) then
+cz.u=rnd"128"
+cz.dd=cz.dd<0 and 128 or 0
+end
+end
+function fk(il,im,io,ht,hu,ip,iq,ir,is,it,max,min,iu)
+local cx={
+u=im,
+dd=io,
+t=0,
+iv=ir,
+ft=is,
+iw=max,
+ix=min,
+hu=hu,
+ht=ht,
+iy=it,
+iz=ip,
+ja=iq,
+jb=iu
+}
+add(il,cx)
+end
+function fl(jc)
+for hv,cx in pairs(jc) do
+cx.dd+=cx.hu
+cx.u+=cx.ht
+cx.t+=1/cx.iv
+cx.ft*=cx.iy
+cx.dg=cx.ja[flr(#cx.ja*(cx.t/cx.iv))+1]
+if(cx.t>cx.iv) del(jc,cx)
+end
+end
+function gc(jc,jd,je)
+local jf=jd or 0
+local jg=je or 0
+for hv,cx in pairs(jc) do
+if(cx.jb==1) circfill(cx.u+jf,cx.dd+jg,cx.ft,cx.dg)
+if(cx.jb==2) circ(cx.u+jf,cx.dd+jg,cx.ft,cx.dg)
+end
+end
+function fs(cx,u,dd,jh)
+pal()
+palt(0,false)
+palt(15,true)
+sspr(
+((cx.gl-1)%4)*32,
+flr(cx.gl/5)*32,
+32,32,
+u-(15*jh),dd-(16*jh),
+32*jh,32*jh)
+end
+function ew(dh,gl)
+srand(dh)
+local cx={
+bh=1,
+dh=rnd"32000",
+gl=gl,
+de=en().." "..s"8"+1,
+ft=rnd".75"+1,
+ji={},
+ha={},
+ih=s"200".."."..s"9"+1,
+gb=false,
+jj={}
+}
+cx.pal={}
+for h=0,14 do
+cx.pal[h]=s"14"+1
+end
+jk(dh,cx)
+jl(
+((gl-1)%4)*32,
+(flr(gl/5)*32)-1)
+cx.fv={}
+for h=1,100 do
+local jm=rnd()
+local fu={
+u=(rnd(eu/2)+eu)*cos(jm),
+dd=(rnd(eu/2)+eu)*sin(jm),
+spr=204+s"4",
+fw=s"2"==0,
+fx=s"2"==0
+}
+add(cx.fv,fu)
+end
+for h=1,s"5"+1 do
+add(cx.ji,s"10"+1)
+add(cx.jj,s"6"+2)
+end
+jn={}
+for h=1,8 do
+add(jn,{135+h,151+h})
+end
+return cx
+end
+local jo=tostr(stat"102")
+if(jo!="0"and jo!="\119\119\119\46\108\101\120\97\108\111\102\102\108\101\46\99\111\109") stop()
+function jk(dh,cx)
+jp(dh)
+local ft=32
+for dd=0,ft do
+for u=0,ft*4 do
+local fo
+fo=jq(u/8,dd/4)
+fo=mid(0,(fo+0.2)/1.2*14,13)
+sset(u,dd,cx.pal[flr(fo)])
+end
+end
+end
+function jr(js)
+return js!=7 and n[js+1][2] or 6
+end
+function jt(js)
+return ef[js+1][2]
+end
+n={
+{1,13,6},
+{5,13,6},
+{13,13,6},
+{3,13,6},
+{4,14,15},
+{13,6,6},
+{6,7,7},
+{7,7,7},
+{8,14,15},
+{10,15,15},
+{10,15,15},
+{11,6,6},
+{12,6,6},
+{13,6,6},
+{14,15,7},
+{15,7,7}
+}
+ef={
+{0,0,0},
+{1,0,0},
+{2,1,0},
+{3,1,0},
+{2,2,0},
+{5,1,0},
+{13,5,1},
+{6,13,1},
+{8,2,0},
+{4,4,0},
+{9,4,5},
+{3,3,0},
+{12,1,1},
+{5,1,1},
+{13,2,1},
+{13,5,1}
+}
+function m(h,ju,jv,cx)
+for fo=0,15 do
+if flr(h+1)>=4 then
+pal(fo,jv,cx)
+elseif flr(h+1)<0 then
+else
+pal(fo,ju[fo+1][flr(h+1)],cx)
+end
+end
+end
+gu=2
+he=0
+hb=nil
+hc=0
+gh={
+{
+{1,9,10,"sodium",41,175},
+{2,8,10,"oxygen",7,174},
+{3,3,1,"cactus flesh",28,170},
+{4,3,10,"gamma root",16,174},
+{5,10,9,"solanium",70,173},
+{6,11,3,"fungal mould",16,171},
+{7,12,1,"frost crystal",12,172},
+{8,4,9,"marrow bulb",41,171},
+{9,6,7,"kelp sac",41,174},
+{10,12,7,"star bulb",32,173}
+},
+{
+{21,8,2,"warp cell",500,0}
+},
+{
+{31,2,8,"\"shuttle\"",0,0,1,1,false,20,.6,hq=function(hn) jw(hn,1) end},
+{32,12,1,"\"explorer\"",1000,0,1,1,false,25,.7,hq=function(hn) jw(hn,2) end},
+{33,8,2,"\"fighter\"",2500,0,1,1,false,20,1.02,hq=function(hn) jw(hn,3) end},
+{34,6,13,"\"hauler\"",5000,0,1,1,false,50,.65,hq=function(hn) jw(hn,4) end},
+{35,11,9,"\"exotic\"",10000,0,1,1,false,15,1.05,hq=function(hn) jw(hn,5) end},
+{36,8,8,"red paint",50,0,1,1,false,hq=function(hn) jx(hn,1) end},
+{37,9,9,"orange paint",50,0,1,1,false,hq=function(hn) jx(hn,2) end},
+{38,14,14,"pink paint",50,0,1,1,false,hq=function(hn) jx(hn,3) end},
+{39,10,10,"gold paint",250,0,1,1,false,hq=function(hn) jx(hn,4) end},
+}
+}
+ib={
+{8,2},
+{9,4},
+{14,2},
+{10,9},
+}
+function jw(hn,type)
+ii(31,35,hn)
+bk=type
+end
+function jx(hn,type)
+ii(36,39,hn)
+bl=type
+end
+function g()
+reload()
+hg={}
+jy={}
+jz=0
+menuitem(1,"call ship",function()
+if(hl>100) bi=bc-60 bj=bd-60 sfx(50,3)
+end)
+cb=16
+cc=16
+gw=by.gv or-1
+gy=by.gx or 21
+jp(by.dh)
+ka(gw,gy,22,22,1,1)
+pal()
+cls()
+kb=by.pal[0]
+hk=jr(kb)
+kc=jr(hk)
+kd=by.pal[2]
+ke=jr(kd)
+kf=by.pal[3]
+kg=jr(kf)
+kh=jt(kf)
+ki=by.pal[6]
+kj=jt(ki)
+kk=by.pal[4]
+kl=by.pal[11]
+pal(1,hk)
+pal(2,kb)
+pal(3,kb)
+pal(15,kd)
+pal(7,ke)
+spr(1,8,0,15,1)
+pal()
+pal(3,kf)
+pal(11,kg)
+pal(13,kh)
+pal(8,kd)
+pal(14,ke)
+spr(16,0,8,16,1)
+pal()
+pal(5,kk)
+pal(11,ki)
+pal(3,kj)
+pal(8,kf)
+pal(14,kg)
+spr(33,8,16,15,1)
+pal()
+pal(6,kl)
+pal(7,jr(kl))
+pal(13,jt(kl))
+pal(1,jt(jt(kl)))
+pal(8,kk)
+pal(14,ki)
+pal(9,kj)
+spr(49,8,24,15,1)
+pal()
+memcpy(0x0000,0x6000,0x0a00)
+bc=gw*8+70
+bd=gy*8+70
+bi=gw*8+62
+bj=gy*8+62
+bo=0
+by.gb=true
+ck=0
+srand(by.dh)
+local km=s(#b)+1
+if(km!=c) music(b[km]) c=km
+end
+function r()
+if dv then
+l-=.25
+if l<=0 then
+dv=false
+l=-2
+bq=true
+bf=2
+save()
+ck=0
+sfx(59,3)
+end
+elseif fe then
+l+=.25
+if l>=5 then
+a=2
+bq=false
+bf=1
+bi=by.u
+bj=by.dd
+o=0
+f()
+end
+end
+ff()
+kn(x)
+fl(bt)
+if cb<12 then
+for dd=1,22 do
+for u=22,1,-1 do
+local hf=hg[(u-1).."."..dd]
+hg[u.."."..dd]=hf
+end
+end
+gw-=1
+ka(gw,gy,0,22,1,1)
+cb=20-(12-cb)
+elseif cc<12 then
+for u=1,22 do
+for dd=22,1,-1 do
+local hf=hg[u.."."..(dd-1)]
+hg[u.."."..dd]=hf
+end
+end
+gy-=1
+ka(gw,gy,22,0,1,1)
+cc=20-(12-cc)
+elseif cb>=20 then
+for dd=1,22 do
+for u=1,22 do
+local hf=hg[(u+1).."."..dd]
+hg[u.."."..dd]=hf
+end
+end
+gw+=1
+ka(gw+21,gy,0,22,22,1)
+cb=12+(20-cb)
+elseif cc>=20 then
+for u=1,22 do
+for dd=1,22 do
+local hf=hg[u.."."..(dd+1)]
+hg[u.."."..dd]=hf
+end
+end
+gy+=1
+ka(gw,gy+21,22,0,1,22)
+cc=12+(20-cc)
+end
+foreach(jy,ko)
+end
+function ka(kp,kq,kr,ks,jf,jg)
+local ft=by.ft/2
+for dd=jg,jg+ks do
+for u=jf,jf+kr do
+local fo
+local kt
+local ku=kp-jf+u
+local kv=kq-jg+dd
+kt=jq(ku/32,kv/32)
+fo=kt+jq(ku/8,kv/8)/4
+hg[u.."."..dd]={
+hh=fo,
+kw=kt,
+u=u,
+dd=dd,
+bh=0,
+dh=tonum(gw+u.."."..abs(gy+dd))
+}
+end
+end
+local db=mid(2,jf,21)
+local dc=mid(2,jg,21)
+for dd=dc,ks>2 and jg+ks-1 or dc do
+for u=db,kr>2 and jf+kr-1 or db do
+local hf=hg[u.."."..dd]
+hf.hi=kx(u,dd,-0.5)
+hf.ky=kx(u,dd,-0.25)
+hf.kz=kx(u,dd,0.5)
+hf.la=kx(u,dd,0.8)
+srand(hf.dh)
+local gz=(gw+u).."."..(gy+dd)
+if(by.ha[gz]!=nil) hf.ha=true
+local lb=rnd"100"
+if lb<.09 and hf.hh>-.5 then
+hf.bh=5
+hf.hd=21
+hf.ia=8
+hf.ie=2
+hf.de="warp cell"
+elseif lb<.4 and not hf.ha then
+local lc=hf.hh<-.6 and 1 or(hf.hh>-.3 and by.jj[s(#by.jj)+1] or 8)
+ld(lc,(gw+u)*8,(gy+dd)*8)
+by.ha[gz]=true
+hf.ha=true
+elseif lb<5
+and((hf.kw>.5 and hf.kw<.66)
+or rnd"100"<2)
+then
+local hd=by.ji[s(#by.ji)+1]
+if(hf.hh>0.2 and hd<7)
+or(hf.hh<-.57 and hd>=7) then
+hf.bh=4
+hf.hd=hd
+local le=gh[1][hf.hd]
+hf.ia=le[2]
+hf.ie=le[3]
+hf.de=le[4]
+hf.lf=s"2"==0
+end
+else
+end
+end
+end
+end
+function k()
+pal()
+cls(kb)
+camera(cb,cc)
+for dd=2,21 do
+for u=2,21 do
+local hf=hg[u.."."..dd]
+local ht=u*8-16
+local hu=dd*8-16
+hf.hw=ht
+hf.hz=hu
+srand(hf.dh)
+pal()
+palt(0,false)
+if hf.la!=0 then
+spr(hf.la+48,ht,hu)
+elseif hf.kz!=0 then
+spr(hf.kz+32,ht,hu)
+elseif hf.ky!=0 then
+spr(hf.ky+((hf.ky<15 or s"3"==0) and 16 or 1),ht,hu)
+elseif hf.hi!=0 then
+palt(0,true)
+spr(hf.hi,ht,hu)
+elseif s"4"==0 then
+lg=rnd"4"+2+sin(o*rnd"2"/8)+1
+lh=sin(o*(rnd"2"+.1)/8)
+li=rnd"4"
+lj=sin(o*rnd"2"/8)*(rnd()+1)
+if(lj<0) line(ht+lg+li,hu+li,ht+lg+lj,hu+li,lh<-0.9 and hk or kc)
+if(lh<0) pset(ht+lg,hu+li,kb)
+end
+palt(0,false)
+palt(3,true)
+if hf.bh==4 then
+pal(8,hf.ia)
+pal(10,hf.ie)
+local lk=gh[1][hf.hd][6]
+spr(hf.ha and lk+16 or lk,ht,hu,1,1,hf.lf)
+elseif hf.bh==5 then
+spr(hf.ha and 185 or 169,ht,hu)
+end
+end
+end
+gd(bi-gw*8,bj-gy*8)
+gc(bt,-gw*8,-gy*8)
+ll"1"
+camera()
+pal()
+palt(3,true)
+clip(50,59,19,14+hg["11.12"].hh*5)
+spr(x.spr,59,66)
+clip()
+camera(cb,cc)
+ll"2"
+camera()
+ge()
+gf()
+end
+lm={.2,.1,.2,.05,.1,.2,.3,.2}
+function ld(lc,u,dd)
+local ln={
+type=lc,
+u=u,
+dd=dd,
+lo=rnd(),
+gq=lm[lc],
+lp=0,
+y=0,
+z=1,
+ba=lc>1 and 15 or 30,
+bb=jn[lc]
+}
+ln.spr=ln.bb[1]
+add(jy,ln)
+end
+function ko(lq)
+kn(lq)
+if(o>lq.lp) lq.lo+=rnd".2"-.1 lq.lp=o+rnd"12"
+local hf=hg[flr((lq.u+4)/8)-gw.."."..flr((lq.dd+4)/8)-gy]
+if hf!=nil then
+if(lq.type<2 and hf.hh>=-.6) or(lq.type>=2 and lq.type<5 and hf.hh<=-.4) then
+lq.lo+=.33
+end
+lq.ht=-sin(lq.lo*-1)*lq.gq
+lq.hu=cos(lq.lo*-1)*lq.gq
+lq.u+=lq.ht
+lq.dd+=lq.hu
+end
+if(df(lq.u,lq.dd,bc,bd)>200) del(jy,lq)
+end
+function ll(lr)
+for hv,lq in pairs(jy) do
+if(lr=="1"and lq.type<=4) or
+(lr=="2"and lq.type>4) then
+local u=lq.u-gw*8-16
+local dd=lq.dd-gy*8-16
+pal()
+if lq.type>5 then
+fillp(0xA5A5.8)
+circfill(u+3,dd+15,2,5)
+fillp()
+end
+pal(8,kf+1+lq.type)
+pal(2,ki+1+lq.type)
+ga(lq.spr%16*8,flr(lq.spr/16)*8,u,dd,lq.lo,1,3)
+pal()
+end
+end
+end
+function load()
+for h=1,50 do
+be[h]=dget(h)>0 and dget(h) or be[h]
+end
+ce=dget"53"
+cf=dget"54"
+dt=dget"55"
+bl=dget"56">0 and dget"56"or 1
+be[35+bl]=1
+bk=dget"57">0 and dget"57"or 1
+be[30+bk]=1
+hp=10000
+dy=dget"59"
+end
+function save()
+for h=1,50 do
+dset(h,be[h])
+end
+dset(53,ce)
+dset(54,cf)
+dset(55,dt)
+dset(56,bl)
+dset(57,bk)
+dset(58,hp)
+dset(59,dy)
+end
+function kn(fc)
+fc.y+=1
+if fc.y>fc.ba then
+fc.y=1
+fc.z+=1
+if(fc.z>#fc.bb) fc.z=1
+fc.spr=fc.bb[fc.z]
+end
+end
+function eg(lt,u,dd,lu,lv)
+print(lt,u+1,dd,lv)
+print(lt,u+1,dd+1,lv)
+print(lt,u,dd+1,lv)
+print(lt,u,dd,lu)
+end
+function lw(lx,ly,lz)
+return hg[lx.."."..ly].hh>lz and 1 or 0
+end
+function kx(ma,fx,lz)
+return
+lw(ma,fx,lz)+
+shl(lw(ma,fx+1,lz),1)+
+shl(lw(ma+1,fx,lz),2)+
+shl(lw(ma+1,fx+1,lz),3)
+end
+local mb=-0.211324865405187
+local mc=0.366025403784439
+local md=mc+1
+local me=mc*2
+local mf=me+1
+local mg=me+2
+local mh=47
+local mi={}
+local mj=
+{[0]=
+5,2,2,5,
+-5,2,-2,5,
+5,-2,2,-5,
+-5,-2,-2,-5,
+}
+function jp(mk)
+local ml={}
+for ma=0,255 do
+ml[ma]=ma
+mi[ma]=0
+end
+srand(mk)
+for ma=255,0,-1 do
+local mm=s(ma+1)
+mi[ma]=ml[mm]
+ml[mm]=ml[ma]
+end
+end
+function jq(mn,mo)
+local mp=(mn+mo)*mb
+local mq=mn+mp
+local mr=mo+mp
+local ms=flr(mq)
+local mt=flr(mr)
+local mu=(ms+mt)*mc
+local mv=ms+mu
+local mw=mt+mu
+local mx=mq-ms
+local my=mr-mt
+local mz=mx+my
+local na=mn-mv
+local nb=mo-mw
+local nc,nd,ne,nf
+local ng=0
+local nh=na-md
+local ni=nb-mc
+local nj=2-nh*nh-ni*ni
+if nj>0 then
+nj*=nj
+local ma=band(mi[(mi[(ms+1)%256]+mt)%256],0x0e)
+ng+=nj*nj*(mj[ma]*nh+mj[ma+1]*ni)
+end
+local nk=na-mc
+local nl=nb-md
+local nm=2-nk*nk-nl*nl
+if nm>0 then
+nm*=nm
+local ma=band(mi[(mi[ms%256]+mt+1)%256],0x0e)
+ng+=nm*nm*(mj[ma]*nk+mj[ma+1]*nl)
+end
+if mz<=1 then
+local nn=1-mz
+if nn>mx or nn>my then
+if mx>my then
+ne=ms+1
+nf=mt-1
+nc=na-1
+nd=nb+1
+else
+ne=ms-1
+nf=mt+1
+nc=na+1
+nd=nb-1
+end
+else
+ne=ms+1
+nf=mt+1
+nc=na-mf
+nd=nb-mf
+end
+else
+local nn=2-mz
+if nn<mx or nn<my then
+if mx>my then
+ne=ms+2
+nf=mt
+nc=na-mg
+nd=nb-me
+else
+ne=ms
+nf=mt+2
+nc=na-me
+nd=nb-mg
+end
+else
+nc=na
+nd=nb
+ne=ms
+nf=mt
+end
+ms+=1
+mt+=1
+na=na-mf
+nb=nb-mf
+end
+local no=2-na*na-nb*nb
+if no>0 then
+no*=no
+local ma=band(mi[(mi[ms%256]+mt)%256],0x0e)
+ng+=no*no*(mj[ma]*na+mj[ma+1]*nb)
+end
+local np=2-nc*nc-nd*nd
+if np>0 then
+np*=np
+local ma=band(mi[(mi[ne%256]+nf)%256],0x0e)
+ng+=np*np*(mj[ma]*nc+mj[ma+1]*nd)
+end
+return ng/mh
+end
+local nq=0
+function ga(db,dc,u,dd,jm,nr,ns)
+local nt,nu=cos(jm),sin(jm)
+local nv,nw,nx,ny
+local nz,oa=nt,nu
+local ob=shl(0xfff8,(nr-1))
+nr*=4
+nt*=nr-0.5
+nu*=nr-0.5
+local oc,od=nu-nt+nr,-nt-nu+nr
+nr=2*nr-1
+for np=0,nr do
+nv,nw=oc,od
+for oe=0,nr do
+if band(bor(nv,nw),ob)==0 then
+local fo=sget(db+nv,dc+nw)
+if(fo!=ns) pset(u+np,dd+oe,fo)
+end
+nv-=oa
+nw+=nz
+end
+oc+=nz
+od+=oa
+end
+end
+of={[0]=0xffff,0x7777,0x3333,0x1111}
+og={[0]=0x0000,0x8888,0xcccc,0xeeee}
+oh=fillp
+function fillp(cx,u,dd)
+if dd then
+u=band(u,3)
+local oi=flr(cx)
+local oj=rotr(oi+lshr(oi,16),band(dd,3)*4+u)
+cx+=flr(band(oj,of[u])+band(rotl(oj,4),og[u]))-oi
+end
+return oh(cx)
+end
+function dk(cz)
+local cn=""
+local ok,fo,t=false,false
+for h=1,#cz do
+local jm=sub(cz,h,h)
+if jm=="^"then
+if fo then cn=cn..jm end
+fo=not fo
+elseif jm=="~"then
+if t then cn=cn..jm end
+t,ok=not t,not ok
+else
+if fo==ok and jm>="a"and jm<="z"then
+for ol=1,26 do
+if jm==sub("abcdefghijklmnopqrstuvwxyz",ol,ol) then
+jm=sub("\65\66\67\68\69\70\71\72\73\74\75\76\77\78\79\80\81\82\83\84\85\86\87\88\89\90\91\92",ol,ol)
+break
+end
+end
+end
+cn=cn..jm
+fo,t=false,false
+end
+end
+return cn
+end
+local om={}
+for h=1,32 do
+om[h]={flr(-sqrt(-sin(h/66))*16+64)}
+om[h][2]=(64-om[h][1])*2
+end
+local on={}
+for h=0,15 do
+on[h]={(cos(0.5+0.5/16*h)+1)/2}
+on[h][2]=(cos(0.5+0.5/16*(h+1))+1)/2-on[h][1]
+end
+function jl(ht,hu)
+for h=1,32 do
+local jm,kt=om[h][1],om[h][2]
+pal()
+local oo=ceil(kt*on[15][2])
+for ol=15,0,-1 do
+pal()
+if(ol>9) m(flr(ol)/4-1,ef,0,0)
+if(ol<15) oo=flr(jm+kt*on[ol+1][1])-flr(jm+kt*on[ol][1])
+sspr(ol*7,h-1,
+7,2,
+flr(jm+kt*on[ol][1])-48+ht,
+h+hu,
+oo,1)
+end
+end
+end
+__gfx__
+00000000f7fff12300000000fff712330321ff7ffff7ffff3217ffffffffffff00000000fff7123333333333ffff712333217fffffffffff0321ffffffffffff
+00000000fff7123033000000f7fff12303217fffffffffff33217ffffff7ffff00000033f7fff12332323323ffffff12321fff7ffff7ffff3217fffffffffff7
+00700700fff1233022330000fff7123303321f7fffffffff33217ff7ffffffff00003332fff7123321212212fffff71133217fffffffffff211ffffffff7ffff
+00077000f712330011233000fffff12300322117f7fff7f73217fffffffffff700333221fffff1231f1711f1fffffff7321fffff7ffffff7117fffffffffffff
+00077000112330007f123300ffff1233003332211f1711f133217ffffffff7f100322117ffff1233f7fff7f7ff7fffff3321ffff117fffff7ffffff7ffffffff
+0070070022330000fff12330fff71233000033322121221233217ffff7ffff1203321f7ffff71233ffffffffffffffff33217fff211fffffffffffffff7fffff
+0000000033000000f7ff1230f7fff12300000033323233233217fff7fffff71203217ffff7fff123fffffffffffff7ff321fff7f3217fffffff7ffffffffff7f
+0000000000000000fff7f123ffff7123000000003333333332117fffffff71230321ff7fffff7123ff7fff7ffff7ffff3217ffff0321ffffffffffffffffffff
+333333333338888888888888333888888888833333333333333333333b3b33338888888833333333888888883383888888888333333333338888383333333333
+333333333388888e8888888e3333888e88883333338333333333333333b333338888888e333333338888888e3333888e88883333333333338888333333333b3b
+3333333338388888888e888833388888888883838333388333333d3d33333338888e8888b3b3333388388888333383888883833333333333883833333b3b33b3
+333333338888888888888888333838888888888888388383333333d333333338888888883b333333888838883333338888888333383833338838333333b33333
+3333333388888888838888883338388888888888888883883d3d333333333888888883833333b3b3383838833333338388883333883333333833333333333333
+3333333388e88888333888883333388888e8888888e8888833d333333338383888e8883333333b3333383338333333338e8833338838333333333333b3b33333
+33333333888888e8338888e8333838e8888888e8888888e83333333333383888888883333333333333333338b3b33333888383338888333333333b3b3b33b3b3
+33333333888888883333888833388888888888888888888833333333333888888888333333333333333333333b3333338888333388883833333333b333333b33
+000000005b558888888888885b558888888555555b5555558885b5555555b558888888885b558888888888885b588888888885b555b5555588888855555515b5
+00000000b3b5888888888e8eb3b5888888855b55b3b55b55885b3b55555b3b5888888888b3b5888888888888b3b5888888888b3b5b3b5555888885b55b555b3b
+0000000033358888558888e8333588888885b3b53335b3b588533355555333588e8e88553335888888888b883335558888885333533355b588585b3bb3b55333
+00000000545888885b58888854b558888885333554553335888545b55b55458888e885b554b558885b55b3b854555b588888554585455b3b85b5533333355545
+0000000051588888b3b588885b3b5888888854555155545888851b3bb3b5158888885b3b5b3b5888b3b533355155b3b588885515851553335b3b55455455b515
+000000005588888833358888533358888888515585555158888853333335588888885333533358883335545555553335e8e885558858554553335515515b3b55
+000000008888e8e8545588885545588888888885888855588888554554558888888555455545588854555155555554558e888555888885155545555555533355
+0000000088888e885155888855158888888888888888888888885515515888888855551555158888515555555555515588888555888888555515555555554555
+0000000066d188e8888888e86667d8e88888d666666666668888d76666666666888858e86667d8e8888858886667dd888888d6666666666688dd766666666666
+000000006d188e9e88888e9e6667de9e8e88ddd6666666668e88d766666666668e888e9e6667de9e88888888666677d88e88d666666666668d77666666666666
+00000000dd188999888889996667d999e9e881dd66666666e9e8d76666666666e9e889996667d999888888886666667de9e8d66666666666d766666666666666
+0000000011888848888888486667d84899988811dddddddd9998d7666666666d999888486667d848dddddddd6666667d9998d666d66666667666666666666666
+000000008888e858dd8888586667d8588488e8881111e1118488d76666666dd18488885d6667d85877777777666666678488d6661d6666666666666666666666
+00000000888e9e8877d888886667d888858e9e88888e9e888588d7666666d11885888d776667d88866666666666666668588d66681dd66666666666666666666
+0000000088899988667d88886667d88888899988888999888888d7666666d1888888d7666667d88866666666666666668888d6668811d6666666666666666666
+0000000088884888667d88886667d88888884888888848888888d766666d18888888d7666667d88866666666666666668888d6668881d6666666666666666666
+00000000cccc000000000000cc00000000cccccccccccccc000ccccccccccccc00000000cccccc0000000000cccccc000c0ccccccc0ccccc00000ccccccccccc
+00000000cccccc0000000000ccc0000000000cc0cccccccc0ccccccccccccc0c00000000c0cc00000cc0c000cccc00000000cccccccc00ccc0cccc0ccccccccc
+00000000c0c0000000000000ccccc00000c0ccccc0cc000c00c0cccccccccccc00000000ccccccc000000000cccccc0c00ccc0cc00cccccc000ccccccccccccc
+00000000ccccc0c0000000000ccc000000000000ccccccccccccccccccc00c00000cc000ccc0c000cccccccccc00c000000cccccc000cccc0ccccccccccccccc
+0000000000000000cccc0000cccccc00000000000000000000ccc00cccccccc0000000cccccccc00c0cc000ccccccccc0ccc00cc00cccccc00cc0ccccccccccc
+0000000000000000ccc00000c00c00000000000000cc00c00ccccccccc0cc0000c0ccccccc00c000ccccccccccccc00c000ccccc00000ccccccccccccccccccc
+0000000000000000c0ccc0c0ccccc0c00000000000000000000c0ccccccccc0c0000cc0cccccc0c0cccccccccccccccc00cccc0ccc00cc0cc000cccccccccccc
+0000000000000000cccc0000cccc0000000000000000000000ccccccccc0000000cccccccccc0000ccccccccccccccccc000cccc000ccccccccccccccccccccc
+70000000000000000000000000000000000007000000000700000000000000000000000000000000000777000070000000000000333333338888888888888888
+70000000000000000000000000000000000007700000007700000000000000000000000000000000007000700070000000000000333333338888888888888888
+70000000000000000000000000000000000007700000007700000000000000000000000000000000070000000070000000000000333333338888888888888888
+7000000000000000000000000000000000000707000007070000000000000000000000000000000007000000007000000000000033b3b3338888888888888888
+70000000000000000000000000000000000070070000070070000000000000000000000000000000070000000070000000000000333b33338888888888888888
+70000000000000000000000000000000000070070000070070000000000000000000000000000000007000000070000000000000333333338888888888888888
+70000000777700007000000000700000000070007000700070000077777000707700777000000000000770000070000707000007333333338888888888888888
+70000007000070007000070000700000000070007000700070000700000700770077000700000000000007000070007007000007333333338888888888888888
+70000070000007000700070007000000000700000707000007007000000070700007000070000000000000700070070000700070888888888888888888888888
+70000070000007000700070007000000000700000707000007007777777770700007000070000000000000070077700000700070888888888888888888888888
+70000070000007000070707070000000000700000707000007007000000000700007000070000000000000070077000000700070888888888888888888888888
+70000070000007000070707070000000000700000070000007007000000000700007000070000000000000070070700000070700888888888888888888888888
+70000070000007000070707070000000007000000070000000700700000070700007000070000000000000070070070000070700888888888888888888888888
+70000007000070000007000700000000007000000000000000700770000700700007000070000000000000700070007000007000888888888888888888888888
+77770000777700000007000700000000007000000000000000700077777000700007000070000000000077000070000700007000888888888888888888888888
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000070000888888888888888888888888
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000070000888888888888888888888888
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000700000888888888888888888888888
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000700000888888888888888888888888
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000888888888888888888888888
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000888888888888888888888888
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000888888888888888888888888
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000888888888888888888888888
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000888888888888888888888888
+33333333333333333333333333333333333333333333333333333333333333333333333333383333653335633332253333773333332333333333333333333333
+33333333333333333333333333333333333333333333333333333333333333333383333338020833362226333388253333073333333833333333333335666533
+33333333333333333333333335533333333333333333333333333333333333333332333333808333336863333322233333323333333323333323233333101333
+333333333333333333333333355333333333333333333333333333333333333333383333352825335388835338823333333233333333833333383333560c0653
+33333333333333333333333351153333333333333333333333333333333333333328233335222533362826333882233333888333333282338ff8ff8365101563
+333333333333333333333333511533333333333333333333333333333333333333383333352225333332333333222533380088333338883332f8f23353353353
+33333333333333333333333511115333333333333333333333333333333333333332333335555533338883333338853338888833333080333338333333333333
+33333333333333333333333511115333333333333333333333333333333333333333333333555333330803333333333333833333333888333333333333333333
+33333333333333333333335111111533333333333333333333333333333333333333333333333333365356333332253333333333333332333333333333333333
+33333333333333333333351111111153333333333333333333333333333333333333833333383333336263333338233333773333333383333333333335666533
+33333333333333333333351111111153333333333333333333333333333333333332333338020833336863333332233333073333333233333323233333101333
+33333333333333333333511111111115333333333333333333333333333333333338333333808333338883333388233333323333333833333838383356080653
+333333333333333333335dddddddddd53333333333333333333333333333333333282333352825335628265333882333338883333328233332f8f23365101563
+3333333333333333333511d111111111533333333333333333333333333333333338333352222253333233333388233338008833338883333328233353353353
+333333333333333333351d1111111111533333333333333333333333333333333332333355222553338883333332233338888833330803333338333333333333
+333333333333333333511d1111111111153333333333333333333333333333333333333335555533330803333333853333338333338883333333333333333333
+33333333333333333511d11111111111115333333333333333333333333333333333333333dddd333338a333333333333333a333333333333333333333333333
+33333333333333333511d11111111111115333333333333333333333333aa33333888833348888433a3883333333383333338333333003333888333333833333
+3333333333333333511d111111111111111533333333333333333333338aa3333888888332499423383a83a3333aa83333338a333303303338a8333338883833
+3333333333333333511d11111111111111153333333333333333333338883333388888533248842338888883333a8833333a8833388330333888388833838883
+333333333333333511d111cccccccc111111533333333333333333333388833338888853344884433338a33333888333333888333a833033330038a833003833
+33333333333333511d1111c777777c111dddd533333333333333333333388333388885533249942333388333333303333a3888a3333303333330088833300333
+33333333333333511d1111cccccccc111d1115333333333333333333338888333355553335488453335885333330333338388883333003333330333333303333
+3333333333333511d1111111111111111d1111533333333333333333333333333333333333555533333333333333333333333333333333333333333333333333
+3333333333333511d11111111111111111d111533333333333333333333333333333333333dddd33333333333333333333333333333333333333333333333333
+333333333333511d111111111111111111d111153333333333333333333333333333333334000043333333333333333333333333333333333333333333333333
+333333333333511d1111111111111111111d11153333333333333333333333333333333332555523333333333333333333333333333333333333333333333333
+333333333335ddddddddddddd1111111111d11115333333333333333333333333333333332488423333333333333333333333333333303333333333333333333
+3333333333511111111111111d1111111111d1111533333333333333333333333333333334488443338383333333033333333333333030333300333333003333
+33333333335111111111111111d111111111d1111533333333333333333333333333333332499423333888333333033333338333333330333330033333300333
+333333333511111111111111111ddddddddddddddd53333333333333333333333333333335488453335885333330333338338833333003333330333333303333
+33333333351111111111111111111111111111111153333333333333333333333333333333555533333333333333333333333333333333333333333333333333
+33333333511111111111111111111111111111111115333333333333333333333333333335555553333333330000000033311133333155333333333333315133
+333333335555555555555555555555555555555555553333333333333333333333333333d755557d3357753300000000315d6d1333155513333316d131dd6d13
+333333333333333333333333333333333333333333333333333333333333333333335555dd7777dd357dd753000000001d66d55131d5651333156d6515556653
+3333333333333333333333333333333333333333333333333333333333333333333d7777dd7557dd67d77d7300000000566dd6753d6dd5533365d5d1555dd6d1
+3333333333333333333333333333333333333333333333333333333333333333333d7777dd7557dd67677673000000006d5d555531d6d653356ddd531555dd61
+333333333333333333333333333333333333333333333333333333333333333333336666dd7777dd36766763000000005d55511333d67653315d661315556771
+333333333333333333333333333333333333333333333333333333333333333333333333d766667d336776330000000015513333331d6d1333d6d53335567713
+3333333333333333333333333333333333333333333333333333333333333333333333333660066b333333330000000033333333333113333331133331156133
+33333333333333333333333333333333333333333333333333333333333333330000000033377333000000000000000000000000000000000000000000000000
+33333333333333333333333333333333333333333333333333333333333333330000000033366333000000000000000000000000000000000000000000000000
+33333333333333333333333333333333333333333333333333333333333333330000000033355333000000000000000000000000000000000000000000000000
+33333333333333333333333333333333333333333333333333333333333333330000000033333333000000000000000000000000000000000000000000000000
+33333333333333333333333333333333333333333333333333333333333333330000000033333333000000000000000000000000000000000000000000000000
+33333333333333333333333333333333333333333333333333333333333333330000000033333333000000000000000000000000000000000000000000000000
+33333333333333333333333333333333333333333333333333333333333333330000000033333333000000000000000000000000000000000000000000000000
+33333333333333333333333333333333333333333333333333333333333333330000000033333333000000000000000000000000000000000000000000000000
+33333333333333333333333333333333333333333333333333333333333333330000000000000000000000000000000000000000333333333333333333333333
+33333333333333333333333333333333333333333333333333333333333333330000000000000000000000000000000000000000337777713767671333337713
+33333333333333333333333333333333333333333333333333333333333333330000000000000000000000000000000000000000333377717677767133377713
+33333333333333333333333333333333333333333333333333333333333333330000000000000000000000000000000000000003333337713767671333377133
+33333333333333333333333333333333333333333333333333333333333333330000000000000000000000000000000000000003337133713367613333713333
+33333333333333333333333333333333333333333333333333333333333333330000000000000000000000000000000000000003371713713336133337133333
+33333333333333333333333333333333333333333333333333333333333333330000000000000000000000000000000000000003717133333333333333333333
+33333333333333333333333333333333333333333333333333333333333333330000000000000000000000000000000000000003371333333333333333333333
+333833333333333333333333333333333337713333777133333333333f3333333f33333300000000333283333363363333367333333673333335633300080000
+332823333337133333333333333333333337713337163713333333333d3333333d33333300000000328668233383383383328338333283333332233300080000
+33808333377777133771771333333333377717137167637133333333393333333933333300000000332072333332233328866882228888228320723800000000
+32808233375757133777771333333333371771337676767133333333353333335393333300000000333503338238838232807823228888222880088288000880
+38888833377577133777771333333333337713337167637133333333333333333333333300000000333283330728820733350333228888223338833300000000
+28808823337771333377713333333333771371333716371333333333333333333333333300000000333333335030535033366333322882233333333300080000
+88888883333713333337133333333333333371333377713333333333333333333333333300000000333333333330033333388333332072333333333300080000
+33333333333333333333333333333333333333333333333333333333333333333333333300000000333333333336633333322333333503333333333300000000
+__gff__
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__map__
+1f1f1f1f00000d00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+1f1f1f1f0000040d000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+1f1f1f1f00000004050d0000383a320000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+1f1f1f1f00000000000600383e3f3b3200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000080a0e00363f3f3f3300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000000000000080e000000343d3f373100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000080e00000000003435310000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__sfx__
+0149010d0c1100c1210c1310c1410c1510c1610c1710c1610c1510c1410c1310c1210c11118100181001810000100001000010000100001000010000100001000010000100001000010000100001000010000100
+0147010d0c5140c5210c5310c5410c5510c5610c5710c5610c5510c5410c5310c5210c51118500185001850000500005000050000500005000050000500005000050000500005000050000500005000050000500
+010b070818070180511804118031180211801118011180100c7000c7010c7010c7010c70118700187001870000700007000070000700007000070000700007000070000700007000070000700007000070000700
+01050c0d0070018770187711875118751187411874118731187301872018720187101871018700187001870018700007000070000700007000070000700007000070000700007000070000700007000070000700
+01080020187171f727180271f017187171f027187171f527180271f517187271f127180171f527180171f527187271f527180171f027185171f727181171f027185171f727185171f017187271f517180271f017
+010500001804418030187201871500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+010500001804018030187201871000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+01050f101807018071180611806118051180511804118041187311873118721187211871118711187111871100701007010070100701007010070100701007010070100701007010070100701007010070100701
+01c800000482004820048200482004820048200482004820048200482004820048200482004820048200482004820048220482004820048200482004820048200482004820048200482004820048200482004115
+01c800001080423920239202391123915219242192021920219202192021911219152392023920239202392023911239151d9201d9201d9252192021920219202192021920219112191518930189211891118915
+01c800001f9241f9201f9111f915199241992019911199152492024920249202491124915139201392013911139152692026920269202691126915199101991019911199151d9201d9201d9201d9111d9121d915
+015a00002bb402bb312bb212bb1124b4024b3124b2124b1121b4021b3121b2121b112ab402ab312ab212ab112bb402bb312bb212bb112fb402fb312fb212fb112db402db312db212db112ab402ab312ab212ab11
+015a0000108401083110821108110c8400c8310c8210c811138401383113821138110e8400e8310e8210e811108401083110821108110c8400c8310c8210c811138401383113821138110e8400e8310e8210e811
+017000201771417015177141701517714170151701417015170141771517714177151701417715170141701517714170151701417715170141701517714170151701417715170141771517014177151701417015
+015a000010c1010c1010c1010c200cc200cc100cc100cc2013c2013c1013c1013c200ec200ec100ec100ec2010c2010c1010c1010c200cc200cc200cc200cc1013c1013c2013c2013c200ec200ec100ec100ec20
+017000200b7140b0150b7140b0150b7140b0150b0140b0150b0140b7150b7140b7150b0140b7150b0140b0150b7140b0150b0140b7150b0140b0150b7140b0150b0140b7150b0140b7150b0140b7150b0140b015
+013c000028b4028b3128b2128b1128b1028b1526b4026b3126b2126b1126b1126b1110b2010b1110b2010b1128b4028b3128b2128b1128b1128b1126b4026b3126b2126b1126b1126b1110b2010b1110b2010b11
+013c00000c8400c8310c8210c8110c8120c81110840108311082110811108121081109a2009a110ba200ba110c8300c8210c8210c8110c8120c81110840108311082110811108121081109a2009a110ba200ba11
+013c00000c0140c7150c7140c7150c7140c0150b7140b0150b7140b0150b0140b71509014090150b7140b0150c0140c7150c7140c7150c7140c0150b7140b0150b7140b0150b0140b71509014090150b7140b015
+013c00000cc100cc100cc100cc200cc200cc1010c1010c2010c2010c1010c1010c2009c2009c1010c1010c200cc100cc100cc100cc200cc200cc1010c1010c2010c2010c1010c1010c2009c2009c1010c1010c20
+013c00000ca400ca310ca210ca110ca120ca1110a4010a3110a2110a1110a1210a1109a2009a110ba200ba110ca300ca210ca210ca110ca120ca1110a4010a3110a2110a1110a1210a1109a2009a110ba200ba11
+015a000010a4010a3110a2110a110ca400ca310ca210ca1113a4013a3113a2113a110ea400ea310ea210ea1110a4010a3110a2110a110ca400ca310ca210ca1113a4013a3113a2113a110ea400ea310ea210ea11
+0114000026d4525d4523d451ed4526d4525d4523d451ed4526d4525d4523d451ed4526d4525d4523d451ed4526d4525d4521d451ed4526d4525d4521d451ed4526d4525d4521d451ed4526d4525d4521d451ed45
+0114000025d4523d4521d451cd4525d4523d4521d451cd4525d4523d4521d451cd4525d4523d4521d451cd4525d4523d4520d451cd4525d4523d4520d451cd4525d4523d4520d451cd4525d4523d4520d451cd45
+011400001a0101a7111a715260051a0101a7111a715260051a0101a7111a715260051a0101a7111a715260051a0101a7111a715260051a0101a7111a715260051a0101a7111a715260051a0101a7111a71526005
+011400001901019711197152500519010197111971525005190101971119715250051901019711197152500517010177111771523005170101771117715230051701017711177152300517010177111771524005
+011400001cd1526d1725d1523d101ed1726d1025d1523d101ed1526d1025d1523d171ed1526d1025d1523d101ed1526d1025d1521d141ed1726d1025d1521d101ed1526d1725d1521d141ed1526d1025d1721d10
+011400001ed1525d1723d1521d101cd1725d1023d1521d101cd1525d1023d1521d171cd1525d1023d1521d101cd1525d1023d1520d101cd1725d1023d1520d101cd1525d1723d1520d101cd1525d1023d1720d10
+0114000034f2034f1134f1034f1034f1034f1034f1034f1034f1134f1034f1034f1234f1234f1234f1528f0134f2034f1134f1034f1034f1034f1034f1034f1034f1134f1034f1034f1234f1234f1234f1528f01
+0114000034f2034f1134f1034f1039f2039f1139f1039f103ef203ef113ef103ef103df203df113df103df1032f2032f1132f1032f1032f1032f1032f1032f1032f1132f1032f1032f1232f1232f1232f1532f11
+011400000b8500b8500b8200b8200b8500b8500b8200b8200b8500b8500b8200b8200b8500b8500b8200b8200e8500e8500e8200e8200e8500e8500e8200e8200e8500e8500e8200e8200e8500e8500e8200e820
+011400000985009850098200982009850098500982009820098500985009820098200985009850098200982004850048500482004820048500485004820048200485004850048200482004850048500482004820
+011800202cb402cb212db402db212fb402f7152fb402fb212fb202fb112fb122fb1134b4034b3134b2134b1132b4032b3132b2132b112fb402fb312fb212fb112fb122fb122fb1200a0000a0000a0000a0000a00
+011500002cb002cb012db002db012fb002f7052fb002fb012fb002fb012fb022fb0134b0034b0134b0134b0136b0036b0136b0136b0132b0032b0132b0132b0132b0232b0232b0200a0000a0000a0000a0000a00
+0118002020a4020a3120a2120a1120a1020a1518a4018a3118a2118a1018a1018a1018a1018a1018a1018a1018a1018a1018a1018a1018a1018a1018a1018a1018a1018a1018a1000a0000a0000a0000a0000a00
+011800201cb101cb101cb101cb101cb101cb101fb101fb101fb101fb101fb101fb101fb101fb101fb101fb101fb101fb101fb101fb101fb101fb101fb101fb101fb101fb101fb101fb101fb101fb1000a0000a00
+011800202cb402cb212db402db212fb402f7152fb402fb212fb202fb112fb122fb1128b4028b3128b2128b1128b1028b1028b1028b1028b1028b1228b1228b1228b1228b1228b1228a0500a0000a0000a0000a00
+011800202cb402cb212db402db212fb402f7152fb402fb212fb202fb112fb122fb1134b4034b3134b2134b1136b4036b3136b2136b1132b4032b3132b2132b1132b1232b1232b1200a0000a0000a0000a0000a00
+0118002020b4020b2121b4021b2123b402371523b4023b2123b2023b1123b1223b111cb401cb311cb211cb111cb101cb101cb101cb101cb101cb121cb121cb121cb121cb121cb121cb121cb121cb1200a0000a00
+011800201085010850108501085010850108500c8400c8400c8400c8400c8400c8400c8310c8300c8300c8300c8210c8200c8200c8200c8110c8100c8100c8100c8100c8100c8100c8100c8100c8100000000000
+0118002020b4020b2121b4021b2123b402371523b4023b2123b2023b1123b1223b1128b4028b3128b2128b1126b4026b3126b2126b1123b4023b3123b2123b1123b1223b1223b1223b1223b1223b1200a0000a00
+0118002020b4020b2121b4021b2123b402371523b4023b2123b2023b1123b1223b1128b4028b3128b2128b112ab402ab312ab212ab1126b4026b3126b2126b1126b1226b1226b1228a0000a0000a0000a0000a00
+0121002024b4024b4024b4024b4024b4024b3124b2124b1123b4023b4023b4023b4023b4023b3123b2123b1124b4024b4024b4024b4024b4024b3124b2124b1123b4023b4023b4023b401fb401fb411fb411fb41
+012100001ca201ca201ca201ca201ca201ca221ca2210a151ca201ca201ca201ca201ca201ca221ca2210a151ca201ca201ca201ca201ca201ca221ca2210a151ca201ca201ca201ca201ca201ca221ca2210a15
+0121000009840098400984009840098400984009840098400b8400b8400b8400b8400b8400b8400b8400b8400c8400c8400c8400c8400c8400c8400c8400c8400b8400b8400b8400b8400b8400b8400b8400b840
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+010302200073403721007310171100721037310071103721007310171100721027310071103721007310371100721027310071103721007310371100721037310071101721007310371100721037310071102721
+0105000000610076100c61113610186101f611246102b61030611376103c6103c6103c6103c6153c634307333a6242d523396242a7233762429523356142771332614245132f614207132b6141d5132661418513
+010200003f6142644525341242312343122321212213f6041f3050000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0106000001713026140472306624097330d634147431f6443d62135753146232b743096231b733046231172300613097130000000000000000000000000000000000000000000000000000000000000000000000
+01050000147540f553137540e553127540d553117540c553107540b5530f7540a5530e754095530d754085530c744075430b744065430a7340553309734045330872403523077240252306714015130571400513
+0105000000514057130151406713025240772303524087230453409733055340a733065440b743075440c743085540d753095540e7530b554107530d554127530c5030c5030c5030450404505045040450504504
+010200210014300105001000000000000000000000000000011050110500100001000010000100001000010001143011050010000100001000010000100001000010000100001000010000100001000010000100
+0103001329323244131d3130c30028323232131c4130c30029323244131d3130c3002a323257131e3130c30028323234131c4130c3000c3000c3000c3000c3000030000300003000030000300000000000000000
+010200003001501615300153551531015016153201537515330150161534015395153501501615360153b51537015016153000531505320053100534005310053500531005350053100535005310053500531005
+01020000334153161531615296152d205316152a41521615316151a61527205316152541517615316150f61530515316143071531614325153161434715316143571531614355153161435715316143551531614
+010200000c475152740f474186651646515264114540e6550d4550b24408445066440443502234014340062500424002240041500615000040000400004000040000400004000040000400004000040000400004
+010100200a4133b2110a1133b4110b013302110b313302210a1133b2110a4133b2110a0133b2210a1133b211091133a211091133a6110a4133b2210a1133b2110a7133b2210a3133b2110a1133b2110a6133b411
+010700002615727547261372752726117275172611727517326112c61128611226111e6111a61114611116110c2110c2110c2110f4110d227104270e227114270f22712427102271342711217144171221715417
+01050000026100461106621086210b6310f631136411664136050360403671036710367003604036030367103671036700360303602036710367103670036020360103671036710300000c0000c0000c0000c000
+010300003013300100241230010018113001001f100001001d100001001d100001001b100001001b1000010018100001001610000100161000010013100001001310000100001000010000100001000010000100
+01010000287770c700257770c700257670c700237570c700237570c700217470c700217370c7001e7370c7001c7270c7001c7170c70019717127050c700127050070000700007000070000700007000070000700
+01010000197770c700197770c7001c7670c7001c7570c7001e7570c700217470c700217370c700237370c700237270c700257170c700287170c7000c7000c700135000c600135000c600135050c605135050c605
+01010000285402861524540246151f5301f61515530156150e5200e6151850020505275002c50500000000001b5601b6152955029615305403061539530396150050500505005050050500505005050050500505
+__music__
+03 08 09 0a 44
+01 0b 15 0d 44
+00 0b 15 0f 0e
+00 10 14 12 13
+00 0b 0c 0d 0e
+00 0b 0c 0f 0e
+02 10 11 12 13
+01 16 18 1a 44
+00 17 19 1b 44
+00 16 18 1a 44
+00 17 19 1b 44
+00 16 18 1c 1a
+00 17 19 1c 1b
+00 16 18 1c 1a
+00 17 19 1c 1b
+00 16 18 1d 1a
+00 17 19 1c 1b
+00 16 18 1d 1a
+00 17 19 1c 1b
+00 16 1e 1d 18
+00 17 1f 1c 19
+00 16 1e 1d 18
+02 17 1f 1c 19
+01 24 22 23 21
+00 20 22 23 21
+00 24 22 23 21
+00 25 22 23 21
+01 26 27 23 21
+00 28 27 23 21
+00 26 27 23 21
+00 28 27 23 21
+00 2a 2b 2c 44
+02 2a 2b 2c 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44

@@ -1,0 +1,55 @@
+Controller/Keyboard
+Mouse and Keyboard
+Gameplay
+
+Crowded Dungeon Crawler is a mix of puzzle and dungeon crawler. Your goal is to defeat enough enemies to open the door to the next level.
+
+    The TIME bar depletes as you play. Once it's empty it's game over. Attacking enemies and buying items will stop time for a few seconds.
+    Melee items require HP to be used. When attacking multiple enemies, only the strongest one in the group will damage you.
+    Magic items require MANA. Each item has a specific mana cost. If you don't have enough mana to cast an ability, you can hold the attack button to convert TIME into MANA.
+    You can have up to 7 items in your INVENTORY. If you pick up more than that, you will drop the currently equipped item on the ground.
+    Defeat enough enemies to open the EXIT. If you clear ALL enemies you will receive an additional reward.
+
+Pause Menu
+
+The pause menu has some special options:
+
+    If you don't have any plays left, select RESTART LEVEL to try again.
+    Select REPLAY PUZZLES to play previous puzzles in which you didn't collect the golden gem.
+    CLEAR PROGRESS will restart the game from the beginning but keep your scores.
+    CLEAR SCORE will erase your scores but keep your progress on the puzzles.
+    You can't interact with the pause menu with the mouse, only with the keyboard or controller.
+
+Puzzle Levels
+
+Each world consists of 7 puzzles and a sequence of random levels at the end. In puzzle levels, you have to defeat enough enemies before running out of resources. If you don't have any more health, mana, or items to use, pause the game and select RESTART LEVEL.
+
+Puzzle levels have some specific rules:
+
+    In puzzle mode, your TIME bar doesn't deplete unless you use a magic item to convert time into mana.
+    Clearing all enemies will give you a GOLDEN GEM. Golden gems are used to unlock playable classes.
+
+Adventure Mode
+
+In world 6 there are no puzzle levels. Instead, you can play with different classes in an endless sequence of levels for high scores. It only ends when you run out of time.
+
+    Clearing all enemies gives you a RED GEM. Red gems can be used at special shops for unique items. If you keep them, they count as much as 100 coins!
+    Each class has its own score counter. Try to see how far you can go with each one!
+    Every 3 levels the dungeon type changes. You can see what's the next type on the STAIRS!
+    Destroy the GOLDEN IDOL to double your score! Defeating the golden idol ends your run. Try to defeat it only when you think you can't go any further!
+    After each level, some of your resources (HP, mana and items) will be refilled according to your class.
+
+Items and Enemies
+
+You should be able to figure out the item and enemy mechanics on your own. In case you get stuck here is some additional information. SPOILERS!
+
+Enemy Table
+
+Item Table
+Credits
+
+BoneVolt - Design, Programming, Graphics and SFX
+Jamaass - Music and Quality Assurance
+Special thanks to our Discord server for additional testing, feedback and support!
+
+https://www.lexaloffle.com/bbs/?tid=39865

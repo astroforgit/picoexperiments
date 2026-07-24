@@ -1,0 +1,18 @@
+Nurikabe is a Japanese puzzle game where you must determine which blocks on a grid belong to the islands and which belong to the sea with each island being denoted by a number indicating it's size.
+
+Includes a quick tutorial which explains the rules in more detail.
+
+Read more about Nurikabe on Wikipedia
+
+Release 1.2
+
+    Levels are locked until 2 of the three previous ones have been completed
+
+Release 1.1
+
+    Automatically selecting the next level
+    Level 47 is now possible to complete
+    Fixed bug where pools wouldn't be highlighted as in error
+
+
+https://www.lexaloffle.com/bbs/?tid=35477

@@ -1,0 +1,17 @@
+Do you have what it takes to run a lemonade empire?
+
+Try your luck with Lemonade Stand. Buy your ingredients, perfect your recipe, and set your price. Just don't forget to watch the weather forecast!
+Special Thanks
+
+The music for this game was created by @Gruber_Music. I cannot thank you enough for bringing life to this game.
+
+This game is dedicated to my son, Caleb.
+Future Work
+
+    Better transitions between stages
+    High Score list
+    Ability to save game
+
+If you find any bugs, please let me know!
+
+https://www.lexaloffle.com/bbs/?tid=40555

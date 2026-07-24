@@ -1,0 +1,37 @@
+This game is also for sale (Worthware) in ITCH.IO. You pay what you think it's worth with a minimal of 99c. However, as you are a member and/or owner of the PICO-8 OS, you get it for free in here - with source.
+
+For those of you who have made high score on the earlier version of this game, it is suggested you RESET your HIGH SCORE holding down (O) and (X) during HIGH SCORE to show considerably comparative and competitive scores.
+
+There are now 4-levels of play.
+
+[LEVEL 1] ... Very easy, start with 4 candles and bottle, see all ghosts and items at all times no matter the distance.
+
+[LEVEL 2] ... More challenging, start with 3 candles, must find bottle, ghosts move, can only see them when near.
+
+[LEVEL 3] ... Still more difficult, start with 2 candles, ghosts move very erratically, can only see them when very close.
+
+[LEVEL 4] ... Hardest level, infinite time, must use compass and meter as all items are always invisible.
+
+Major Updates:
+
+    Added Levels Of Play
+    With challenge comes its reward. You can only hope to make the top of high score by playing and winning at level 4.
+
+If you just want to make it on the board, by default, you will need to capture at least one ghost on the easiest level.
+
+    Fixed 'stray' cosmetic ghost image, actually fixed the code
+    Fixed 'catching' ghost. If you're one square away, you got 'im.
+    Added Meter to tell how far ghost is away
+    Added Compass to tell direction of nearest item
+    Fixed scoring measures, should be quite competive in all levels
+    Added new logo effects using earlier Fireball method
+    Added ability to reset High Score to defaults
+    changed text scrolling speed a tiny bit
+    Added information for people new to the controls
+
+? Moved compressed image, just not enough memory
+? Updated copyright
+
+Have a great Halloween. I'll return when ZEP next updates PICO-8, or an error is found in the game. (hopefully not) :)
+
+https://www.lexaloffle.com/bbs/?tid=27999

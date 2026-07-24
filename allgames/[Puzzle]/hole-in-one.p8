@@ -1,0 +1,1248 @@
+pico-8 cartridge // http://www.pico-8.com
+version 29
+__lua__
+-- hole-in-one machine
+-- by max
+
+DEBUG_ON = false
+SLOWDOWN = 0
+START_LEVEL = 1
+LAST_LEVEL = 7
+
+ACTION_BUTTON = 5
+PICKUP_BUTTON = 4
+
+left = 0
+right = 1
+up = 2
+down = 3
+
+upright = 4
+downright = 5
+
+above = true
+below = false
+
+-- sprites
+ball = 1
+sunken_ball = 114
+hole = 3
+angle_upright_pickup = 4
+angle_downright_pickup = 5
+blocked_spot = 6
+key = 7
+lock = 8
+
+grass1 = 70
+grass2 = 86
+
+grass1_upright_above = 85
+grass2_upright_above = 117
+grass1_downright_above = 84
+grass2_downright_above = 116
+grass1_upright_below = 68
+grass2_upright_below = 100
+grass1_downright_below = 69
+grass2_downright_below = 101
+
+angle_grass_sprites = {
+    [upright]={
+        [above]={grass1_upright_above, grass2_upright_above},
+        [below]={grass1_upright_below, grass2_upright_below},
+    },
+    [downright]={
+        [above]={grass1_downright_above, grass2_downright_above},
+        [below]={grass1_downright_below, grass2_downright_below},
+    }
+}
+
+empty = 2
+empty_upright_above = 33
+empty_upright_below = 16
+empty_downright_above = 32
+empty_downright_below = 17
+
+flag = 67
+arrow_up1 = 96
+arrow_up2 = 80
+arrow_right1 = 112
+arrow_right2 = 113
+cursor_open = 65
+cursor_closed = 66
+divot = 115
+
+wall_left = 82
+wall_right = 81
+wall_up = 99
+wall_down = 83
+wall_angle_upright = 97
+wall_angle_downright = 98
+
+-- flags
+flag_can_pickup = 0
+
+flip_dir = {[left]=right, [right]=left, [up]=down, [down]=up}
+bounce_angle_upright = {[left]=down, [down]=left, [right]=up, [up]=right}
+bounce_angle_downright = {[left]=up, [up]=left, [right]=down, [down]=right}
+
+redraw_sprites = {
+    [flag]=true,
+}
+
+function _init()
+    if DEBUG_ON then
+        printh("", "debug.txt", true)
+    end
+    palt(2, true)
+    palt(0, false)
+
+    -- key-repeat initial delay
+    poke(0x5F5C, 0)
+    -- key-repeat delay
+    poke(0x5F5C, 3)
+
+    button_held = {[0]=false, [1]=false, [2]=false, [3]=false, [4]=false, [5]=false}
+    level = START_LEVEL
+
+    init_level()
+
+    enable_music()
+end
+
+
+
+function debug(str)
+    if DEBUG_ON then
+        printh(str, "debug.txt")
+    end
+end
+
+function spr2(s, x, y, flip_horz, flip_vert)
+    spr(s, x*8, y*8, 1, 1, flip_horz or false, flip_vert or false)
+end
+
+function mget2(x, y)
+    return mget(x+16*(level-1), y)
+end
+
+function mset2(x, y, v)
+    return mset(x+16*(level-1), y, v)
+end
+
+function print_shadow(text, x, y, text_color, shadow_color)
+    print(text, x-1, y, shadow_color)
+    print(text, x+1, y, shadow_color)
+    print(text, x, y+1, shadow_color)
+    print(text, x, y-1, shadow_color)
+    print(text, x, y, text_color)
+end
+
+function count_emojis(text)
+    local count = 0
+    for i=1,#text do
+        if ord(text, i) >= 128 then
+            count += 1
+        end
+    end
+    return count
+end
+
+function print_center(text, y, text_color)
+    local emoji_count = count_emojis(text)
+    print(text, 64 - 2*(#text + emoji_count), y*8, text_color)
+end
+
+function dx(dir)
+    if dir == left then
+        return -1
+    elseif dir == right then
+        return 1
+    else
+        return 0
+    end
+end
+
+function dy(dir)
+    if dir == up then
+        return -1
+    elseif dir == down then
+        return 1
+    else
+        return 0
+    end
+end
+
+function all_directions()
+    return all({left, right, up, down})
+end
+
+function clamp(n, lo, hi)
+    return max(min(n, hi), lo)
+end
+
+
+
+function init_level()
+    debug("init level " .. level)
+
+    if level < LAST_LEVEL then
+        menuitem(1, "skip level", function ()
+            level += 1
+            init_level()
+        end)
+    else
+        menuitem(1)
+    end
+
+    if level > 1 then
+        menuitem(2, "previous level", function ()
+            level -= 1
+            init_level()
+        end)
+    else
+        debug('menuitem(-1, "previous level")')
+        menuitem(2)
+    end
+
+    holding = ball
+    ball_direction = up
+    ball_moving = false
+    won = false
+    slowdown_delay = 0
+    placed_something = false
+
+    ball_x = nil
+    ball_y = nil
+    flag_x = nil
+    flag_y = nil
+    cursor_x = nil
+    cursor_y = nil
+
+    walls = {}
+    for dir in all({left, right, up, down, upright, downright}) do
+        walls[dir] = {}
+        for x=0,15 do
+            walls[dir][x] = {}
+            for y=0,15 do
+                walls[dir][x][y] = false
+            end
+        end
+    end
+
+    angle_grass = {}
+    for dir in all({upright, downright}) do
+        angle_grass[dir] = {}
+        for placement in all({true, false}) do
+            angle_grass[dir][placement] = {}
+            for x=0,15 do
+                angle_grass[dir][placement][x] = {}
+                for y=0,15 do
+                    angle_grass[dir][placement][x][y] = false
+                end
+            end
+        end
+    end
+
+    objects = {}
+    for x=0,15 do
+        objects[x] = {}
+        for y=0,15 do
+            objects[x][y] = nil
+        end
+    end
+
+    reset_objects = {}
+    for x=0,15 do
+        reset_objects[x] = {}
+        for y=0,15 do
+            reset_objects[x][y] = nil
+        end
+    end
+
+    reload(0x2000, 0x2000, 0x1000)
+
+    find_objects()
+    find_movers()
+    find_walls()
+    find_angle_grass()
+end
+
+function find_objects()
+    for y=0,15 do for x=0,15 do
+        local val = mget2(x, y)
+
+        if (val == ball) then
+            ball_x = x
+            ball_y = y
+
+            cursor_x = x
+            cursor_y = y
+
+            mset2(x, y, divot)
+        elseif val == hole then
+            flag_x = x
+            flag_y = y-1
+        elseif fget(val, flag_can_pickup) then
+            debug(x..","..y..":"..val)
+            objects[x][y] = val
+            mset2(x, y, empty)
+        end
+    end end
+end
+
+function find_movers()
+    movers = {}
+    for y=0,15 do for x=0,15 do
+        local val = mget2(x, y)
+
+        if val == key then
+            add(movers, {x=x, y=y, type=val})
+            mset2(x, y, empty)
+        end
+    end end
+end
+
+function find_walls()
+    for y=0,15 do for x=0,15 do
+        for dir in all_directions() do
+            if is_there_grass(x, y, dir)
+            and not is_there_grass(x+dx(dir), y+dy(dir), flip_dir[dir]) then
+                walls[dir][x][y] = true
+            end
+        end
+    end end
+end
+
+function is_there_grass(x, y, dir)
+    local val = mget2(x, y)
+    if val == 0 then
+        return false
+    elseif val == empty then
+        return true
+    elseif val == empty_upright_above then
+        return dir == up or dir == left
+    elseif val == empty_upright_below then
+        return dir == down or dir == right
+    elseif val == empty_downright_above then
+        return dir == up or dir == right
+    elseif val == empty_downright_below then
+        return dir == down or dir == left
+    end
+    return true
+end
+
+function find_angle_grass()
+    for y=0,15 do for x=0,15 do
+        local val = mget2(x, y)
+
+        if val == empty_upright_above then
+            walls[upright][x][y] = true
+            angle_grass[upright][above][x][y] = true
+            mset2(x, y, 0)
+        elseif val == empty_downright_above then
+            walls[downright][x][y] = true
+            angle_grass[downright][above][x][y] = true
+            mset2(x, y, 0)
+        elseif val == empty_upright_below then
+            walls[upright][x][y] = true
+            angle_grass[upright][below][x][y] = true
+            mset2(x, y, 0)
+        elseif val == empty_downright_below then
+            walls[downright][x][y] = true
+            angle_grass[downright][below][x][y] = true
+            mset2(x, y, 0)
+        end
+    end end
+end
+
+function reset_level()
+    debug("reset level " .. level)
+
+    holding = ball
+    ball_direction = up
+    ball_moving = false
+    ball_x = reset_ball_x
+    ball_y = reset_ball_y
+    cursor_x = ball_x
+    cursor_y = ball_y
+    won = false
+
+    for x=0,15 do for y=0,15 do
+        objects[x][y] = reset_objects[x][y]
+    end end
+
+    movers = reset_movers
+end
+
+
+
+function entered_center(x, y)
+    _entered_center(mget2(x, y))
+    _entered_center(objects[x][y])
+
+    for dir in all({downright, upright}) do
+        if walls[dir][x][y] then
+            do_angle_bounce(dir)
+        end
+    end
+end
+
+function _entered_center(sprite)
+    if sprite == hole then
+        sfx_win()
+        won = true
+    elseif sprite == angle_upright_pickup then
+        do_angle_bounce(upright)
+    elseif sprite == angle_downright_pickup then
+        do_angle_bounce(downright)
+    end
+end
+
+function do_angle_bounce(dir)
+    if dir == upright then
+        ball_direction = bounce_angle_upright[ball_direction]
+    else
+        ball_direction = bounce_angle_downright[ball_direction]
+    end
+end
+
+function check_bounce_exiting(x, y, dir)
+    -- debug("check_bounce_exiting "..x..","..y.." -> "..dir)
+    if walls[dir][x][y] then
+        return flip_dir[dir]
+    end
+    return dir
+end
+
+function check_bounce_entering(x, y, dir)
+    -- debug("check_bounce_entering "..x..", "..y)
+    -- debug(tostring(objects[x][y]).." "..tostring(mget2(x, y)))
+    if mget2(x, y) == lock then
+        return flip_dir[dir]
+    end
+
+    return dir
+end
+
+
+
+function _update()
+    local pressed = {}
+    for b=0,5 do
+        pressed[b] = (btn(b) and not button_held[b])
+        button_held[b] = btn(b)
+    end
+
+    if won then
+        if pressed[ACTION_BUTTON] or pressed[PICKUP_BUTTON] then
+            level +=1
+            sfx_next_level()
+            init_level()
+        end
+        return
+    end
+
+    for dir in all_directions() do
+        if btnp(dir) then
+            if holding == ball then
+                if not ball_moving then
+                    ball_direction = dir
+                end
+            elseif cursor_x ~= nil then
+                if holding ~= nil then
+                    placed_something = true
+                end
+                cursor_x += dx(dir)
+                cursor_y += dy(dir)
+                cursor_x = clamp(cursor_x, 0, 15)
+                cursor_y = clamp(cursor_y, 0, 15)
+            end
+        end
+    end
+
+    if ball_moving then
+        if pressed[ACTION_BUTTON] or pressed[PICKUP_BUTTON] then
+            sfx_reset_level()
+            reset_level()
+        end
+    elseif holding == ball then
+        if pressed[ACTION_BUTTON] then
+            for x=0,15 do for y=0,15 do
+                reset_objects[x][y] = objects[x][y]
+            end end
+            reset_ball_x = ball_x
+            reset_ball_y = ball_y
+
+            reset_movers = {}
+            for mover in all(movers) do
+                add(reset_movers, {x=mover.x, y=mover.y, type=mover.type})
+            end
+
+            sfx_hit()
+            ball_moving = true
+            holding = nil
+        elseif pressed[PICKUP_BUTTON] then
+            sfx_drop()
+            holding = nil
+        end
+    elseif holding == nil then
+        if pressed[ACTION_BUTTON] then
+            sfx_pickup()
+            holding = ball
+            cursor_x = ball_x
+            cursor_y = ball_y
+        elseif pressed[PICKUP_BUTTON] then
+            if cursor_x == ball_x and cursor_y == ball_y then
+                sfx_pickup()
+                holding = ball
+            else
+                local thing = objects[cursor_x][cursor_y]
+                if thing ~= nil then
+                    sfx_pickup()
+                    holding = thing
+                    objects[cursor_x][cursor_y] = nil
+                end
+            end
+        end
+    else
+        -- holding something else
+        if pressed[PICKUP_BUTTON] then
+            if can_place_here(cursor_x, cursor_y) then
+                -- we gonna do a swap (even if the thing on the ground is nil)
+                local temp = holding
+                if objects[cursor_x][cursor_y] == nil then
+                    sfx_drop()
+                else
+                    sfx_swap()
+                end
+                holding = objects[cursor_x][cursor_y]
+                objects[cursor_x][cursor_y] = temp
+            end
+        end
+    end
+
+    if should_slowdown() then
+        return
+    end
+
+    handle_ball_movement()
+end
+
+function can_place_here(x, y)
+    local val = mget2(cursor_x, cursor_y)
+    if val ~= empty and val ~= 0 then
+        return false
+    end
+
+    for dir in all({upright, downright}) do
+        if walls[dir][x][y] then
+            return false
+        end
+    end
+
+    for mover in all(movers) do
+        if mover.x == x and mover.y == y then
+            return false
+        end
+    end
+
+    return true
+end
+
+function handle_ball_movement()
+    if not ball_moving or ball_x == nil then
+        return
+    end
+
+    ball_direction_before = ball_direction
+
+    if ball_x % 1 == 0 and ball_y % 1 == 0 then
+        new_direction = check_bounce_exiting(ball_x, ball_y, ball_direction)
+        if new_direction == ball_direction then
+            new_direction = check_bounce_entering(
+                ball_x + dx(ball_direction),
+                ball_y + dy(ball_direction),
+                ball_direction
+            )
+        end
+    end
+
+    if new_direction == ball_direction then
+        new_direction = check_push(
+            ball_x + dx(ball_direction),
+            ball_y + dy(ball_direction),
+            ball_direction
+        )
+    end
+
+    ball_x += dx(ball_direction) / 4
+    ball_y += dy(ball_direction) / 4
+
+    ball_direction = new_direction
+
+    if ball_x % 1 == 0 and ball_y % 1 == 0 then
+        entered_center(ball_x, ball_y)
+    end
+
+    if ball_direction_before ~= ball_direction then
+        sfx_change_dir(ball_direction_before, ball_direction)
+    end
+end
+
+function should_slowdown()
+    if slowdown_delay > 0 then
+        slowdown_delay -= 1
+        return true
+    end
+
+    slowdown_delay = SLOWDOWN
+    return false
+end
+
+
+
+function _draw()
+    cls(12)
+
+    draw_grass()
+    draw_walls()
+
+    map(16 * (level - 1), 0, 0, 0, 16, 16)
+
+    draw_objects()
+    draw_movers()
+    draw_ball()
+    draw_cursor()
+    draw_flag()
+    draw_hints()
+
+    if won then
+        print_shadow("hole-in-one!", 40, 54, 7, 0)
+        print_shadow("press — to continue.", 24, 62, 7, 0)
+    end
+end
+
+
+function draw_grass()
+    for x=0,15 do for y=0,15 do
+        local v = mget2(x, y)
+
+        -- debug(x..","..y..": "..v)
+        if v > 0 then
+            to_draw = x % 2 == 0 and grass1 or grass2
+            spr2(to_draw, x, y)
+        end
+        for dir in all({upright, downright}) do for placement in all({above, below}) do
+            if angle_grass[dir][placement][x][y] then
+                spr2(angle_grass_sprites[dir][placement][x % 2 == 0 and 1 or 2], x, y)
+            end
+        end end
+    end end
+end
+
+function draw_walls()
+    for x=0,15 do for y=0,15 do
+        if walls[down][x][y] then
+            spr2(wall_down, x, y+0.125)
+        end
+        if walls[left][x][y] then
+            spr2(wall_left, x-0.125, y)
+        end
+        if walls[right][x][y] then
+            spr2(wall_right, x+0.125, y)
+        end
+        if walls[up][x][y] then
+            spr2(wall_up, x, y-0.125)
+        end
+
+        if walls[upright][x][y] then
+            spr2(wall_angle_upright, x, y)
+        end
+        if walls[downright][x][y] then
+            spr2(wall_angle_downright, x, y)
+        end
+    end end
+end
+
+function draw_objects()
+    for y=0,15 do for x=0,15 do
+        if objects[x][y] ~= nil then
+            spr2(objects[x][y], x, y)
+        end
+    end end
+end
+
+function draw_movers()
+    for mover in all(movers) do
+        spr2(mover.type, mover.x, mover.y)
+    end
+end
+
+
+function draw_ball()
+    if ball_x == nil then
+        return
+    end
+    spr2(won and sunken_ball or ball, ball_x, ball_y)
+end
+
+function draw_cursor()
+    if ball_moving or cursor_x == nil then
+        return
+    end
+    if holding == ball then
+        draw_arrow()
+    elseif holding == nil then
+        spr2(cursor_open, cursor_x, cursor_y)
+    else
+        spr2(holding, cursor_x, cursor_y)
+        if not can_place_here(cursor_x, cursor_y) then
+            pal(9, 8)
+        end
+        spr2(cursor_closed, cursor_x, cursor_y)
+        pal(9, 9)
+    end
+end
+
+function draw_arrow()
+    if cursor_x == nil then
+        return
+    end
+
+    if ball_direction == up then
+        spr2(arrow_up1, cursor_x, cursor_y)
+        spr2(arrow_up2, cursor_x, cursor_y-1)
+    elseif ball_direction == right then
+        spr2(arrow_right1, cursor_x, cursor_y)
+        spr2(arrow_right2, cursor_x+1, cursor_y)
+    elseif ball_direction == down then
+        spr2(arrow_up1, cursor_x, cursor_y, false, true)
+        spr2(arrow_up2, cursor_x, cursor_y+1, false, true)
+    elseif ball_direction == left then
+        spr2(arrow_right1, cursor_x, cursor_y, true, false)
+        spr2(arrow_right2, cursor_x-1, cursor_y, true, false)
+    end
+end
+
+function draw_flag()
+    if flag_x ~= nil then
+        spr2(flag, flag_x, flag_y)
+    end
+end
+
+
+
+function draw_hints()
+    if level < LAST_LEVEL then
+        print("level "..level, 1, 1, 6)
+    else
+        print_shadow("you win! thanks for playing", 10, 7*8, 0, 6)
+    end
+
+    if won then
+        return
+    end
+
+    if level == 1 then
+        if ball_moving then
+            print_center("x/—: reset", 13.5, 7)
+        else
+            print_center("”ƒ‘‹: aim", 13, 7)
+            print_center("x/—: shoot", 14, 7)
+        end
+    elseif level == 2 then
+        if ball_moving then
+            print_center("x/—: reset", 12, 7)
+        elseif holding == ball then
+            if placed_something then
+                print_center("”ƒ‘‹: aim", 12, 7)
+                print_center("x/—: shoot", 13, 7)
+                print_center("z/Ž: switch to cursor mode", 14, 7)
+            else
+                print_center("z/Ž: switch to cursor mode", 12, 7)
+            end
+        elseif holding == nil then
+            print_center("”ƒ‘‹: move the cursor", 12, 7)
+            print_center("z/Ž: pick up an object", 13, 7)
+            if placed_something then
+                print_center("x/—: select the ball again", 14, 7)
+            end
+        else
+            print_center("”ƒ‘‹: move the object", 12, 7)
+            print_center("z/Ž: drop", 13, 7)
+        end
+    elseif level == 3 then
+        print_center("there are some spots where you", 13, 7)
+        print_center("can't place an object", 14, 7)
+    elseif level == 4 then
+        print_center("push the key into the", 13, 7)
+        print_center("lock to unlock it", 14, 7)
+    end
+end
+
+
+
+function enable_music()
+    debug("enabling music")
+    menuitem(3, "music: on", disable_music)
+    -- menuitem(-1, "music: off")
+    if not DEBUG_ON then
+        music(0)
+    end
+end
+
+function disable_music()
+    debug("disabling music")
+    menuitem(3, "music: off", enable_music)
+    -- menuitem(-1, "music: on")
+    music(-1)
+end
+
+function sfx_hit()
+    sfx(0)
+end
+
+function sfx_unlock()
+    sfx(3)
+end
+
+function sfx_change_dir(old_dir, new_dir)
+    -- sfx(n, [channel [offset [length]]])
+    offset = old_dir * 8 + new_dir * 2
+    debug("sfx_change_dir offset: ".. offset)
+    sfx(1, -1, offset, 2)
+end
+
+function sfx_win()
+    sfx(2)
+end
+
+function sfx_pickup()
+    sfx(4, -1, 2, 4)
+end
+
+function sfx_drop()
+    sfx(4, -1, 0, 4)
+end
+
+function sfx_swap()
+    sfx(4, -1, 0, 6)
+end
+
+function sfx_reset_level()
+    sfx(5)
+end
+
+function sfx_next_level()
+    sfx(6)
+end
+
+
+
+function check_push(x, y, dir)
+    for mover in all(movers) do
+        if mover.x == x and mover.y == y then
+            debug('check_push: '..mover.x..','..mover.y)
+            if not move_mover(mover, dir) then
+                debug('Couldn\'nt move the mover')
+                return flip_dir[dir]
+            end
+        end
+    end
+    return dir
+end
+
+function move_mover(mover, dir)
+    -- if mover.x % 1 == 0 and mover.y % 1 == 0 then
+    --     if check_bounce_exiting(mover.x, mover.y, dir) ~= dir then
+    --         return false
+    --     end
+    -- end
+
+    if not check_mover_into_stationary_stuff(mover, dir) then
+        debug("couldn't move into stationary stuff")
+        return false
+    end
+
+    if not check_mover_into_mover(mover, dir) then
+        debug('check_mover_into_mover is false')
+        return false
+    end
+
+    mover.x += dx(dir) / 4
+    mover.y += dy(dir) / 4
+
+    check_unlock(mover)
+
+    return true
+end
+
+function check_mover_into_stationary_stuff(mover, dir)
+    next_x = mover.x + dx(dir)
+    next_y = mover.y + dy(dir)
+
+    if next_x % 1 ~= 0 or next_y % 1 ~= 0 then
+        return true
+    end
+
+    next_spr = mget2(next_x, next_y)
+    -- debug("next_spr @ "..next_x..","..next_y.." = "..next_spr)
+    -- if mover.type == key and next_spr == lock then
+    --     sfx_unlock()
+    --     mset2(next_x, next_y, empty)
+    --     del(movers, mover)
+    --     return true
+    -- end
+    if next_spr ~= empty and next_spr ~= blocked_spot and next_spr ~= lock then
+        debug("not empty space")
+        return false
+    end
+
+    for angle in all({upright, downright}) do
+        -- debug("checking for angle wall: "..angle.." "..next_x.." "..next_y)
+        if walls[angle][next_x][next_y] then
+            debug("there's an angle wall")
+            return false
+        end
+    end
+
+    next_object = objects[next_x][next_y]
+    debug("next_object @ "..next_x..","..next_y.." = "..tostring(next_object))
+    -- debug("mover.type = "..mover.type)
+    if next_object ~= nil then
+        debug("next_object ~= 0")
+        return false
+    end
+
+    return true
+end
+
+function check_mover_into_mover(mover, dir)
+    next_x = mover.x + dx(dir)
+    next_y = mover.y + dy(dir)
+
+    for other_mover in all(movers) do
+        if other_mover.x == next_x and other_mover.y == next_y then
+            pushed = move_mover(other_mover, dir)
+            if not pushed then
+                debug("can't push next mover")
+                return false
+            end
+        end
+    end
+
+    return true
+end
+
+function check_unlock(mover)
+    if mover.x % 1 ~= 0 or mover.y % 1 ~= 0 then
+        return
+    end
+    spr_here = mget2(mover.x, mover.y)
+    if spr_here == lock and mover.type == key then
+        sfx_unlock()
+        mset2(mover.x, mover.y, empty)
+        del(movers, mover)
+    end
+end
+
+
+
+
+-- ”ƒ‘‹ —Ž
+
+__gfx__
+00000000222222222222222222207022222220022002222244222244222222222265522200000000000000000000000000000000000000000000000000000000
+00000000222222222222222222207022222207700770222244422444222222222652652200000000000000000000000000000000000000000000000000000000
+00700700222002222222222222207022222077600677022224444442222220226522265200000000000000000000000000000000000000000000000000000000
+0007700022067022222222222205702222077602206770222244442220000a026566665200000000000000000000000000000000000000000000000000000000
+000770002207702222222222220110222077602222067702224444220aaaa0a06555555200000000000000000000000000000000000000000000000000000000
+007007002220022222222222222002220776022222206770244444420a0a0a026550555200000000000000000000000000000000000000000000000000000000
+00000000222222222222222222222222076022222222067044422444202020226550055200000000000000000000000000000000000000000000000000000000
+00000000222222222222222222222222200222222222200244222244222222222555552200000000000000000000000000000000000000000000000000000000
+00000002200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000022220000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000222222000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00002222222200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00022222222220000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00222222222222000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+02222222222222200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+22222222222222220000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+22222222222222220000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+02222222222222200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00222222222222000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00022222222220000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00002222222200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000222222000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000022220000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000002200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000aaaaaaaa22222222222002222222222222222222bbbbbbbb000000000000000000000000000000000000000000000000000000000000000000000000
+00000000a222222a29999992200870222222222bb2222222bbbbbbbb000000000000000000000000000000000000000000000000000000000000000000000000
+00700700a222222a29222292088e7022222222bbbb222222bbbbbbbb000000000000000000000000000000000000000000000000000000000000000000000000
+00077000a222222a292222922008702222222bbbbbb22222bbbbbbbb000000000000000000000000000000000000000000000000000000000000000000000000
+00077000a222222a29222292222070222222bbbbbbbb2222bbbbbbbb000000000000000000000000000000000000000000000000000000000000000000000000
+00700700a222222a2922229222207022222bbbbbbbbbb222bbbbbbbb000000000000000000000000000000000000000000000000000000000000000000000000
+00000000a222222a299999922220702222bbbbbbbbbbbb22bbbbbbbb000000000000000000000000000000000000000000000000000000000000000000000000
+00000000aaaaaaaa22222222222070222bbbbbbbbbbbbbb2bbbbbbbb000000000000000000000000000000000000000000000000000000000000000000000000
+222222222222226556222222222222222bbbbbbbbbbbbbb23b3b3b3b000000000000000000000000000000000000000000000000000000000000000000000000
+2222222222222265562222222222222222bbbbbbbbbbbb22b3b3b3b3000000000000000000000000000000000000000000000000000000000000000000000000
+22222222222222655622222222222222222bbbbbbbbbb2223b3b3b3b000000000000000000000000000000000000000000000000000000000000000000000000
+222222222222226556222222222222222222bbbbbbbb2222b3b3b3b3000000000000000000000000000000000000000000000000000000000000000000000000
+222e822222222265562222222222222222222bbbbbb222223b3b3b3b000000000000000000000000000000000000000000000000000000000000000000000000
+22e88822222222655622222222222222222222bbbb222222b3b3b3b3000000000000000000000000000000000000000000000000000000000000000000000000
+2e8888822222226556222222777777772222222bb22222223b3b3b3b000000000000000000000000000000000000000000000000000000000000000000000000
+e88888882222226556222222555555552222222222222222b3b3b3b3000000000000000000000000000000000000000000000000000000000000000000000000
+222e8222222222655722222277777777222222222222222200000000000000000000000000000000000000000000000000000000000000000000000000000000
+222e822222222652257222225555555522222223b222222200000000000000000000000000000000000000000000000000000000000000000000000000000000
+222e82222222652222572222222222222222223b3b22222200000000000000000000000000000000000000000000000000000000000000000000000000000000
+22222222222652222225722222222222222223b3b3b2222200000000000000000000000000000000000000000000000000000000000000000000000000000000
+2222222222652222222257222222222222223b3b3b3b222200000000000000000000000000000000000000000000000000000000000000000000000000000000
+222222222652222222222572222222222223b3b3b3b3b22200000000000000000000000000000000000000000000000000000000000000000000000000000000
+22222222652222222222225722222222223b3b3b3b3b3b2200000000000000000000000000000000000000000000000000000000000000000000000000000000
+2222222252222222222222252222222223b3b3b3b3b3b3b200000000000000000000000000000000000000000000000000000000000000000000000000000000
+22222222e222222222222222222222222b3b3b3b3b3b3b3200000000000000000000000000000000000000000000000000000000000000000000000000000000
+222222228e222222222222222222222222b3b3b3b3b3b32200000000000000000000000000000000000000000000000000000000000000000000000000000000
+2222222288e222222222222222222222222b3b3b3b3b322200000000000000000000000000000000000000000000000000000000000000000000000000000000
+22222eee888e222222255222222442222222b3b3b3b3222200000000000000000000000000000000000000000000000000000000000000000000000000000000
+2222288888882222222552222224422222222b3b3b32222200000000000000000000000000000000000000000000000000000000000000000000000000000000
+22222222888222222222222222222222222222b3b322222200000000000000000000000000000000000000000000000000000000000000000000000000000000
+222222228822222222222222222222222222222b3222222200000000000000000000000000000000000000000000000000000000000000000000000000000000
+22222222822222222222222222222222222222222222222200000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__gff__
+0000000001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__map__
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005050505020202020202000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000001002020202000000000000000000000000000000000000000000000000001002020202020202110000000000000000000000000000000000000000000000000000000000000000000000000004040404020202020202000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000100202020202000000000000000202020202020202020202020000000000100202020202020602021100000000000000000000000000000000000000000000000000000000000000000000000002020202020202020202000000000000000000000000000000000000000000000000000000000000000000000000
+0000000010020202020202110000000000000202050202020202020402020000000000020202050502020202020200000000000000000003000000000000000000000000000300000002000000000000000002020201020202020202000000000000000000000000000000000000000000000000000000000000000000000000
+0000000002020202030202210000000000000202020202020202020202020000000000020202020202020202020211000000000000000002000000000000000000000000000810021102000000000000000002020202020202020202000000000000000000000000000000000000000000000000000000000000000000000000
+0000000002020202020202000000000000000202020202000002020202020000000000020202022100000202020202000000000202020208020702020000000000000202020202020202020202000000000002020202020202020202000000000000000000000000000000000000000000000000000000000000000000000000
+0000000002020202020202000000000000000202020202000002020202020000000000020201020003020202060221000000000202020202020202020000000000000000200202070202210000000000000002020202020202020202000000000000000000000000000000000000000000000000000000000000000000000000
+0000000002020102020202110000000000000202010202000002020302020000000000020202021100000202020200000000000202020201020202020200000000000020020202020202022100000000000002020702020000080000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000002020202020202020000000000000202020202000002020202020000000000020206020202020202022100000000000202020202020202020200000000000000000020012100000000000000000002020702020000080000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000020020202020202210000000000000000000000000000000000000000000000020202020202020202210000000000000002020504050202020200000000000000002005040521000000000000000002020702020000080000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000020202020202000000000000000000000000000000000000000000000000000000000000000000000000000000000002020202020202020200000000000000000000000000000000000000000002020202020000020000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__sfx__
+010100001c6351c6251c6251c0001c0001c0001c0001a0001a0001a0001a0001a0001a0001a0001a0001a0001a0001a0001a0001a0001a0001a0001a0001a0001a0001a0001a0001a0001a0001a0001a0001a000
+010500001806118060180610c0601806118160180610c1600c061180600c0610c0600c061181600c0610c1601816118060181610c0601816118160181610c1600c161180600c1610c0600c161181600c1610c160
+01050000180701a0601c0601d0601f060210602306024060000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+010500001d6451d635000001d6251d615000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+010500001f1101f11017120171201f1101f11000000000001c140231301c130231201c11000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00050000151301f12018110151101d1102311024120231001c100230001c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00050000225202252027550275502c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+011400201d05000000010002905000000000001d050010001d05000000010002905000000000001d0650100018050000000000024050000000000018050000001805000000000002405000000000000000000000
+0114000000000000001d422000000000011422000000000000000000001d422000000000011422000000000000000000001842200000000001f4221f42500000000000000018422000001f422000001f42100000
+01140000247502474024730247202471024710247502474024730247202471024710247502474024730247201f7501f7401f7301f7201f7102b7102b7502b7402b7302b7202b7102b7101f7501f7401f7301f720
+011400000c0433f7153f7153f715000003f7153f7153f715246353f7153f7153f715000003f7153f7103f7050c0433f7153f7153f715000003f7153f7153f715246353f7153f71524615246353f7153f7103f700
+011400002970029700297002970029700297002970029700297302972029710297102875028740287302872024750247402473024720247502474024730247202673026720267102671025750257402573025720
+011400000c0433f7003f7003f700000003f7000c0000c0430c0433f7003f7003f700000003f7000c0433f7000c0433f7003f7003f700000003f7003f7000c0430c0433f7003f70024600246353f7003f7003f700
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__music__
+01 0b 0c 43 0e
+00 0b 0c 0d 0e
+00 0b 0c 43 0e
+00 0b 0c 0d 0e
+00 41 42 0d 44
+00 41 0f 0d 0e
+00 0b 0f 0d 44
+00 0b 0f 0d 10
+00 0c 0f 0d 10
+02 0c 0f 0b 10
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44
+00 41 42 43 44

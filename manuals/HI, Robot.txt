@@ -1,0 +1,7 @@
+Wire up your robot pals using sensors and logic gates to solve the puzzles and maybe even reunite with an old friend.
+
+The original development thread is here.
+
+I've put it up on itch.io as well.
+
+https://www.lexaloffle.com/bbs/?tid=29406

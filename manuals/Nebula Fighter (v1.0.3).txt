@@ -1,0 +1,3 @@
+Simple implementation of a bullethell game. Various pickups which improve movement speed, fire rate, special bombs, multifire, and orbs. Comes with a mini boss and end of game boss. Game takes a minute or two to play through with a record of the fastest time you've won.
+
+https://www.lexaloffle.com/bbs/?tid=41537

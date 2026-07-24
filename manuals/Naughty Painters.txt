@@ -1,0 +1,33 @@
+A local multiplayer competitive game.
+Paint the most area of the floor with the color you are assigned to win.
+Catch bombs to paint large area at a time.
+
+Controls
+Player 1:
+
+    left/right : rotate, change arena in the start screen
+    left+right : brake
+    up/down : change a match time in the start screen
+
+Player 2:
+
+    s/f : rotate
+    s+f : brake
+
+-- v1.2
+
+    Fixed and improved drawing processes.
+    Added the title screen.
+    Renewed the arena selector screen.
+    Modified the mimic bot movings.
+    Modified some arena design.
+
+-- v1.1
+
+    Added direction indicator.
+    Added mimic bot.
+    Added new 7 arenas. You can select a arena in the start screen.
+    Also, you can now change a match time.
+    Modified rotating speed.
+
+https://www.lexaloffle.com/bbs/?tid=2016
