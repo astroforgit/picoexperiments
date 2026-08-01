@@ -1,0 +1,1197 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hans Rzygol — Atari Sprite and Title Editor</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #090c12;
+      --panel: #111722;
+      --panel-2: #171f2d;
+      --line: #2b374a;
+      --text: #edf4ff;
+      --muted: #94a4ba;
+      --accent: #f2c94c;
+      --danger: #ff6b6b;
+      --shadow: 0 18px 50px rgba(0, 0, 0, .3);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 720px;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(57, 89, 132, .22), transparent 35rem),
+        var(--bg);
+      color: var(--text);
+      font: 14px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    button, select, input { font: inherit; }
+
+    button, select {
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #1b2534;
+      color: var(--text);
+    }
+
+    button {
+      padding: 6px 11px;
+      cursor: pointer;
+    }
+
+    button:hover { border-color: #60728e; background: #233149; }
+    button:disabled { cursor: not-allowed; opacity: .42; }
+    button.primary { border-color: #8d7421; background: #6d5918; }
+    button.danger { border-color: #713b43; color: #ffb5b5; }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(9, 12, 18, .94);
+      backdrop-filter: blur(12px);
+    }
+
+    .topbar, .toolbar, .row-title, .palette, .preview-controls {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      flex-wrap: wrap;
+    }
+
+    .topbar { justify-content: space-between; }
+    h1 { margin: 0; font-size: 18px; letter-spacing: .02em; }
+    h2 { margin: 0; font-size: 15px; }
+    .subtle { color: var(--muted); }
+
+    main { padding: 18px 20px 44px; }
+
+    .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+    .tabs button { min-width: 150px; }
+    .tabs button.active { border-color: var(--accent); background: #554714; color: #fff4be; }
+    .tab-panel[hidden] { display: none; }
+
+    .toolbar {
+      margin-bottom: 16px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .toolbar .separator {
+      width: 1px;
+      height: 28px;
+      margin: 0 2px;
+      background: var(--line);
+    }
+
+    .zoom-wrap { display: flex; align-items: center; gap: 7px; }
+    input[type="range"] { width: 110px; }
+
+    .palette {
+      margin: 0 0 16px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel);
+    }
+
+    .swatch {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 9px;
+    }
+
+    .swatch.selected { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .swatch-dot { width: 18px; height: 18px; border: 1px solid #aab5c5; border-radius: 3px; }
+    input[type="color"] { width: 30px; height: 28px; padding: 1px; border: 0; background: transparent; }
+
+    .sprite-section {
+      margin-top: 16px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: var(--panel);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .row-title {
+      justify-content: space-between;
+      padding: 11px 13px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel-2);
+    }
+
+    .frames {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 14px;
+      overflow-x: auto;
+    }
+
+    .frame-card {
+      flex: 0 0 auto;
+      padding: 8px;
+      border: 1px solid #283447;
+      border-radius: 8px;
+      background: #0c1119;
+      text-align: center;
+    }
+
+    .frame-label { margin-bottom: 6px; color: var(--muted); font-size: 12px; }
+    .frame-actions { display: flex; gap: 5px; margin-top: 7px; }
+    .frame-actions button { min-height: 28px; padding: 3px 7px; font-size: 11px; }
+
+    canvas.sprite {
+      display: block;
+      image-rendering: pixelated;
+      touch-action: none;
+      background: #0a0d12;
+      cursor: crosshair;
+    }
+
+    canvas.reference { cursor: default; }
+
+    .title-layout {
+      display: grid;
+      grid-template-columns: minmax(540px, max-content) minmax(280px, 420px);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .title-canvas-wrap { overflow: auto; padding: 14px; }
+    #titleCanvas {
+      display: block;
+      image-rendering: pixelated;
+      touch-action: none;
+      cursor: crosshair;
+      background: #080b10;
+    }
+
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: minmax(270px, 390px) minmax(360px, 1fr);
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .card {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .preview-wrap { display: flex; align-items: flex-start; gap: 16px; margin-top: 12px; }
+    #preview { width: 96px; height: 384px; image-rendering: pixelated; background: #080b10; }
+    .preview-controls { align-items: flex-start; flex-direction: column; }
+
+    code { color: #ffd968; }
+    .status { min-height: 21px; margin-top: 10px; color: #a9d8a9; }
+    .help { margin: 8px 0 0; padding-left: 20px; color: var(--muted); }
+    .help li + li { margin-top: 5px; }
+
+    @media (max-width: 900px) {
+      .bottom-grid, .title-layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="topbar">
+    <div>
+      <h1>Hans Rzygol — Atari graphics editor</h1>
+      <div class="subtle">Piss animation and 128 × 128 title artwork</div>
+    </div>
+    <div id="dirtyState" class="subtle">Saved locally</div>
+  </div>
+</header>
+
+<main>
+  <nav class="tabs" aria-label="Editor tabs">
+    <button class="tab-button active" data-tab="spriteTab">Sprite animation</button>
+    <button class="tab-button" data-tab="titleTab">Title image</button>
+  </nav>
+
+  <div id="spriteTab" class="tab-panel">
+  <div class="toolbar">
+    <button id="undoBtn">Undo</button>
+    <button id="redoBtn">Redo</button>
+    <button id="resetAllBtn" class="danger">Reset all piss frames</button>
+    <span class="separator"></span>
+    <label class="zoom-wrap">Zoom
+      <input id="zoom" type="range" min="7" max="16" value="10">
+      <span id="zoomValue">10×</span>
+    </label>
+    <label><input id="gridToggle" type="checkbox" checked> grid</label>
+    <span class="separator"></span>
+    <button id="exportJsonBtn" class="primary">Export JSON</button>
+    <button id="exportAsmBtn">Export MADS</button>
+    <button id="copyAsmBtn">Copy MADS</button>
+    <button id="importBtn">Import JSON</button>
+    <input id="importFile" type="file" accept="application/json,.json" hidden>
+  </div>
+
+  <div class="palette" id="palette">
+    <strong>Draw color:</strong>
+    <button class="swatch" data-color="0"><span class="swatch-dot"></span>Transparent</button>
+    <button class="swatch" data-color="1"><span class="swatch-dot"></span>Player 2</button>
+    <input class="colorPicker" data-color="1" type="color" value="#69c56f" title="Player 2 preview color">
+    <button class="swatch" data-color="2"><span class="swatch-dot"></span>Player 3</button>
+    <input class="colorPicker" data-color="2" type="color" value="#d8dc60" title="Player 3 preview color">
+    <button class="swatch" data-color="3"><span class="swatch-dot"></span>Overlap</button>
+    <input class="colorPicker" data-color="3" type="color" value="#f4f09a" title="Overlap preview color">
+    <span class="subtle">Right-click always erases. Preview colors do not alter exported Atari bytes.</span>
+  </div>
+
+  <section class="sprite-section">
+    <div class="row-title">
+      <div>
+        <h2>Puke reference</h2>
+        <span class="subtle">Original frames 80–85 from <code>HK_JUMP.PLR</code></span>
+      </div>
+      <label>Facing
+        <select id="referenceFacing"><option value="right">Right</option><option value="left">Left (mirrored)</option></select>
+      </label>
+    </div>
+    <div id="pukeFrames" class="frames"></div>
+  </section>
+
+  <section class="sprite-section">
+    <div class="row-title">
+      <div>
+        <h2>Piss animation — editable</h2>
+        <span class="subtle">Edit right-facing phases; export automatically creates exact left-facing mirrors.</span>
+      </div>
+      <span class="subtle">Drag to paint · right-drag to erase</span>
+    </div>
+    <div id="pissFrames" class="frames"></div>
+  </section>
+
+  <div class="bottom-grid">
+    <section class="card">
+      <h2>Animation preview</h2>
+      <div class="preview-wrap">
+        <canvas id="preview" width="96" height="384"></canvas>
+        <div class="preview-controls">
+          <button id="playBtn">Pause</button>
+          <label>Facing
+            <select id="previewFacing"><option value="right">Right</option><option value="left">Left</option></select>
+          </label>
+          <label>Frame time
+            <select id="frameTime">
+              <option value="80">80 ms</option>
+              <option value="120" selected>120 ms</option>
+              <option value="180">180 ms</option>
+              <option value="250">250 ms</option>
+            </select>
+          </label>
+          <div>Phase: <strong id="previewPhase">1</strong>/6</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Export format</h2>
+      <ul class="help">
+        <li><strong>JSON</strong> is the best format to send back. It contains all six right frames and six generated left frames as 32-byte Player 2 and Player 3 planes.</li>
+        <li><strong>MADS</strong> is ready to include in Atari assembly and uses <code>dta b($00,...)</code> rows.</li>
+        <li>The editor autosaves in this browser. Use JSON when moving the work to another machine.</li>
+        <li>Transparent = neither plane, Player 2 = plane 2, Player 3 = plane 3, Overlap = both planes.</li>
+      </ul>
+      <div id="status" class="status" role="status"></div>
+    </section>
+  </div>
+  </div>
+
+  <div id="titleTab" class="tab-panel" hidden>
+    <div class="toolbar">
+      <button id="titleUndoBtn">Undo</button>
+      <button id="titleResetBtn" class="danger">Reset title image</button>
+      <span class="separator"></span>
+      <label class="zoom-wrap">Zoom
+        <input id="titleZoom" type="range" min="2" max="7" value="4">
+        <span id="titleZoomValue">4×</span>
+      </label>
+      <label><input id="titleGridToggle" type="checkbox" checked> Atari tile grid</label>
+      <span class="separator"></span>
+      <button id="titleExportBtn" class="primary">Export title JSON</button>
+      <button id="titleImportBtn">Import title JSON</button>
+      <input id="titleImportFile" type="file" accept="application/json,.json" hidden>
+    </div>
+
+    <div class="palette" id="titlePalette">
+      <strong>Draw color:</strong>
+      <button class="swatch title-swatch selected" data-color="0"><span class="swatch-dot"></span>Background</button>
+      <button class="swatch title-swatch" data-color="1"><span class="swatch-dot"></span>Color 1</button>
+      <button class="swatch title-swatch" data-color="2"><span class="swatch-dot"></span>Color 2</button>
+      <button class="swatch title-swatch" data-color="3"><span class="swatch-dot"></span>Color 3</button>
+      <button class="swatch title-swatch" data-color="4"><span class="swatch-dot"></span>Color 4</button>
+      <span class="subtle">Drag to paint · right-drag to erase to background</span>
+    </div>
+
+    <div class="title-layout">
+      <section class="sprite-section" style="margin-top:0">
+        <div class="row-title">
+          <div>
+            <h2>Title-screen artwork — editable</h2>
+            <span class="subtle">Loaded from <code>HK_TITL.FNT</code> and title map 255.</span>
+          </div>
+          <span id="titleTileCount" class="subtle">Loading Atari data…</span>
+        </div>
+        <div class="title-canvas-wrap">
+          <canvas id="titleCanvas" width="512" height="512" aria-label="Editable title image"></canvas>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Title export format</h2>
+        <ul class="help">
+          <li>JSON stores every one of the 128 × 128 ANTIC mode 4 pixels, displayed at the correct double-width aspect ratio.</li>
+          <li>It also contains a 256-byte screen map and two 1 KB Atari font banks when the image uses no more than 128 unique 4 × 16 tiles.</li>
+          <li>Colors 3 and 4 share one bitmap value and are selected per tile, matching the Atari screen-code high bit.</li>
+          <li>If the tile limit is exceeded, the pixels are still exported and the editor reports how many tiles must be simplified.</li>
+          <li>The image autosaves separately from the piss animation.</li>
+        </ul>
+        <div id="titleStatus" class="status" role="status"></div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<script>
+(() => {
+  'use strict';
+
+  const WIDTH = 8;
+  const HEIGHT = 32;
+  const FRAME_COUNT = 6;
+  const STORAGE_KEY = 'hans-kloss-piss-sprite-v1';
+  const TITLE_WIDTH = 128;
+  const TITLE_HEIGHT = 128;
+  const TITLE_STORAGE_KEY = 'hans-rzygol-title-image-v2';
+
+  const PUKE_HEX = [
+    ['0000000830001818186870f0f8d8d8e078704000707070307070606020006070', '00000000083c202868108808002020188888b070000000400000101040600000'],
+    ['000000000804020c2c6c70f8f4dcd494f0704000707070307070606020006070', '00000000000a1c325a1880080820286c1080b070000000400000101040600000'],
+    ['000000000804020c2c6c70f0f4dcd692f4724002707070307070606020006070', '00000000000a1c325a18840808202c6d1384b072000002400000101040600000'],
+    ['000000000804020c2c6c70f0f8dad892f0714502727270347270606020006070', '00000000000a1c325a188408002020681282b270050206430000101040600000'],
+    ['000000000804020c2c6c70f0f8d8d890f4724000707470327670606220026475', '00000000000a1c325a188408002020681080b072000000400400161142610703'],
+    ['0000000830001818186870f0f8d8d8e0f0704000707070307070606224026475', '00000000083c202868108808002020181080b07000000040000010114265070b']
+  ];
+
+  const UPRIGHT_HEX = [
+    '0000083000181818083038787c6c6c6870303000383838183838303010003038',
+    '000000083c20282830084004001010140c484838100000200000080820300000'
+  ];
+
+  const INITIAL_STREAMS = [
+    [0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [1,3,3,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [1,3,7,3,1,3,1,1,0,0,0,0,0,0,0,0,0,0],
+    [1,3,7,3,1,3,1,3,1,3,1,1,0,0,0,0,0,0],
+    [1,3,7,3,1,3,1,3,1,3,1,3,1,5,2,5,2,7],
+    [1,3,3,1,3,1,0,1,0,2,0,1,4,1,4,2,5,7]
+  ];
+
+  const previewColors = ['#0b1018', '#69c56f', '#d8dc60', '#f4f09a'];
+  const titleColors = ['#08080c', '#dccda0', '#9b4628', '#efead7', '#27845b'];
+  const hexBytes = hex => (hex.match(/../g) || []).map(value => parseInt(value, 16));
+  const reverseByte = value => {
+    let result = 0;
+    for (let bit = 0; bit < 8; bit++) result |= ((value >> bit) & 1) << (7 - bit);
+    return result;
+  };
+
+  function planesToPixels(plane2, plane3) {
+    const pixels = new Uint8Array(WIDTH * HEIGHT);
+    for (let y = 0; y < HEIGHT; y++) {
+      for (let x = 0; x < WIDTH; x++) {
+        const bit = 7 - x;
+        pixels[y * WIDTH + x] = ((plane2[y] >> bit) & 1) | (((plane3[y] >> bit) & 1) << 1);
+      }
+    }
+    return pixels;
+  }
+
+  function pixelsToPlanes(pixels) {
+    const plane2 = Array(HEIGHT).fill(0);
+    const plane3 = Array(HEIGHT).fill(0);
+    for (let y = 0; y < HEIGHT; y++) {
+      for (let x = 0; x < WIDTH; x++) {
+        const value = pixels[y * WIDTH + x];
+        const bit = 7 - x;
+        if (value & 1) plane2[y] |= 1 << bit;
+        if (value & 2) plane3[y] |= 1 << bit;
+      }
+    }
+    return { plane2, plane3 };
+  }
+
+  function mirrorPixels(pixels) {
+    const mirrored = new Uint8Array(pixels.length);
+    for (let y = 0; y < HEIGHT; y++) {
+      for (let x = 0; x < WIDTH; x++) mirrored[y * WIDTH + x] = pixels[y * WIDTH + (WIDTH - 1 - x)];
+    }
+    return mirrored;
+  }
+
+  function makeInitialFrames() {
+    const base2 = hexBytes(UPRIGHT_HEX[0]);
+    const base3 = hexBytes(UPRIGHT_HEX[1]);
+    return INITIAL_STREAMS.map(stream => {
+      const p3 = base3.slice();
+      stream.forEach((value, index) => { p3[14 + index] |= value; });
+      return planesToPixels(base2, p3);
+    });
+  }
+
+  const pukeRight = PUKE_HEX.map(([p2, p3]) => planesToPixels(hexBytes(p2), hexBytes(p3)));
+  const initialFrames = makeInitialFrames();
+  let pissFrames = initialFrames.map(frame => new Uint8Array(frame));
+  let selectedColor = 2;
+  let zoom = 10;
+  let showGrid = true;
+  let history = [];
+  let future = [];
+  let dirty = false;
+  let previewIndex = 0;
+  let previewPlaying = true;
+  let previewTimer = null;
+  const pukeCanvases = [];
+  const pissCanvases = [];
+  let titlePixels = null;
+  let originalTitlePixels = null;
+  let selectedTitleColor = 0;
+  let titleZoom = 4;
+  let showTitleGrid = true;
+  let titleHistory = [];
+
+  const $ = selector => document.querySelector(selector);
+  const status = message => { $('#status').textContent = message; };
+  const titleStatus = message => { $('#titleStatus').textContent = message; };
+
+  function decodeTitleImage(fontBytes, screenMap) {
+    const pixels = new Uint8Array(TITLE_WIDTH * TITLE_HEIGHT);
+    for (let tileY = 0; tileY < 8; tileY++) {
+      for (let bank = 0; bank < 2; bank++) {
+        for (let y = 0; y < 8; y++) {
+          for (let tileX = 0; tileX < 32; tileX++) {
+            const screenCode = screenMap[tileY * 32 + tileX];
+            const code = screenCode & 0x7f;
+            const packed = fontBytes[bank * 1024 + code * 8 + y];
+            for (let x = 0; x < 4; x++) {
+              const value = (packed >> (6 - x * 2)) & 3;
+              pixels[(tileY * 16 + bank * 8 + y) * TITLE_WIDTH + tileX * 4 + x] = value === 3 && (screenCode & 0x80) ? 4 : value;
+            }
+          }
+        }
+      }
+    }
+    return pixels;
+  }
+
+  function decodeTitleMap(caveBytes) {
+    let offset = 0;
+    let record = null;
+    while (offset + 2 <= caveBytes.length) {
+      const length = caveBytes[offset + 1];
+      if (!length) break;
+      if (caveBytes[offset] === 0xff) {
+        record = caveBytes.slice(offset, offset + length);
+        break;
+      }
+      offset += length;
+    }
+    if (!record) throw new Error('Title map 255 was not found in HK_CAVE.DTA.');
+    const screenMap = new Uint8Array(256);
+    let destination = 0;
+    for (let index = 2; index < record.length && destination < 256; index++) {
+      const value = record[index];
+      if (value & 1) {
+        const count = record[++index];
+        // The original 6502 routine writes count+1 pairs, but advances by only
+        // count pairs. Its last pair is intentionally overwritten by the next
+        // command, so this must be modeled as memory writes rather than append.
+        for (let repeat = 0; repeat <= count; repeat++) {
+          const target = destination + repeat * 2;
+          if (target < 256) {
+            screenMap[target] = value & 0xfe;
+            screenMap[target + 1] = value | 1;
+          }
+        }
+        destination += count * 2;
+      } else {
+        screenMap[destination] = value;
+        screenMap[destination + 1] = value | 1;
+        destination += 2;
+      }
+    }
+    if (destination !== 256) throw new Error(`Decoded title map fills ${destination} bytes instead of 256.`);
+    return screenMap;
+  }
+
+  function titleRows(pixels) {
+    return Array.from({ length: TITLE_HEIGHT }, (_, y) =>
+      Array.from(pixels.slice(y * TITLE_WIDTH, (y + 1) * TITLE_WIDTH)).join('')
+    );
+  }
+
+  function pixelsFromTitleRows(rows) {
+    if (!Array.isArray(rows) || rows.length !== TITLE_HEIGHT || rows.some(row => typeof row !== 'string' || !/^[0-4]{128}$/.test(row))) {
+      throw new Error('Title pixels must be 128 strings of 128 values from 0 to 4.');
+    }
+    return Uint8Array.from(rows.join('').split('').map(Number));
+  }
+
+  function encodeTitleAtari(pixels) {
+    const tileMap = [];
+    const tiles = [];
+    const knownTiles = new Map();
+    let attributeConflictCount = 0;
+    for (let tileY = 0; tileY < 8; tileY++) {
+      for (let tileX = 0; tileX < 32; tileX++) {
+        const tile = [];
+        let usesColor3 = false;
+        let usesColor4 = false;
+        for (let y = 0; y < 16; y++) {
+          for (let x = 0; x < 4; x++) {
+            const value = pixels[(tileY * 16 + y) * TITLE_WIDTH + tileX * 4 + x];
+            usesColor3 ||= value === 3;
+            usesColor4 ||= value === 4;
+            tile.push(value === 4 ? 3 : value);
+          }
+        }
+        if (usesColor3 && usesColor4) attributeConflictCount++;
+        const key = tile.join('');
+        if (!knownTiles.has(key)) {
+          knownTiles.set(key, tiles.length);
+          tiles.push(tile);
+        }
+        tileMap.push(knownTiles.get(key) | (usesColor4 ? 0x80 : 0));
+      }
+    }
+
+    if (tiles.length > 128 || attributeConflictCount) {
+      return { uniqueTileCount: tiles.length, attributeConflictCount, tileMap: null, fontBanks: null };
+    }
+    const first = Array(1024).fill(0);
+    const second = Array(1024).fill(0);
+    tiles.forEach((tile, code) => {
+      for (let bank = 0; bank < 2; bank++) {
+        for (let y = 0; y < 8; y++) {
+          let packed = 0;
+          for (let x = 0; x < 4; x++) packed |= tile[(bank * 8 + y) * 4 + x] << (6 - x * 2);
+          (bank === 0 ? first : second)[code * 8 + y] = packed;
+        }
+      }
+    });
+    return { uniqueTileCount: tiles.length, attributeConflictCount, tileMap, fontBanks: { first, second } };
+  }
+
+  function renderTitle() {
+    if (!titlePixels) return;
+    const canvas = $('#titleCanvas');
+    canvas.width = TITLE_WIDTH * titleZoom * 2;
+    canvas.height = TITLE_HEIGHT * titleZoom;
+    canvas.style.width = `${TITLE_WIDTH * titleZoom * 2}px`;
+    canvas.style.height = `${TITLE_HEIGHT * titleZoom}px`;
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    for (let y = 0; y < TITLE_HEIGHT; y++) {
+      for (let x = 0; x < TITLE_WIDTH; x++) {
+        ctx.fillStyle = titleColors[titlePixels[y * TITLE_WIDTH + x]];
+        ctx.fillRect(x * titleZoom * 2, y * titleZoom, titleZoom * 2, titleZoom);
+      }
+    }
+    if (showTitleGrid) {
+      ctx.strokeStyle = 'rgba(70, 220, 255, .35)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let x = 0; x <= TITLE_WIDTH; x += 4) {
+        ctx.moveTo(x * titleZoom * 2 + .5, 0);
+        ctx.lineTo(x * titleZoom * 2 + .5, TITLE_HEIGHT * titleZoom);
+      }
+      for (let y = 0; y <= TITLE_HEIGHT; y += 16) {
+        ctx.moveTo(0, y * titleZoom + .5);
+        ctx.lineTo(TITLE_WIDTH * titleZoom, y * titleZoom + .5);
+      }
+      ctx.stroke();
+    }
+    const encoded = encodeTitleAtari(titlePixels);
+    const valid = encoded.uniqueTileCount <= 128 && encoded.attributeConflictCount === 0;
+    $('#titleTileCount').textContent = encoded.attributeConflictCount
+      ? `${encoded.attributeConflictCount} tiles mix colors 3 and 4`
+      : valid ? `${encoded.uniqueTileCount}/128 Atari tiles` : `${encoded.uniqueTileCount}/128 tiles — simplify before integration`;
+    $('#titleTileCount').style.color = valid ? '' : '#ff9b9b';
+  }
+
+  function persistTitle() {
+    if (!titlePixels) return;
+    try {
+      localStorage.setItem(TITLE_STORAGE_KEY, JSON.stringify({ pixels: titleRows(titlePixels) }));
+    } catch (_) { /* JSON export remains available. */ }
+  }
+
+  function pushTitleHistory() {
+    if (!titlePixels) return;
+    titleHistory.push(new Uint8Array(titlePixels));
+    if (titleHistory.length > 60) titleHistory.shift();
+    $('#titleUndoBtn').disabled = false;
+  }
+
+  function attachTitleDrawing() {
+    const canvas = $('#titleCanvas');
+    let drawing = false;
+    let erase = false;
+    let lastCell = '';
+    const paint = event => {
+      if (!titlePixels) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = Math.floor((event.clientX - rect.left) * TITLE_WIDTH / rect.width);
+      const y = Math.floor((event.clientY - rect.top) * TITLE_HEIGHT / rect.height);
+      if (x < 0 || x >= TITLE_WIDTH || y < 0 || y >= TITLE_HEIGHT) return;
+      const key = `${x}:${y}`;
+      if (key === lastCell) return;
+      lastCell = key;
+      titlePixels[y * TITLE_WIDTH + x] = erase ? 0 : selectedTitleColor;
+      renderTitle();
+    };
+    canvas.addEventListener('contextmenu', event => event.preventDefault());
+    canvas.addEventListener('pointerdown', event => {
+      event.preventDefault();
+      if (!titlePixels) return;
+      pushTitleHistory();
+      drawing = true;
+      erase = event.button === 2;
+      lastCell = '';
+      canvas.setPointerCapture(event.pointerId);
+      paint(event);
+    });
+    canvas.addEventListener('pointermove', event => { if (drawing) paint(event); });
+    const finish = event => {
+      if (!drawing) return;
+      drawing = false;
+      lastCell = '';
+      try { canvas.releasePointerCapture(event.pointerId); } catch (_) { /* Already released. */ }
+      persistTitle();
+    };
+    canvas.addEventListener('pointerup', finish);
+    canvas.addEventListener('pointercancel', finish);
+  }
+
+  async function loadTitleImage() {
+    try {
+      const [fontResponse, caveResponse] = await Promise.all([
+        fetch('../side_a/HK_TITL.FNT'),
+        fetch('../side_a/HK_CAVE.DTA')
+      ]);
+      if (!fontResponse.ok || !caveResponse.ok) throw new Error('The Atari source files could not be loaded. Open this editor through its web server.');
+      const fontFile = new Uint8Array(await fontResponse.arrayBuffer());
+      const caveFile = new Uint8Array(await caveResponse.arrayBuffer());
+      originalTitlePixels = decodeTitleImage(fontFile.slice(6), decodeTitleMap(caveFile.slice(6)));
+      titlePixels = new Uint8Array(originalTitlePixels);
+      try {
+        const saved = JSON.parse(localStorage.getItem(TITLE_STORAGE_KEY));
+        if (saved && saved.pixels) titlePixels = pixelsFromTitleRows(saved.pixels);
+      } catch (_) { /* Keep the source image. */ }
+      renderTitle();
+      titleStatus('Title image loaded. Drawing is autosaved in this browser.');
+    } catch (error) {
+      titleStatus(`Load failed: ${error.message}`);
+      $('#titleTileCount').textContent = 'Image unavailable';
+    }
+  }
+
+  function snapshot() {
+    return pissFrames.map(frame => Array.from(frame));
+  }
+
+  function restoreSnapshot(value) {
+    pissFrames = value.map(frame => Uint8Array.from(frame));
+    renderAll();
+    persist();
+  }
+
+  function pushHistory() {
+    history.push(snapshot());
+    if (history.length > 80) history.shift();
+    future = [];
+    updateHistoryButtons();
+  }
+
+  function updateHistoryButtons() {
+    $('#undoBtn').disabled = history.length === 0;
+    $('#redoBtn').disabled = future.length === 0;
+  }
+
+  function persist() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ frames: snapshot(), colors: previewColors.slice(1) }));
+      dirty = false;
+      $('#dirtyState').textContent = 'Saved locally';
+    } catch (_) {
+      dirty = true;
+      $('#dirtyState').textContent = 'Local save unavailable';
+    }
+  }
+
+  function loadLocal() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (saved && validPixelFrames(saved.frames)) pissFrames = saved.frames.map(frame => Uint8Array.from(frame));
+      if (saved && Array.isArray(saved.colors) && saved.colors.length === 3) {
+        saved.colors.forEach((color, index) => { previewColors[index + 1] = color; });
+      }
+    } catch (_) { /* Keep built-in frames. */ }
+  }
+
+  function validPixelFrames(frames) {
+    return Array.isArray(frames) && frames.length === FRAME_COUNT && frames.every(frame =>
+      Array.isArray(frame) && frame.length === WIDTH * HEIGHT && frame.every(value => Number.isInteger(value) && value >= 0 && value <= 3)
+    );
+  }
+
+  function renderCanvas(canvas, pixels, editable) {
+    canvas.width = WIDTH * zoom;
+    canvas.height = HEIGHT * zoom;
+    canvas.style.width = `${WIDTH * zoom}px`;
+    canvas.style.height = `${HEIGHT * zoom}px`;
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    for (let y = 0; y < HEIGHT; y++) {
+      for (let x = 0; x < WIDTH; x++) {
+        const value = pixels[y * WIDTH + x];
+        ctx.fillStyle = value === 0 ? ((x + y) % 2 ? '#0d131d' : '#111a26') : previewColors[value];
+        ctx.fillRect(x * zoom, y * zoom, zoom, zoom);
+      }
+    }
+    if (showGrid) {
+      ctx.strokeStyle = 'rgba(145, 165, 192, .19)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let x = 0; x <= WIDTH; x++) { ctx.moveTo(x * zoom + .5, 0); ctx.lineTo(x * zoom + .5, HEIGHT * zoom); }
+      for (let y = 0; y <= HEIGHT; y++) { ctx.moveTo(0, y * zoom + .5); ctx.lineTo(WIDTH * zoom, y * zoom + .5); }
+      ctx.stroke();
+    }
+    canvas.classList.toggle('reference', !editable);
+  }
+
+  function renderPreview() {
+    const facingLeft = $('#previewFacing').value === 'left';
+    const pixels = facingLeft ? mirrorPixels(pissFrames[previewIndex]) : pissFrames[previewIndex];
+    const canvas = $('#preview');
+    const scale = 12;
+    const ctx = canvas.getContext('2d');
+    for (let y = 0; y < HEIGHT; y++) {
+      for (let x = 0; x < WIDTH; x++) {
+        const value = pixels[y * WIDTH + x];
+        ctx.fillStyle = value === 0 ? '#090d14' : previewColors[value];
+        ctx.fillRect(x * scale, y * scale, scale, scale);
+      }
+    }
+    $('#previewPhase').textContent = String(previewIndex + 1);
+  }
+
+  function renderAll() {
+    const leftReference = $('#referenceFacing').value === 'left';
+    pukeCanvases.forEach((canvas, index) => renderCanvas(canvas, leftReference ? mirrorPixels(pukeRight[index]) : pukeRight[index], false));
+    pissCanvases.forEach((canvas, index) => renderCanvas(canvas, pissFrames[index], true));
+    renderPreview();
+    renderTitle();
+  }
+
+  function makeFrameCard(index, editable) {
+    const card = document.createElement('div');
+    card.className = 'frame-card';
+    const label = document.createElement('div');
+    label.className = 'frame-label';
+    label.textContent = `Phase ${index + 1}`;
+    const canvas = document.createElement('canvas');
+    canvas.className = 'sprite';
+    canvas.setAttribute('aria-label', `${editable ? 'Editable piss' : 'Puke reference'} phase ${index + 1}`);
+    card.append(label, canvas);
+
+    if (editable) {
+      const actions = document.createElement('div');
+      actions.className = 'frame-actions';
+      const copy = document.createElement('button');
+      copy.textContent = 'Copy prev';
+      copy.disabled = index === 0;
+      copy.addEventListener('click', () => {
+        pushHistory();
+        pissFrames[index] = new Uint8Array(pissFrames[index - 1]);
+        renderAll();
+        persist();
+      });
+      const reset = document.createElement('button');
+      reset.textContent = 'Reset';
+      reset.addEventListener('click', () => {
+        pushHistory();
+        pissFrames[index] = new Uint8Array(initialFrames[index]);
+        renderAll();
+        persist();
+      });
+      const clear = document.createElement('button');
+      clear.textContent = 'Clear';
+      clear.addEventListener('click', () => {
+        pushHistory();
+        pissFrames[index].fill(0);
+        renderAll();
+        persist();
+      });
+      actions.append(copy, reset, clear);
+      card.append(actions);
+      attachDrawing(canvas, index);
+    }
+    return { card, canvas };
+  }
+
+  function attachDrawing(canvas, frameIndex) {
+    let drawing = false;
+    let erase = false;
+    let lastCell = '';
+
+    const paint = event => {
+      const rect = canvas.getBoundingClientRect();
+      const x = Math.floor((event.clientX - rect.left) * WIDTH / rect.width);
+      const y = Math.floor((event.clientY - rect.top) * HEIGHT / rect.height);
+      if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) return;
+      const key = `${x}:${y}`;
+      if (key === lastCell) return;
+      lastCell = key;
+      const value = erase ? 0 : selectedColor;
+      if (pissFrames[frameIndex][y * WIDTH + x] !== value) {
+        pissFrames[frameIndex][y * WIDTH + x] = value;
+        dirty = true;
+        $('#dirtyState').textContent = 'Editing…';
+        renderCanvas(canvas, pissFrames[frameIndex], true);
+        renderPreview();
+      }
+    };
+
+    canvas.addEventListener('contextmenu', event => event.preventDefault());
+    canvas.addEventListener('pointerdown', event => {
+      event.preventDefault();
+      pushHistory();
+      drawing = true;
+      erase = event.button === 2;
+      lastCell = '';
+      canvas.setPointerCapture(event.pointerId);
+      paint(event);
+    });
+    canvas.addEventListener('pointermove', event => { if (drawing) paint(event); });
+    const finish = event => {
+      if (!drawing) return;
+      drawing = false;
+      lastCell = '';
+      try { canvas.releasePointerCapture(event.pointerId); } catch (_) { /* Already released. */ }
+      persist();
+    };
+    canvas.addEventListener('pointerup', finish);
+    canvas.addEventListener('pointercancel', finish);
+  }
+
+  function buildRows() {
+    const pukeContainer = $('#pukeFrames');
+    const pissContainer = $('#pissFrames');
+    for (let index = 0; index < FRAME_COUNT; index++) {
+      const reference = makeFrameCard(index, false);
+      const editor = makeFrameCard(index, true);
+      pukeCanvases.push(reference.canvas);
+      pissCanvases.push(editor.canvas);
+      pukeContainer.append(reference.card);
+      pissContainer.append(editor.card);
+    }
+  }
+
+  function framePayload(pixels) {
+    const { plane2, plane3 } = pixelsToPlanes(pixels);
+    return { plane2, plane3 };
+  }
+
+  function exportPayload() {
+    const right = pissFrames.map(framePayload);
+    const left = pissFrames.map(frame => framePayload(mirrorPixels(frame)));
+    return {
+      format: 'hans-kloss-piss-sprite-v1',
+      width: WIDTH,
+      height: HEIGHT,
+      frameCount: FRAME_COUNT,
+      pixelValues: { transparent: 0, player2: 1, player3: 2, overlap: 3 },
+      frames: { right, left }
+    };
+  }
+
+  const byte = value => `$${value.toString(16).padStart(2, '0')}`;
+  function madsBlock(label, frames, planeName) {
+    const lines = [`${label} equ *`, ''];
+    frames.forEach((frame, index) => {
+      const values = frame[planeName];
+      lines.push(`; phase ${index + 1}`);
+      for (let offset = 0; offset < HEIGHT; offset += 8) {
+        lines.push(` dta b(${values.slice(offset, offset + 8).map(byte).join('),b(')})`);
+      }
+      lines.push('');
+    });
+    return lines.join('\n');
+  }
+
+  function exportMads() {
+    const payload = exportPayload();
+    return [
+      '; Hans Kloss piss animation — 8x32, six phases',
+      '; Generated by util/sprite-editor.html',
+      '',
+      madsBlock('piss_right_player2', payload.frames.right, 'plane2'),
+      madsBlock('piss_right_player3', payload.frames.right, 'plane3'),
+      madsBlock('piss_left_player2', payload.frames.left, 'plane2'),
+      madsBlock('piss_left_player3', payload.frames.left, 'plane3')
+    ].join('\n');
+  }
+
+  function download(name, text, type) {
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(new Blob([text], { type }));
+    link.href = url;
+    link.download = name;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function exportTitlePayload() {
+    const encoded = encodeTitleAtari(titlePixels);
+    return {
+      format: 'hans-rzygol-title-image-v2',
+      width: TITLE_WIDTH,
+      height: TITLE_HEIGHT,
+      pixelValues: { background: 0, color1: 1, color2: 2, color3: 3, color4: 4 },
+      pixels: titleRows(titlePixels),
+      atari: {
+        tileWidth: 4,
+        tileHeight: 16,
+        uniqueTileCount: encoded.uniqueTileCount,
+        withinCharacterLimit: encoded.uniqueTileCount <= 128,
+        attributeConflictCount: encoded.attributeConflictCount,
+        atariReady: encoded.uniqueTileCount <= 128 && encoded.attributeConflictCount === 0,
+        screenMap: encoded.tileMap,
+        fontBanks: encoded.fontBanks
+      }
+    };
+  }
+
+  function importPayload(payload) {
+    if (!payload || payload.format !== 'hans-kloss-piss-sprite-v1' || !payload.frames || !Array.isArray(payload.frames.right) || payload.frames.right.length !== FRAME_COUNT) {
+      throw new Error('This is not a hans-kloss-piss-sprite-v1 export.');
+    }
+    const imported = payload.frames.right.map(frame => {
+      if (!frame || !Array.isArray(frame.plane2) || !Array.isArray(frame.plane3) || frame.plane2.length !== HEIGHT || frame.plane3.length !== HEIGHT) {
+        throw new Error('A frame does not contain two 32-byte planes.');
+      }
+      const bytes = [...frame.plane2, ...frame.plane3];
+      if (bytes.some(value => !Number.isInteger(value) || value < 0 || value > 255)) throw new Error('Plane data contains an invalid byte.');
+      return planesToPixels(frame.plane2, frame.plane3);
+    });
+    pushHistory();
+    pissFrames = imported;
+    renderAll();
+    persist();
+  }
+
+  function restartPreview() {
+    clearInterval(previewTimer);
+    if (!previewPlaying) return;
+    previewTimer = setInterval(() => {
+      previewIndex = (previewIndex + 1) % FRAME_COUNT;
+      renderPreview();
+    }, Number($('#frameTime').value));
+  }
+
+  function bindControls() {
+    document.querySelectorAll('#palette .swatch').forEach(button => button.addEventListener('click', () => {
+      selectedColor = Number(button.dataset.color);
+      document.querySelectorAll('#palette .swatch').forEach(item => item.classList.toggle('selected', item === button));
+    }));
+    document.querySelector('#palette .swatch[data-color="2"]').click();
+
+    document.querySelectorAll('.tab-button').forEach(button => button.addEventListener('click', () => {
+      document.querySelectorAll('.tab-button').forEach(item => item.classList.toggle('active', item === button));
+      document.querySelectorAll('.tab-panel').forEach(panel => { panel.hidden = panel.id !== button.dataset.tab; });
+      if (button.dataset.tab === 'titleTab') renderTitle();
+    }));
+
+    document.querySelectorAll('.title-swatch').forEach(button => button.addEventListener('click', () => {
+      selectedTitleColor = Number(button.dataset.color);
+      document.querySelectorAll('.title-swatch').forEach(item => item.classList.toggle('selected', item === button));
+    }));
+
+    document.querySelectorAll('.colorPicker').forEach(input => input.addEventListener('input', () => {
+      previewColors[Number(input.dataset.color)] = input.value;
+      updateSwatches();
+      renderAll();
+      persist();
+    }));
+
+    $('#zoom').addEventListener('input', event => {
+      zoom = Number(event.target.value);
+      $('#zoomValue').textContent = `${zoom}×`;
+      renderAll();
+    });
+    $('#gridToggle').addEventListener('change', event => { showGrid = event.target.checked; renderAll(); });
+    $('#titleZoom').addEventListener('input', event => {
+      titleZoom = Number(event.target.value);
+      $('#titleZoomValue').textContent = `${titleZoom}×`;
+      renderTitle();
+    });
+    $('#titleGridToggle').addEventListener('change', event => { showTitleGrid = event.target.checked; renderTitle(); });
+    $('#referenceFacing').addEventListener('change', renderAll);
+    $('#previewFacing').addEventListener('change', renderPreview);
+    $('#frameTime').addEventListener('change', restartPreview);
+
+    $('#undoBtn').addEventListener('click', () => {
+      if (!history.length) return;
+      future.push(snapshot());
+      restoreSnapshot(history.pop());
+      updateHistoryButtons();
+    });
+    $('#redoBtn').addEventListener('click', () => {
+      if (!future.length) return;
+      history.push(snapshot());
+      restoreSnapshot(future.pop());
+      updateHistoryButtons();
+    });
+    $('#resetAllBtn').addEventListener('click', () => {
+      if (!confirm('Reset all six editable frames to the built-in piss animation?')) return;
+      pushHistory();
+      pissFrames = initialFrames.map(frame => new Uint8Array(frame));
+      renderAll();
+      persist();
+      status('All frames reset.');
+    });
+
+    $('#exportJsonBtn').addEventListener('click', () => {
+      download('hans-kloss-piss-sprite.json', JSON.stringify(exportPayload(), null, 2) + '\n', 'application/json');
+      status('JSON exported. Send that file back when the animation is ready.');
+    });
+    $('#exportAsmBtn').addEventListener('click', () => {
+      download('hans-kloss-piss-sprite.asm', exportMads() + '\n', 'text/plain');
+      status('MADS assembly exported.');
+    });
+    $('#copyAsmBtn').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(exportMads());
+        status('MADS assembly copied to the clipboard.');
+      } catch (_) {
+        status('Clipboard access was blocked. Use Export MADS instead.');
+      }
+    });
+    $('#importBtn').addEventListener('click', () => $('#importFile').click());
+    $('#importFile').addEventListener('change', async event => {
+      const file = event.target.files[0];
+      if (!file) return;
+      try {
+        importPayload(JSON.parse(await file.text()));
+        status(`Imported ${file.name}.`);
+      } catch (error) {
+        status(`Import failed: ${error.message}`);
+      }
+      event.target.value = '';
+    });
+
+    $('#titleUndoBtn').addEventListener('click', () => {
+      if (!titleHistory.length) return;
+      titlePixels = titleHistory.pop();
+      $('#titleUndoBtn').disabled = titleHistory.length === 0;
+      renderTitle();
+      persistTitle();
+      titleStatus('Last title-image stroke undone.');
+    });
+    $('#titleResetBtn').addEventListener('click', () => {
+      if (!originalTitlePixels || !confirm('Reset the complete title image to the original Atari artwork?')) return;
+      pushTitleHistory();
+      titlePixels = new Uint8Array(originalTitlePixels);
+      renderTitle();
+      persistTitle();
+      titleStatus('Title image reset to the original artwork.');
+    });
+    $('#titleExportBtn').addEventListener('click', () => {
+      if (!titlePixels) return titleStatus('The title image has not loaded yet.');
+      const payload = exportTitlePayload();
+      download('hans-rzygol-title-image.json', JSON.stringify(payload, null, 2) + '\n', 'application/json');
+      titleStatus(payload.atari.atariReady
+        ? `Title JSON exported with Atari-ready data (${payload.atari.uniqueTileCount}/128 tiles).`
+        : payload.atari.attributeConflictCount
+          ? `Pixels exported, but ${payload.atari.attributeConflictCount} tiles mix colors 3 and 4. Use only one of those colors inside each cyan tile.`
+          : `Pixels exported, but ${payload.atari.uniqueTileCount} unique tiles exceed Atari's 128-tile limit.`);
+    });
+    $('#titleImportBtn').addEventListener('click', () => $('#titleImportFile').click());
+    $('#titleImportFile').addEventListener('change', async event => {
+      const file = event.target.files[0];
+      if (!file) return;
+      try {
+        const payload = JSON.parse(await file.text());
+        if (!payload || !['hans-rzygol-title-image-v1', 'hans-rzygol-title-image-v2'].includes(payload.format)) {
+          throw new Error('This is not a Hans Rzygol title-image export.');
+        }
+        const imported = pixelsFromTitleRows(payload.pixels);
+        pushTitleHistory();
+        titlePixels = imported;
+        renderTitle();
+        persistTitle();
+        titleStatus(`Imported ${file.name}.`);
+      } catch (error) {
+        titleStatus(`Import failed: ${error.message}`);
+      }
+      event.target.value = '';
+    });
+
+    $('#playBtn').addEventListener('click', () => {
+      previewPlaying = !previewPlaying;
+      $('#playBtn').textContent = previewPlaying ? 'Pause' : 'Play';
+      restartPreview();
+    });
+  }
+
+  function updateSwatches() {
+    document.querySelectorAll('#palette .swatch').forEach(button => {
+      const value = Number(button.dataset.color);
+      const dot = button.querySelector('.swatch-dot');
+      dot.style.background = value === 0
+        ? 'repeating-linear-gradient(45deg,#101722 0 4px,#263247 4px 8px)'
+        : previewColors[value];
+    });
+    document.querySelectorAll('.colorPicker').forEach(input => { input.value = previewColors[Number(input.dataset.color)]; });
+    document.querySelectorAll('.title-swatch').forEach(button => {
+      button.querySelector('.swatch-dot').style.background = titleColors[Number(button.dataset.color)];
+    });
+  }
+
+  loadLocal();
+  buildRows();
+  bindControls();
+  updateSwatches();
+  updateHistoryButtons();
+  $('#titleUndoBtn').disabled = true;
+  attachTitleDrawing();
+  renderAll();
+  restartPreview();
+  loadTitleImage();
+})();
+</script>
+</body>
+</html>

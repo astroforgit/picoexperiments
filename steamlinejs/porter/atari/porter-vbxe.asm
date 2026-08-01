@@ -15,9 +15,11 @@ VIEW_SIZE       = 192
 TILE_DRAW       = 12
 
 SHAPES_V        = $00000
-SCREEN_V        = $10000
+SCREEN_A_V      = $10000
 ROOM_CACHE_V    = $20000
-XDL_V           = $7f000
+SCREEN_B_V      = $30000
+XDL_A_V         = $7f000
+XDL_B_V         = $7f020
 BCB_V           = $7f100
 MEMW            = $4000              ; MEMAC-B 16K CPU window
 
@@ -30,7 +32,6 @@ JOY_FIRE        = $10
 FLAG_SOLID      = $01
 FLAG_HAZARD     = $04
 FLAG_BLOCK      = $08
-FLAG_NOTELE     = $10
 
 MODE_TITLE      = 0
 MODE_PLAY       = 1
@@ -67,9 +68,13 @@ blit_wait_hi    org *+1
 joy_state       org *+1
 joy_prev        org *+1
 joy_pressed     org *+1
+space_pending   org *+1
+space_pressed   org *+1
 frame           org *+1
 vblank          org *+1
 game_mode       org *+1
+front_bank      org *+1
+back_bank       org *+1
 
 p_x             org *+2
 p_y             org *+2
@@ -147,7 +152,27 @@ nmi
 dli_dummy
         rti
 
-irq_dummy
+; POKEY raises this IRQ for every newly detected key depression. Capture SPACE
+; as an event instead of trying to infer presses from periodically sampled
+; key levels.
+irq_keyboard
+        pha
+        lda irqst
+        and #$40
+        bne @irq_keyboard_done
+        lda kbcode
+        and #$3f
+        cmp #key_space
+        bne @irq_keyboard_ack
+        lda #1
+        sta space_pending
+@irq_keyboard_ack
+        lda #0                      ; clear the latched keyboard IRQ
+        sta irqen
+        lda #$40                    ; and arm the next key depression
+        sta irqen
+@irq_keyboard_done
+        pla
         rti
 
 start
@@ -168,12 +193,19 @@ start
         sta portb
         mwa #dli_dummy dliv
         mwa #nmi nmivec
-        mwa #irq_dummy irqvec
+        mwa #irq_keyboard irqvec
+        lda #$40
+        sta irqens
+        sta irqen
         lda #64
         sta nmien
         cli
 
         jsr vbxe_init
+        lda #SCREEN_A_V>>16
+        sta front_bank
+        lda #SCREEN_B_V>>16
+        sta back_bank
         mwa #carrier_dlist dlptr
         lda #scr40
         sta dmactl
@@ -189,7 +221,9 @@ start
 
 main_loop
         jsr wait_vbl
+main_loop_after_wait
         jsr read_joystick
+        jsr read_keyboard
         jsr update_sound_toggle
         jsr sound_update
         lda game_mode
@@ -206,7 +240,9 @@ main_loop
         beq main_loop
         jsr draw_game
         inc frame
-        jmp main_loop
+        ; draw_game presents at VBL, so begin constructing the next frame
+        ; immediately instead of waiting through a second vertical blank.
+        jmp main_loop_after_wait
 
 title_loop
         inc frame
@@ -220,7 +256,7 @@ title_loop
         cmp #100                    ; original intro also enters play automatically
         bcc main_loop
 @title_loop_start
-        jsr clear_screen
+        jsr clear_back_buffer
         lda #1
         sta room_dirty
         lda #MODE_PLAY
@@ -233,7 +269,7 @@ end_loop
         and #JOY_FIRE
         beq main_loop
         jsr init_game
-        jsr clear_screen
+        jsr clear_back_buffer
         lda #MODE_PLAY
         sta game_mode
         jmp main_loop
@@ -296,6 +332,20 @@ read_joystick
         sta joy_pressed
         rts
 
+; Transfer the keyboard IRQ latch into this gameplay frame.
+read_keyboard
+        lda #0
+        sta space_pressed
+        lda space_pending
+        bne @read_keyboard_done
+        rts
+@read_keyboard_done
+        lda #0
+        sta space_pending
+        lda #1
+        sta space_pressed
+        rts
+
 ; OPTION toggles all game sound. Console keys are active-low.
 update_sound_toggle
         lda consol
@@ -333,6 +383,8 @@ init_game
         sta teleports+1
         sta frame
         sta switch_down
+        sta space_pending
+        sta space_pressed
         sta crumble_time
         lda #1
         sta room_dirty
@@ -420,8 +472,7 @@ tile_to_pixel
 ; ============================================================================
 
 update_player
-        lda joy_pressed
-        and #JOY_FIRE
+        lda space_pressed
         beq @update_player_move
         jsr try_teleport
 @update_player_move
@@ -455,7 +506,7 @@ update_player
 
 @update_player_jump
         lda joy_pressed
-        and #JOY_UP
+        and #JOY_FIRE
         beq @update_player_buffer_tick
         lda p_ground
         bne @update_player_do_jump
@@ -785,36 +836,6 @@ player_ground_test
         rts
 
 try_teleport
-        lda p_can_tele
-        bne @try_teleport_allowed
-        rts
-@try_teleport_allowed
-        mwa p_x col_x
-        clc
-        lda col_x
-        adc #4
-        sta col_x
-        bcc @+
-        inc col_x+1
-@
-        mwa p_y col_y
-        clc
-        lda col_y
-        adc #4
-        sta col_y
-        bcc @+
-        inc col_y+1
-@
-        jsr sample_pixel
-        tax
-        lda tile_flags,x
-        and #FLAG_NOTELE
-        beq @try_teleport_not_blocked
-        rts
-@try_teleport_not_blocked
-
-        mwa p_x old_x
-        mwa p_y old_y
         lda joy_state
         and #JOY_UP
         beq @try_teleport_down
@@ -828,7 +849,7 @@ try_teleport
 @try_teleport_down
         lda joy_state
         and #JOY_DOWN
-        beq @try_teleport_horizontal
+        beq @try_teleport_left
         clc
         lda p_y
         adc #32
@@ -836,9 +857,16 @@ try_teleport
         bcc @try_teleport_resolve
         inc p_y+1
         jmp @try_teleport_resolve
-@try_teleport_horizontal
+@try_teleport_left
+        lda joy_state
+        and #JOY_LEFT
+        bne @try_teleport_tele_left
+        lda joy_state
+        and #JOY_RIGHT
+        bne @try_teleport_tele_right
         lda p_face
         beq @try_teleport_tele_right
+@try_teleport_tele_left
         sec
         lda p_x
         sbc #32
@@ -857,25 +885,23 @@ try_teleport
 @try_teleport_resolve
         lda p_x+1
         cmp #4
-        bcs @try_teleport_reject
+        bcs @try_teleport_lethal
         lda p_y+1
         cmp #1
         bcc @try_teleport_collision
-        bne @try_teleport_reject
+        bne @try_teleport_lethal
         lda p_y
         cmp #128
-        bcs @try_teleport_reject
+        bcs @try_teleport_lethal
 @try_teleport_collision
         jsr player_inside_solid
         bcc @try_teleport_success
-        ; A blocked destination is rejected instead of killing the player.
-@try_teleport_reject
-        mwa old_x p_x
-        mwa old_y p_y
-        jmp @try_teleport_done
+        ; Teleporting into a solid tile succeeds as a lethal teleport. Force
+        ; the regular death/respawn path after recording the attempt.
+@try_teleport_lethal
+        lda #2
+        sta p_y+1
 @try_teleport_success
-        ; The PICO-8 game keeps teleporting enabled after the first landing,
-        ; including while rising or falling. Death/respawn is what disables it.
         inc teleports
         bne @try_teleport_sound
         inc teleports+1
@@ -1174,35 +1200,19 @@ check_key
         rts
 
 check_switch
-        ; Tile at player's feet.
-        mwa p_x col_x
-        clc
-        lda col_x
-        adc #4
-        sta col_x
-        bcc @+
-        inc col_x+1
-@
-        mwa p_y col_y
-        clc
-        lda col_y
-        adc #8
-        sta col_y
-        bcc @+
-        inc col_y+1
-@
-        jsr sample_pixel
-        cmp #69
-        bne @check_switch_release
+        jsr find_switch_contact
+        bcc @check_switch_release
         lda switch_down
         bne @check_switch_done
-        lda #70
-        ldy #0
-        sta (map_ptr),y
+        ; A switch toggles once when the player's feet enter it. Remaining on
+        ; it keeps it depressed; leaving re-arms it for the next entry.
         lda tmp0
         sta switch_x
         lda tmp1
         sta switch_y
+        lda #70
+        ldy #0
+        sta (map_ptr),y
         lda #1
         sta switch_down
         sta room_dirty
@@ -1229,6 +1239,83 @@ check_switch
         lda #1
         sta room_dirty
 @check_switch_done
+        rts
+
+; A switch is pressed only by the bottom of the player's feet. Two points
+; inside the player catch an actual overlap; two points one pixel below catch
+; the exact frame where Porter is standing on the button's top edge.
+find_switch_contact
+        mwa p_x col_x
+        clc
+        lda col_x
+        adc #2
+        sta col_x
+        bcc @+
+        inc col_x+1
+@
+        mwa p_y col_y
+        clc
+        lda col_y
+        adc #7
+        sta col_y
+        bcc @+
+        inc col_y+1
+@
+        jsr sample_switch_contact
+        bcc @+
+        rts
+@
+        clc
+        lda col_x
+        adc #4
+        sta col_x
+        bcc @+
+        inc col_x+1
+@
+        jsr sample_switch_contact
+        bcc @+
+        rts
+@
+        mwa p_x col_x
+        clc
+        lda col_x
+        adc #2
+        sta col_x
+        bcc @+
+        inc col_x+1
+@
+        mwa p_y col_y
+        clc
+        lda col_y
+        adc #8
+        sta col_y
+        bcc @+
+        inc col_y+1
+@
+        jsr sample_switch_contact
+        bcc @+
+        rts
+@
+        clc
+        lda col_x
+        adc #4
+        sta col_x
+        bcc @+
+        inc col_x+1
+@
+        jsr sample_switch_contact
+        rts
+
+sample_switch_contact
+        jsr sample_pixel
+        cmp #69
+        beq @sample_switch_contact_yes
+        cmp #70
+        beq @sample_switch_contact_yes
+        clc
+        rts
+@sample_switch_contact_yes
+        sec
         rts
 
 check_crumble
@@ -1415,6 +1502,8 @@ reset_room_objects
         sta col_no
 @reset_room_objects_col
         jsr map_at_tile
+        cmp #70
+        beq @reset_room_objects_switch
         cmp #86
         beq @reset_room_objects_key
         cmp #90
@@ -1431,6 +1520,9 @@ reset_room_objects
         jmp @reset_room_objects_next
 @reset_room_objects_key
         lda #85
+        bne @reset_room_objects_write
+@reset_room_objects_switch
+        lda #69
         bne @reset_room_objects_write
 @reset_room_objects_platform
         lda #89
@@ -1794,9 +1886,8 @@ update_camera
         rts
 
 draw_game
-        ; Static tiles are cached without actors/player. Repainting 256 tiles
-        ; directly on the displayed page every frame erased the player for most
-        ; of a video frame and made the sprite appear to blink.
+        ; Build the complete frame in the hidden framebuffer. The displayed
+        ; framebuffer is never modified while VBXE is scanning it.
         lda room_dirty
         beq @draw_game_cached
         jsr draw_room
@@ -1809,12 +1900,12 @@ draw_game
         jsr draw_actors
         jsr draw_teleport_preview
         jsr draw_player
-        rts
+        jmp present_back_buffer
 
 draw_room
-        ; Build the static room entirely off-screen. The displayed framebuffer
-        ; is only touched by copy_room_cache, so even an animated-tile rebuild
-        ; cannot erase Porter partway through a video frame.
+        ; Build the static room entirely in its cache. It is copied only to the
+        ; hidden framebuffer, so animated-tile rebuilds cannot erase Porter
+        ; partway through a displayed frame.
         lda #ROOM_CACHE_V>>16
         sta dest_bank
         mwa #192 dest_pitch
@@ -1860,8 +1951,8 @@ draw_room
         bne @draw_room_row
         rts
 
-; Restore the cached 192x192 room into the visible centered playfield with a
-; single blitter command. Dynamic sprites are drawn afterward.
+; Restore the cached 192x192 room into the hidden framebuffer with a single
+; blitter command. Dynamic sprites are drawn there afterward.
 copy_room_cache
         jsr wait_blitter
         ldy #$5d
@@ -1883,7 +1974,7 @@ copy_room_cache
         sta MEMW+[BCB_V&$3fff]+6
         lda #>[VIEW_Y*SCR_W+VIEW_X]
         sta MEMW+[BCB_V&$3fff]+7
-        lda #SCREEN_V>>16
+        lda back_bank
         sta MEMW+[BCB_V&$3fff]+8
         lda #<SCR_W
         sta MEMW+[BCB_V&$3fff]+9
@@ -1913,9 +2004,44 @@ copy_room_cache
         rts
 
 set_screen_target
-        lda #SCREEN_V>>16
+        lda back_bank
         sta dest_bank
         mwa #SCR_W dest_pitch
+        rts
+
+; Publish only a completely rendered framebuffer. Switching the XDL pointer
+; during vertical blank is atomic from the viewer's perspective.
+present_back_buffer
+        jsr wait_vbl
+        lda front_bank
+        pha
+        lda back_bank
+        sta front_bank
+        pla
+        sta back_bank
+        lda front_bank
+        cmp #SCREEN_A_V>>16
+        beq @present_back_buffer_a
+        lda #<XDL_B_V
+        sta tmp_ptr
+        lda #>XDL_B_V
+        sta tmp_ptr+1
+        jmp @present_back_buffer_set
+@present_back_buffer_a
+        lda #<XDL_A_V
+        sta tmp_ptr
+        lda #>XDL_A_V
+        sta tmp_ptr+1
+@present_back_buffer_set
+        ldy #$41
+        lda tmp_ptr
+        sta (fx_ptr),y
+        iny
+        lda tmp_ptr+1
+        sta (fx_ptr),y
+        iny
+        lda #XDL_A_V>>16
+        sta (fx_ptr),y
         rts
 
 draw_coins
@@ -2055,8 +2181,6 @@ draw_player
         rts
 
 draw_teleport_preview
-        lda p_can_tele
-        beq @draw_teleport_preview_done
         mwa p_x actor_x
         mwa p_y actor_y
         lda joy_state
@@ -2072,7 +2196,7 @@ draw_teleport_preview
 @draw_teleport_preview_down
         lda joy_state
         and #JOY_DOWN
-        beq @draw_teleport_preview_side
+        beq @draw_teleport_preview_left
         clc
         lda actor_y
         adc #32
@@ -2080,9 +2204,16 @@ draw_teleport_preview
         bcc @draw_teleport_preview_draw
         inc actor_y+1
         jmp @draw_teleport_preview_draw
-@draw_teleport_preview_side
+@draw_teleport_preview_left
+        lda joy_state
+        and #JOY_LEFT
+        bne @draw_teleport_preview_go_left
+        lda joy_state
+        and #JOY_RIGHT
+        bne @draw_teleport_preview_right
         lda p_face
         beq @draw_teleport_preview_right
+@draw_teleport_preview_go_left
         sec
         lda actor_x
         sbc #32
@@ -2170,8 +2301,10 @@ times64
 ; ============================================================================
 
 draw_title
-        jsr clear_screen
-        jsr set_screen_target
+        lda front_bank
+        sta dest_bank
+        jsr clear_buffer
+        mwa #SCR_W dest_pitch
         lda #0
         sta sprite_flip
         ; PORTER logo, assembled as in the PICO-8 title.
@@ -2210,7 +2343,7 @@ draw_title
         rts
 
 draw_end
-        jsr clear_screen
+        jsr clear_back_buffer
         jsr set_screen_target
         lda #0
         sta sprite_flip
@@ -2226,7 +2359,7 @@ draw_end
         ldx #154
         ldy #132
         jsr draw_sprite_xy
-        rts
+        jmp present_back_buffer
 
 draw_sprite_xy
         sta sprite_id
@@ -2350,13 +2483,13 @@ vbxe_init
         lda #1
         sta (fx_ptr),y
         iny
-        lda #<XDL_V
+        lda #<XDL_A_V
         sta (fx_ptr),y
         iny
-        lda #>XDL_V
+        lda #>XDL_A_V
         sta (fx_ptr),y
         iny
-        lda #XDL_V>>16
+        lda #XDL_A_V>>16
         sta (fx_ptr),y
         ldy #$5d
         lda #0
@@ -2411,14 +2544,20 @@ upload_sprites
 
 upload_xdl_bcb
         ldy #$5d
-        lda #$80+[XDL_V>>14]
+        lda #$80+[XDL_A_V>>14]
         sta (fx_ptr),y
         ldx #xdl_len-1
-@upload_xdl_bcb_xdl
-        lda xdl_data,x
-        sta MEMW+[XDL_V&$3fff],x
+@upload_xdl_bcb_xdl_a
+        lda xdl_data_a,x
+        sta MEMW+[XDL_A_V&$3fff],x
         dex
-        bpl @upload_xdl_bcb_xdl
+        bpl @upload_xdl_bcb_xdl_a
+        ldx #xdl_len-1
+@upload_xdl_bcb_xdl_b
+        lda xdl_data_b,x
+        sta MEMW+[XDL_B_V&$3fff],x
+        dex
+        bpl @upload_xdl_bcb_xdl_b
         ldx #bcb_len-1
 @upload_xdl_bcb_bcb
         lda bcb_template,x
@@ -2452,11 +2591,18 @@ upload_palette
         bcc @upload_palette_colour
         rts
 
-clear_screen
-        ; Clear all four 16K MEMAC-B banks occupied by the framebuffer.
+clear_back_buffer
+        lda back_bank
+        sta dest_bank
+
+clear_buffer
+        ; Clear all four 16K MEMAC-B banks occupied by dest_bank's framebuffer.
         ; A CPU clear is used here because it is startup/end-screen only and
         ; avoids core/emulator differences in constant-source blitter fills.
-        lda #$80+[SCREEN_V>>14]
+        lda dest_bank
+        asl
+        asl
+        ora #$80
         sta tmp1                    ; never read MEMAC_BANK_SEL back
         lda #4
         sta tmp0
@@ -2601,18 +2747,25 @@ wait_blitter
 @wait_blitter_done
         rts
 
-xdl_data
+xdl_data_a
         dta a($24),b(3)                 ; four blank lines
         dta a($8862),b(199+4)
-        dta a(SCREEN_V&$ffff)
-        dta b(SCREEN_V>>16),a(SCR_W)
+        dta a(SCREEN_A_V&$ffff)
+        dta b(SCREEN_A_V>>16),a(SCR_W)
         dta a($ff14)
-xdl_len = *-xdl_data
+xdl_len = *-xdl_data_a
+
+xdl_data_b
+        dta a($24),b(3)
+        dta a($8862),b(199+4)
+        dta a(SCREEN_B_V&$ffff)
+        dta b(SCREEN_B_V>>16),a(SCR_W)
+        dta a($ff14)
 
 bcb_template
         dta 0,0,0
         dta a(12),1
-        dta a(SCREEN_V&$ffff),SCREEN_V>>16
+        dta a(SCREEN_A_V&$ffff),SCREEN_A_V>>16
         dta a(SCR_W),1
         dta a(11),11
         dta $ff,0,0
@@ -2681,14 +2834,18 @@ sound_update
 ; --- cartridge data segments ------------------------------------------------
 ; Keep the complete asset range below BASIC ROM. Some XEX loaders do not write
 ; reliably into RAM hidden by $A000-$BFFF even if it is exposed afterward.
-        org $3500
+; ERT guards make an accidental segment overlap a build failure.
+        ert * > $3fff
+        org $4000
 sprites_raw
         ins 'data/sprites12.dat'
 
-        org $7000
+        ert * > $7bff
+        org $7c00
 tile_flags
         ins 'data/tile_flags.dat'
 
+        ert * > $7fff
         org $8000
 world_map
         ins 'data/world.dat'

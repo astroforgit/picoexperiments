@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111827">
+  <title>Heroes of Lowrez — Hex Battle Prototype</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">ATARI VBXE PROTOTYPE</p>
+      <h1>Heroes of Lowrez</h1>
+      <p class="subtitle">A tiny turn-based hex battle built for a future 8-bit port.</p>
+    </header>
+
+    <section class="game-shell" aria-label="Hex battle game">
+      <canvas id="game" width="320" height="200" tabindex="0"
+        aria-label="Turn-based hex battle. Use arrow keys and Space, or click hexes."></canvas>
+      <div class="controls">
+        <button id="previous-battle" type="button">Previous <kbd>1</kbd></button>
+        <button id="next-battle" type="button">Next <kbd>2</kbd></button>
+        <button id="end-turn" type="button">Skip hero <kbd>Space</kbd></button>
+        <button id="restart" type="button">Restart <kbd>R</kbd></button>
+      </div>
+    </section>
+
+    <section class="instructions">
+      <div>
+        <h2>Mission</h2>
+        <p>Defeat every red unit. Each hero may move and then attack, or skip at any time.</p>
+      </div>
+      <div>
+        <h2>Controls</h2>
+        <p><strong>Mouse:</strong> select a hero, then a destination or enemy.</p>
+        <p><strong>Keyboard:</strong> arrows move the cursor, <kbd>Enter</kbd> confirms,
+          <kbd>Space</kbd> skips, <kbd>1</kbd>/<kbd>2</kbd> changes battle,
+          and <kbd>R</kbd> restarts.</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="engine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

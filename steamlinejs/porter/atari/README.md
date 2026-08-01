@@ -18,10 +18,11 @@ old conversion's 29 isolated room snapshots.
 
 ## Controls
 
-- joystick left/right: move
-- joystick up: jump
-- joystick up/down + trigger: teleport vertically
-- trigger without up/down: teleport in the direction Porter faces
+- joystick left/right: move and aim horizontally
+- joystick up/down: aim vertically
+- joystick trigger: jump
+- `SPACE`: teleport in the aimed direction, including while airborne
+- teleporting into a wall or outside the world kills Porter
 - trigger or any direction on the title screen: start immediately
 - the title automatically starts the game after roughly two seconds
 - trigger on the end screen: restart

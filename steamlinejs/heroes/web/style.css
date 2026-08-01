@@ -1,0 +1,140 @@
+:root {
+  color-scheme: dark;
+  --ink: #f7f3d0;
+  --muted: #a9b7a8;
+  --panel: #182338;
+  --line: #34445d;
+  --gold: #f2c14e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background:
+    radial-gradient(circle at 50% -20%, #34415a 0, transparent 45%),
+    #0d1422;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--ink);
+  font-family: "Courier New", Courier, monospace;
+}
+
+main {
+  width: min(94vw, 780px);
+  margin: 0 auto;
+  padding: 36px 0 48px;
+}
+
+header {
+  margin-bottom: 20px;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 0.18em;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(30px, 7vw, 54px);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+  text-transform: uppercase;
+  text-shadow: 3px 3px 0 #642f45;
+}
+
+.subtitle {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.game-shell {
+  border: 2px solid var(--line);
+  background: #111827;
+  box-shadow: 10px 10px 0 #080c14;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 8 / 5;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  cursor: pointer;
+  outline: none;
+}
+
+canvas:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--gold);
+}
+
+.controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px;
+  border-top: 2px solid var(--line);
+}
+
+button {
+  border: 1px solid #60708a;
+  padding: 9px 12px;
+  background: #243149;
+  color: var(--ink);
+  font: bold 13px/1 "Courier New", monospace;
+  cursor: pointer;
+}
+
+button:hover,
+button:focus-visible {
+  border-color: var(--gold);
+  background: #30405c;
+}
+
+kbd {
+  color: var(--gold);
+  font: inherit;
+}
+
+.instructions {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 24px;
+  margin-top: 28px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.instructions h2 {
+  margin: 0 0 6px;
+  color: var(--ink);
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.instructions p {
+  margin: 0 0 5px;
+}
+
+@media (max-width: 560px) {
+  main {
+    padding-top: 24px;
+  }
+
+  .instructions {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
