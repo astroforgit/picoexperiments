@@ -148,11 +148,14 @@ sk1      equ *
  sta char,y
  dey
  bpl *-4
- lda #9
+ lda #0
  sta food
- sta food+1
  sta drink
+ lda #6
+ sta food+1
  sta drink+1
+ lda #100
+ sta heart
  lda #120
  sta xplr
  lda #50
@@ -394,10 +397,13 @@ pse2     equ *
  sta zpcol,y
  dey
  bpl *-7
+ jsr arenaenter
 
 * glowna petla gry
 
 loop     equ *
+
+ jmp arenagame
 
  lda #255
  sta 764
@@ -1078,6 +1084,10 @@ tomufo   equ *
 pukerun  equ *
 
  pha
+ ldx #2
+ jsr consumeunit
+ lda #1
+ sta attackkind
  ldy #80
  lda plfaz
  beq *+4
@@ -1140,6 +1150,7 @@ rzg0     equ *
  sty plfaz
  lda #0
  sta faza
+ sta attackkind
  rts
 
 nofood   equ *
@@ -1325,17 +1336,7 @@ opr2     equ *
 
 showplr  equ *
 
- lda food
- bne ctl1
- lda food+1
- bne ctl1
- jmp gmeovr
-
-ctl1     equ *
-
- lda drink
- bne ctl2
- lda drink+1
+ lda heart
  bne ctl2
  jmp gmeovr
 
@@ -1408,30 +1409,35 @@ niepokaz equ *
  lda yplr
  cmp #128
  bcc ctl3
- inc ycav
- lda #33
+ lda #112
  sta yplr
- jsr showcav
 
 ctl3     equ *
 
  lda xplr
  cmp #182
  bcc ctl5
- lda #66
+ lda #181
  sta xplr
- inc xcav
- jsr showcav
 
 ctl5     equ *
 
  lda xplr
  cmp #65
  bcs ctl6
+ inc arenaroom
+ lda arenaroom
+ cmp #3
+ bcc enterarenaroom
+ lda #0
+ sta arenaroom
+
+enterarenaroom equ *
+
  lda #181
  sta xplr
- dec xcav
- jsr showcav
+ jsr arenaenter
+ jmp ctl6
 
 ctl6     equ *
 
@@ -1439,8 +1445,13 @@ ctl6     equ *
 
 przerwa  equ *
 
+ lda idlesmoke
+ bne smokegameactive
  lda #255
  sta zezw
+
+smokegameactive equ *
+
  ldx #18
  lda plfaz
  pha
@@ -1507,8 +1518,14 @@ prz1     equ *
  lda ext
  beq przloop
 
+ lda idlesmoke
+ bne smokeleaveactive
  lda #0
  sta zezw
+
+smokeleaveactive equ *
+
+ lda #0
  sta faza
  pla
  sta plfaz
@@ -1528,40 +1545,159 @@ mom1     equ *
 
  lda jstick0
  cmp #15
- beq *+8
+ bne momentexit
+ lda strig0
+ bne momentwait
+
+momentexit equ *
+
  lda #255
  sta ext
  rts
+
+momentwait equ *
+
  cpx 20
  bne mom1
+ jsr foto
  rts
 
 * zasloniecie fotokomorki
 
 foto     equ *
 
- lda $d00e
- ora $d00f
- and #3
- beq fot0
- lda #0
- sta zmfo
+ lda xmine
+ jsr arenanear
+ bcs fotohuman
+ jsr tankoverlap
+ bcc enemydrain
+
+fotohuman equ *
+
+ lda xhuman
+ jsr arenanear
+ bcs fotoexit
+
+enemydrain equ *
+
+ lda contactlock
+ bne fotohitexit
  lda #1
- sta zmdr
+ sta contactlock
+ jsr damageheart
 
-fot0     equ *
+fotohitexit equ *
 
- lda timer
- beq *+5
- jmp exfoto
-
- lda $d006
- and #8
- bne zabij
- lda $d007
- and #8
- bne *+6
+ lda #0
  sta $d01e
+ rts
+
+fotoexit equ *
+
+ lda #0
+ sta contactlock
+ sta $d01e
+ rts
+
+* wspolne obrazenia serca od wroga albo kaktusa: losowo 40-60
+
+damageheart equ *
+
+ lda random
+ and #31
+
+damagefold equ *
+
+ cmp #21
+ bcc damageready
+ sec
+ sbc #21
+ jmp damagefold
+
+damageready equ *
+
+ clc
+ adc #40
+ sta hitdamage
+ lda heart
+ sec
+ sbc hitdamage
+ bcs storedamage
+ lda #0
+
+storedamage equ *
+
+ sta heart
+ lda #220
+ sta sound
+ rts
+
+* Carry clear means the tank and Hans overlap vertically.
+
+tankoverlap equ *
+
+ lda ymine
+ cmp yplr
+ bcc tankseparate
+ lda yplr
+ clc
+ adc #38
+ cmp ymine
+ bcc tankseparate
+ clc
+ rts
+
+tankseparate equ *
+
+ sec
+ rts
+
+* kaktusy sa tylko w trzecim pokoju; kazda faza skoku jest bezpieczna
+
+cactushit equ *
+
+ lda arenaroom
+ cmp #2
+ bne cactusclear
+ lda yplr
+ cmp #112
+ bcc cactusclear
+ lda xplr
+ cmp #80
+ bcc cactussecond
+ cmp #96
+ bcc cactuscontact
+
+cactussecond equ *
+
+ cmp #112
+ bcc cactusthird
+ cmp #128
+ bcc cactuscontact
+
+cactusthird equ *
+
+ cmp #144
+ bcc cactusclear
+ cmp #160
+ bcs cactusclear
+
+cactuscontact equ *
+
+ lda cactuslock
+ bne cactusdone
+ lda #1
+ sta cactuslock
+ jsr damageheart
+
+cactusdone equ *
+
+ rts
+
+cactusclear equ *
+
+ lda #0
+ sta cactuslock
  rts
 
 zabij    equ *
@@ -2003,7 +2139,428 @@ noitem  equ *
  clc
  rts
 
-* wspolne trafienie czolgu: tylko kontakt po polowie animacji
+ org $4300
+
+* trzy jednokierunkowe, plaskie pokoje areny
+
+arenaenter equ *
+
+ ldx arenaroom
+ lda arenacaves,x
+ sta xcav
+ lda #0
+ sta ycav
+ jsr showcav
+ jsr patcharenaroom
+ lda #250
+ sta xmine
+ sta xhuman
+ lda #8
+ sta enemywait
+ lda #0
+ sta enemyseqpos
+ lda #1
+ sta enemytype
+ lda #0
+ sta minfaz
+ sta humanfaz
+ sta tankslowtick
+ sta cactuslock
+ sta lot
+ lda #143
+ sta ymine
+ lda #255
+ sta pukekill
+ lda #181
+ sta xplr
+ lda #112
+ sta yplr
+ sta lyplr
+ lda #9
+ sta plfaz
+ ldx arenaroom
+ txa
+ asl @
+ asl @
+ tax
+ lda roomcolors,x
+ sta 708
+ sta zpcol+4
+ lda roomcolors+1,x
+ sta 709
+ sta zpcol+5
+ lda roomcolors+2,x
+ sta 710
+ sta zpcol+6
+ lda roomcolors+3,x
+ sta 711
+ sta zpcol+7
+ lda #0
+ sta 712
+ sta zpcol+8
+ sta $d01e
+ rts
+
+arenacaves equ *
+
+ dta b(6),b(7),b(0)
+
+roomcolors equ *
+
+ dta b($92),b($a4),b($7a),b($1e)
+ dta b($42),b($54),b($ca),b($0e)
+ dta b($82),b($94),b($ca),b($0e)
+
+patcharenaroom equ *
+
+ lda arenaroom
+ bne patchthirdroom
+ ldx #0
+
+floorloop equ *
+
+ lda #$20
+ sta ekran+$e0,x
+ inx
+ lda #$21
+ sta ekran+$e0,x
+ inx
+ cpx #32
+ bcc floorloop
+
+patchthirdroom equ *
+
+ lda arenaroom
+ cmp #2
+ bne patchdoors
+ ldx #0
+
+thirdwallloop equ *
+
+ lda #1
+ sta ekran,x
+ inx
+ cpx #$e0
+ bcc thirdwallloop
+ ldx #0
+
+thirdfloorloop equ *
+
+ lda #$20
+ sta ekran+$e0,x
+ inx
+ lda #$21
+ sta ekran+$e0,x
+ inx
+ cpx #32
+ bcc thirdfloorloop
+
+* trzy niskie kaktusy w stylu gry Fred, mozliwe do przeskoczenia
+
+ lda #$60
+ sta ekran+$c0+6
+ sta ekran+$c0+14
+ sta ekran+$c0+22
+ lda #$61
+ sta ekran+$c0+7
+ sta ekran+$c0+15
+ sta ekran+$c0+23
+
+patchdoors equ *
+
+ ldx #0
+
+doorloop equ *
+
+ lda ekran,x
+ cmp #$10
+ bne doortest11
+ lda #$0c
+ sta ekran,x
+ jmp doornext
+
+doortest11 equ *
+
+ cmp #$11
+ bne doortest30
+ lda #$0d
+ sta ekran,x
+ jmp doornext
+
+doortest30 equ *
+
+ cmp #$30
+ bne doortest31
+ lda #$2c
+ sta ekran,x
+ jmp doornext
+
+doortest31 equ *
+
+ cmp #$31
+ bne doornext
+ lda #$2d
+ sta ekran,x
+
+doornext equ *
+
+ inx
+ bne doorloop
+
+ ldx #0
+
+commonfloorloop equ *
+
+ lda #$20
+ sta ekran+$e0,x
+ inx
+ lda #$21
+ sta ekran+$e0,x
+ inx
+ cpx #32
+ bcc commonfloorloop
+
+ rts
+
+* stabilna petla areny, niezalezna od kolizji starej mapy labiryntu
+
+arenagame equ *
+
+ lda #255
+ sta 764
+ sta $d01e
+ lda #2
+ jsr pause
+ jsr cactushit
+ lda 764
+ cmp #33
+ bne *+5
+ jsr przerwa
+ lda 764
+ cmp #28
+ bne *+5
+ jmp brkgame
+ lda jstick0
+ and #15
+ sta joy
+ cmp #15
+ bne arenaactiveinput
+ lda strig0
+ beq arenaactiveinput
+ lda #1
+ sta idlesmoke
+ jsr przerwa
+ lda #0
+ sta idlesmoke
+ lda jstick0
+ and #15
+ sta joy
+
+arenaactiveinput equ *
+
+ jsr arenahorizontal
+
+arenaanimate equ *
+
+ jsr fazy
+ lda joy
+ and #1
+ bne arenacheckfire
+ lda #1
+ sta firelock
+ jmp arenaafterfire
+
+arenacheckfire equ *
+
+ lda strig0
+ beq arenafire
+ lda #0
+ sta firelock
+ jmp arenaafterfire
+
+arenafire equ *
+
+ lda joy
+ and #2
+ beq arenawantpiss
+ lda #1
+ jmp arenafireselected
+
+arenawantpiss equ *
+
+ lda #2
+
+arenafireselected equ *
+
+ cmp firelock
+ beq arenaafterfire
+ sta firelock
+ cmp #2
+ beq arenafirepiss
+ lda #8
+ jsr pukerun
+ jmp arenaafterfire
+
+arenafirepiss equ *
+
+ jsr pissrun
+
+arenaafterfire equ *
+
+ jsr foto
+ jsr cactushit
+ jsr arenajump
+ jsr showplr
+ jmp arenagame
+
+arenajump equ *
+
+ lda joy
+ and #1
+ beq arenajumpstart
+ rts
+
+arenajumpstart equ *
+
+ lda #1
+ sta lot
+ sta goradol
+ lda yplr
+ sta zpy
+ ldy #64
+ lda plfaz
+ beq *+4
+ ldy #72
+ sty plfaz
+ lda #0
+ sta faza
+ ldy #5
+
+arenajumpup equ *
+
+ tya
+ pha
+ lda jstick0
+ and #15
+ sta joy
+ jsr arenajumpx
+ lda zpy
+ sec
+ sbc ysktb,y
+ sta yplr
+ jsr showplr
+ jsr foto
+ jsr cactushit
+ lda #5
+ jsr pause
+ pla
+ tay
+ tya
+ and #1
+ beq *+5
+ inc faza
+ dey
+ bpl arenajumpup
+ ldy #5
+
+arenajumpdown equ *
+
+ tya
+ pha
+ lda jstick0
+ and #15
+ sta joy
+ jsr arenajumpx
+ inc yplr
+ inc yplr
+ jsr showplr
+ jsr foto
+ jsr cactushit
+ lda #4
+ jsr pause
+ pla
+ tay
+ tya
+ and #1
+ beq *+5
+ inc faza
+ dey
+ bpl arenajumpdown
+ lda zpy
+ sta yplr
+ lda #0
+ sta lot
+ sta goradol
+ sta faza
+ ldy #0
+ lda plfaz
+ cmp #64
+ beq *+4
+ ldy #9
+ sty plfaz
+ rts
+
+arenajumpx equ *
+
+ lda joy
+ and #4
+ bne arenajumpxcheckright
+ lda xplr
+ sec
+ sbc xsktb,y
+ sta xplr
+ rts
+
+arenajumpxcheckright equ *
+
+ lda joy
+ and #8
+ bne arenajumpxend
+
+arenajumpxright equ *
+
+ lda xplr
+ clc
+ adc xsktb,y
+ sta xplr
+
+arenajumpxend equ *
+
+ rts
+
+arenahorizontal equ *
+
+ lda joy
+ and #4
+ bne arenacheckright
+ lda lot
+ bne arenaleftmove
+ lda #9
+ sta plfaz
+
+arenaleftmove equ *
+
+ dec xplr
+
+arenacheckright equ *
+
+ lda joy
+ and #8
+ bne arenahorizontalend
+ lda lot
+ bne arenarightmove
+ lda #0
+ sta plfaz
+
+arenarightmove equ *
+
+ inc xplr
+
+arenahorizontalend equ *
+
+ rts
+
+* wspolne trafienie wroga: kontakt dopiero po polowie animacji
 
 attackhit equ *
 
@@ -2014,29 +2571,65 @@ attackhit equ *
 
 attackactive equ *
 
- lda $d00e
- ora $d00f
- and #3
- beq attackmiss
- lda #255
- sta pukekill
+ lda xmine
+ jsr arenanear
+ bcs attackhuman
  lda #250
  sta xmine
- lda #0
- sta lsnxtmin
- sta 53248
- sta 53249
+ lda #12
+ sta enemywait
+ jsr attackscore
+
+attackhuman equ *
+
+ lda xhuman
+ jsr arenanear
+ bcs attackmiss
+ lda enemytype
+ cmp attackkind
+ bne attackmiss
+ lda #250
+ sta xhuman
+ lda #12
+ sta enemywait
+ jsr attackscore
+ jmp attackmiss
+
+attackscore equ *
+
  lda point
  clc
  adc #150
  sta point
  lda #180
  sta sound
- lda #0
- sta $d01e
+ rts
 
 attackmiss equ *
 
+ lda #0
+ sta $d01e
+ rts
+
+arenanear equ *
+
+ cmp #240
+ bcs arenafar
+ sec
+ sbc xplr
+ bcs arenadistance
+ eor #255
+ clc
+ adc #1
+
+arenadistance equ *
+
+ cmp #12
+ rts
+
+arenafar equ *
+
+ sec
  rts
 
 * ostatnia klatka pozostaje aktywna az Hans wroci do normalnej pozy
@@ -2063,6 +2656,10 @@ attackwait equ *
 
 pissrun  equ *
 
+ ldx #4
+ jsr consumeunit
+ lda #2
+ sta attackkind
  ldy #0
  lda plfaz
  beq *+4
@@ -2090,9 +2687,21 @@ pissloop equ *
  jsr attacktail
  lda #0
  sta faza
+ sta attackkind
  jsr niepokaz
  lda #0
  sta $d01e
+ rts
+
+consumeunit equ *
+
+ lda keys,x
+ ora keys+1,x
+ beq consumeexit
+ jsr zmniejsz
+
+consumeexit equ *
+
  rts
 
 pissdraw equ *
@@ -2162,6 +2771,542 @@ pissline3 equ *
  dey
  bpl pissline3
  rts
+
+ org $b200
+
+* rysowanie i ruch przeciwnikow areny poza chronionym segmentem $1000-$2fff
+
+arenaminy equ *
+
+ jmp arenamultienemies
+
+* Poprzednia wersja z jednym przeciwnikiem pozostaje tylko jako dokumentacja.
+ ift 0
+
+ lda #0
+ ldy #40
+ sta pmb+$400,y
+ sta pmb+$500,y
+ iny
+ cpy #176
+ bcc *-9
+ lda zezw
+ beq *+3
+ rts
+ lda xmine
+ cmp #240
+ bcc enemyactive
+ lda enemywait
+ beq enemyspawn
+ dec enemywait
+ rts
+
+enemyspawn equ *
+
+ ldx enemyseqpos
+ cpx #10
+ bcc *+4
+ ldx #0
+ lda enemysequence,x
+ sta enemytype
+ inx
+ stx enemyseqpos
+ lda #64
+ sta xmine
+ lda #143
+ ldy enemytype
+ beq *+4
+ lda #112
+ sta ymine
+ lda #0
+ sta minfaz
+
+enemyactive equ *
+
+ lda xmine
+ sta 53248
+ sta 53249
+ lda enemytype
+ bne drawhuman
+
+drawtank equ *
+
+ lda #$1a
+ sta 704
+ lda #$56
+ sta 705
+ ldy ymine
+ ldx #7
+
+drawtankbody equ *
+
+ lda wzorminy,x
+ sta pmb+$400,y
+ lda wzorminy+8,x
+ sta pmb+$500,y
+ dey
+ dex
+ bpl drawtankbody
+ lda minfaz
+ asl @
+ asl @
+ tax
+ ldy ymine
+ lda wzorminy+16,x
+ sta pmb+$4fe,y
+ lda wzorminy+17,x
+ sta pmb+$4ff,y
+ lda wzorminy+18,x
+ sta pmb+$500,y
+ jmp enemymove
+
+drawhuman equ *
+
+ lda enemytype
+ cmp #1
+ bne humanpisscolor
+ lda #$c6
+ sta 704
+ lda #$ca
+ sta 705
+ jmp humancopy
+
+humanpisscolor equ *
+
+ lda #$86
+ sta 704
+ lda #$8c
+ sta 705
+
+humancopy equ *
+
+ lda admin
+ pha
+ lda admin+1
+ pha
+ lda adca
+ pha
+ lda adca+1
+ pha
+ lda minfaz
+ sta admin
+ lda #0
+ sta admin+1
+ ldx #5
+
+humanshift equ *
+
+ asl admin
+ rol admin+1
+ dex
+ bne humanshift
+ lda admin
+ clc
+ adc <plr1
+ sta admin
+ lda admin+1
+ adc >plr1
+ sta admin+1
+ lda ymine
+ sta adca
+ lda #$7c
+ sta adca+1
+ ldy #31
+
+humanplane0 equ *
+
+ lda (admin),y
+ sta (adca),y
+ dey
+ bpl humanplane0
+ lda admin+1
+ clc
+ adc #4
+ sta admin+1
+ inc adca+1
+ ldy #31
+
+humanplane1 equ *
+
+ lda (admin),y
+ sta (adca),y
+ dey
+ bpl humanplane1
+ pla
+ sta adca+1
+ pla
+ sta adca
+ pla
+ sta admin+1
+ pla
+ sta admin
+
+enemymove equ *
+
+ inc xmine
+ lda arenaroom
+ beq enemyspeedready
+ inc xmine
+ cmp #1
+ beq enemyspeedready
+ inc xmine
+
+enemyspeedready equ *
+
+ lda xmine
+ cmp #185
+ bcs enemyremove
+ inc minfaz
+ lda enemytype
+ beq tankphase
+ lda minfaz
+ cmp #9
+ bcc enemyexit
+ lda #0
+ sta minfaz
+ rts
+
+tankphase equ *
+
+ lda minfaz
+ cmp #6
+ bcc enemyexit
+ lda #0
+ sta minfaz
+
+enemyexit equ *
+
+ rts
+
+enemyremove equ *
+
+ lda #250
+ sta xmine
+ lda #10
+ sta enemywait
+ lda #0
+ sta 53248
+ sta 53249
+ rts
+
+enemysequence equ *
+
+ dta b(0),b(0),b(1),b(0),b(2),b(0),b(0),b(1),b(0),b(2)
+
+ eif
+
+arenamultienemies equ *
+
+ lda #0
+ ldy #40
+
+multiclear equ *
+
+ sta pmb+$400,y
+ sta pmb+$500,y
+ iny
+ cpy #176
+ bcc multiclear
+ lda zezw
+ beq multiactive
+ rts
+
+multiactive equ *
+
+ lda xmine
+ cmp #240
+ bcc waveactivetank
+ lda xhuman
+ cmp #240
+ bcc waveactivehuman
+ lda enemywait
+ beq wavespawn
+ dec enemywait
+ lda #0
+ sta 53248
+ sta 53249
+ rts
+
+wavespawn equ *
+
+ lda random
+ and #3
+ tax
+ lda randomwave,x
+ cmp pukekill
+ bne wavespawnready
+ inx
+ txa
+ and #3
+ tax
+ lda randomwave,x
+
+wavespawnready equ *
+
+ sta pukekill
+ cmp #0
+ bne wavespawnhuman
+ lda #64
+ sta xmine
+ lda #0
+ sta minfaz
+ sta humanfaz
+ sta tankslowtick
+ lda random
+ and #1
+ sta enemyseqpos
+ lda #143
+ sta ymine
+ jmp waveactivetank
+
+wavespawnhuman equ *
+
+ sta enemytype
+ lda #64
+ sta xhuman
+ lda #0
+ sta humanfaz
+ jmp waveactivehuman
+
+waveactivetank equ *
+
+ lda xmine
+ sta 53248
+ sta 53249
+ lda #$1a
+ sta 704
+ lda #$56
+ sta 705
+ jsr multitank
+ rts
+
+waveactivehuman equ *
+
+ lda xhuman
+ sta 53248
+ sta 53249
+ lda enemytype
+ cmp #1
+ bne wavehumanblue
+ lda #$c6
+ sta 704
+ lda #$ca
+ sta 705
+ jmp wavehumandraw
+
+wavehumanblue equ *
+
+ lda #$86
+ sta 704
+ lda #$8c
+ sta 705
+
+wavehumandraw equ *
+
+ jsr multihuman
+ rts
+
+multitank equ *
+
+ lda enemyseqpos
+ beq tanklowwave
+
+tankupperwave equ *
+
+ ldx humanfaz
+ lda tankuppersine,x
+ sta ymine
+ inc tankslowtick
+ lda tankslowtick
+ and #1
+ bne tankverticalready
+ inx
+ txa
+ and #63
+ sta humanfaz
+ jmp tankverticalready
+
+tanklowwave equ *
+
+ ldx humanfaz
+ lda tanklowsine,x
+ sta ymine
+ inx
+ txa
+ and #31
+ sta humanfaz
+
+tankverticalready equ *
+
+ ldy ymine
+ ldx #7
+
+multitankbody equ *
+
+ lda wzorminy,x
+ sta pmb+$400,y
+ lda wzorminy+8,x
+ sta pmb+$500,y
+ dey
+ dex
+ bpl multitankbody
+ lda minfaz
+ asl @
+ asl @
+ tax
+ ldy ymine
+ lda wzorminy+16,x
+ sta pmb+$4fe,y
+ lda wzorminy+17,x
+ sta pmb+$4ff,y
+ lda wzorminy+18,x
+ sta pmb+$500,y
+ lda enemyseqpos
+ beq tanklowhorizontal
+ inc xmine
+ jmp multitankspeedready
+
+tanklowhorizontal equ *
+
+ inc xmine
+ inc xmine
+ lda arenaroom
+ beq multitankspeedready
+ inc xmine
+ cmp #1
+ beq multitankspeedready
+ inc xmine
+
+multitankspeedready equ *
+
+ lda xmine
+ cmp #185
+ bcs multitankremove
+ inc minfaz
+ lda minfaz
+ cmp #6
+ bcc multitankexit
+ lda #0
+ sta minfaz
+
+multitankexit equ *
+
+ rts
+
+multitankremove equ *
+
+ lda #250
+ sta xmine
+ lda #18
+ sta enemywait
+ rts
+
+multihuman equ *
+
+ lda admin
+ pha
+ lda admin+1
+ pha
+ lda adca
+ pha
+ lda adca+1
+ pha
+ lda humanfaz
+ sta admin
+ lda #0
+ sta admin+1
+ ldx #5
+
+multihumanshift equ *
+
+ asl admin
+ rol admin+1
+ dex
+ bne multihumanshift
+ lda admin
+ clc
+ adc <plr1
+ sta admin
+ lda admin+1
+ adc >plr1
+ sta admin+1
+ lda #112
+ sta adca
+ lda #$7c
+ sta adca+1
+ ldy #31
+
+multihumanplane0 equ *
+
+ lda (admin),y
+ sta (adca),y
+ dey
+ bpl multihumanplane0
+ lda admin+1
+ clc
+ adc #4
+ sta admin+1
+ inc adca+1
+ ldy #31
+
+multihumanplane1 equ *
+
+ lda (admin),y
+ sta (adca),y
+ dey
+ bpl multihumanplane1
+ pla
+ sta adca+1
+ pla
+ sta adca
+ pla
+ sta admin+1
+ pla
+ sta admin
+ inc xhuman
+ lda xhuman
+ cmp #185
+ bcs multihumanremove
+ inc humanfaz
+ lda humanfaz
+ cmp #9
+ bcc multihumanexit
+ lda #0
+ sta humanfaz
+
+multihumanexit equ *
+
+ rts
+
+multihumanremove equ *
+
+ lda #250
+ sta xhuman
+ lda #18
+ sta enemywait
+ rts
+
+randomwave equ *
+
+ dta b(0),b(2),b(0),b(1)
+
+tanklowsine equ *
+
+ dta b(143),b(142),b(141),b(139),b(137),b(136),b(135),b(135)
+ dta b(135),b(135),b(136),b(137),b(139),b(141),b(142),b(143)
+ dta b(143),b(142),b(141),b(139),b(137),b(136),b(135),b(135)
+ dta b(135),b(135),b(136),b(137),b(139),b(141),b(142),b(143)
+
+tankuppersine equ *
+
+ dta b(143),b(143),b(142),b(141),b(139),b(137),b(135),b(132)
+ dta b(129),b(126),b(122),b(118),b(114),b(109),b(105),b(100)
+ dta b(96),b(91),b(86),b(82),b(77),b(73),b(69),b(65)
+ dta b(62),b(59),b(56),b(54),b(52),b(50),b(49),b(48)
+ dta b(48),b(48),b(49),b(50),b(52),b(54),b(56),b(59)
+ dta b(62),b(65),b(69),b(73),b(77),b(82),b(86),b(91)
+ dta b(95),b(100),b(105),b(109),b(114),b(118),b(122),b(126)
+ dta b(129),b(132),b(135),b(137),b(139),b(141),b(142),b(143)
 
 pissright    equ $7400
 pissleftdata equ $7580

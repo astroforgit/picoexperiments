@@ -8,7 +8,7 @@
 
      OPT h-
      INS "side_a/HK_LOAD.OBJ" ; $0480
-     INS "side_a/HK_MAIN.FNT" ; $8000-87FF
+     INS "side_a/HK_MAIN_MOD.FNT" ; $8000-87FF, HUD heart icon
      INS "side_a/HK_TITL_MOD.FNT" ; $5C00-63FF, exported HANS RZYGOL title image
      INS "side_a/HK_FINI.FNT" ; $5400-5BFF
      INS "side_a/HK_GOTH.FNT" ; $5000-53FF

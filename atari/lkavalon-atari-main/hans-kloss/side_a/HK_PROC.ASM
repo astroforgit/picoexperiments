@@ -1053,21 +1053,42 @@ sco1     equ *
 
 nosco    equ *
 
- dec zmfo
- bpl nsc1
- lda #81
- sta zmfo
- ldx #2
- jsr zmniejsz
+ lda idlesmoke
+ beq heartregenreset
+ inc heartregen
+ lda heartregen
+ cmp #90
+ bcc nsc2
+ lda #0
+ sta heartregen
+ lda food
+ bne restdrink
+ lda food+1
+ cmp #6
+ bcs restdrink
+ inc food+1
 
-nsc1     equ *
+restdrink equ *
 
- dec zmdr
- bpl nsc2
- lda #97
- sta zmdr
- ldx #4
- jsr zmniejsz
+ lda drink
+ bne restheart
+ lda drink+1
+ cmp #6
+ bcs restheart
+ inc drink+1
+
+restheart equ *
+
+ lda heart
+ cmp #100
+ bcs nsc2
+ inc heart
+ jmp nsc2
+
+heartregenreset equ *
+
+ lda #0
+ sta heartregen
 
 nsc2     equ *
 
@@ -1125,27 +1146,64 @@ nsc5     equ *
 
 miny     equ *
 
+ jmp arenaminy
+
+* Stara lokalizacja pozostaje w zrodle jako dokumentacja. Kod jest
+* przeniesiony za znacznik ochrony, aby segment $1000 nie nachodzil na $3000.
+ ift 0
+
  lda #0
  ldy #70
  sta pmb+$400,y
  sta pmb+$500,y
  iny
- cpy #145
+ cpy #176
  bcc *-9
  lda zezw
  beq *+3
  rts
- lda pukekill
- beq *+3
+ lda xmine
+ cmp #240
+ bcc enemyactive
+ lda enemywait
+ beq enemyspawn
+ dec enemywait
  rts
- lda lsnxtmin
- bne *+8
- jsr losmine
- jmp nolsmin
+
+enemyspawn equ *
+
+ ldx enemyseqpos
+ cpx #10
+ bcc *+4
+ ldx #0
+ lda enemysequence,x
+ sta enemytype
+ inx
+ stx enemyseqpos
+ lda #184
+ sta xmine
+ lda #143
+ ldy enemytype
+ beq *+4
+ lda #112
+ sta ymine
+ lda #0
+ sta minfaz
+
+enemyactive equ *
 
  lda xmine
  sta 53248
  sta 53249
+ lda enemytype
+ bne drawhuman
+
+drawtank equ *
+
+ lda #$1a
+ sta 704
+ lda #$56
+ sta 705
 
  ldy ymine
  ldx #7
@@ -1169,85 +1227,144 @@ miny     equ *
  lda wzorminy+18,x
  sta pmb+$500,y
 
- jsr obmin
+ jmp enemymove
 
- lda zxmin
- bmi minrgt
+drawhuman equ *
 
- lda xmine
- cmp #177
- bcs minlft
- ldy #3
- jsr readmine
- ldx #255
- cmp #$01
- bne *+5
- stx zxmin
- cmp #$02
- bne *+5
- stx zxmin
- ldy #35
- jsr readmine
- ldx #255
- cmp #$01
- beq minlft
- cmp #$10
- beq minlft
- stx zxmin
- jmp minlft
+ lda enemytype
+ cmp #1
+ bne humanpisscolor
+ lda #$c6
+ sta 704
+ lda #$ca
+ sta 705
+ jmp humancopy
 
-minrgt   equ *
+humanpisscolor equ *
 
- lda xmine
- cmp #73
- bcc minlft
- ldy #0
- jsr readmine
- ldx #1
- cmp #$01
- bne *+5
- stx zxmin
- cmp #$02
- bne *+5
- stx zxmin
- ldy #32
- jsr readmine
- ldx #1
- cmp #$01
- beq minlft
- cmp #$10
- beq minlft
- stx zxmin
+ lda #$86
+ sta 704
+ lda #$8c
+ sta 705
 
-minlft   equ *
+humancopy equ *
 
- lda xmine
- clc
- adc zxmin
- sta xmine
- cmp #185
- bcc *+7
- ldx #0
- stx lsnxtmin
-
- cmp #64
- bcs *+7
- ldx #0
- stx lsnxtmin
-
+ lda admin
+ pha
+ lda admin+1
+ pha
+ lda adca
+ pha
+ lda adca+1
+ pha
  lda minfaz
  clc
- adc zxmin
- bpl *+4
- lda #5
+ adc #9
+ sta admin
+ lda #0
+ sta admin+1
+ ldx #5
+
+humanshift equ *
+
+ asl admin
+ rol admin+1
+ dex
+ bne humanshift
+ lda admin
+ clc
+ adc <plr1
+ sta admin
+ lda admin+1
+ adc >plr1
+ sta admin+1
+ lda ymine
+ sta adca
+ lda #$7c
+ sta adca+1
+ ldy #31
+
+humanplane0 equ *
+
+ lda (admin),y
+ sta (adca),y
+ dey
+ bpl humanplane0
+ lda admin+1
+ clc
+ adc #4
+ sta admin+1
+ inc adca+1
+ ldy #31
+
+humanplane1 equ *
+
+ lda (admin),y
+ sta (adca),y
+ dey
+ bpl humanplane1
+ pla
+ sta adca+1
+ pla
+ sta adca
+ pla
+ sta admin+1
+ pla
+ sta admin
+
+enemymove equ *
+
+ dec xmine
+ lda arenaroom
+ beq enemyspeedready
+ dec xmine
+ cmp #1
+ beq enemyspeedready
+ dec xmine
+
+enemyspeedready equ *
+
+ lda xmine
+ cmp #64
+ bcc enemyremove
+ inc minfaz
+ lda enemytype
+ beq tankphase
+ lda minfaz
+ cmp #9
+ bcc enemyexit
+ lda #0
+ sta minfaz
+ rts
+
+tankphase equ *
+
+ lda minfaz
  cmp #6
- bcc *+4
+ bcc enemyexit
  lda #0
  sta minfaz
 
-nolsmin  equ *
+enemyexit equ *
 
  rts
+
+enemyremove equ *
+
+ lda #250
+ sta xmine
+ lda #10
+ sta enemywait
+ lda #0
+ sta 53248
+ sta 53249
+ rts
+
+enemysequence equ *
+
+ dta b(0),b(0),b(1),b(0),b(2),b(0),b(0),b(1),b(0),b(2)
+
+ eif
 
 losmine  equ *
 
@@ -1438,12 +1555,50 @@ showpkt  equ *
  jsr showdig
  ldx #4
  jsr showdig
- ldx #0
- jsr showdig
+ jsr showheart
  ldx #6
  jsr showdig
  ldx #8
  jmp showdig
+
+showheart equ *
+
+ lda heart
+ cmp #100
+ bcc heartunder100
+ lda #17
+ sta punkty+94
+ lda #16
+ sta punkty+95
+ sta punkty+96
+ ldy #21
+ rts
+
+heartunder100 equ *
+
+ lda #0
+ sta punkty+94
+ lda heart
+ ldx #0
+
+hearttens equ *
+
+ cmp #10
+ bcc heartdigits
+ sec
+ sbc #10
+ inx
+ bne hearttens
+
+heartdigits equ *
+
+ ora #16
+ sta punkty+96
+ txa
+ ora #16
+ sta punkty+95
+ ldy #21
+ rts
 
 showdig  equ *
 
@@ -1475,8 +1630,7 @@ haslo    equ *
 
 title    equ *
 
- dta d'      ^_ ',B($5C),B($5D),B($5D),B($5E),d' `abcdefghijk      '
- dta d'      ~',B($7F),d' <==> lmnopqrstuvw      '
+ ins 'side_a/HK_TITLE_CREDIT.DTA'
 
  dta d'Do powstania gry przyczynili si',B($45)
  dta d'                                '
@@ -1815,8 +1969,22 @@ ymine    dta b(0)
 zxmin    dta b(0)
 minfaz   dta b(0)
 firelock dta b(0)
+idlesmoke dta b(0)
+heart    dta b(0)
+heartregen dta b(0)
+contactlock dta b(0)
+hitdamage dta b(0)
+tankslowtick dta b(0)
+cactuslock dta b(0)
 pukekill dta b(0)
 pissphase dta b(0)
+arenaroom dta b(0)
+enemytype dta b(0)
+enemywait dta b(0)
+enemyseqpos dta b(0)
+attackkind dta b(0)
+xhuman   dta b(0)
+humanfaz dta b(0)
 
 kaslen   equ *-char
 
@@ -1838,7 +2006,7 @@ punkty  equ *
 
  dta d'     ',B($D0),B($D0),B($D0),B($D0),B($D0),B($D0),d'     '
  dta d'lll:;llll<=llll23llll45llll67lll'
- dta d'lllZ[llll\]llllRSllllTUllllVWlll'
+ dta d'lllZ[llll\]llll',B($12),B($13),d'llllTUllllVWlll'
  dta d'   00    00    00    00    00   '
 
 

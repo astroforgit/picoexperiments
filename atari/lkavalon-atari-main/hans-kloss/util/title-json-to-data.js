@@ -24,34 +24,40 @@ const tiles = [];
 const knownTiles = new Map();
 const screenMap = Buffer.alloc(256);
 let attributeConflicts = 0;
+let normalizedPixels = 0;
 
 for (let tileY = 0; tileY < 8; tileY++) {
   for (let tileX = 0; tileX < 32; tileX++) {
     const tile = [];
     let usesColor3 = false;
     let usesColor4 = false;
+    let color3Count = 0;
+    let color4Count = 0;
     for (let y = 0; y < 16; y++) {
       for (let x = 0; x < 4; x++) {
         const value = pixels[(tileY * 16 + y) * 128 + tileX * 4 + x];
         usesColor3 ||= value === 3;
         usesColor4 ||= value === 4;
+        color3Count += value === 3;
+        color4Count += value === 4;
         tile.push(value === 4 ? 3 : value);
       }
     }
-    if (usesColor3 && usesColor4) attributeConflicts++;
+    if (usesColor3 && usesColor4) {
+      attributeConflicts++;
+      normalizedPixels += Math.min(color3Count, color4Count);
+    }
+    const useColor4Attribute = color4Count > color3Count;
     const key = tile.join('');
     if (!knownTiles.has(key)) {
       knownTiles.set(key, tiles.length);
       tiles.push(tile);
     }
-    screenMap[tileY * 32 + tileX] = knownTiles.get(key) | (usesColor4 ? 0x80 : 0);
+    screenMap[tileY * 32 + tileX] = knownTiles.get(key) | (useColor4Attribute ? 0x80 : 0);
   }
 }
 
 if (tiles.length > 128) throw new Error(`Title image needs ${tiles.length} character tiles; Atari supports 128.`);
-if (attributeConflicts) {
-  throw new Error(`${attributeConflicts} tiles mix colors 3 and 4; ANTIC mode 4 permits only one of them per tile.`);
-}
 
 const originalFont = fs.readFileSync(inputFont);
 if (originalFont.length !== 2054 || originalFont[0] !== 0xff || originalFont[1] !== 0xff) {
@@ -73,3 +79,6 @@ tiles.forEach((tile, code) => {
 fs.writeFileSync(outputFont, font);
 fs.writeFileSync(outputMap, screenMap);
 console.log(`Generated title image: ${tiles.length}/128 tiles, ${attributeConflicts} color conflicts.`);
+if (attributeConflicts) {
+  console.warn(`Normalized ${normalizedPixels} pixels in ${attributeConflicts} mixed color-3/color-4 tiles using each tile's majority color.`);
+}

@@ -4,6 +4,19 @@
 
 This directory contains the source code of the 8-bit Atari game Hans Kloss, created by Dariusz Żołna in 1992 and published by LK Avalon.
 
+## Hans Rzygol variant
+
+This build replaces the original maze with three flat rooms connected only from right to left. Enemies continuously enter from the right and disappear at the left edge. The rooms become progressively faster and use different background palettes.
+
+Enemy rules:
+
+* tanks can be destroyed by either attack,
+* green mirrored agents can be destroyed only by puke,
+* purple mirrored agents can be destroyed only by piss,
+* human enemies damage Hans at close horizontal range even while he is jumping.
+
+Press fire to puke. Hold down and press fire to piss. Crossing the left edge enters the next room; the right edge never returns to an earlier room.
+
 ## Source files
 
 Original program:
@@ -45,5 +58,4 @@ and
 ```
 D.Zolna is De Jet
 ```
-and XOR-ing them with `17`. On Atari it's done by the [side\_a/PROTECT.ASM](side_a/PROTECT.ASM) tool. To run the same kind of encoding on PC, the Makefile calls [protect.go](util/protect.go).
-
+and XOR-ing them with `17`. On Atari it's done by the [side\_a/PROTECT.ASM](side_a/PROTECT.ASM) tool. To run the same kind of encoding on PC, the Makefile calls [protect.js](util/protect.js).

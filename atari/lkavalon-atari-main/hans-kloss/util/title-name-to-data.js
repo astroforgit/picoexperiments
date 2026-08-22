@@ -4,9 +4,9 @@
 
 const fs = require('fs');
 
-const [inputFont, outputFont, outputMap] = process.argv.slice(2);
-if (!inputFont || !outputFont || !outputMap) {
-  console.error('Usage: node title-name-to-data.js INPUT.FNT OUTPUT.FNT OUTPUT.DTA');
+const [inputFont, outputFont, outputMap, outputCredit] = process.argv.slice(2);
+if (!inputFont || !outputFont || !outputMap || !outputCredit) {
+  console.error('Usage: node title-name-to-data.js INPUT.FNT OUTPUT.FNT OUTPUT.DTA CREDIT.DTA');
   process.exit(1);
 }
 
@@ -23,12 +23,47 @@ const LETTERS = {
   Z: ['11111', '00001', '00010', '00100', '01000', '10000', '11111']
 };
 
+const CREDIT_GLYPHS = {
+  ':': ['00000', '00100', '00100', '00000', '00100', '00100', '00000'],
+  a: ['00000', '01110', '00001', '01111', '10001', '10011', '01101'],
+  c: ['00000', '01110', '10001', '10000', '10000', '10001', '01110'],
+  d: ['00001', '00001', '01101', '10011', '10001', '10011', '01101'],
+  e: ['00000', '01110', '10001', '11111', '10000', '10001', '01110'],
+  f: ['00110', '01001', '01000', '11100', '01000', '01000', '01000'],
+  i: ['00100', '00000', '01100', '00100', '00100', '00100', '01110'],
+  j: ['00010', '00000', '00110', '00010', '00010', '10010', '01100'],
+  k: ['10000', '10010', '10100', '11000', '10100', '10010', '10001'],
+  m: ['00000', '11010', '10101', '10101', '10101', '10101', '10101'],
+  o: ['00000', '01110', '10001', '10001', '10001', '10001', '01110'],
+  r: ['00000', '10110', '11001', '10000', '10000', '10000', '10000'],
+  s: ['00000', '01111', '10000', '01110', '00001', '10001', '01110'],
+  t: ['01000', '01000', '11100', '01000', '01000', '01001', '00110'],
+  y: ['00000', '10001', '10001', '10011', '01101', '00001', '01110']
+};
+
+const CREDIT_TEXT = '    :: modyfikacje: astrofor    ';
+const CREDIT_CODES = [
+  0x5c, 0x5d, 0x5e, 0x5f, 0x60, 0x61, 0x62, 0x63,
+  0x66, 0x67, 0x68, 0x69, 0x6a, 0x6b, 0x6c
+];
+
 const source = fs.readFileSync(inputFont);
 if (source.length !== 1030 || source[0] !== 0xff || source[1] !== 0xff) {
   throw new Error(`${inputFont} is not the expected 1 KB Atari XEX font.`);
 }
 
 const font = Buffer.from(source);
+
+const creditCodeByCharacter = new Map(
+  Object.keys(CREDIT_GLYPHS).map((character, index) => [character, CREDIT_CODES[index]])
+);
+for (const [character, glyph] of Object.entries(CREDIT_GLYPHS)) {
+  const code = creditCodeByCharacter.get(character);
+  glyph.forEach((row, y) => {
+    font[6 + code * 8 + y] = parseInt(row, 2) << 1;
+  });
+  font[6 + code * 8 + 7] = 0;
+}
 const pixels = Array.from({ length: 16 }, () => new Uint8Array(256));
 const text = 'HANS RZYGOL';
 const pixelWidth = 15;
@@ -86,4 +121,8 @@ for (let tileY = 0; tileY < 2; tileY++) {
 
 fs.writeFileSync(outputFont, font);
 fs.writeFileSync(outputMap, tileMap);
+const creditRow = Buffer.from(
+  [...CREDIT_TEXT].map(character => character === ' ' ? 0 : creditCodeByCharacter.get(character))
+);
+fs.writeFileSync(outputCredit, Buffer.concat([creditRow, Buffer.alloc(32)]));
 console.log(`Generated HANS RZYGOL logo using ${tiles.size} character glyphs.`);
