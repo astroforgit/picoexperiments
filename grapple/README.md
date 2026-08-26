@@ -1,4 +1,17 @@
 # How To Build @lectvs Source Code
+
+## Level Editor
+
+Run the local Grapple map editor from the repository root:
+
+```sh
+./grapple/editor/run-editor.sh
+```
+
+It can edit the complete 12×240 map, including rotated moving bricks, cannons,
+and spikes, and exports the original `world.json` format. See
+[`editor/README.md`](editor/README.md) for controls and the Atari build flow.
+
 ## Requirements
 - Typescript installed (compilation uses either tsc or tscw)
 - Visual Studio Code for editing (optional but helpful)

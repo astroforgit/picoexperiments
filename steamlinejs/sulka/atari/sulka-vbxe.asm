@@ -10,7 +10,7 @@
 ;   joystick left/right or A/D   move
 ;   fire or Space/W              jump
 ;   SELECT or R                  restart level
-;   1 / 2                        final room / next room (temporary)
+;   1-0,Q,E,T-Y,U-I,O-P,S-J     select playable level (temporary)
 ;
 ; Requires a VBXE with an FX 1.2x core. Graphics and levels are embedded.
 ; The game uses a 320x200, 256-colour VBXE overlay and the VBXE blitter.
@@ -80,6 +80,7 @@ SPRITE_H  = 12
 FLY_W     = 10                  ; original sFlySpike artwork
 FLY_H     = 10
 LEVELS    = 24
+LEVEL_SHORTCUT_COUNT = 23
 
 ; Map data uses readable ATASCII characters.
 T_EMPTY   = '.'
@@ -257,6 +258,11 @@ vbreg_main_vctl
         lda #$FF
         sta CH
         lda key_temp
+        jsr select_level_shortcut
+        bcc ?game_key
+        jmp ?console
+?game_key
+        lda key_temp
         cmp #$3F               ; A
         bne ?key_d
         lda #$FF
@@ -276,18 +282,6 @@ vbreg_main_vctl
         sta jump_pressed
         jmp ?console
 ?key_restart
-        cmp #$1F               ; 1: temporary jump to final room
-        bne ?key_next
-        lda #LEVELS-1
-        sta level_number
-        jsr init_level
-        jmp ?console
-?key_next
-        cmp #$1E               ; 2: temporary advance to next room
-        bne ?key_restart_room
-        jsr complete_level
-        jmp ?console
-?key_restart_room
         cmp #$28               ; R
         bne ?console
         jsr init_level
@@ -305,12 +299,49 @@ vbreg_main_vctl
 ?done   rts
 .endp
 
+; Temporary direct room selection for testing. These are physical POKEY key
+; codes with Shift/Control bits removed. Gameplay keys A/D/W/R/Space are not
+; present. Slot 13 (rKey0) is an empty automatic transition, so it is omitted.
+.proc select_level_shortcut
+        ldx #0
+?find   cmp level_shortcut_codes,x
+        beq ?select
+        inx
+        cpx #LEVEL_SHORTCUT_COUNT
+        bcc ?find
+        clc
+        rts
+?select lda level_shortcut_levels,x
+        sta level_number
+        jsr init_level
+        sec
+        rts
+
+;       1   2   3   4   5   6   7   8   9   0   Q   E
+level_shortcut_codes
+        dta $1F,$1E,$1A,$18,$1D,$1B,$33,$35,$30,$32,$2F,$2A
+;       T   Y   U   I   O   P   S   F   G   H   J
+        dta $2D,$2B,$0B,$0D,$08,$0A,$3E,$38,$3D,$39,$01
+level_shortcut_levels
+        dta 0,1,2,3,4,5,6,7,8,9,10,11
+        dta 13,14,15,16,17,18,19,20,21,22,23
+.endp
+
 .proc read_complete_input
         lda STRIG0
         beq ?restart
         lda CH
+        cmp #$FF
+        beq ?done
         and #$3F
-        cmp #$21
+        sta key_temp
+        lda #$FF
+        sta CH
+        lda key_temp
+        jsr select_level_shortcut
+        bcs ?done
+        lda key_temp
+        cmp #$21               ; Space
         bne ?done
 ?restart
         lda #$FF
@@ -339,6 +370,7 @@ vbreg_main_vctl
         sta input_x
         sta vy
         sta y_fraction
+        sta gravity_phase
         sta line_latch
         sta line_speed
         sta offscreen_side
@@ -669,8 +701,13 @@ vbreg_main_vctl
         cmp #48                ; 2x-time fall limit: 12 px/frame
         bcs ?jump
 ?inc_down
+        lda gravity_phase
+        eor #1
+        sta gravity_phase
         clc
-        adc #2                 ; 0.5 px/frame^2 (2x-time acceleration)
+        adc #2                 ; alternate 3/2 quarters = 0.625 px/frame^2
+        clc
+        adc vy
         sta vy
         jmp ?jump
 ?grav_up
@@ -679,8 +716,16 @@ vbreg_main_vctl
         cmp #$D0               ; -48 quarter-pixels = -12 px/frame
         bcc ?jump
         beq ?jump
-?inc_up sec
-        sbc #2
+?inc_up
+        lda gravity_phase
+        eor #1
+        sta gravity_phase
+        clc
+        adc #2
+        sta math_temp
+        lda vy
+        sec
+        sbc math_temp
         sta vy
 
 ?jump   lda jump_pressed
@@ -691,13 +736,15 @@ vbreg_main_vctl
         bne ?vertical
         jsr is_grounded
         bcc ?vertical
+        lda #0
+        sta gravity_phase
         lda gravity_dir
         bmi ?jump_down
-        lda #$EC               ; -20 quarter-pixels = -5 px/frame
+        lda #$E8               ; -24 quarter-pixels = -6 px/frame
         sta vy
         jmp ?vertical
 ?jump_down
-        lda #20
+        lda #24
         sta vy
 
 ?vertical
@@ -1226,18 +1273,10 @@ vbreg_main_vctl
 .endp
 
 .proc player_died
-        lda spawn_x
-        sta player_x
-        lda spawn_y
-        sta player_y
-        lda #0
-        sta vy
-        sta y_fraction
-        sta line_latch
-        sta line_speed
-        sta offscreen_side
-        lda #1
-        sta gravity_dir
+        ; Death restarts the whole room, not only the player's position.
+        ; This recopies the original level map, restores collected keys,
+        ; closes keyed doors, resets moving hazards, and rebuilds the cache.
+        jsr init_level
         lda #20
         sta message_timer
         rts
@@ -1744,7 +1783,7 @@ present_vbreg_xdl2
         sta fr_w+1
         lda #SCR_H
         sta fr_h
-        lda #0
+        lda #C_BG
         sta fr_col
         jsr fill_rect
 
@@ -1948,23 +1987,24 @@ present_vbreg_xdl2
 .endp
 
 .proc draw_line
-        ; sGravityLine is a two-pixel lime dash in a four-pixel cell.
+        ; Align the line with ceiling spikes and the bottom edge of the
+        ; seven-pixel platform artwork in the cell above.
         lda #1
-        ldy #4
+        ldy #$FD               ; -3: touch the brick above
         jsr set_tile_calc
         lda #2
         ldx #2
         ldy #C_KEY
         jsr small_fill
         lda #5
-        ldy #4
+        ldy #$FD
         jsr set_tile_calc
         lda #2
         ldx #2
         ldy #C_KEY
         jsr small_fill
         lda #9
-        ldy #4
+        ldy #$FD
         jsr set_tile_calc
         lda #1
         ldx #2
@@ -1994,7 +2034,7 @@ present_vbreg_xdl2
 
 .proc draw_spike_up
         lda #$FE
-        ldy #0
+        ldy #$FD               ; -3: close the platform cell's visual gap
         jsr set_tile_sprite_base
         lda #<spike_pixels
         sta text_src
@@ -2786,6 +2826,7 @@ spawn_y       dta 0
 vy            dta 0
 y_fraction    dta 0
 gravity_dir   dta 1
+gravity_phase dta 0             ; dithers gravity between 1/2 and 3/4 px
 line_latch    dta 0
 line_speed    dta 0             ; remembered gravity-line amplitude
 offscreen_side dta 0            ; 0=in room, 1=below, $FF=above
@@ -2854,6 +2895,9 @@ front_bank dta 0
 back_bank  dta 1
 render_bank dta 0
 
+; BEGIN SULKA EDITOR LEVEL DATA
+; Generated by the Sulka VBXE Map Editor. Replace the marked block in
+; atari/sulka-vbxe.asm, then assemble normally with MADS.
 levels_lo
  dta <level1,<level2,<level3,<level4,<level5,<level6,<level7,<level8
  dta <level9,<level10,<level11,<level12,<level13,<level14,<level15,<level16
@@ -2864,29 +2908,42 @@ levels_hi
  dta >level17,>level18,>level19,>level20,>level21,>level22,>level23,>level24
 
 fly_config_lo
- dta <fly_none,<fly_none,<fly_none,<fly_tuto4,<fly_tuto5,<fly_none
- dta <fly_none,<fly_none,<fly_none,<fly_none,<fly_viiva5,<fly_viiva6
- dta <fly_none,<fly_none,<fly_none,<fly_none,<fly_none,<fly_key5
- dta <fly_none,<fly_none,<fly_none,<fly_none,<fly_grav5,<fly_none
+ dta <fly_level1,<fly_level2,<fly_level3,<fly_level4,<fly_level5,<fly_level6,<fly_level7,<fly_level8
+ dta <fly_level9,<fly_level10,<fly_level11,<fly_level12,<fly_level13,<fly_level14,<fly_level15,<fly_level16
+ dta <fly_level17,<fly_level18,<fly_level19,<fly_level20,<fly_level21,<fly_level22,<fly_level23,<fly_level24
 fly_config_hi
- dta >fly_none,>fly_none,>fly_none,>fly_tuto4,>fly_tuto5,>fly_none
- dta >fly_none,>fly_none,>fly_none,>fly_none,>fly_viiva5,>fly_viiva6
- dta >fly_none,>fly_none,>fly_none,>fly_none,>fly_none,>fly_key5
- dta >fly_none,>fly_none,>fly_none,>fly_none,>fly_grav5,>fly_none
+ dta >fly_level1,>fly_level2,>fly_level3,>fly_level4,>fly_level5,>fly_level6,>fly_level7,>fly_level8
+ dta >fly_level9,>fly_level10,>fly_level11,>fly_level12,>fly_level13,>fly_level14,>fly_level15,>fly_level16
+ dta >fly_level17,>fly_level18,>fly_level19,>fly_level20,>fly_level21,>fly_level22,>fly_level23,>fly_level24
 
 ; count, then start-x/start-y/end-x/end-y in local board pixels.
-fly_none   dta 0
-fly_tuto4  dta 1,110,30,110,90
-fly_tuto5  dta 2,70,40,150,40, 110,120,110,40
-fly_viiva5 dta 2,50,40,130,40, 170,80,50,80
-fly_viiva6 dta 1,50,50,170,50
-fly_key5   dta 1,50,110,170,110
-fly_grav5  dta 1,50,50,170,50
+fly_level1 dta 0
+fly_level2 dta 0
+fly_level3 dta 0
+fly_level4 dta 1,110,30,110,90
+fly_level5 dta 2,70,40,150,40,110,120,110,40
+fly_level6 dta 0
+fly_level7 dta 0
+fly_level8 dta 1,110,50,170,50
+fly_level9 dta 0
+fly_level10 dta 0
+fly_level11 dta 2,50,40,130,40,50,90,180,90
+fly_level12 dta 1,50,50,176,50
+fly_level13 dta 0
+fly_level14 dta 0
+fly_level15 dta 0
+fly_level16 dta 0
+fly_level17 dta 0
+fly_level18 dta 1,50,110,170,110
+fly_level19 dta 0
+fly_level20 dta 0
+fly_level21 dta 0
+fly_level22 dta 0
+fly_level23 dta 1,50,50,170,50
+fly_level24 dta 0
 
-; Original 24-room progression converted from Sulka.js instance coordinates.
-; One Atari cell corresponds to an 8x8 area of the 192x192 GameMaker room.
-; # wall, P start, K key, D/d door, N nest, ^/v/>/< hazard,
-; F moving fly-spike start, = gravity line. d is an upside-down door.
+; 24 x 14 VBXE tile maps. One cell is one 10 x 10 VBXE tile.
+
 level1
  ; rTuto1
  dta c'........................'
@@ -2910,7 +2967,7 @@ level2
  dta c'........................'
  dta c'........................'
  dta c'........................'
- dta c'............^...........'
+ dta c'............^^..........'
  dta c'....P...##..##..........'
  dta c'........##..##..........'
  dta c'....##............D.....'
@@ -2925,15 +2982,15 @@ level3
  ; rTuto3
  dta c'........................'
  dta c'........................'
- dta c'...........s............'
+ dta c'...........ss...........'
  dta c'...........####.........'
  dta c'.....D.....####.........'
  dta c'.....####........##.....'
  dta c'.....####........##.....'
  dta c'...............##.......'
- dta c'.............^.##.......'
+ dta c'.............^^##.......'
  dta c'.....P.....####.........'
- dta c'.........^.####.........'
+ dta c'.........^^####.........'
  dta c'.....######.............'
  dta c'.....######.............'
  dta c'........................'
@@ -2944,13 +3001,13 @@ level4
  dta c'........................'
  dta c'........................'
  dta c'.....P.....F............'
- dta c'.......^.......^........'
+ dta c'.......^^......^^.......'
  dta c'.....######..####.......'
  dta c'.....######..####.......'
  dta c'........................'
  dta c'........................'
  dta c'........................'
- dta c'.......D.......^........'
+ dta c'.......D.......^^.......'
  dta c'.......####..######.....'
  dta c'.......####..######.....'
  dta c'........................'
@@ -2964,7 +3021,7 @@ level5
  dta c'.......F................'
  dta c'........................'
  dta c'.....P..................'
- dta c'.......^.......^.D......'
+ dta c'.......^^......^^D......'
  dta c'.....######..######.....'
  dta c'.....######..######.....'
  dta c'........................'
@@ -2980,11 +3037,11 @@ level6
  dta c'........................'
  dta c'........................'
  dta c'.....P..................'
- dta c'................N.......'
- dta c'.....##..##......##.....'
- dta c'.....##..##......##.....'
  dta c'........................'
+ dta c'.........^^......##.....'
+ dta c'.....##..##.............'
  dta c'........................'
+ dta c'.......##...............'
  dta c'........................'
  dta c'........................'
  dta c'........................'
@@ -3013,11 +3070,11 @@ level8
  dta c'........................'
  dta c'........................'
  dta c'........................'
- dta c'...P....................'
- dta c'.......^...........^....'
+ dta c'...P.......F............'
+ dta c'.......^^..........^^...'
  dta c'...##..##..##..##..##...'
- dta c'...##..##..##..##..##...'
- dta c'...v.==..==v.==v.==d....'
+ dta c'...##==##==##==##==##...'
+ dta c'...vv......vv..vv..d....'
  dta c'........................'
  dta c'........................'
  dta c'........................'
@@ -3033,10 +3090,10 @@ level9
  dta c'....##...##...##........'
  dta c'....##...##...##........'
  dta c'....##......P.....##....'
- dta c'....##======v.....##....'
+ dta c'....##............##....'
  dta c'....##......########....'
- dta c'....##......########....'
- dta c'........................'
+ dta c'....##======########....'
+ dta c'....vv......vvvvvvvv....'
  dta c'........................'
  dta c'........................'
 
@@ -3049,10 +3106,10 @@ level10
  dta c'.....D..................'
  dta c'.....##...P......##.....'
  dta c'.....##..........##.....'
- dta c'.....##..======v.v......'
+ dta c'.....##.................'
  dta c'.....##........####.....'
  dta c'.....####......####.....'
- dta c'.....####......####.....'
+ dta c'.....####======####.....'
  dta c'.....##.................'
  dta c'.....##.................'
  dta c'........................'
@@ -3063,15 +3120,15 @@ level11
  dta c'........................'
  dta c'........................'
  dta c'........................'
- dta c'...P.F.........##.......'
+ dta c'.....F.........##.......'
  dta c'...............##.......'
- dta c'...##...................'
- dta c'...##...................'
- dta c'...##============F=.....'
- dta c'...##...................'
- dta c'....d..............v....'
+ dta c'...P....................'
  dta c'........................'
- dta c'........................'
+ dta c'...##==============##...'
+ dta c'...##F.............##...'
+ dta c'...##...............##..'
+ dta c'...##...................'
+ dta c'...d....................'
  dta c'........................'
 
 level12
@@ -3083,16 +3140,16 @@ level12
  dta c'........................'
  dta c'.....F..............D...'
  dta c'...P...............##...'
- dta c'.......^...^.......##...'
+ dta c'.......^^..^^......##...'
  dta c'...##..##..##..##..##...'
- dta c'...##..##..##..##..##...'
- dta c'...##==..==v.==v.==.....'
+ dta c'...##==##==##==##==##...'
+ dta c'...##......vv..vv.......'
  dta c'...##...................'
  dta c'........................'
  dta c'........................'
 
 level13
- ; rKey0 -- original halfway interstitial; init_level advances after showing it.
+ ; rKey0 -- Original halfway interstitial; the VBXE game skips this slot.
  dta c'........................'
  dta c'........................'
  dta c'........................'
@@ -3117,9 +3174,9 @@ level14
  dta c'........................'
  dta c'........................'
  dta c'.................K......'
- dta c'.....P.====D............'
+ dta c'.....P.....D............'
  dta c'.....##....##....##.....'
- dta c'.....##....##....##.....'
+ dta c'.....##====##....##.....'
  dta c'.................K......'
  dta c'........................'
  dta c'........................'
@@ -3128,17 +3185,17 @@ level14
 level15
  ; rKey2
  dta c'........................'
- dta c'............^...........'
+ dta c'............^^..........'
  dta c'............##..........'
  dta c'.....P......##K.........'
- dta c'............v...........'
+ dta c'............vv..........'
  dta c'.....##..........##.....'
  dta c'.....#>..........##.....'
  dta c'.....##..........##.....'
  dta c'.....##..........##.....'
  dta c'.....##==========##.....'
  dta c'.....##..........##.....'
- dta c'.....d...^......K.......'
+ dta c'.....d...^^.....K.......'
  dta c'..........##............'
  dta c'..........##............'
 
@@ -3146,14 +3203,14 @@ level16
  ; rKey3
  dta c'........................'
  dta c'........................'
- dta c'............^...^.......'
+ dta c'............^^..^^......'
  dta c'............##..##......'
  dta c'.......D..K.##..##......'
- dta c'......##P...v...##......'
+ dta c'......##P...vv..##......'
  dta c'......##........##......'
  dta c'......####......##......'
  dta c'......####......##......'
- dta c'......v.v.======v.......'
+ dta c'......vvvv======vv......'
  dta c'........................'
  dta c'........K.....K.........'
  dta c'........................'
@@ -3171,7 +3228,7 @@ level17
  dta c'........====..##........'
  dta c'....####..##..##..##....'
  dta c'....####..##..##..##....'
- dta c'....####..v...##..v.....'
+ dta c'....####..vv..##..vv....'
  dta c'....####......##........'
  dta c'....##........d.........'
  dta c'....##..................'
@@ -3184,12 +3241,12 @@ level18
  dta c'...P...............K....'
  dta c'........................'
  dta c'...##..............##...'
- dta c'...##..^...^...^...##...'
+ dta c'...##..^^..^^..^^..##...'
  dta c'...##..##..##..##..##...'
  dta c'...##..##..##..##..##...'
- dta c'...##==v.==v.==v.==##...'
+ dta c'...##==vv==vv==vv==##...'
  dta c'...##..............##...'
- dta c'....dF.............v....'
+ dta c'....dF.............vv...'
  dta c'........................'
  dta c'........................'
 
@@ -3217,7 +3274,7 @@ level20
  dta c'........................'
  dta c'.....##..##..##..##.....'
  dta c'.....##..##..##..##.....'
- dta c'.....d...v.....==v......'
+ dta c'.....d...vv....==vv.....'
  dta c'........................'
  dta c'........................'
  dta c'.....P..................'
@@ -3236,26 +3293,26 @@ level21
  dta c'...................##...'
  dta c'...##....##.............'
  dta c'...##....##.............'
- dta c'...v.====##.............'
- dta c'.........##....^........'
+ dta c'...vv====##.............'
+ dta c'.........##....^^.......'
  dta c'.........##....##.......'
  dta c'.........##....##.......'
- dta c'.........v.====v........'
+ dta c'.........vv====vv.......'
  dta c'......K.................'
  dta c'........................'
 
 level22
  ; rGrav4
  dta c'........................'
- dta c'.........^...^..........'
+ dta c'.........^^..^^.........'
  dta c'.........##..##.........'
  dta c'.........##..##.........'
- dta c'.........v.==v..........'
+ dta c'.........vv==vv.........'
  dta c'.....P..................'
- dta c'.........^...^....D.....'
+ dta c'.........^^..^^...D.....'
  dta c'.....##..##..##..##.....'
  dta c'.....##..##..##..##.....'
- dta c'.....v.==......==v......'
+ dta c'.....vv==......==vv.....'
  dta c'........................'
  dta c'........................'
  dta c'.......K...K...K........'
@@ -3270,10 +3327,10 @@ level23
  dta c'...........K............'
  dta c'.....F..................'
  dta c'...P....................'
- dta c'.......^.......^....D...'
+ dta c'.......^^......^^...D...'
  dta c'...##..##..##..##..##...'
  dta c'...##..##..##..##..##...'
- dta c'...##==..==v.==v.==.....'
+ dta c'...##==..==vv==vv==.....'
  dta c'...##...................'
  dta c'........................'
  dta c'...........K............'
@@ -3284,7 +3341,7 @@ level24
  dta c'........N...............'
  dta c'........##..............'
  dta c'........##..............'
- dta c'........v...............'
+ dta c'........vv..............'
  dta c'........................'
  dta c'..P.....................'
  dta c'........................'
@@ -3295,11 +3352,15 @@ level24
  dta c'........##....##........'
  dta c'..##....##....##....##..'
 
+; END SULKA EDITOR LEVEL DATA
+
 level_map :MAP_SIZE dta 0
 
+; Keep the ANTIC underlay solid. The VBXE overlay is 320x200, while ANTIC can
+; remain visible in the surrounding overscan; text rows there leak fragments
+; of the status display around the game image on real hardware and Altirra.
 display_list
-        dta $42,a(text_screen)
-        :24 dta $02
+        :25 dta $70
         dta $41,a(display_list)
 
         org $7000

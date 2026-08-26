@@ -11,11 +11,13 @@ recreates the original game's central ideas with native 6502 code:
 - all 24 rooms in the original playable progression, including the halfway
   transition and ending.
 
-Tutorial level 1 is reconstructed from the original GameMaker room coordinates:
-three isolated ascending platforms lead from the bird's starting point to the
-door. Its palette and 10×12 bird sprite are transcribed from
-`Sulka_texture_0.png`; the sprite mirrors horizontally while moving and flips
-vertically with gravity.
+All 24 stages are converted directly from the room instance data embedded in
+`Sulka.js`: every wall block, key, door, spike, gravity line, nest, player
+spawn, and fly-spike path is generated from the original GameMaker room
+coordinates on the original 24×24 grid of 8-pixel tiles (a 192×192-pixel
+room), centred on the VBXE overlay. Its palette and 10×12 bird sprite are
+transcribed from `Sulka_texture_0.png`; the sprite mirrors horizontally while
+moving and flips vertically with gravity.
 
 All graphics are drawn at runtime with the VBXE blitter. The PNG is a visual
 reference and is not needed at runtime. Sound is intentionally omitted.
@@ -25,11 +27,15 @@ cached in VBXE memory, copied into a hidden framebuffer, and combined with the
 bird before the XDL switches buffers during vertical blank. The displayed
 framebuffer is never modified in place.
 
-Movement uses two one-pixel collision steps per displayed frame. Vertical
-motion retains quarter-pixel accumulation, with a 5-pixel initial jump speed,
-0.5-pixel/frame² gravity, and a 12-pixel maximum fall speed. This runs the
-original GameMaker motion at approximately twice its elapsed-time rate while
-keeping the same jump height.
+Movement resolves in one-pixel collision steps. Vertical motion retains
+quarter-pixel accumulation, with a 6-pixel initial jump speed, an alternating
+0.5/0.75-pixel/frame² gravity step (0.625 average), and a 12-pixel maximum fall
+speed. This keeps the faster launch while allowing enough airtime for the
+longer platform jumps. As in the
+original GameMaker code, jump presses are buffered for 0.2 s
+and a coyote-time window of 0.2 s after leaving the ground still allows a
+jump. This runs the original GameMaker motion at approximately twice its
+elapsed-time rate while keeping the same jump height.
 
 As in the original game, a gravity line triggers only when crossed in the
 current gravity direction: while falling under normal gravity or while rising
@@ -51,10 +57,9 @@ contain moving hazards.
 
 The included stages follow the complete original room progression:
 `rTuto1`–`rTuto5`, `rViiva0`–`rViiva6`, the halfway transition,
-`rKey1`–`rKey5`, `rGrav1`–`rGrav5`, and `rEnding`. Collision blocks, doors,
-hazards, moving fly-spikes, gravity lines, inverted exits, and the `rViiva0`
-falling/nest finish are converted from the coordinates and scales embedded in
-`Sulka.js`.
+`rKey1`–`rKey5`, `rGrav1`–`rGrav5`, and `rEnding`. Fly-spike movement paths
+are taken from the original per-room creation code. Touching a nest ends the
+room, exactly as both `oNest` and `oNest_Final` do in Sulka.js.
 
 Crossing a vertical screen edge is fatal only when gravity continues to pull
 Sulka away from the room. If Sulka passes below the room with upward gravity,
@@ -74,13 +79,31 @@ From this directory:
 mads sulka-vbxe.asm -o:sulka-vbxe.xex
 ```
 
+## Build and run in Altirra
+
+From the `steamlinejs/sulka` directory, use the project-local launcher:
+
+```sh
+./run-emulator.sh
+```
+
+When `sulka-levels.asm` exists in the Sulka directory, the launcher validates
+and applies that editor export first. It also synchronizes `editor/levels.js`,
+so refreshing the browser editor shows the map set used in the new build. It
+then rebuilds `atari/sulka-vbxe.xex` and starts it through the workspace's
+Altirra launcher. Altirra uses its persistent XL/XE profile, which must have a
+VBXE device configured.
+
 ## Controls
 
 - Joystick left/right or `A`/`D`: move
 - Joystick fire, `Space`, or `W`: jump
 - `SELECT` or `R`: restart the current level
-- `1`: jump to the final room (temporary debug shortcut)
-- `2`: advance to the next room (temporary debug shortcut)
+- Temporary direct level shortcuts for testing:
+  - levels 1–10: `1 2 3 4 5 6 7 8 9 0`
+  - levels 11–12: `Q E`
+  - level 13: no key—the original empty `rKey0` transition is skipped
+  - levels 14–24: `T Y U I O P S F G H J`
 - Fire or `Space` after completing the game: replay
 
 If VBXE is not detected at either the `$D6xx` or `$D7xx` register page, the
