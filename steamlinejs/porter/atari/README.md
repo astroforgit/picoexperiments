@@ -27,6 +27,8 @@ old conversion's 29 isolated room snapshots.
 - the title automatically starts the game after roughly two seconds
 - trigger on the end screen: restart
 - Atari `OPTION`: toggle all sound on/off
+- `1`: jump to the previous level (debug)
+- `2`: jump to the next level (debug)
 
 ## Build
 
@@ -37,3 +39,14 @@ Install MADS, then run:
 ```
 
 The output is `porter-vbxe.xex`. A VBXE 1.2-compatible core is required.
+
+## Build and run
+
+From the Porter project directory, use the one-command launcher:
+
+```sh
+./run-emulator.sh
+```
+
+It regenerates the Atari data, rebuilds the XEX, and opens it with the
+workspace Altirra VBXE profile.

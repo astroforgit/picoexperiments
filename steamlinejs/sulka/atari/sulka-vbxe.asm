@@ -1,5 +1,5 @@
 ;==============================================================================
-; SULKA VBXE
+; SÓJKA VBXE
 ;
 ; A self-contained Atari XL/XE + VBXE interpretation of Sulka.
 ;
@@ -10,7 +10,6 @@
 ;   joystick left/right or A/D   move
 ;   fire or Space/W              jump
 ;   SELECT or R                  restart level
-;   1-0,Q,E,T-Y,U-I,O-P,S-J     select playable level (temporary)
 ;
 ; Requires a VBXE with an FX 1.2x core. Graphics and levels are embedded.
 ; The game uses a 320x200, 256-colour VBXE overlay and the VBXE blitter.
@@ -64,6 +63,8 @@ XDL_B_OFF = $20
 ROOM_CACHE_BANK = 2
 FLY_SPRITE_BANK = 3
 FLY_SPRITE_MEM_BANK = FLY_SPRITE_BANK*16
+MISSILE_VRAM_Y = 16
+MISSILE_VRAM_ADDR = MISSILE_VRAM_Y*SCR_W
 
 ; ---- game geometry -----------------------------------------------------------
 MAP_W     = 24
@@ -80,7 +81,6 @@ SPRITE_H  = 12
 FLY_W     = 10                  ; original sFlySpike artwork
 FLY_H     = 10
 LEVELS    = 24
-LEVEL_SHORTCUT_COUNT = 23
 
 ; Map data uses readable ATASCII characters.
 T_EMPTY   = '.'
@@ -115,6 +115,8 @@ C_LINE_HI  = 13
 C_SPIKE    = 14
 C_WHITE    = 15
 C_SHADOW   = 16
+C_FLAG_BLUE = 17
+C_FLAG_RED  = 18
 
 ; ---- zero-page pointers ------------------------------------------------------
 level_ptr = $CB                 ; 2
@@ -157,7 +159,8 @@ vbreg_main_vctl
         jsr setup_xdl
         jsr blit_init
         jsr upload_fly_sprite
-        jsr load_palette
+        jsr upload_missile_sprite
+        jsr load_screen_palette
         jsr enable_display
 
         lda #0
@@ -179,6 +182,13 @@ vbreg_main_vctl
         sta old_console
         lda #$FF
         sta CH
+        jsr show_title_screen
+        jsr wait_title_input
+        jsr show_story_screen_1
+        jsr wait_title_input
+        jsr show_story_screen_2
+        jsr wait_title_input
+        jsr hide_story_screen
         jsr init_level
 
 ?loop   lda game_complete
@@ -186,6 +196,7 @@ vbreg_main_vctl
         jsr read_input
         jsr update_player
         jsr update_fly_spikes
+        jsr update_level06_missile
         jsr check_fly_spikes
         jsr check_special_tiles
         jsr draw_dynamic
@@ -201,6 +212,35 @@ vbreg_main_vctl
         lda RTCLOK+2
 ?wait   cmp RTCLOK+2
         beq ?wait
+        rts
+.endp
+
+.proc wait_title_input
+        lda #$FF
+        sta CH
+?wait   jsr wait_frame
+        lda STRIG0
+        beq ?fire
+        lda CH
+        cmp #$FF
+        beq ?wait
+        and #$3F
+        cmp #$21               ; Space
+        beq ?keyboard
+        cmp #$0C               ; Return
+        bne ?clear_key
+?keyboard
+        lda #$FF
+        sta CH
+        rts
+?clear_key
+        lda #$FF
+        sta CH
+        jmp ?wait
+?fire   lda STRIG0             ; do not carry held fire into level one
+        beq ?fire
+        lda #0
+        sta old_fire
         rts
 .endp
 
@@ -258,11 +298,6 @@ vbreg_main_vctl
         lda #$FF
         sta CH
         lda key_temp
-        jsr select_level_shortcut
-        bcc ?game_key
-        jmp ?console
-?game_key
-        lda key_temp
         cmp #$3F               ; A
         bne ?key_d
         lda #$FF
@@ -299,34 +334,6 @@ vbreg_main_vctl
 ?done   rts
 .endp
 
-; Temporary direct room selection for testing. These are physical POKEY key
-; codes with Shift/Control bits removed. Gameplay keys A/D/W/R/Space are not
-; present. Slot 13 (rKey0) is an empty automatic transition, so it is omitted.
-.proc select_level_shortcut
-        ldx #0
-?find   cmp level_shortcut_codes,x
-        beq ?select
-        inx
-        cpx #LEVEL_SHORTCUT_COUNT
-        bcc ?find
-        clc
-        rts
-?select lda level_shortcut_levels,x
-        sta level_number
-        jsr init_level
-        sec
-        rts
-
-;       1   2   3   4   5   6   7   8   9   0   Q   E
-level_shortcut_codes
-        dta $1F,$1E,$1A,$18,$1D,$1B,$33,$35,$30,$32,$2F,$2A
-;       T   Y   U   I   O   P   S   F   G   H   J
-        dta $2D,$2B,$0B,$0D,$08,$0A,$3E,$38,$3D,$39,$01
-level_shortcut_levels
-        dta 0,1,2,3,4,5,6,7,8,9,10,11
-        dta 13,14,15,16,17,18,19,20,21,22,23
-.endp
-
 .proc read_complete_input
         lda STRIG0
         beq ?restart
@@ -337,9 +344,6 @@ level_shortcut_levels
         sta key_temp
         lda #$FF
         sta CH
-        lda key_temp
-        jsr select_level_shortcut
-        bcs ?done
         lda key_temp
         cmp #$21               ; Space
         bne ?done
@@ -357,6 +361,14 @@ level_shortcut_levels
 ; Level setup
 ;==============================================================================
 .proc init_level
+        ; Title and ending artwork use a separate 16-colour palette.
+        jsr load_palette
+        lda picture_active
+        beq ?buffers_ready
+        jsr clear_picture_buffers
+        lda #0
+        sta picture_active
+?buffers_ready
         ; rKey0 is the original non-playable halfway interstitial. Continue to
         ; rKey1 just as its fade controller does in Sulka.js.
         lda level_number
@@ -379,6 +391,13 @@ level_shortcut_levels
         sta player_anim_frame
         sta player_anim_mode
         sta player_anim_moving
+        sta missile_tick
+        lda #50
+        sta missile_x
+        lda #0
+        sta missile_x+1
+        lda #120
+        sta missile_y
         lda #1
         sta gravity_dir
 
@@ -1289,9 +1308,7 @@ level_shortcut_levels
         bcc ?next
         lda #1
         sta game_complete
-        jsr draw_status
-        jsr build_room_cache
-        jmp draw_dynamic
+        jmp show_ending_screen
 ?next   jmp init_level
 .endp
 
@@ -1456,7 +1473,7 @@ level_shortcut_levels
         jmp copy_text
 .endp
 
-s_title      dta 10,d'SULKA VBXE'
+s_title      dta 10,d'SOJKA VBXE'
 s_level      dta 6,d'LEVEL '
 s_keys       dta 5,d'KEYS '
 s_controls   dta 39,d'JOY/A-D MOVE  FIRE/SPACE JUMP  SELECT/R'
@@ -1476,11 +1493,12 @@ s_need_vbxe  dta 13,d'VBXE REQUIRED'
 ; Porter-style double buffering. The displayed framebuffer is never modified:
 ; a complete frame is assembled in the hidden buffer and published at VBL.
 .proc draw_dynamic
+        lda game_complete
+        bne ?done              ; keep the ending illustration on screen
         jsr copy_room_cache
         lda back_bank
         sta render_bank
-        lda game_complete
-        bne ?present
+        jsr draw_level06_missile
         jsr draw_fly_spikes
         lda offscreen_side
         bne ?present
@@ -1488,6 +1506,190 @@ s_need_vbxe  dta 13,d'VBXE REQUIRED'
 ?present
         jsr wait_blit
         jmp present_back_buffer
+?done   rts
+.endp
+
+.proc show_title_screen
+        lda #<title_screen_rle
+        ldx #>title_screen_rle
+        jmp draw_rle_screen
+.endp
+
+.proc show_ending_screen
+        lda #<ending_screen_rle
+        ldx #>ending_screen_rle
+        jmp draw_rle_screen
+.endp
+
+.proc show_story_screen_1
+        lda #<story_page_1
+        ldx #>story_page_1
+        jmp show_story_page
+.endp
+
+.proc show_story_screen_2
+        lda #<story_page_2
+        ldx #>story_page_2
+        jmp show_story_page
+.endp
+
+; The prose uses ANTIC's real 40-column text mode and a generated Latin-2 VGA
+; charset. This is substantially clearer than scaling tiny picture glyphs.
+.proc show_story_page
+        sta text_src
+        stx text_src+1
+        lda #<text_screen
+        sta text_dst
+        lda #>text_screen
+        sta text_dst+1
+        ldx #4
+?page  ldy #0
+?copy  lda (text_src),y
+        sta (text_dst),y
+        iny
+        bne ?copy
+        inc text_src+1
+        inc text_dst+1
+        dex
+        bne ?page
+        jsr wait_frame
+        lda #0
+vbreg_story_vctl
+        sta VBXE_VCTL
+        lda #<story_display_list
+        sta SDLSTL
+        lda #>story_display_list
+        sta SDLSTL+1
+        lda #>story_charset
+        sta CHBAS
+        lda #$0E
+        sta COLOR1
+        lda #0
+        sta COLOR2
+        sta COLOR4
+        rts
+.endp
+
+.proc hide_story_screen
+        lda #<display_list
+        sta SDLSTL
+        lda #>display_list
+        sta SDLSTL+1
+        lda #$E0
+        sta CHBAS
+        lda #$9A
+        sta COLOR1
+        jmp enable_display
+.endp
+
+; Decode one-byte screen runs: high nibble is colour, low nibble is length-1.
+; The stored 160x100 image is expanded to the full 320x200 VBXE framebuffer.
+.proc draw_rle_screen
+        sta text_src
+        stx text_src+1
+        ldy #0
+        lda (text_src),y
+        sta screen_runs
+        iny
+        lda (text_src),y
+        sta screen_runs+1
+        clc
+        lda text_src
+        adc #2
+        sta text_src
+        bcc ?pointer_ready
+        inc text_src+1
+?pointer_ready
+        lda back_bank
+        sta render_bank
+        lda #0
+        sta screen_draw_x
+        sta screen_draw_x+1
+        sta screen_draw_y
+
+?next   lda screen_runs
+        ora screen_runs+1
+        bne ?have_run
+        jmp ?done
+?have_run
+        ldy #0
+        lda (text_src),y
+        sta screen_run_byte
+        inc text_src
+        bne ?count
+        inc text_src+1
+?count  lda screen_runs
+        bne ?count_low
+        dec screen_runs+1
+?count_low
+        dec screen_runs
+
+        lda screen_run_byte
+        and #$0F
+        clc
+        adc #1
+        asl
+        sta screen_run_width
+        lda screen_draw_x
+        sta calc_x
+        lda screen_draw_x+1
+        sta calc_x+1
+        lda screen_draw_y
+        sta calc_y
+        lda screen_run_width
+        sta fr_w
+        lda #0
+        sta fr_w+1
+        lda #2
+        sta fr_h
+        lda screen_run_byte
+        lsr
+        lsr
+        lsr
+        lsr
+        sta fr_col
+        jsr fill_rect
+
+        clc
+        lda screen_draw_x
+        adc screen_run_width
+        sta screen_draw_x
+        bcc ?row_test
+        inc screen_draw_x+1
+?row_test
+        lda screen_draw_x+1
+        cmp #>SCR_W
+        bne ?next
+        lda screen_draw_x
+        cmp #<SCR_W
+        bne ?next
+        lda #0
+        sta screen_draw_x
+        sta screen_draw_x+1
+        inc screen_draw_y
+        inc screen_draw_y
+        jmp ?next
+?done   jsr wait_blit
+        ; Switch palettes only when the complete hidden image is ready, so
+        ; gameplay does not visibly change colour while the ending decodes.
+        jsr load_screen_palette
+        lda #1
+        sta picture_active
+        jmp present_back_buffer
+.endp
+
+; Picture screens occupy every pixel, while gameplay normally refreshes only
+; the room rectangle. Clear both rotating buffers once at the transition so
+; title/ending pixels cannot survive around the gameplay edges.
+.proc clear_picture_buffers
+        lda #0
+        sta render_bank
+        jsr clear_framebuffer
+        jsr wait_blit
+        lda #1
+        sta render_bank
+        jsr clear_framebuffer
+        jmp wait_blit
 .endp
 
 .proc draw_fly_spikes
@@ -1564,6 +1766,82 @@ s_need_vbxe  dta 13,d'VBXE REQUIRED'
         bne ?done
         jsr draw_map
 ?done   jmp wait_blit
+.endp
+
+; Move the visual-only level-06 missile one pixel up and right every third
+; frame. It loops wholly inside the room and never enters collision state.
+.proc update_level06_missile
+        lda level_number
+        cmp #5
+        bne ?done
+        inc missile_tick
+        lda missile_tick
+        cmp #3
+        bcc ?done
+        lda #0
+        sta missile_tick
+        inc missile_x
+        bne ?move_y
+        inc missile_x+1
+?move_y dec missile_y
+        lda missile_y
+        cmp #60
+        bcs ?done
+        jmp complete_level       ; level 06 ends with the completed flight
+?done   rts
+.endp
+
+; A purely visual layer for level 06. It is deliberately absent from level_map,
+; so the moving missile has no collision and cannot affect any game rule.
+.proc draw_level06_missile
+        lda level_number
+        cmp #5
+        bne ?done
+        lda missile_x
+        sta calc_x
+        lda missile_x+1
+        sta calc_x+1
+        lda missile_y
+        sta calc_y
+        jsr calc_addr
+        lda #<MISSILE_VRAM_ADDR
+        sta bl_src
+        lda #>MISSILE_VRAM_ADDR
+        sta bl_src+1
+        lda #FLY_SPRITE_BANK
+        sta bl_src+2
+        lda #<SCR_W
+        sta bl_ssy
+        lda #>SCR_W
+        sta bl_ssy+1
+        lda #1
+        sta bl_ssx
+        lda calc_out
+        sta bl_dst
+        lda calc_out+1
+        sta bl_dst+1
+        lda calc_out+2
+        sta bl_dst+2
+        lda #<SCR_W
+        sta bl_dsy
+        lda #>SCR_W
+        sta bl_dsy+1
+        lda #1
+        sta bl_dsx
+        lda #167
+        sta bl_w
+        lda #0
+        sta bl_w+1
+        lda #38
+        sta bl_h
+        lda #$FF
+        sta bl_and
+        lda #0
+        sta bl_xor
+        lda #1
+        sta bl_mode
+        jmp do_blit
+?done   rts
 .endp
 
 .proc copy_room_cache
@@ -2514,12 +2792,15 @@ nest_pixels
 
 vbxe_relocations
         dta a(main.vbreg_main_memac+2),a(main.vbreg_main_vctl+2)
+        dta a(show_story_page.vbreg_story_vctl+2)
         dta a(setup_xdl.vbreg_setup_bank+2)
         dta a(enable_display.vbreg_vctl+2),a(enable_display.vbreg_xdl0+2)
         dta a(enable_display.vbreg_xdl1+2),a(enable_display.vbreg_xdl2+2)
-        dta a(load_palette.vbreg_psel+2),a(load_palette.vbreg_csel+2)
-        dta a(load_palette.vbreg_cr+2),a(load_palette.vbreg_cg+2)
-        dta a(load_palette.vbreg_cb+2)
+        dta a(load_selected_palette.vbreg_psel+2)
+        dta a(load_selected_palette.vbreg_csel+2)
+        dta a(load_selected_palette.vbreg_cr+2)
+        dta a(load_selected_palette.vbreg_cg+2)
+        dta a(load_selected_palette.vbreg_cb+2)
         dta a(blit_init.vbreg_bl0+2),a(blit_init.vbreg_bl1+2)
         dta a(blit_init.vbreg_bl2+2),a(wait_blit.vbreg_busy+2)
         dta a(upload_fly_sprite.vbreg_fly_bank+2)
@@ -2567,6 +2848,47 @@ vbreg_fly_restore
         rts
 .endp
 
+; Expand the compact generated run table once into unused space in VRAM bank 3.
+; Gameplay can then move the 168x42 decoration with one transparent blit.
+.proc upload_missile_sprite
+        lda #FLY_SPRITE_BANK
+        sta render_bank
+        lda #0
+        sta calc_x
+        sta calc_x+1
+        lda #MISSILE_VRAM_Y
+        sta calc_y
+        lda #168
+        sta fr_w
+        lda #0
+        sta fr_w+1
+        lda #39
+        sta fr_h
+        lda #0
+        sta fr_col
+        jsr fill_rect
+        jsr wait_blit
+
+        lda #<level06_missile_pixels
+        sta text_src
+        lda #>level06_missile_pixels
+        sta text_src+1
+        lda #0
+        sta sprite_base_x
+        sta sprite_base_x+1
+        lda #MISSILE_VRAM_Y
+        sta sprite_base_y
+        lda #168
+        sta run_sprite_w
+        lda #39
+        sta run_sprite_h
+        lda #0
+        sta run_flip_x
+        sta run_flip_y
+        jsr draw_run_sprite
+        jmp wait_blit
+.endp
+
 xdl_data
         dta $74,$08
         dta 7
@@ -2609,28 +2931,44 @@ vbreg_xdl2
 .endp
 
 .proc load_palette
+        lda #<palette
+        sta work_ptr
+        lda #>palette
+        sta work_ptr+1
+        jmp load_selected_palette
+.endp
+
+.proc load_screen_palette
+        lda #<screen_palette
+        sta work_ptr
+        lda #>screen_palette
+        sta work_ptr+1
+        jmp load_selected_palette
+.endp
+
+.proc load_selected_palette
         lda #1
 vbreg_psel
         sta VBXE_PSEL
-        ldx #0
-?next   lda palette,x
+        ldy #0
+?next   lda (work_ptr),y
         cmp #$FF
         beq ?done
 vbreg_csel
         sta VBXE_CSEL
-        lda palette+1,x
+        iny
+        lda (work_ptr),y
 vbreg_cr
         sta VBXE_CR
-        lda palette+2,x
+        iny
+        lda (work_ptr),y
 vbreg_cg
         sta VBXE_CG
-        lda palette+3,x
+        iny
+        lda (work_ptr),y
 vbreg_cb
         sta VBXE_CB
-        txa
-        clc
-        adc #4
-        tax
+        iny
         jmp ?next
 ?done   rts
 .endp
@@ -2653,7 +2991,11 @@ palette
         dta 14, 70,135,143
         dta 15,255,255,255
         dta 16,  3,  1, 10
+        dta 17,  0, 57,166
+        dta 18,213, 43, 30
         dta $FF
+
+        icl 'generated/sojka-screen-palette.inc'
 
 ; Generic blitter control block.
 bl_src  dta 0,0,0
@@ -2894,6 +3236,15 @@ run_flip_y    dta 0
 front_bank dta 0
 back_bank  dta 1
 render_bank dta 0
+screen_runs dta a(0)
+screen_draw_x dta a(0)
+screen_draw_y dta 0
+screen_run_byte dta 0
+screen_run_width dta 0
+picture_active dta 0
+missile_x dta a(50)
+missile_y dta 120
+missile_tick dta 0
 
 ; BEGIN SULKA EDITOR LEVEL DATA
 ; Generated by the Sulka VBXE Map Editor. Replace the marked block in
@@ -3030,18 +3381,18 @@ level5
  dta c'........................'
 
 level6
- ; rViiva0
+ ; rViiva0 -- Last tutorial; rocket flight auto-advances and has no collision
+ dta c'........................'
+ dta c'...P................N...'
+ dta c'...##...............##..'
+ dta c'^^..^^...^^.............'
+ dta c'##..##...##.............'
+ dta c'vv..vv...vv.............'
  dta c'........................'
  dta c'........................'
  dta c'........................'
  dta c'........................'
  dta c'........................'
- dta c'.....P..................'
- dta c'........................'
- dta c'.........^^......##.....'
- dta c'.....##..##.............'
- dta c'........................'
- dta c'.......##...............'
  dta c'........................'
  dta c'........................'
  dta c'........................'
@@ -3363,8 +3714,23 @@ display_list
         :25 dta $70
         dta $41,a(display_list)
 
+; Two blank scanline groups plus 23 crisp 40-column text rows = 200 lines.
+story_display_list
+        :2 dta $70
+        dta $42,a(text_screen)
+        :22 dta $02
+        dta $41,a(story_display_list)
+
+        icl 'generated/sojka-ending-screen.inc'
+
         org $7000
 text_screen
         :1000 dta 0
+
+        icl 'generated/sojka-title-screen.inc'
+
+        icl 'generated/sojka-story-text.inc'
+
+        icl 'generated/sojka-level06-missile.inc'
 
         run main

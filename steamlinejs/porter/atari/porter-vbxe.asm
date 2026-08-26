@@ -29,9 +29,22 @@ JOY_LEFT        = $04
 JOY_RIGHT       = $08
 JOY_FIRE        = $10
 
+KEY_PREV_LEVEL  = $1f               ; Atari KBCODE for 1
+KEY_NEXT_LEVEL  = $1e               ; Atari KBCODE for 2
+
 FLAG_SOLID      = $01
 FLAG_HAZARD     = $04
 FLAG_BLOCK      = $08
+
+; The original cartridge uses dark sprites for an inactive field and bright
+; sprites for an active (solid/lethal) field.  Red is the initial phase.
+FIELD_BLUE_OFF  = 71
+FIELD_BLUE_ON   = 72
+FIELD_RED_OFF   = 87
+FIELD_RED_ON    = 88
+
+SWITCH_RED      = 0
+SWITCH_BLUE     = 1
 
 MODE_TITLE      = 0
 MODE_PLAY       = 1
@@ -70,6 +83,8 @@ joy_prev        org *+1
 joy_pressed     org *+1
 space_pending   org *+1
 space_pressed   org *+1
+level_prev_pending org *+1
+level_next_pending org *+1
 frame           org *+1
 vblank          org *+1
 game_mode       org *+1
@@ -100,6 +115,8 @@ green_state     org *+1
 switch_x        org *+1
 switch_y        org *+1
 switch_down     org *+1
+switch_state    org *+1
+room_clock      org *+1
 crumble_x       org *+1
 crumble_y       org *+1
 crumble_time    org *+1
@@ -163,9 +180,23 @@ irq_keyboard
         lda kbcode
         and #$3f
         cmp #key_space
+        beq @irq_keyboard_space
+        cmp #KEY_PREV_LEVEL
+        beq @irq_keyboard_prev_level
+        cmp #KEY_NEXT_LEVEL
+        beq @irq_keyboard_next_level
         bne @irq_keyboard_ack
+@irq_keyboard_space
         lda #1
         sta space_pending
+        bne @irq_keyboard_ack
+@irq_keyboard_prev_level
+        lda #1
+        sta level_prev_pending
+        bne @irq_keyboard_ack
+@irq_keyboard_next_level
+        lda #1
+        sta level_next_pending
 @irq_keyboard_ack
         lda #0                      ; clear the latched keyboard IRQ
         sta irqen
@@ -226,6 +257,7 @@ main_loop_after_wait
         jsr read_keyboard
         jsr update_sound_toggle
         jsr sound_update
+        jsr update_debug_level
         lda game_mode
         cmp #MODE_TITLE
         beq title_loop
@@ -383,8 +415,12 @@ init_game
         sta teleports+1
         sta frame
         sta switch_down
+        sta switch_state
+        sta room_clock
         sta space_pending
         sta space_pressed
+        sta level_prev_pending
+        sta level_next_pending
         sta crumble_time
         lda #1
         sta room_dirty
@@ -402,6 +438,84 @@ init_game
         jsr respawn_player
         jsr init_actors
         jsr update_camera
+        rts
+
+; Debug level navigation. Keys are IRQ-latched, so holding a number does not
+; race through several levels. Level 1 has its special intro spawn offset;
+; levels 2..29 start at the preceding checkpoint's destination.
+update_debug_level
+        lda level_prev_pending
+        beq @update_debug_level_next
+        lda #0
+        sta level_prev_pending
+        sta level_next_pending
+        lda level_no
+        cmp #1
+        beq @update_debug_level_done
+        dec level_no
+        jmp debug_load_level
+@update_debug_level_next
+        lda level_next_pending
+        beq @update_debug_level_done
+        lda #0
+        sta level_prev_pending
+        sta level_next_pending
+        lda level_no
+        cmp #29
+        bcs @update_debug_level_done
+        inc level_no
+        jmp debug_load_level
+@update_debug_level_done
+        rts
+
+debug_load_level
+        lda level_no
+        cmp #1
+        bne @debug_load_level_checkpoint
+        lda #28                      ; level 1: 4*8-4
+        sta p_start_x
+        lda #0
+        sta p_start_x+1
+        lda #52                      ; level 1: 8*8-12
+        sta p_start_y
+        lda #0
+        sta p_start_y+1
+        jmp @debug_load_level_ready
+@debug_load_level_checkpoint
+        sec
+        sbc #2
+        tax
+        lda coin_next_x,x
+        jsr tile_to_pixel
+        lda tmp0
+        sta p_start_x
+        lda tmp1
+        sta p_start_x+1
+        lda coin_next_y,x
+        jsr tile_to_pixel
+        sec
+        lda tmp0
+        sbc #8
+        sta p_start_y
+        lda tmp1
+        sbc #0
+        sta p_start_y+1
+@debug_load_level_ready
+        ; Restore this level's checkpoint coin if it was collected earlier.
+        lda level_no
+        cmp #29
+        bcs @debug_load_level_no_coin
+        tax
+        dex
+        lda #1
+        sta coin_alive,x
+@debug_load_level_no_coin
+        lda #MODE_PLAY
+        sta game_mode
+        jsr clear_back_buffer
+        jsr respawn_player
+        lda #10
+        jsr start_sound
         rts
 
 respawn_player
@@ -486,19 +600,37 @@ update_player
         lda joy_state
         and #JOY_LEFT
         beq @update_player_right
-        lda #$fe
-        sta p_dx
         lda #1
         sta p_face
+        ; Match the original game's sub-pixel acceleration closely enough for
+        ; precise field-edge positioning: a fresh tap moves one pixel, while a
+        ; held direction reaches the port's normal two-pixel running speed.
+        lda joy_pressed
+        and #JOY_LEFT
+        beq @update_player_left_held
+        lda #$ff
+        bne @update_player_store_dx
+@update_player_left_held
+        lda #$fe
+        bne @update_player_store_dx
+@update_player_store_dx
+        sta p_dx
         jmp @update_player_jump
 @update_player_right
         lda joy_state
         and #JOY_RIGHT
         beq @update_player_friction
-        lda #2
-        sta p_dx
         lda #0
         sta p_face
+        lda joy_pressed
+        and #JOY_RIGHT
+        beq @update_player_right_held
+        lda #1
+        bne @update_player_store_right_dx
+@update_player_right_held
+        lda #2
+@update_player_store_right_dx
+        sta p_dx
         jmp @update_player_jump
 @update_player_friction
         lda #0
@@ -894,6 +1026,11 @@ try_teleport
         cmp #128
         bcs @try_teleport_lethal
 @try_teleport_collision
+        ; The cursor is an aim point, not a one-pixel precision test.  The
+        ; original cartridge nudges a teleport target against nearby walls;
+        ; additionally allow a one-tile horizontal/four-pixel vertical landing
+        ; snap so narrow field platforms remain usable during a jump.
+        jsr teleport_snap_to_support
         jsr player_inside_solid
         bcc @try_teleport_success
         ; Teleporting into a solid tile succeeds as a lethal teleport. Force
@@ -908,6 +1045,89 @@ try_teleport
 @try_teleport_sound
         jsr sfx_teleport
 @try_teleport_done
+        rts
+
+; Search around the nominal destination for a safe position with solid ground
+; directly beneath Porter's feet.  Horizontal and vertical offsets alternate
+; around zero so the closest match wins.  This fixes the one-tile field in the
+; early red/blue room: an aim point at its edge now lands on it instead of
+; requiring the cursor to be exactly centred.
+teleport_snap_to_support
+        mwa p_x old_x
+        mwa p_y old_y
+        lda #0
+        sta row_no
+@teleport_snap_y
+        lda #0
+        sta col_no
+@teleport_snap_x
+        mwa old_x p_x
+        mwa old_y p_y
+        ldx col_no
+        lda teleport_snap_x_offsets,x
+        jsr add_signed_to_player_x
+        ldx row_no
+        lda teleport_snap_y_offsets,x
+        jsr add_signed_to_player_y
+        jsr player_inside_solid
+        bcs @teleport_snap_next
+        jsr player_ground_test
+        bcc @teleport_snap_next
+        lda #0
+        sta p_dy
+        lda #1
+        sta p_ground
+        sta p_can_tele
+        rts
+@teleport_snap_next
+        inc col_no
+        lda col_no
+        cmp #17
+        bne @teleport_snap_x
+        inc row_no
+        lda row_no
+        cmp #9
+        bne @teleport_snap_y
+        ; No nearby supported destination: retain the exact cursor position.
+        ; The caller still accepts it in open air or rejects it inside a wall.
+        mwa old_x p_x
+        mwa old_y p_y
+        rts
+
+add_signed_to_player_x
+        bmi @add_signed_to_player_x_negative
+        clc
+        adc p_x
+        sta p_x
+        bcc @add_signed_to_player_x_done
+        inc p_x+1
+@add_signed_to_player_x_done
+        rts
+@add_signed_to_player_x_negative
+        clc
+        adc p_x
+        sta p_x
+        bcs @add_signed_to_player_x_negative_done
+        dec p_x+1
+@add_signed_to_player_x_negative_done
+        rts
+
+add_signed_to_player_y
+        bmi @add_signed_to_player_y_negative
+        clc
+        adc p_y
+        sta p_y
+        bcc @add_signed_to_player_y_done
+        inc p_y+1
+@add_signed_to_player_y_done
+        rts
+@add_signed_to_player_y_negative
+        clc
+        adc p_y
+        sta p_y
+        bcs @add_signed_to_player_y_negative_done
+        dec p_y+1
+@add_signed_to_player_y_negative_done
         rts
 
 player_inside_solid
@@ -1203,7 +1423,28 @@ check_switch
         jsr find_switch_contact
         bcc @check_switch_release
         lda switch_down
-        bne @check_switch_done
+        beq @check_switch_press
+        ; The PICO-8 version stores an independent `up` latch on every button.
+        ; If the player's feet move straight from one button tile to another,
+        ; release the old tile and allow the new tile to toggle immediately.
+        lda tmp0
+        cmp switch_x
+        bne @check_switch_change
+        lda tmp1
+        cmp switch_y
+        beq @check_switch_done
+@check_switch_change
+        lda tmp0
+        sta tmp2
+        lda tmp1
+        sta tmp3
+        jsr release_switch
+        lda tmp2
+        sta tmp0
+        lda tmp3
+        sta tmp1
+        jsr map_at_tile
+@check_switch_press
         ; A switch toggles once when the player's feet enter it. Remaining on
         ; it keeps it depressed; leaving re-arms it for the next entry.
         lda tmp0
@@ -1223,6 +1464,11 @@ check_switch
 @check_switch_release
         lda switch_down
         beq @check_switch_done
+        jsr release_switch
+@check_switch_done
+        rts
+
+release_switch
         lda switch_x
         sta tmp0
         lda switch_y
@@ -1238,7 +1484,6 @@ check_switch
         sta switch_down
         lda #1
         sta room_dirty
-@check_switch_done
         rts
 
 ; A switch is pressed only by the bottom of the player's feet. Two points
@@ -1396,7 +1641,9 @@ check_end
 @check_end_no
         rts
 
-; Apply red/blue tile pairs in the current 16x16 PICO screen.
+; Apply the same directional field transition as replace_tiles() in the
+; original cartridge.  Do not blindly invert every field tile: that makes a
+; room with a preserved/timed phase drift out of sync with its clock.
 toggle_switch_room
         lda #1
         sta room_dirty
@@ -1411,26 +1658,30 @@ toggle_switch_room
         sta col_no
 @toggle_switch_room_col
         jsr map_at_tile
-        cmp #88
-        beq @toggle_switch_room_to87
-        cmp #87
-        beq @toggle_switch_room_to88
-        cmp #71
-        beq @toggle_switch_room_to72
-        cmp #72
-        beq @toggle_switch_room_to71
+        ldx switch_state
+        bne @toggle_switch_room_blue
+        cmp #FIELD_RED_ON
+        beq @toggle_switch_room_to_red_off
+        cmp #FIELD_BLUE_OFF
+        beq @toggle_switch_room_to_blue_on
         jmp @toggle_switch_room_next
-@toggle_switch_room_to87
-        lda #87
+@toggle_switch_room_blue
+        cmp #FIELD_RED_OFF
+        beq @toggle_switch_room_to_red_on
+        cmp #FIELD_BLUE_ON
+        beq @toggle_switch_room_to_blue_off
+        jmp @toggle_switch_room_next
+@toggle_switch_room_to_red_off
+        lda #FIELD_RED_OFF
         bne @toggle_switch_room_write
-@toggle_switch_room_to88
-        lda #88
+@toggle_switch_room_to_red_on
+        lda #FIELD_RED_ON
         bne @toggle_switch_room_write
-@toggle_switch_room_to72
-        lda #72
+@toggle_switch_room_to_blue_on
+        lda #FIELD_BLUE_ON
         bne @toggle_switch_room_write
-@toggle_switch_room_to71
-        lda #71
+@toggle_switch_room_to_blue_off
+        lda #FIELD_BLUE_OFF
 @toggle_switch_room_write
         ldy #0
         sta (map_ptr),y
@@ -1445,6 +1696,9 @@ toggle_switch_room
         lda row_no
         cmp #16
         bne @toggle_switch_room_row
+        lda switch_state
+        eor #1
+        sta switch_state
         rts
 
 replace_green_room
@@ -1491,6 +1745,9 @@ reset_room_objects
         lda #1
         sta room_dirty
         jsr update_camera
+        jsr detect_room_clock
+        lda #SWITCH_RED
+        sta switch_state
         lda cam_y
         sta tmp1
         lda #0
@@ -1511,10 +1768,27 @@ reset_room_objects
         cmp #93
         bcc @reset_room_objects_platform
 @reset_room_objects_pairs
-        cmp #87
+        ldx room_clock
+        bne @reset_room_objects_preserve_fields
+        cmp #FIELD_RED_OFF
         beq @reset_room_objects_blue1
-        cmp #72
+        cmp #FIELD_BLUE_ON
         beq @reset_room_objects_blue2
+        cmp #103
+        beq @reset_room_objects_green
+        jmp @reset_room_objects_next
+@reset_room_objects_preserve_fields
+        ; Timed rooms retain their red/blue phase on death in the original.
+        ; Infer that phase from either of the two blue-phase field sprites.
+        cmp #FIELD_RED_OFF
+        beq @reset_room_objects_mark_blue
+        cmp #FIELD_BLUE_ON
+        bne @reset_room_objects_green_test
+@reset_room_objects_mark_blue
+        lda #SWITCH_BLUE
+        sta switch_state
+        jmp @reset_room_objects_next
+@reset_room_objects_green_test
         cmp #103
         beq @reset_room_objects_green
         jmp @reset_room_objects_next
@@ -1528,10 +1802,10 @@ reset_room_objects
         lda #89
         bne @reset_room_objects_write
 @reset_room_objects_blue1
-        lda #88
+        lda #FIELD_RED_ON
         bne @reset_room_objects_write
 @reset_room_objects_blue2
-        lda #71
+        lda #FIELD_BLUE_OFF
         bne @reset_room_objects_write
 @reset_room_objects_green
         lda #104
@@ -1549,6 +1823,43 @@ reset_room_objects
         lda row_no
         cmp #16
         bne @reset_room_objects_row
+        rts
+
+; Set room_clock when the current room contains any frame of the 119..126
+; clock animation.  A second scan is intentional: field tiles can precede the
+; clock in map order, but reset policy depends on knowing about the clock first.
+detect_room_clock
+        lda #0
+        sta room_clock
+        lda cam_y
+        sta tmp1
+        lda #0
+        sta row_no
+@detect_room_clock_row
+        lda cam_x
+        sta tmp0
+        lda #0
+        sta col_no
+@detect_room_clock_col
+        jsr map_at_tile
+        cmp #119
+        bcc @detect_room_clock_next
+        cmp #127
+        bcs @detect_room_clock_next
+        lda #1
+        sta room_clock
+        rts
+@detect_room_clock_next
+        inc tmp0
+        inc col_no
+        lda col_no
+        cmp #16
+        bne @detect_room_clock_col
+        inc tmp1
+        inc row_no
+        lda row_no
+        cmp #16
+        bne @detect_room_clock_row
         rts
 
 update_animations
@@ -1758,7 +2069,9 @@ update_actors
         rts
 
 actor_player_collision
-        ; Rocks kill on an 8x8 overlap.
+        ; Rocks are solid moving platforms in the original game. Porter may
+        ; land on one and jump from it; unresolved overlap (for example a rock
+        ; falling onto him) remains lethal.
         ldx #ROCKS_COUNT-1
 @actor_player_collision_rocks
         lda rocks_start_x,x
@@ -1768,17 +2081,79 @@ actor_player_collision
         sta actor_y
         lda rock_y_hi,x
         sta actor_y+1
+        jsr player_rock_horizontal_overlap
+        bcc @actor_player_collision_rock_overlap
+        lda p_dy
+        bmi @actor_player_collision_rock_overlap
+        ; Land only while crossing the top within this frame. The allowance of
+        ; six pixels covers Porter's and the rock's maximum combined motion.
+        lda p_y+1
+        cmp actor_y+1
+        bne @actor_player_collision_rock_overlap
+        lda p_y
+        cmp actor_y
+        bcs @actor_player_collision_rock_overlap
+        clc
+        adc #8
+        cmp actor_y
+        bcc @actor_player_collision_rock_overlap
+        sec
+        sbc actor_y
+        cmp #7
+        bcs @actor_player_collision_rock_overlap
+        sec
+        lda actor_y
+        sbc #8
+        sta p_y
+        lda actor_y+1
+        sbc #0
+        sta p_y+1
+        lda #0
+        sta p_dy
+        lda #1
+        sta p_ground
+        sta p_can_tele
+        jmp @actor_player_collision_next_rock
+@actor_player_collision_rock_overlap
         jsr player_actor_overlap
         bcc @actor_player_collision_next_rock
-        ; force the regular death test out of bounds
+        ; Side contact blocks movement instead of killing Porter.
+        lda p_dx
+        beq @actor_player_collision_rock_kill
+        bmi @actor_player_collision_rock_left
+        sec
+        lda actor_x
+        sbc #8
+        sta p_x
+        lda actor_x+1
+        sbc #0
+        sta p_x+1
+        lda #0
+        sta p_dx
+        jmp @actor_player_collision_next_rock
+@actor_player_collision_rock_left
+        clc
+        lda actor_x
+        adc #8
+        sta p_x
+        lda actor_x+1
+        adc #0
+        sta p_x+1
+        lda #0
+        sta p_dx
+        jmp @actor_player_collision_next_rock
+@actor_player_collision_rock_kill
+        ; Force the regular death/respawn path out of bounds.
         lda #2
         sta p_y+1
         rts
 @actor_player_collision_next_rock
         dex
-        bpl @actor_player_collision_rocks
+        bmi @actor_player_collision_feathers_start
+        jmp @actor_player_collision_rocks
 
         ; Feathers carry Porter upward when he is immediately above one.
+@actor_player_collision_feathers_start
         ldx #FEATHERS_COUNT-1
 @actor_player_collision_feathers
         lda feathers_start_x,x
@@ -1800,6 +2175,37 @@ actor_player_collision
 @actor_player_collision_next_feather
         dex
         bpl @actor_player_collision_feathers
+        rts
+
+; Carry set when the original player's down sensor (x+2..x+6) overlaps
+; the rock's active horizontal bounds (x+2..x+7).
+player_rock_horizontal_overlap
+        lda p_x+1
+        cmp actor_x+1
+        bne @player_rock_horizontal_overlap_no
+        clc
+        lda actor_x
+        adc #2
+        sta tmp0
+        clc
+        lda p_x
+        adc #6
+        cmp tmp0
+        bcc @player_rock_horizontal_overlap_no
+        beq @player_rock_horizontal_overlap_no
+        clc
+        lda actor_x
+        adc #7
+        sta tmp0
+        clc
+        lda p_x
+        adc #2
+        cmp tmp0
+        bcs @player_rock_horizontal_overlap_no
+        sec
+        rts
+@player_rock_horizontal_overlap_no
+        clc
         rts
 
 player_actor_overlap
@@ -2824,6 +3230,13 @@ sound_update
         lda #0
         sta audc1
         rts
+
+; Signed proximity order: exact, then one pixel left/right, and so on.  The
+; horizontal range is one 8-pixel tile; vertical correction remains tighter.
+teleport_snap_x_offsets
+        dta 0,$ff,1,$fe,2,$fd,3,$fc,4,$fb,5,$fa,6,$f9,7,$f8,8
+teleport_snap_y_offsets
+        dta 0,$ff,1,$fe,2,$fd,3,$fc,4
 
 ; --- generated compact tables ----------------------------------------------
         icl 'data/sprite_addr.inc.asm'

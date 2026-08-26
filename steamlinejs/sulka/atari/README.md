@@ -1,6 +1,7 @@
-# Sulka VBXE
+# Sójka VBXE
 
-This is a self-contained Atari XL/XE + VBXE interpretation of **Sulka**. It
+This is a self-contained Atari XL/XE + VBXE interpretation of the original
+**Sulka**, presented here as **Sójka**. It
 recreates the original game's central ideas with native 6502 code:
 
 - left/right platform movement and jumping;
@@ -55,21 +56,40 @@ smaller collision box. The sprite is uploaded to VBXE memory once and drawn
 with one transparent blit per enemy, avoiding a frame-rate drop in rooms that
 contain moving hazards.
 
+The title and ending screens use original generated pixel artwork based on the
+bird protagonist. Sójka appears as an upright gothic-sepia fantasy artist with
+a silk scarf. The ending places the hero safely in a nest overlooking a galaxy
+and displays: “You have found a new nest with a view to the whole universe.”
+The title credits Kultisti as the game author and astrofor for the Atari port.
+After the title, the corrected Polish story is presented across two readable
+pages. Fire or Space advances each page before level 01 begins. The story uses
+a native 40-column ANTIC screen and a custom Latin-2 VGA 8×8 charset, preserving
+clear Polish characters without image scaling. `generate_screens.py` converts
+the title and ending into compact 160×100 VBXE RLE images and generates the
+story charset and text pages.
+
 The included stages follow the complete original room progression:
 `rTuto1`–`rTuto5`, `rViiva0`–`rViiva6`, the halfway transition,
 `rKey1`–`rKey5`, `rGrav1`–`rGrav5`, and `rEnding`. Fly-spike movement paths
 are taken from the original per-room creation code. Touching a nest ends the
 room, exactly as both `oNest` and `oNest_Final` do in Sulka.js.
 
+Level 06 (`rViiva0`) is the final tutorial room. Its large Russian-flagged
+ballistic missile moves diagonally toward the upper-right as a transparent VBXE
+sprite. It is not present in the 24×14 map and therefore has no collision or
+gameplay effect. When its flight reaches the upper-right endpoint, level 06
+automatically advances to level 07.
+
 Crossing a vertical screen edge is fatal only when gravity continues to pull
-Sulka away from the room. If Sulka passes below the room with upward gravity,
+Sójka away from the room. If Sójka passes below the room with upward gravity,
 or above it with downward gravity, play continues off-screen and gravity can
 bring the bird back. Horizontal steering remains available during recovery.
 
 ## Requirements
 
 - Atari XL/XE with a VBXE running a compatible FX 1.2x core;
-- MADS assembler to rebuild the executable.
+- MADS assembler to rebuild the executable;
+- Python 3 with Pillow to regenerate the title and ending images.
 
 ## Build
 
@@ -87,7 +107,7 @@ From the `steamlinejs/sulka` directory, use the project-local launcher:
 ./run-emulator.sh
 ```
 
-When `sulka-levels.asm` exists in the Sulka directory, the launcher validates
+When `sulka-levels.asm` exists in the Sójka directory, the launcher validates
 and applies that editor export first. It also synchronizes `editor/levels.js`,
 so refreshing the browser editor shows the map set used in the new build. It
 then rebuilds `atari/sulka-vbxe.xex` and starts it through the workspace's
@@ -99,11 +119,6 @@ VBXE device configured.
 - Joystick left/right or `A`/`D`: move
 - Joystick fire, `Space`, or `W`: jump
 - `SELECT` or `R`: restart the current level
-- Temporary direct level shortcuts for testing:
-  - levels 1–10: `1 2 3 4 5 6 7 8 9 0`
-  - levels 11–12: `Q E`
-  - level 13: no key—the original empty `rKey0` transition is skipped
-  - levels 14–24: `T Y U I O P S F G H J`
 - Fire or `Space` after completing the game: replay
 
 If VBXE is not detected at either the `$D6xx` or `$D7xx` register page, the

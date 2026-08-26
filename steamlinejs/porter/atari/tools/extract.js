@@ -58,7 +58,7 @@ const runtimeSprites = [
   0, 1, 3, 4, 5, 6, 7, 8, 9, 13, 16, 17, 18, 19, 20, 21, 22, 23,
   32, 33, 34, 35, 36, 37, 38, 39, 40, 46, 47, 48, 49, 50, 51, 52,
   53, 54, 55, 56, 58, 59,
-  60, 61, 69, 70, 74, 75, 78, 79, 85, 86, 87, 88, 89, 90, 91, 92,
+  60, 61, 69, 70, 71, 72, 74, 75, 78, 79, 85, 86, 87, 88, 89, 90, 91, 92,
   93, 94, 95, 103, 104, 105, 119, 120, 121, 122, 123, 124, 125, 126
 ];
 const used = new Set([...world, ...runtimeSprites]);
@@ -75,6 +75,15 @@ for (let n = 0; n < ids.length; n++) {
       const sy = Math.floor(y * 2 / 3);
       packed[n * 144 + y * 12 + x] = oldShapes[id * 64 + sy * 8 + sx];
     }
+  }
+}
+
+// Runtime tile replacements must never silently resolve to sprite 0.  This is
+// particularly important for field tile 72, which is absent from the initial
+// map and only appears after a red/blue switch changes phase.
+for (const id of runtimeSprites) {
+  if (id !== 0 && offsets[id] === 0) {
+    throw new Error(`runtime sprite ${id} was not packed`);
   }
 }
 fs.writeFileSync(path.join(OUT, 'sprites12.dat'), packed);
