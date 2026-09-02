@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Transition - by NinaBirb</title>
+<style>
+  :root {
+    --bg-color: #121216;
+    --panel-bg: #1c1c24;
+    --border-color: #4a2e18;
+    --accent: #fecb3e;
+    --accent-hover: #ffd768;
+    --text-color: #e0e0e0;
+  }
+
+  * {
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-user-select: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Courier New', Courier, monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 8px;
+    overflow-x: hidden;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 6px;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .subtitle {
+    font-size: 0.95rem;
+    color: #55efc4;
+    margin-top: 2px;
+  }
+
+  #game-wrapper {
+    position: relative;
+    border: 4px solid var(--border-color);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    background: #5c3a21;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  canvas {
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+
+  #message-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.82);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.4rem;
+    font-weight: bold;
+    text-align: center;
+    padding: 20px;
+    z-index: 10;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+  }
+
+  #message-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  #message-overlay .sub {
+    font-size: 0.85rem;
+    color: var(--accent);
+    margin-top: 10px;
+    font-weight: normal;
+  }
+
+  #hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 442px;
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: #aaa;
+  }
+
+  .controls-bar {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 442px;
+  }
+
+  button, select {
+    background: var(--panel-bg);
+    border: 1px solid #444;
+    color: var(--text-color);
+    padding: 6px 10px;
+    font-family: inherit;
+    font-size: 0.82rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  button:hover, select:hover {
+    background: #2b2b38;
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .info-bar {
+    font-size: 0.78rem;
+    color: #888;
+    margin-top: 8px;
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  #touch-controls {
+    display: none;
+    margin-top: 10px;
+    grid-template-columns: repeat(3, 56px);
+    grid-template-rows: repeat(2, 48px);
+    gap: 6px;
+  }
+
+  @media (pointer: coarse), (max-width: 600px) {
+    #touch-controls {
+      display: grid;
+    }
+  }
+
+  .tbtn {
+    background: #252530;
+    border: 1px solid #444;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .tbtn:active {
+    background: var(--accent);
+    color: #000;
+  }
+  .tbtn-up { grid-column: 2; grid-row: 1; }
+  .tbtn-left { grid-column: 1; grid-row: 2; }
+  .tbtn-down { grid-column: 2; grid-row: 2; }
+  .tbtn-right { grid-column: 3; grid-row: 2; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Transition</h1>
+  <div class="subtitle" id="level-title">Room</div>
+</header>
+
+<div id="game-wrapper">
+  <canvas id="gameCanvas" width="416" height="416"></canvas>
+  <div id="message-overlay" class="hidden">
+    <div id="msg-text">Level Title</div>
+    <div class="sub">Press any key or click to continue</div>
+  </div>
+</div>
+
+<div id="hud">
+  <div>Level <span id="lvl-num">1</span> / 21</div>
+  <select id="level-select"></select>
+</div>
+
+<div class="controls-bar">
+  <button id="btn-prev" title="Previous Level (Key 1)">[1] ◀ Prev</button>
+  <button id="btn-next" title="Next Level (Key 2)">[2] Next ▶</button>
+  <button id="btn-undo" title="Undo Move (Z)">[Z] Undo</button>
+  <button id="btn-restart" title="Restart Level (R)">[R] Restart</button>
+  <button id="btn-mute" title="Toggle Sound">🔊 Sound</button>
+</div>
+
+<div id="touch-controls">
+  <button class="tbtn tbtn-up" data-dir="up">▲</button>
+  <button class="tbtn tbtn-left" data-dir="left">◀</button>
+  <button class="tbtn tbtn-down" data-dir="down">▼</button>
+  <button class="tbtn tbtn-right" data-dir="right">▶</button>
+</div>
+
+<div class="info-bar">
+  <span>Arrows / WASD: Move &bull; <strong>1</strong>: Prev &bull; <strong>2</strong>: Next &bull; <strong>Z</strong>: Undo &bull; <strong>R</strong>: Restart</span>
+</div>
+
+<script>
+/* =========================================================================
+   PALETTES & SPRITE BITMAPS (5x5)
+   ========================================================================= */
+const PALETTE = {
+  brown: '#5c3a21',
+  darkbrown: '#38220f',
+  yellow: '#f5d033',
+  red: '#e74c3c',
+  darkblue: '#1a2556',
+  white: '#ffffff',
+  lightgreen: '#55efc4',
+  green: '#1b7a3e',
+  purple: '#9b59b6',
+  black: '#111111',
+  orange: '#e67e22',
+  gray: '#7f8c8d',
+  lightgray: '#bdc3c7',
+  blue: '#3498db'
+};
+
+const SPRITE_DEFS = {
+  Background: { colors: ['brown'], map: ["00000","00000","00000","00000","00000"] },
+  flag: { colors: ['yellow', 'white', 'darkbrown'], map: [".0000",".0000",".0000","....2","....2"] },
+  nflag: { colors: ['red', 'yellow', 'darkbrown'], map: [".0001",".0001",".0001","....2","....2"] },
+  Target: { colors: ['darkblue', 'white'], map: [".....",".000.",".010.",".000.","....."] },
+  Wall1: { colors: ['yellow', 'darkbrown'], map: ["00010","11111","01000","11111","00010"] },
+  wall2: { colors: ['yellow', 'darkbrown'], map: ["00010","11111","01000","11111","00010"] },
+  gwall: { colors: ['lightgreen', 'green'], map: ["00010","11111","01000","11111","00010"] },
+  lock1: { colors: ['yellow', 'darkbrown'], map: [".000.","00000","01000","00000","00000"] },
+  lock2: { colors: ['yellow', 'darkbrown'], map: [".000.","00000","01000","00000","00000"] },
+  glock: { colors: ['lightgreen', 'green'], map: [".000.","00000","01000","00000","00000"] },
+  key1: { colors: ['yellow'], map: [".....","00000","0.0.0","000..","....."] },
+  key2: { colors: ['yellow'], map: [".....","00000","0.0.0","000..","....."] },
+  pkey1: { colors: ['purple'], map: [".....","00000","0.0.0","000..","....."] },
+  pkey2: { colors: ['purple'], map: [".....","00000","0.0.0","000..","....."] },
+  gkey: { colors: ['lightgreen'], map: [".....","00000","0.0.0","000..","....."] },
+  Player1: { colors: ['black', 'orange', 'white', 'blue'], map: [".000.",".111.","22222",".333.",".3.3."] },
+  Player2: { colors: ['black', 'orange', 'white', 'blue'], map: [".000.",".111.","22222",".333.",".3.3."] },
+  Deadplayer1: { colors: ['gray', 'lightgray', 'white', 'gray'], map: [".000.",".111.","22222",".333.",".3.3."] },
+  Deadplayer2: { colors: ['gray', 'lightgray', 'white', 'gray'], map: [".000.",".111.","22222",".333.",".3.3."] },
+  gplayer: { colors: ['lightgreen'], map: [".000.",".000.","00000",".000.",".0.0."] },
+  gdeadplayer: { colors: ['gray'], map: [".000.",".000.","00000",".000.",".0.0."] },
+  pplayer1: { colors: ['purple'], map: [".000.",".000.","00000",".000.",".0.0."] },
+  pplayer2: { colors: ['purple'], map: [".000.",".000.","00000",".000.",".0.0."] },
+  Crate1: { colors: ['yellow'], map: ["00000","0...0","0...0","0...0","00000"] },
+  crate2: { colors: ['yellow'], map: ["00000","0...0","0...0","0...0","00000"] },
+  gcrate: { colors: ['lightgreen'], map: ["00000","0...0","0...0","0...0","00000"] },
+  pcrate1: { colors: ['purple'], map: ["00000","0...0","0...0","0...0","00000"] },
+  pcrate2: { colors: ['purple'], map: ["00000","0...0","0...0","0...0","00000"] },
+  death: { colors: ['orange'], map: [".000.","00000","0.0.0","00000",".0.0."] }
+};
+
+/* =========================================================================
+   AUDIO SYNTHESIZER (Web Audio API)
+   ========================================================================= */
+class SoundManager {
+  constructor() {
+    this.ctx = null;
+    this.muted = false;
+  }
+  init() {
+    if (!this.ctx) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) this.ctx = new AudioCtx();
+    }
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+  }
+  playTone(freq, dur, type = 'square', rampTo = null) {
+    if (this.muted) return;
+    this.init();
+    if (!this.ctx) return;
+    try {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+      if (rampTo) {
+        osc.frequency.exponentialRampToValueAtTime(rampTo, this.ctx.currentTime + dur);
+      }
+      gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + dur);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + dur);
+    } catch(e){}
+  }
+  playMove() { this.playTone(150, 0.05, 'triangle', 90); }
+  playPush() { this.playTone(120, 0.08, 'square', 70); }
+  playReset() { this.playTone(320, 0.15, 'sawtooth', 120); }
+  playUnlock() {
+    this.playTone(392, 0.08, 'sine');
+    setTimeout(() => this.playTone(587, 0.1, 'sine'), 70);
+  }
+  playDeath() { this.playTone(180, 0.2, 'sawtooth', 40); }
+  playWin() {
+    [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+      setTimeout(() => this.playTone(f, 0.18, 'triangle'), i * 80);
+    });
+  }
+}
+const sound = new SoundManager();
+
+/* =========================================================================
+   LEVEL DATA
+   ========================================================================= */
+const LEVELS = [
+  {
+    title: "Room",
+    map: [
+      "#############zzzzzzzzzzzzz",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#.....%.....#z...........z",
+      "#...........#z...........z",
+      "#..........##z...........z",
+      "#..g..*.o..#.............z",
+      "#..........##z...........z",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#############zzzzzzzzzzzzz"
+    ]
+  },
+  {
+    title: "Door and Key",
+    map: [
+      "#############zzzzzzzzzzzzz",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#####.......#z...........z",
+      "#...#......##z...........z",
+      "#.a.l...j.g#.............z",
+      "#...#......##z...........z",
+      "#####.......#z...........z",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#############zzzzzzzzzzzzz"
+    ]
+  },
+  {
+    title: "Reset",
+    map: [
+      "#############zzzzzzzzzzzzz",
+      "#############z...........z",
+      "#############z...........z",
+      "#############z.....z.....z",
+      "#############z....z......z",
+      "#####.......#zz..z.......z",
+      "#####...o..*..z.zzzzzzzz.z",
+      "#####.#.....#zz..z.......z",
+      "#####.#....##z....z......z",
+      "#####*#.....#z.....z.....z",
+      "#####g#..%..#z...........z",
+      "#####o#.....#z...........z",
+      "#############zzzzzzzzzzzzz"
+    ]
+  },
+  {
+    title: "Not Allowed",
+    map: [
+      "#############zzzzzzzzzzzzz",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#.....%.....#z...........z",
+      "#...........#zzzzzz......z",
+      "#...*.*.*...#z...zz......z",
+      "#..............o.zz......z",
+      "#.....g.....#z...zz......z",
+      "#...........#zzzzzz......z",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#############zzzzzzzzzzzzz"
+    ]
+  },
+  {
+    title: "Immune",
+    map: [
+      "#############zzzzzzzzzzzzz",
+      "##....o#....#z...........z",
+      "##.....#....#z.....z.....z",
+      "###.####..%.#z.....z.....z",
+      "###.#.......#z.....z.....z",
+      "###.#.......#zz....z.....z",
+      "###.#.........z....z.....z",
+      "###.#.......#zz....z.....z",
+      "###h........#z...........z",
+      "###*...g....#z.....z.....z",
+      "###.........#z...........z",
+      "###o........#z...........z",
+      "#############zzzzzzzzzzzzz"
+    ]
+  },
+  {
+    title: "Entanglement",
+    map: [
+      "#############zzzzzzzzzzzzz",
+      "#o...o#.....#z...........z",
+      "#.....#.....#z...........z",
+      "###*###..%..#z....z..z...z",
+      "###h###.....#z...........z",
+      "#...........#zz.z......z.z",
+      "#.............z..z....z..z",
+      "#..g........#zz...zzzz...z",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#############zzzzzzzzzzzzz"
+    ]
+  },
+  {
+    title: "Luggage",
+    map: [
+      "#############zzzzzzzzzzzzz",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#.....%.....#z#####......z",
+      "#...........#z....#......z",
+      "#...&...*...#z....#......z",
+      "#...............o.#......z",
+      "#...........#z....#......z",
+      "#.....g.....#z....#......z",
+      "#...........#z#####......z",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#############zzzzzzzzzzzzz"
+    ]
+  },
+  {
+    title: "One Key",
+    map: [
+      "#############zzzzzzzzzzzzz",
+      "#######.....#z...........z",
+      "#######.....#z....zzz....z",
+      "#######.....#z....z......z",
+      "####..#.....#z....zzz....z",
+      "#..#..#.....#zz...z......z",
+      "#a.l..x.j.g...z...z......z",
+      "#..#..#.....#zz...zzzz...z",
+      "####..#.....#z....z..z...z",
+      "#######.....#z....z..z...z",
+      "#######.....#z....zzzz...z",
+      "#######.....#z...........z",
+      "#############zzzzzzzzzzzzz"
+    ]
+  },
+  {
+    title: "Doorlemma",
+    map: [
+      "#############zzzzzzzzzzzzz",
+      "####...#....#z...........z",
+      "####...#....#z...........z",
+      "####...#....#z....zzzz...z",
+      "####...#....#z....z..z...z",
+      "#..#...#.j..#zz......z...z",
+      "#a.l...l...g..z....zzz...z",
+      "#..#...#.h..#zz....z.....z",
+      "####...#....#z.....z.....z",
+      "####...#....#z...........z",
+      "####...#....#z.....z.....z",
+      "####...#....#z...........z",
+      "#############zzzzzzzzzzzzz"
+    ]
+  },
+  {
+    title: "Two Keys",
+    map: [
+      "#############zzzzzzzzzzzzz",
+      "#.a.#..#....#z...........z",
+      "#...#..#....#z...........z",
+      "##l##..#....#z....zzzz...z",
+      "#...#..#..j.#z...zzzzzz..z",
+      "##l##..#....#zz.zzzzzzzz.z",
+      "#...#..#..g...z.zzzzzzzz.z",
+      "#...x..l....#zz.z.zzzzzz.z",
+      "#...#..#..b.#z..zzzzzzzz.z",
+      "#####..#....#z..zzzzzzzz.z",
+      "#####..#....#z..zzzzzzzz.z",
+      "#####..#....#z...........z",
+      "#############zzzzzzzzzzzzz"
+    ]
+  },
+  {
+    title: "Deadly",
+    map: [
+      "#############zzzzzzzzzzzzz",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#......ddddd#z...........z",
+      "#......d....#z...........z",
+      "#......d.hg%#zz..........z",
+      "#.....od.o....z..........z",
+      "#......d.*..#zz..........z",
+      "#......d....#z...........z",
+      "#......ddddd#z...........z",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#############zzzzzzzzzzzzz"
+    ]
+  },
+  {
+    title: "Swap",
+    map: [
+      "#############zzzzzzzzzzzzz",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#....5...a..#z...........z",
+      "#...........#z...........z",
+      "#..........##z...........z",
+      "#.#######..#.............z",
+      "#.#ddddd#..##z...........z",
+      "#.#.....#...#z...........z",
+      "#.#.....#...#z...........z",
+      "#.#..g..#...#z...........z",
+      "#.#.....#...#z...........z",
+      "#############zzzzzzzzzzzzz"
+    ]
+  },
+  {
+    title: "Access",
+    map: [
+      "#############zzzzzzzzzzzzz",
+      "#..#.....#..#z...........z",
+      "#..#..a..#..#z...........z",
+      "#..#.....#..#z...........z",
+      "#..###d###..#z...........z",
+      "#..........##z...........z",
+      "#..........#.............z",
+      "#..........##z...........z",
+      "#....g.5....#z...........z",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#############zzzzzzzzzzzzz"
+    ]
+  },
+  {
+    title: "Warp",
+    map: [
+      "#############zzzzzzzzzzzzz",
+      "#...........#zzz......zzzz",
+      "#...........#zzz..a...zzzz",
+      "#...........#zzz......zzzz",
+      "#...g..5....#zzz......zzzz",
+      "#...........#zzzzz.zzzzzzz",
+      "#.............9....zzzzzzz",
+      "#...........#zzzz..zzzzzzz",
+      "#ddddddddddd#zzzz..zzzzzzz",
+      "#ddddddddddd#zzzzzzzzzzzzz",
+      "#ddddddddddd#zzzzzzzzzzzzz",
+      "#ddddddddddd#zzzzzzzzzzzzz",
+      "#############zzzzzzzzzzzzz"
+    ]
+  },
+  {
+    title: "No Escape",
+    map: [
+      "#############zzzzzzzzzzzzz",
+      "#...........#z...........z",
+      "###.........#z...........z",
+      "#o..........#z...........z",
+      "#.#.........#z...........z",
+      "#.#.........#z...........z",
+      "#.#....h.................z",
+      "#.#.........#z...........z",
+      "#.###.......#z...........z",
+      "#...#.......#z...........z",
+      "#p.a#.......#z...........z",
+      "#...#.......#z...........z",
+      "#############zzzzzzzzzzzzz"
+    ]
+  },
+  {
+    title: "Blockade",
+    map: [
+      "#############zzzzzzzzzzzzz",
+      "#...........#z...........z",
+      "#..3.....a..#z...........z",
+      "#...........#z...........z",
+      "#############z...........z",
+      "##..........#z...........z",
+      "##.......................z",
+      "##....h.....#z...........z",
+      "##..........#z...........z",
+      "##....p.....#z...........z",
+      "##..........#z...........z",
+      "##..........#z...........z",
+      "#############zzzzzzzzzzzzz"
+    ]
+  },
+  {
+    title: "Where's The Flag?",
+    map: [
+      "#############zzzzzzzzzzzzz",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#.....3.....#z...........z",
+      "#...........#z...........z",
+      "#....p.h...........a.....z",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#############zzzzzzzzzzzzz"
+    ]
+  },
+  {
+    title: "Over There",
+    map: [
+      "#############zzzzzzzzzzzzz",
+      "#dd.......dd#z..zzzzzzzzzz",
+      "#d....g....d#z..zzzzzzzzzz",
+      "#...........#z..o..zzzzzzz",
+      "#.....h.....#z..zz.zzzzzzz",
+      "#...........#z..z..zzzzzzz",
+      "#....0.03.......d..zzzzzzz",
+      "#...........#z..z..zzzzzzz",
+      "#.....0.....#z..z..zzzzzzz",
+      "#...........#z..z..zzzzzzz",
+      "#d.........d#z..z..zzzzzzz",
+      "#dd.......dd#z..z.%zzzzzzz",
+      "#############zzzzzzzzzzzzz"
+    ]
+  },
+  {
+    title: "Spawnpoint",
+    map: [
+      "#############zzzzzzzzzzzzz",
+      "#...........#z...........z",
+      "#.o.h.......#z...........z",
+      "#...........#z...........z",
+      "######d###..#z...........z",
+      "#........#..#zz..........z",
+      "#.%......#....z..........z",
+      "#........#..#zz..........z",
+      "#...p..3.#..#z...........z",
+      "#........####z...........z",
+      "#........####z...........z",
+      "#........####z...........z",
+      "#############zzzzzzzzzzzzz"
+    ]
+  },
+  {
+    title: "Where's The Target?",
+    map: [
+      "#############zzzzzzzzzzzzz",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#...........#z.....h.....z",
+      "#...h.%.*...#z...........z",
+      "#..................o.....z",
+      "#...........#z...........z",
+      "#...p...3...#z.....h.....z",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#...........#z...........z",
+      "#############zzzzzzzzzzzzz"
+    ]
+  },
+  {
+    title: "Thanks For Playing",
+    map: [
+      "#############zzzzzzzzzzzzz",
+      "#...........#z.##........z",
+      "#..d..d..d..#z.#.#...#...z",
+      "#..dd.d.....#z.##....#...z",
+      "#..d.dd..d..#z.#.#...#...z",
+      "#..d..d..d..#z.##....#...z",
+      "#g..........#z5.........az",
+      "#..d..d..d..#z.####..##..z",
+      "#..dd.d.d.d.#z.#..#..#.#.z",
+      "#..d.dd.ddd.#z.###...##..z",
+      "#..d..d.d.d.#z.#..#..#.#.z",
+      "#...........#z.#..#..##..z",
+      "#############zzzzzzzzzzzzz"
+    ]
+  }
+];
+
+/* =========================================================================
+   LEGEND DECODER & OBJECT TYPES
+   ========================================================================= */
+const LEGEND = {
+  '.': ['Background'],
+  '#': ['Wall1', 'wallspawn1'],
+  'z': ['wall2', 'wallspawn2'],
+  'r': ['gwall'],
+  'g': ['gplayer'],
+  'P': ['Player1', 'playerreset'],
+  'p': ['Player1', 'playerreset'],
+  '*': ['Crate1', 'cratespawn1'],
+  '$': ['crate2', 'cratespawn2'],
+  'h': ['gcrate'],
+  '&': ['gcrate', 'Target'],
+  'O': ['Target'],
+  'o': ['Target'],
+  '1': ['reset1'],
+  '2': ['reset2'],
+  'l': ['lock1', 'lockspawn1'],
+  'm': ['lock2', 'lockspawn2'],
+  'j': ['key1', 'keyspawn1'],
+  'q': ['key2', 'keyspawn2'],
+  'b': ['gkey'],
+  'x': ['glock'],
+  'f': ['pcrate1'],
+  'n': ['picrate2'],
+  'c': ['pkey1'],
+  's': ['pikey2'],
+  'a': ['flag'],
+  '%': ['nflag'],
+  'd': ['death'],
+  '3': ['Deadplayer1', 'deadplayer1reset'],
+  '4': ['Deadplayer2', 'deadplayer2reset'],
+  '5': ['gdeadplayer'],
+  '6': ['pplayer1'],
+  '7': ['piplayer2'],
+  '8': ['Player2', 'player2reset'],
+  '9': ['crate2', 'cratespawn2', 'Target'],
+  '0': ['cratespawn1', 'Crate1', 'Target']
+};
+
+const IS_PLAYER = obj => ['Player1', 'Player2', 'gplayer', 'pplayer1', 'pplayer2'].includes(obj);
+const IS_PUSHABLE = obj => ['Crate1', 'crate2', 'gcrate', 'pcrate1', 'pcrate2', 'key1', 'key2', 'gkey', 'pkey1', 'pkey2', 'Deadplayer1', 'Deadplayer2', 'gdeadplayer'].includes(obj);
+const IS_KEY = obj => ['key1', 'key2', 'gkey', 'pkey1', 'pkey2'].includes(obj);
+const IS_LOCK = obj => ['lock1', 'lock2', 'glock'].includes(obj);
+const IS_CRATE = obj => ['Crate1', 'crate2', 'gcrate', 'pcrate1', 'pcrate2'].includes(obj);
+const IS_GOBJECT = obj => ['gcrate', 'gkey', 'gdeadplayer', 'gwall', 'gplayer'].includes(obj);
+
+/* =========================================================================
+   GAME STATE & ENGINE
+   ========================================================================= */
+const WIDTH = 26;
+const HEIGHT = 13;
+let currentLevelIndex = 0;
+let grid = [];
+let history = [];
+let won = false;
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const TILE_SIZE = 32;
+
+function initLevel(index) {
+  currentLevelIndex = index;
+  const levelData = LEVELS[currentLevelIndex];
+  document.getElementById('lvl-num').textContent = currentLevelIndex + 1;
+  document.getElementById('level-title').textContent = levelData.title;
+  document.getElementById('level-select').value = currentLevelIndex;
+  
+  won = false;
+  history = [];
+
+  grid = Array.from({ length: HEIGHT }, () => Array.from({ length: WIDTH }, () => []));
+
+  for (let y = 0; y < HEIGHT; y++) {
+    const line = levelData.map[y] || '';
+    for (let x = 0; x < WIDTH; x++) {
+      const ch = line[x] || '.';
+      const objs = LEGEND[ch] ? [...LEGEND[ch]] : ['Background'];
+      grid[y][x] = objs;
+      if (!grid[y][x].includes('Background')) {
+        grid[y][x].unshift('Background');
+      }
+    }
+  }
+
+  showOverlay(levelData.title, "Press Arrow / WASD to Play");
+  updateTargetsAndFlags();
+  draw();
+}
+
+function saveState() {
+  history.push(JSON.stringify(grid));
+  if (history.length > 100) history.shift();
+}
+
+function undo() {
+  if (history.length > 0) {
+    grid = JSON.parse(history.pop());
+    won = false;
+    hideOverlay();
+    draw();
+  }
+}
+
+function restartLevel() {
+  initLevel(currentLevelIndex);
+}
+
+function nextLevel() {
+  if (currentLevelIndex < LEVELS.length - 1) {
+    initLevel(currentLevelIndex + 1);
+  }
+}
+
+function prevLevel() {
+  if (currentLevelIndex > 0) {
+    initLevel(currentLevelIndex - 1);
+  }
+}
+
+function getPlayerPos() {
+  for (let y = 0; y < HEIGHT; y++) {
+    for (let x = 0; x < WIDTH; x++) {
+      if (grid[y][x].some(IS_PLAYER)) return { x, y };
+    }
+  }
+  return null;
+}
+
+function handleInput(dirName) {
+  hideOverlay();
+  if (won) return;
+
+  const dirs = {
+    up: { dx: 0, dy: -1 },
+    down: { dx: 0, dy: 1 },
+    left: { dx: -1, dy: 0 },
+    right: { dx: 1, dy: 0 }
+  };
+  const dir = dirs[dirName];
+  if (!dir) return;
+
+  const pPos = getPlayerPos();
+  if (!pPos) return;
+
+  saveState();
+
+  if (tryMovePlayer(pPos.x, pPos.y, dir)) {
+    sound.playMove();
+    applyLateRules();
+    draw();
+  } else {
+    history.pop();
+  }
+}
+
+function tryMovePlayer(px, py, dir) {
+  const pCell = grid[py][px];
+  const playerObj = pCell.find(IS_PLAYER);
+  if (!playerObj) return false;
+
+  const chain = [{ x: px, y: py, obj: playerObj }];
+  let cx = px + dir.dx;
+  let cy = py + dir.dy;
+
+  while (cx >= 0 && cx < WIDTH && cy >= 0 && cy < HEIGHT) {
+    const cell = grid[cy][cx];
+    const pushable = cell.find(IS_PUSHABLE);
+    const lock = cell.find(IS_LOCK);
+    const wall = cell.find(o => ['Wall1', 'wall2', 'gwall'].includes(o));
+
+    const movingObj = chain[chain.length - 1].obj;
+    if (IS_KEY(movingObj) && lock) {
+      chain.push({ x: cx, y: cy, obj: 'KEY_LOCK_INTERACTION', lockObj: lock });
+      break;
+    }
+
+    if (pushable) {
+      chain.push({ x: cx, y: cy, obj: pushable });
+      cx += dir.dx;
+      cy += dir.dy;
+    } else if (wall || lock) {
+      return false;
+    } else {
+      break;
+    }
+  }
+
+  const last = chain[chain.length - 1];
+  if (last.obj !== 'KEY_LOCK_INTERACTION') {
+    const destX = px + dir.dx * chain.length;
+    const destY = py + dir.dy * chain.length;
+    if (destX < 0 || destX >= WIDTH || destY < 0 || destY >= HEIGHT) return false;
+    const destCell = grid[destY][destX];
+    if (destCell.some(o => ['Wall1', 'wall2', 'gwall'].includes(o) || IS_LOCK(o))) {
+      return false;
+    }
+  }
+
+  // Execute movements from back to front
+  for (let i = chain.length - 1; i >= 0; i--) {
+    const item = chain[i];
+    if (item.obj === 'KEY_LOCK_INTERACTION') {
+      const keyItem = chain[i - 1];
+      grid[item.y][item.x] = grid[item.y][item.x].filter(o => o !== item.lockObj);
+      grid[keyItem.y][keyItem.x] = grid[keyItem.y][keyItem.x].filter(o => o !== keyItem.obj);
+      sound.playUnlock();
+      i--;
+      continue;
+    }
+
+    const tx = item.x + dir.dx;
+    const ty = item.y + dir.dy;
+    grid[item.y][item.x] = grid[item.y][item.x].filter(o => o !== item.obj);
+    grid[ty][tx].push(item.obj);
+
+    if (item.obj !== playerObj) sound.playPush();
+  }
+
+  return true;
+}
+
+/* =========================================================================
+   PUZZLESCRIPT RULES & TRANSITION ENGINE
+   ========================================================================= */
+function findGridObject(object, startX = 0, endX = WIDTH) {
+  for (let y = 0; y < HEIGHT; y++) {
+    for (let x = startX; x < endX; x++) {
+      if (grid[y][x].includes(object)) return { x, y };
+    }
+  }
+  return null;
+}
+
+function findBlockedReset(object, startX, endX) {
+  for (let y = 0; y < HEIGHT; y++) {
+    for (let x = startX; x < endX; x++) {
+      const cell = grid[y][x];
+      if (cell.includes(object) && cell.some(IS_GOBJECT)) return { x, y };
+    }
+  }
+  return null;
+}
+
+function applyBlockedSpawnTransfers() {
+  // PuzzleScript rules 477-478: a Player1 crossing with a blocked spawn uses
+  // an existing Deadplayer1 before the normal room reset can recreate one.
+  const crossingPlayer1 = findGridObject('Player1', 13, WIDTH);
+  const blockedPlayer1Reset = findBlockedReset('playerreset', 0, 13);
+  if (crossingPlayer1 && blockedPlayer1Reset) {
+    const deadInRoom2 = findGridObject('Deadplayer1', 13, WIDTH);
+    const deadPos = deadInRoom2 || findGridObject('Deadplayer1');
+    if (deadPos) {
+      grid[crossingPlayer1.y][crossingPlayer1.x] = grid[crossingPlayer1.y][crossingPlayer1.x]
+        .filter(o => o !== 'Player1');
+      grid[blockedPlayer1Reset.y][blockedPlayer1Reset.x] = grid[blockedPlayer1Reset.y][blockedPlayer1Reset.x]
+        .filter(o => o !== 'playerreset');
+      grid[deadPos.y][deadPos.x] = grid[deadPos.y][deadPos.x]
+        .filter(o => o !== 'Deadplayer1');
+
+      if (deadInRoom2) {
+        grid[deadPos.y][deadPos.x].push('Player2', 'player2reset');
+      } else {
+        grid[deadPos.y][deadPos.x].push('Player1', 'playerreset');
+      }
+      sound.playReset();
+    }
+  }
+
+  // PuzzleScript rules 479-481: mirrored handling for Player2.
+  const crossingPlayer2 = findGridObject('Player2', 0, 13);
+  const blockedPlayer2Reset = findBlockedReset('player2reset', 13, WIDTH);
+  if (crossingPlayer2 && blockedPlayer2Reset) {
+    const deadPlayer2InRoom1 = findGridObject('Deadplayer2', 0, 13);
+    const deadPlayer1InRoom1 = findGridObject('Deadplayer1', 0, 13);
+    const deadPlayer2 = deadPlayer2InRoom1 || deadPlayer1InRoom1 || findGridObject('Deadplayer2');
+    if (deadPlayer2) {
+      grid[crossingPlayer2.y][crossingPlayer2.x] = grid[crossingPlayer2.y][crossingPlayer2.x]
+        .filter(o => o !== 'Player2');
+      grid[blockedPlayer2Reset.y][blockedPlayer2Reset.x] = grid[blockedPlayer2Reset.y][blockedPlayer2Reset.x]
+        .filter(o => o !== 'player2reset');
+      grid[deadPlayer2.y][deadPlayer2.x] = grid[deadPlayer2.y][deadPlayer2.x]
+        .filter(o => o !== 'Deadplayer1' && o !== 'Deadplayer2');
+
+      if (deadPlayer2InRoom1 || deadPlayer1InRoom1) {
+        grid[deadPlayer2.y][deadPlayer2.x].push('Player1', 'playerreset');
+      } else {
+        grid[deadPlayer2.y][deadPlayer2.x].push('Player2', 'player2reset');
+      }
+      sound.playReset();
+    }
+  }
+}
+
+function applyLateRules() {
+  let playerPos = getPlayerPos();
+  if (!playerPos) return;
+
+  // --- 1. HAZARD DEATH & REINCARNATION ---
+  for (let y = 0; y < HEIGHT; y++) {
+    for (let x = 0; x < WIDTH; x++) {
+      const cell = grid[y][x];
+      if (cell.includes('death') && cell.some(IS_PLAYER)) {
+        handlePlayerDeath(x, y);
+      }
+    }
+  }
+
+  // --- 2. BLOCKED-SPAWN BODY TRANSFERS ---
+  // These special boundary rules run before room restoration.
+  applyBlockedSpawnTransfers();
+
+  // --- 3. ROOM DIMENSION RESETS ---
+  // PuzzleScript runs these rules before the ordinary boundary respawns below.
+  // Use the player's current room so its counterpart room is restored before
+  // the player is teleported back to a spawn marker.
+  playerPos = getPlayerPos();
+  if (playerPos) {
+    if (playerPos.x >= 13) {
+      resetRoom1Objects();
+    } else {
+      resetRoom2Objects();
+    }
+  }
+
+  // --- 4. ORDINARY PLAYER ROOM BOUNDARY RULES ---
+  // Player1 in Room 2 (columns 13..25)
+  for (let y = 0; y < HEIGHT; y++) {
+    for (let x = 13; x < WIDTH; x++) {
+      if (grid[y][x].includes('Player1')) {
+        grid[y][x] = grid[y][x].filter(o => o !== 'Player1');
+
+        let resetBlockedByGobject = false;
+        let resetPos = null;
+        for (let ry = 0; ry < HEIGHT; ry++) {
+          for (let rx = 0; rx < 13; rx++) {
+            if (grid[ry][rx].includes('playerreset')) {
+              resetPos = { x: rx, y: ry };
+              if (grid[ry][rx].some(IS_GOBJECT)) {
+                resetBlockedByGobject = true;
+              }
+            }
+          }
+        }
+
+        if (!resetBlockedByGobject && resetPos) {
+          if (!grid[resetPos.y][resetPos.x].includes('Player1')) {
+            grid[resetPos.y][resetPos.x].push('Player1');
+          }
+          sound.playReset();
+        }
+      }
+    }
+  }
+
+  // Player2 in Room 1 (columns 0..12)
+  for (let y = 0; y < HEIGHT; y++) {
+    for (let x = 0; x < 13; x++) {
+      if (grid[y][x].includes('Player2')) {
+        grid[y][x] = grid[y][x].filter(o => o !== 'Player2');
+
+        let resetBlockedByGobject = false;
+        let resetPos = null;
+        for (let ry = 0; ry < HEIGHT; ry++) {
+          for (let rx = 13; rx < WIDTH; rx++) {
+            if (grid[ry][rx].includes('player2reset')) {
+              resetPos = { x: rx, y: ry };
+              if (grid[ry][rx].some(IS_GOBJECT)) {
+                resetBlockedByGobject = true;
+              }
+            }
+          }
+        }
+
+        if (resetPos) {
+          if (!grid[resetPos.y][resetPos.x].includes('Player2')) {
+            grid[resetPos.y][resetPos.x].push('Player2');
+          }
+          sound.playReset();
+        }
+      }
+    }
+  }
+
+  // --- 5. TARGETS & FLAGS ---
+  updateTargetsAndFlags();
+
+  // --- 6. WIN CONDITION ---
+  playerPos = getPlayerPos();
+  if (playerPos && grid[playerPos.y][playerPos.x].includes('flag')) {
+    won = true;
+    sound.playWin();
+    showOverlay("LEVEL COMPLETE!", "Proceeding to next level...");
+    setTimeout(() => {
+      if (currentLevelIndex < LEVELS.length - 1) {
+        nextLevel();
+      }
+    }, 1200);
+  }
+}
+
+function handlePlayerDeath(x, y) {
+  sound.playDeath();
+  const cell = grid[y][x];
+  const p = cell.find(IS_PLAYER);
+  grid[y][x] = cell.filter(o => o !== p);
+
+  // Check deadplayer bodies for reincarnation
+  let deadPos = null;
+  let deadType = null;
+
+  // 1. Check if Deadplayer1 is in Room 2 (x >= 13)
+  for (let ry = 0; ry < HEIGHT; ry++) {
+    for (let rx = 13; rx < WIDTH; rx++) {
+      if (grid[ry][rx].includes('Deadplayer1')) {
+        deadPos = { x: rx, y: ry };
+        deadType = 'Deadplayer1_in_room2';
+        break;
+      }
+    }
+    if (deadPos) break;
+  }
+
+  // 2. Check if Deadplayer2 is in Room 1 (x < 13)
+  if (!deadPos) {
+    for (let ry = 0; ry < HEIGHT; ry++) {
+      for (let rx = 0; rx < 13; rx++) {
+        if (grid[ry][rx].includes('Deadplayer2')) {
+          deadPos = { x: rx, y: ry };
+          deadType = 'Deadplayer2_in_room1';
+          break;
+        }
+      }
+      if (deadPos) break;
+    }
+  }
+
+  // 3. Check any gdeadplayer
+  if (!deadPos) {
+    for (let ry = 0; ry < HEIGHT; ry++) {
+      for (let rx = 0; rx < WIDTH; rx++) {
+        if (grid[ry][rx].includes('gdeadplayer')) {
+          deadPos = { x: rx, y: ry };
+          deadType = 'gdeadplayer';
+          break;
+        }
+      }
+      if (deadPos) break;
+    }
+  }
+
+  // 4. Check any standard Deadplayer1 or Deadplayer2
+  if (!deadPos) {
+    for (let ry = 0; ry < HEIGHT; ry++) {
+      for (let rx = 0; rx < WIDTH; rx++) {
+        if (grid[ry][rx].includes('Deadplayer1')) {
+          deadPos = { x: rx, y: ry };
+          deadType = 'Deadplayer1';
+          break;
+        } else if (grid[ry][rx].includes('Deadplayer2')) {
+          deadPos = { x: rx, y: ry };
+          deadType = 'Deadplayer2';
+          break;
+        }
+      }
+      if (deadPos) break;
+    }
+  }
+
+  if (deadPos) {
+    for (let ry = 0; ry < HEIGHT; ry++) {
+      for (let rx = 0; rx < WIDTH; rx++) {
+        if (p === 'Player1') grid[ry][rx] = grid[ry][rx].filter(o => o !== 'playerreset');
+        if (p === 'Player2') grid[ry][rx] = grid[ry][rx].filter(o => o !== 'player2reset');
+      }
+    }
+
+    if (deadType === 'Deadplayer1_in_room2') {
+      grid[deadPos.y][deadPos.x] = grid[deadPos.y][deadPos.x].filter(o => o !== 'Deadplayer1');
+      grid[deadPos.y][deadPos.x].push('Player2', 'player2reset');
+    } else if (deadType === 'Deadplayer2_in_room1') {
+      grid[deadPos.y][deadPos.x] = grid[deadPos.y][deadPos.x].filter(o => o !== 'Deadplayer2');
+      grid[deadPos.y][deadPos.x].push('Player1', 'playerreset');
+    } else if (deadType === 'gdeadplayer') {
+      grid[deadPos.y][deadPos.x] = grid[deadPos.y][deadPos.x].filter(o => o !== 'gdeadplayer');
+      grid[deadPos.y][deadPos.x].push('gplayer');
+    } else if (deadType === 'Deadplayer1') {
+      grid[deadPos.y][deadPos.x] = grid[deadPos.y][deadPos.x].filter(o => o !== 'Deadplayer1');
+      grid[deadPos.y][deadPos.x].push('Player1', 'playerreset');
+    } else if (deadType === 'Deadplayer2') {
+      grid[deadPos.y][deadPos.x] = grid[deadPos.y][deadPos.x].filter(o => o !== 'Deadplayer2');
+      grid[deadPos.y][deadPos.x].push('Player2', 'player2reset');
+    }
+  } else {
+    for (let ry = 0; ry < HEIGHT; ry++) {
+      for (let rx = 0; rx < WIDTH; rx++) {
+        if (grid[ry][rx].includes('playerreset')) {
+          if (!grid[ry][rx].includes('Player1')) grid[ry][rx].push('Player1');
+        } else if (grid[ry][rx].includes('player2reset')) {
+          if (!grid[ry][rx].includes('Player2')) grid[ry][rx].push('Player2');
+        }
+      }
+    }
+  }
+}
+
+function resetRoom1Objects() {
+  const toReset = ['Crate1', 'key1', 'lock1', 'Wall1', 'Deadplayer1'];
+  const spawns = {
+    Crate1: 'cratespawn1',
+    key1: 'keyspawn1',
+    lock1: 'lockspawn1',
+    Wall1: 'wallspawn1',
+    Deadplayer1: 'deadplayer1reset'
+  };
+
+  // Remove moved room1 objects (only in Room 1 or unpossessed)
+  for (let y = 0; y < HEIGHT; y++) {
+    for (let x = 0; x < 13; x++) {
+      grid[y][x] = grid[y][x].filter(o => !toReset.includes(o));
+    }
+  }
+
+  // Respawn at their Room 1 spawn markers
+  for (let y = 0; y < HEIGHT; y++) {
+    for (let x = 0; x < 13; x++) {
+      const c = grid[y][x];
+      if (c.some(IS_GOBJECT)) continue;
+      for (const [obj, spawn] of Object.entries(spawns)) {
+        if (c.includes(spawn) && !c.includes(obj)) {
+          c.push(obj);
+        }
+      }
+    }
+  }
+}
+
+function resetRoom2Objects() {
+  const toReset = ['crate2', 'key2', 'lock2', 'wall2', 'Deadplayer2'];
+  const spawns = {
+    crate2: 'cratespawn2',
+    key2: 'keyspawn2',
+    lock2: 'lockspawn2',
+    wall2: 'wallspawn2',
+    Deadplayer2: 'deadplayer2reset'
+  };
+
+  for (let y = 0; y < HEIGHT; y++) {
+    for (let x = 13; x < WIDTH; x++) {
+      grid[y][x] = grid[y][x].filter(o => !toReset.includes(o));
+    }
+  }
+
+  for (let y = 0; y < HEIGHT; y++) {
+    for (let x = 13; x < WIDTH; x++) {
+      const c = grid[y][x];
+      if (c.some(IS_GOBJECT)) continue;
+      for (const [obj, spawn] of Object.entries(spawns)) {
+        if (c.includes(spawn) && !c.includes(obj)) {
+          c.push(obj);
+        }
+      }
+    }
+  }
+}
+
+function updateTargetsAndFlags() {
+  let anyTargetUncovered = false;
+  let hasTarget = false;
+
+  for (let y = 0; y < HEIGHT; y++) {
+    for (let x = 0; x < WIDTH; x++) {
+      const c = grid[y][x];
+      if (c.includes('Target')) {
+        hasTarget = true;
+        if (!c.some(IS_CRATE)) {
+          anyTargetUncovered = true;
+        }
+      }
+    }
+  }
+
+  for (let y = 0; y < HEIGHT; y++) {
+    for (let x = 0; x < WIDTH; x++) {
+      const c = grid[y][x];
+      if (hasTarget) {
+        if (!anyTargetUncovered) {
+          if (c.includes('nflag')) {
+            grid[y][x] = c.filter(o => o !== 'nflag');
+            grid[y][x].push('flag');
+          }
+        } else {
+          if (c.includes('flag')) {
+            grid[y][x] = c.filter(o => o !== 'flag');
+            grid[y][x].push('nflag');
+          }
+        }
+      }
+    }
+  }
+}
+
+/* =========================================================================
+   RENDERING & FLICKSCREEN CAMERA
+   ========================================================================= */
+function drawSprite(spriteKey, screenX, screenY, size) {
+  const def = SPRITE_DEFS[spriteKey];
+  if (!def) return;
+  const pSize = size / 5;
+  for (let r = 0; r < 5; r++) {
+    const row = def.map[r];
+    for (let c = 0; c < 5; c++) {
+      const char = row[c];
+      if (char !== '.') {
+        const colorIdx = parseInt(char, 10);
+        ctx.fillStyle = PALETTE[def.colors[colorIdx]] || '#ffffff';
+        ctx.fillRect(screenX + c * pSize, screenY + r * pSize, pSize, pSize);
+      }
+    }
+  }
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const pPos = getPlayerPos();
+  const cameraRoom = (pPos && pPos.x >= 13) ? 1 : 0;
+  const startX = cameraRoom * 13;
+
+  for (let y = 0; y < 13; y++) {
+    for (let x = 0; x < 13; x++) {
+      const worldX = startX + x;
+      const cell = grid[y][worldX] || ['Background'];
+      const screenX = x * TILE_SIZE;
+      const screenY = y * TILE_SIZE;
+
+      drawSprite('Background', screenX, screenY, TILE_SIZE);
+
+      const renderOrder = [
+        'Target', 'flag', 'nflag', 'death',
+        'Wall1', 'wall2', 'gwall', 'lock1', 'lock2', 'glock',
+        'Crate1', 'crate2', 'gcrate', 'pcrate1', 'pcrate2',
+        'key1', 'key2', 'gkey', 'pkey1', 'pkey2',
+        'Deadplayer1', 'Deadplayer2', 'gdeadplayer',
+        'Player1', 'Player2', 'gplayer', 'pplayer1', 'pplayer2'
+      ];
+
+      for (const key of renderOrder) {
+        if (cell.includes(key)) {
+          drawSprite(key, screenX, screenY, TILE_SIZE);
+        }
+      }
+    }
+  }
+}
+
+/* =========================================================================
+   UI & EVENT HANDLERS
+   ========================================================================= */
+const overlay = document.getElementById('message-overlay');
+const msgText = document.getElementById('msg-text');
+const levelSelect = document.getElementById('level-select');
+
+function showOverlay(title, sub) {
+  msgText.textContent = title;
+  overlay.querySelector('.sub').textContent = sub || "Press any key to play";
+  overlay.classList.remove('hidden');
+}
+
+function hideOverlay() {
+  overlay.classList.add('hidden');
+}
+
+overlay.addEventListener('click', hideOverlay);
+
+function buildLevelSelect() {
+  levelSelect.innerHTML = '';
+  LEVELS.forEach((lvl, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = `${i + 1}. ${lvl.title}`;
+    levelSelect.appendChild(opt);
+  });
+}
+
+levelSelect.addEventListener('change', e => {
+  initLevel(parseInt(e.target.value, 10));
+});
+
+document.getElementById('btn-restart').addEventListener('click', restartLevel);
+document.getElementById('btn-undo').addEventListener('click', undo);
+document.getElementById('btn-prev').addEventListener('click', prevLevel);
+document.getElementById('btn-next').addEventListener('click', nextLevel);
+
+const muteBtn = document.getElementById('btn-mute');
+muteBtn.addEventListener('click', () => {
+  sound.muted = !sound.muted;
+  muteBtn.textContent = sound.muted ? '🔇 Muted' : '🔊 Sound';
+});
+
+// Touch buttons
+document.querySelectorAll('.tbtn').forEach(btn => {
+  btn.addEventListener('touchstart', e => {
+    e.preventDefault();
+    handleInput(btn.getAttribute('data-dir'));
+  });
+  btn.addEventListener('click', () => {
+    handleInput(btn.getAttribute('data-dir'));
+  });
+});
+
+// Keyboard controls
+window.addEventListener('keydown', e => {
+  if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+    e.preventDefault();
+  }
+  switch (e.key) {
+    case '1':
+      prevLevel();
+      break;
+    case '2':
+      nextLevel();
+      break;
+    case 'ArrowUp':
+    case 'w':
+    case 'W':
+      handleInput('up');
+      break;
+    case 'ArrowDown':
+    case 's':
+    case 'S':
+      handleInput('down');
+      break;
+    case 'ArrowLeft':
+    case 'a':
+    case 'A':
+      handleInput('left');
+      break;
+    case 'ArrowRight':
+    case 'd':
+    case 'D':
+      handleInput('right');
+      break;
+    case 'z':
+    case 'Z':
+    case 'u':
+    case 'U':
+      undo();
+      break;
+    case 'r':
+    case 'R':
+      restartLevel();
+      break;
+    default:
+      hideOverlay();
+      break;
+  }
+});
+
+// Initialize game
+buildLevelSelect();
+initLevel(0);
+</script>
+</body>
+</html>
