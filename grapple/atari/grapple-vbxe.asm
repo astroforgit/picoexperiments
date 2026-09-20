@@ -15,6 +15,8 @@ COLOR4   = $02C8
 CHBAS    = $02F4
 CH       = $02FC
 RTCLOK   = $12
+KBCODE   = $D209
+SKSTAT   = $D20F
 PORTA    = $D300
 PORTB    = $D301
 CONSOL   = $D01F
@@ -77,19 +79,17 @@ MOVER_DIR    = 5
 MOVER_SPEED_LO = 6
 MOVER_SPEED_HI = 7
 
-; 8.8 per-frame physics at 50 Hz. Player gravity is deliberately doubled from
-; the browser's 800 px/s^2 for a sharper VBXE version; terminal speed stays at
-; 400 px/s so long falls remain controllable.
-GRAVITY_STEP = 164             ; round(1600 / 50 / 50 * 256)
-PULL_STEP    = 1792            ; faster Atari traversal: 350 / 50 * 256
+ ; Atari traversal tuning, expressed as 8.8 per simulation tick at PAL 50 Hz.
+GRAVITY_STEP = 164              ; round(1600 / 50 / 50 * 256)
+PULL_STEP    = 1792            ; 350 / 50 * 256
 MAX_FALL     = 2048            ; 400 / 50 * 256
-HOOK_STEP    = 24              ; faster hook: 1200 / 50
-MOVER_COUNT  = 6
+HOOK_STEP    = 24              ; 1200 / 50
+FRICTION_STEP = 102            ; ground friction / water drag: 1000 px/s^2
+GRAPPLE_BREAK_FRAMES = 35       ; 0.7 simulation seconds
+WATER_TOP = 984                ; stages.ts: Water(0, 61.5, 10, 39)
+WATER_BOTTOM = 1608
 MOVER_SIZE   = 8
-SPIKE_COUNT  = 41
-SPIKE_SIZE   = 4
 LAVA_SIZE    = 3
-CANNON_COUNT = 3
 CANNON_SIZE  = 9
 CANNON_ROT   = 3
 CANNON_TIMER = 4
@@ -122,16 +122,15 @@ THW_TIMER  = 6
 THW_DIR    = 7
 THW_SPEED_LO = 8
 THW_SPEED_HI = 9
-THWOMP_COUNT = 9
-THWOMP_SIZE = 10
+THW_MAX = 10
+THWOMP_SIZE = 11
 THW_AWAKE  = 0
 THW_ACTIVE = 1
 THW_SLEEP  = 2
 THW_SLEEP_FRAMES = 35          ; original 0.7 seconds at PAL 50 Hz
-THW_ACCEL = 256                ; aggressive 2500 px/s^2 acceleration
-THW_START_SPEED_HI = 3         ; attack begins immediately at 150 px/s
-THW_MAX_SPEED_HI = 10          ; 500 px/s / 50 = 10 px/frame
-CHECKPOINT_COUNT = 11
+THW_ACCEL = 256                ; Atari 2500 px/s^2 acceleration
+THW_START_SPEED_HI = 3         ; Atari attack starts at 150 px/s
+THW_MAX_SPEED_HI = 10          ; Atari 500 px/s / 50
 CHECKPOINT_SIZE = 4
 
         icl 'level-constants.asm'
@@ -157,7 +156,7 @@ text_src = $CF
 text_dst = $D1
 calc_out = $D3                 ; three bytes
 
-        org $2000
+        org $1800
 
 ;==============================================================================
 ; Entry and main loop
@@ -228,6 +227,7 @@ stick_value  dta 15
 input_dir    dta $FF
 old_console dta 7
 key_temp     dta 0
+checkpoint_key_latch dta $FF
 
 .proc read_input
         lda PORTA
@@ -304,6 +304,40 @@ key_temp     dta 0
         jsr reset_player
 
 ?keyboard
+        ; POKEY's physical key state prevents one held key from racing through
+        ; several flags when the OS starts generating keyboard repeat events.
+        lda SKSTAT
+        and #4                  ; zero while a keyboard key is held
+        bne ?checkpoint_key_released
+        lda KBCODE
+        and #$3F
+        cmp #$1F               ; 1: next checkpoint flag
+        beq ?checkpoint_key
+        cmp #$1E               ; 2: previous checkpoint flag
+        beq ?checkpoint_key
+        jmp ?character_key
+?checkpoint_key_released
+        lda #$FF
+        sta checkpoint_key_latch
+        jmp ?character_key
+?checkpoint_key
+        cmp checkpoint_key_latch
+        beq ?consume_checkpoint_key
+        sta checkpoint_key_latch
+        sta key_temp
+        lda #$FF
+        sta CH
+        lda key_temp
+        cmp #$1F
+        beq ?next_checkpoint
+        jsr select_previous_checkpoint
+        rts
+?consume_checkpoint_key
+        lda #$FF
+        sta CH
+        rts
+
+?character_key
         lda CH
         cmp #$FF
         beq ?done
@@ -316,12 +350,18 @@ key_temp     dta 0
         bne ?done
         jsr reset_player
 ?done   rts
+?next_checkpoint
+        jsr select_next_checkpoint
+        rts
 .endp
 
 direction_mask dta 1,8,2,4
 
 .proc start_grapple
-        sta grapple_dir
+        ldx grapple_cooldown
+        beq ?ready
+        rts
+?ready  sta grapple_dir
         lda #GRAPPLE_SHOOT
         sta grapple_state
         lda #0
@@ -357,6 +397,9 @@ direction_mask dta 1,8,2,4
         sta vel_y
         sta vel_y+1
         sta grapple_state
+        sta grapple_cooldown
+        sta water_phase
+        sta player_in_water
         sta frame_counter
         sta facing_left
         lda respawn_x
@@ -389,13 +432,22 @@ hero_frame    dta 0
 animation_phase dta 0
 camera_y      dta a(0)
 
+grapple_cooldown dta 0
+player_in_water dta 0
+water_phase dta 0
+
 .proc update_player
+        jsr detect_player_water
+        lda grapple_cooldown
+        beq ?grapple
+        dec grapple_cooldown
+?grapple
         lda grapple_state
         beq ?falling
         cmp #GRAPPLE_SHOOT
         beq ?shooting
 
-        ; Pulling is a constant cardinal 200 px/s, exactly as player.ts.
+        ; Faster constant cardinal pull for Atari traversal.
         lda #0
         sta vel_x
         sta vel_x+1
@@ -404,23 +456,23 @@ camera_y      dta a(0)
         lda grapple_dir
         cmp #DIR_UP
         bne ?pull_right
-        lda #$FC               ; -1024 in 8.8
+        lda #>[-PULL_STEP]      ; -350 px/s in 8.8
         sta vel_y+1
         jmp ?move
 ?pull_right
         cmp #DIR_RIGHT
         bne ?pull_down
-        lda #4
+        lda #>PULL_STEP
         sta vel_x+1
         bne ?move
 ?pull_down
         cmp #DIR_DOWN
         bne ?pull_left
-        lda #4
+        lda #>PULL_STEP
         sta vel_y+1
         bne ?move
 ?pull_left
-        lda #$FC
+        lda #>[-PULL_STEP]
         sta vel_x+1
         bne ?move
 
@@ -452,7 +504,8 @@ camera_y      dta a(0)
         lda #>MAX_FALL
         sta vel_y+1
 
-?move   jsr move_player_x
+?move   jsr apply_player_drag
+        jsr move_player_x
         jsr move_player_y
         lda grapple_state
         cmp #GRAPPLE_SHOOT
@@ -657,44 +710,27 @@ map_y_temp dta a(0)
 
 ; Return the byte at tile_row*12+tile_col in A.
 .proc load_map_tile
-        lda tile_row
+        ldy tile_row
+        lda map_row_lo,y
         sta map_index
-        lda #0
-        sta map_index+1
-        asl map_index
-        rol map_index+1
-        asl map_index
-        rol map_index+1       ; row*4
-        lda map_index
-        sta map_four
-        lda map_index+1
-        sta map_four+1
-        asl map_index
-        rol map_index+1       ; row*8
         clc
-        lda map_index
-        adc map_four
-        sta map_index
-        lda map_index+1
-        adc map_four+1
-        sta map_index+1       ; row*12
-
-        clc
-        lda #<world_map
-        adc map_index
+        adc #<world_map
         sta data_ptr
-        lda #>world_map
-        adc map_index+1
+        lda map_row_hi,y
+        sta map_index+1
+        adc #>world_map
         sta data_ptr+1
         ldy tile_col
         lda (data_ptr),y
         rts
 .endp
 
-; Move the hook one logical pixel at a time so its Atari-tuned speed cannot
+; Move the hook one logical pixel at a time so its original speed cannot
 ; tunnel through the map's narrow ledges or a lava boundary.
+hook_steps_left dta 0
 .proc advance_hook
-        ldy #HOOK_STEP
+        lda #HOOK_STEP
+        sta hook_steps_left
 ?step   lda grapple_dir
         cmp #DIR_UP
         bne ?right
@@ -718,13 +754,15 @@ map_y_temp dta a(0)
         bcs ?hit
         jsr point_in_lava
         bcs ?lava
-        dey
+        dec hook_steps_left
         bne ?step
         rts
 ?hit    lda #GRAPPLE_PULL
         sta grapple_state
         rts
-?lava   lda #GRAPPLE_NONE
+?lava   lda #GRAPPLE_BREAK_FRAMES
+        sta grapple_cooldown
+        lda #GRAPPLE_NONE
         sta grapple_state
         rts
 .endp
@@ -742,52 +780,19 @@ map_y_temp dta a(0)
 ; Lava has the original game's no_grapple tag. Cancel the shot as soon as its
 ; point enters any lava tile instead of allowing it to anchor to a wall
 ; hidden on the other side.
+; point_in_wall has already calculated the tile address and rejected world
+; boundaries. A byte lookup replaces scanning all 54 lava cells per hook pixel.
 .proc point_in_lava
-        ldx #0
-?lava  lda point_x
-        cmp lava_initial,x
-        bcc ?next
-        lda lava_initial,x
         clc
-        adc #16
-        sta bbox_r               ; exclusive right edge
-        lda point_x
-        cmp bbox_r
-        bcs ?next
-
-        lda point_y+1
-        cmp lava_initial+2,x
-        bcc ?next
-        bne ?bottom
-        lda point_y
-        cmp lava_initial+1,x
-        bcc ?next
-
-?bottom
-        clc
-        lda lava_initial+1,x
-        adc #16
-        sta hazard_bottom        ; exclusive bottom edge
-        lda lava_initial+2,x
-        adc #0
-        sta hazard_bottom+1
-        lda point_y+1
-        cmp hazard_bottom+1
-        bcc ?hit
-        bne ?next
-        lda point_y
-        cmp hazard_bottom
-        bcc ?hit
-
-?next  txa
-        clc
-        adc #LAVA_SIZE
-        tax
-        cpx #LAVA_COUNT*LAVA_SIZE
-        bcc ?lava
-        clc
-        rts
-?hit   sec
+        lda #<lava_map
+        adc map_index
+        sta data_ptr
+        lda #>lava_map
+        adc map_index+1
+        sta data_ptr+1
+        ldy tile_col
+        lda (data_ptr),y
+        cmp #1
         rts
 .endp
 
@@ -1110,11 +1115,14 @@ thwomp_old dta 0,0,0,0,0
         lda thwomp_initial,x
         sta thwomp_state+THW_Y_HI,y
         inx
+        lda thwomp_initial,x
+        sta thwomp_state+THW_MAX,y
+        inx
         tya
         clc
         adc #THWOMP_SIZE
         tay
-        cpx #THWOMP_COUNT*3
+        cpx #THWOMP_COUNT*4
         bcc ?copy
         rts
 .endp
@@ -1123,30 +1131,8 @@ thwomp_old dta 0,0,0,0,0
         ldx #0
 ?thwomp
         stx thwomp_index
-        ; Like movers, only simulate thwomps close to the current viewport.
-        sec
-        lda thwomp_state+THW_Y_LO,x
-        sbc camera_y
-        sta map_y_temp
-        lda thwomp_state+THW_Y_HI,x
-        sbc camera_y+1
-        beq ?below_camera
-        cmp #$FF
-        beq ?above_camera
-        jmp ?next
-?above_camera
-        lda map_y_temp
-        cmp #224                ; -32 logical pixels
-        bcs ?active_range
-        jmp ?next
-?below_camera
-        lda map_y_temp
-        cmp #132
-        bcc ?active_range
-        jmp ?next
-
-?active_range
-        ldx thwomp_index
+        ; All nine thwomps must see and pursue the player outside the short
+        ; Atari viewport. Alignment tests reject unrelated enemies cheaply.
         lda thwomp_state+THW_STATE,x
         cmp #THW_SLEEP
         beq ?sleep
@@ -1182,11 +1168,11 @@ thwomp_old dta 0,0,0,0,0
         lda thwomp_state+THW_SPEED_HI,x
         adc #>THW_ACCEL
         sta thwomp_state+THW_SPEED_HI,x
-        cmp #THW_MAX_SPEED_HI
+        cmp thwomp_state+THW_MAX,x
         bcc ?direction
         lda #0
         sta thwomp_state+THW_SPEED_LO,x
-        lda #THW_MAX_SPEED_HI
+        lda thwomp_state+THW_MAX,x
         sta thwomp_state+THW_SPEED_HI,x
 
 ?direction
@@ -1256,6 +1242,8 @@ thwomp_old dta 0,0,0,0,0
         sta thwomp_state+THW_Y_LO,x
         lda thwomp_old+4
         sta thwomp_state+THW_Y_HI,x
+        jsr thwomp_close_gap
+        ldx thwomp_index
         lda #0
         sta thwomp_state+THW_SPEED_LO,x
         sta thwomp_state+THW_SPEED_HI,x
@@ -1461,8 +1449,8 @@ thwomp_old dta 0,0,0,0,0
         cmp bbox_t
         bcc ?player_down
 ?player_up
-        lda #DIR_UP
-        bne ?try
+        lda #DIR_UP             ; DIR_UP is 0, so a bne here would never branch
+        jmp ?try
 ?player_down
         lda #DIR_DOWN
 
@@ -1474,6 +1462,10 @@ thwomp_old dta 0,0,0,0,0
         lda #0
         sta thwomp_state+THW_SPEED_LO,x
         lda #THW_START_SPEED_HI
+        cmp thwomp_state+THW_MAX,x
+        bcc ?start_speed
+        lda thwomp_state+THW_MAX,x
+?start_speed
         sta thwomp_state+THW_SPEED_HI,x
         lda #THW_ACTIVE
         sta thwomp_state+THW_STATE,x
@@ -2124,16 +2116,7 @@ respawn_y dta a(152)           ; original entrance: 9*16+8
 
 ?activate
         ldx checkpoint_index
-        stx checkpoint_current
-        lda checkpoint_initial,x
-        sta respawn_x
-        clc
-        lda checkpoint_initial+1,x
-        adc #7
-        sta respawn_y
-        lda checkpoint_initial+2,x
-        adc #0
-        sta respawn_y+1
+        jsr set_checkpoint
         rts
 
 ?next  ldx checkpoint_index
@@ -2146,6 +2129,50 @@ respawn_y dta a(152)           ; original entrance: 9*16+8
         jmp ?checkpoint
 ?done
         rts
+.endp
+
+; Keyboard checkpoint navigation uses the authored top-to-bottom flag order.
+; Selecting a flag makes it active and immediately places the player there.
+.proc set_checkpoint
+        stx checkpoint_current
+        lda checkpoint_teleport,x
+        sta respawn_x
+        lda checkpoint_teleport+1,x
+        sta respawn_y
+        lda checkpoint_teleport+2,x
+        sta respawn_y+1
+        rts
+.endp
+
+.proc select_next_checkpoint
+        ldx checkpoint_current
+        cpx #$FF
+        beq ?first
+        txa
+        clc
+        adc #CHECKPOINT_SIZE
+        cmp #CHECKPOINT_COUNT*CHECKPOINT_SIZE
+        bcc ?select
+?first  lda #0
+?select tax
+        jsr set_checkpoint
+        jmp reset_player
+.endp
+
+.proc select_previous_checkpoint
+        ldx checkpoint_current
+        cpx #$FF
+        beq ?last
+        cpx #0
+        beq ?last
+        txa
+        sec
+        sbc #CHECKPOINT_SIZE
+        bcs ?select
+?last   lda #CHECKPOINT_COUNT*CHECKPOINT_SIZE-CHECKPOINT_SIZE
+?select tax
+        jsr set_checkpoint
+        jmp reset_player
 .endp
 
 hazard_index  dta 0
@@ -2180,11 +2207,11 @@ hazard_bottom dta a(0)
 
         ldx #0
 ?spike stx hazard_index
-        lda spike_initial+1,x
+        lda spike_y_lo,x
         sec
         sbc #7
         sta hazard_top
-        lda spike_initial+2,x
+        lda spike_y_hi,x
         sbc #0
         sta hazard_top+1
         lda bbox_b_hi
@@ -2196,24 +2223,24 @@ hazard_bottom dta a(0)
         bcc ?cannon_start
 
 ?spike_x
-        lda spike_initial,x
+        lda spike_x,x
         sec
         sbc #7
         sta point_x
         lda bbox_r
         cmp point_x
         bcc ?spike_next
-        lda spike_initial,x
+        lda spike_x,x
         clc
         adc #6
         cmp bbox_l
         bcc ?spike_next
 ?spike_bottom
-        lda spike_initial+1,x
+        lda spike_y_lo,x
         clc
         adc #6
         sta hazard_bottom
-        lda spike_initial+2,x
+        lda spike_y_hi,x
         adc #0
         sta hazard_bottom+1
         lda hazard_bottom+1
@@ -2229,11 +2256,8 @@ hazard_bottom dta a(0)
 
 ?spike_next
         ldx hazard_index
-        txa
-        clc
-        adc #SPIKE_SIZE
-        tax
-        cpx #SPIKE_COUNT*SPIKE_SIZE
+        inx
+        cpx #SPIKE_COUNT
         bcc ?spike
 
 ?cannon_start
@@ -2489,6 +2513,7 @@ render_bank dta 0
         lda back_bank
         sta render_bank
         jsr clear_view
+        jsr draw_water
         jsr draw_lava
         jsr draw_map
         jsr draw_spikes
@@ -2690,7 +2715,8 @@ draw_run_length dta 0
         rol fr_w+1
         lda draw_tile_h
         sta fr_h
-        lda #C_STONE
+        ldx tile_row
+        lda terrain_colors,x
         sta fr_col
         jsr fill_rect
         jmp ?find_solid
@@ -2788,10 +2814,10 @@ draw_run_length dta 0
         ldx #0
 ?spike stx hazard_index
         sec
-        lda spike_initial+1,x
+        lda spike_y_lo,x
         sbc camera_y
         sta draw_screen_y
-        lda spike_initial+2,x
+        lda spike_y_hi,x
         sbc camera_y+1
         beq ?vertical_visible
         bpl ?below_view
@@ -2808,7 +2834,7 @@ draw_run_length dta 0
         bcc ?draw
         jmp ?done
 
-?draw   lda spike_initial,x
+?draw   lda spike_x,x
         jsr double_a_to_calc_x
         sec
         lda calc_x
@@ -2827,7 +2853,7 @@ draw_run_length dta 0
         lda #0
         sta bl_src
         ldx hazard_index        ; calc_addr uses X for its address lookup
-        lda spike_initial+3,x
+        lda spike_rotation,x
         asl
         asl
         clc
@@ -2868,11 +2894,8 @@ draw_run_length dta 0
         jsr do_blit
 
 ?next  ldx hazard_index
-        txa
-        clc
-        adc #SPIKE_SIZE
-        tax
-        cpx #SPIKE_COUNT*SPIKE_SIZE
+        inx
+        cpx #SPIKE_COUNT
         bcs ?done
         jmp ?spike
 ?done   rts
@@ -3907,7 +3930,7 @@ vbreg_cb
 
 palette
         dta 0,  0,  0,  0
-        dta 1,  8, 10, 19
+        dta 1,  0,  0,  0
         dta 2, 13, 16, 29
         dta 3, 52, 24, 38
         dta 4,112, 38, 56
@@ -3916,8 +3939,10 @@ palette
         dta 7,255,255,255
         dta 20,255,  0,  0
         dta 21,255,255,255
-        dta 22,176, 24, 48
+        dta 22,  0,  0,  0
         dta 23,255,106,  0
+        dta 24,  0,119,153   ; 60% cyan water over black
+        icl 'terrain-palette.asm'
         dta $FF
 
 bl_src  dta 0,0,0
@@ -4081,11 +4106,27 @@ fr_col dta 0
 ;==============================================================================
 ; Data segments
 ;==============================================================================
-        org $8F00
+code_end
+        ert code_end > $4000
+
+        org $A000
+        icl 'fidelity.asm'
+lava_map
+        ins 'lava-map.bin'
+terrain_colors
+        ins 'terrain-colors.bin'
+map_row_lo
+        ins 'map-row-offsets.bin'
+map_row_hi = map_row_lo+240
+fidelity_end
+        ert fidelity_end > $C000
+        org $17D0
 display_list
         dta $42,a(text_screen)
         :24 dta $02
         dta $41,a(display_list)
+display_list_end
+        ert display_list_end > $1800
 
         org $4000
 asset_raw
@@ -4105,6 +4146,10 @@ mover_initial
 
 spike_initial
         ins 'spike-data.bin'
+spike_x = spike_initial
+spike_y_lo = spike_initial+SPIKE_COUNT
+spike_y_hi = spike_initial+SPIKE_COUNT*2
+spike_rotation = spike_initial+SPIKE_COUNT*3
 
 lava_initial
         ins 'lava-data.bin'
@@ -4117,5 +4162,11 @@ thwomp_initial
 
 checkpoint_initial
         ins 'checkpoint-data.bin'
+
+checkpoint_teleport
+        ins 'checkpoint-teleport-data.bin'
+
+entity_data_end
+        ert entity_data_end > $9000
 
         run main

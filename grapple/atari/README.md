@@ -1,7 +1,7 @@
-# Grapple — Atari VBXE scrolling prototype
+# Grapple — Atari VBXE scrolling port
 
 This native Atari XL/XE + VBXE milestone combines the original hero and
-grapple movement with a simple scrolling version of the browser game's full
+grapple movement with a scrolling version of the browser game's full
 12×240-tile map.
 
 ## Fidelity in this milestone
@@ -12,49 +12,57 @@ grapple movement with a simple scrolling version of the browser game's full
 - directional input shoots a four-way grapple, as in the browser game;
 - the hero stops while the hook extends at an Atari-tuned 1,200 logical
   pixels/second;
-- a wall hit pulls the hero at 350 logical pixels/second, increased from the
-  browser game's 200 so the tall map can be traversed faster on Atari;
+- a wall hit pulls the hero at an Atari-tuned 350 logical pixels/second;
 - releasing the direction removes the grapple but preserves momentum;
-- player gravity is an Atari-tuned 1,600 logical pixels/second squared—twice
-  the browser value—with the original 400 pixels/second vertical speed limit;
+- player gravity is an Atari-tuned 1,600 logical pixels/second squared, with
+  the original 400 pixels/second vertical speed limit and ground friction;
 - collision uses the original narrow 8×12 player body inside the 16×16 art;
 - the original solid map cells are converted directly from
   `../bin/assets/world.json` into a compact 2,880-byte map;
 - the 3,824-pixel-tall world uses 16.8-bit player coordinates and a smooth
   pixel-following camera;
-- visible map cells are drawn as simple cave blocks into flicker-free 320×200,
-  256-colour double buffers.
-- all six original moving blocks are generated from tile entity 13, retain
-  their original positions and directions, default to an Atari-tuned 64
+- terrain uses inexpensive horizontal solid runs with depth colours changing
+  from black through white, brown, blue, grey, and green; the 64-pixel colour
+  transitions are approximated in 16-pixel bands;
+- per-tile outlines are disabled: that extra pass exceeded the Atari CPU
+  budget. The 320×200 double buffers and depth colours are retained;
+- moving blocks are generated from tile entity 13, keep their
+  editor positions and directions, default to an Atari-tuned 64
   pixels/second, support an individual editor-defined speed, and
-  reverse when they hit the map; their dark interior uses a stronger red
-  contrast on Atari so the original white outline remains easy to see;
+  reverse when they hit the map; their interiors are black with the original
+  white outlines;
 - moving-block physics activates near the viewport, keeping distant blocks at
   their authored positions while avoiding unnecessary map collision probes;
-- the first original moving-block pair is in the row-77 chamber at world
-  Y=1,224; the other four are in rows 90–94;
-- touching a moving block silently resets the current prototype to the level
-  entrance, matching the original block's deadly behavior without sound.
-- all 41 original spike entities are generated at their exact map positions
+- the original moving-block pair is in the row-77 chamber at world Y=1,224;
+  three more are in rows 90–94 and one is the piston in the row-174 corridor;
+- touching a moving block silently resets the player to the active checkpoint
+  (or the entrance before a checkpoint is activated);
+- up to 127 spike entities are generated at their map positions
   and fixed rotations using the original `spikes.png` artwork; spikes never
   animate or change frame;
 - lava is generated as independent 16×16 tile-18 cells, like spikes; older
   four-rectangle maps are rasterized to the same tile format during builds;
 - lava cancels the grapple as soon as the hook enters it, so the hook cannot
-  pass through lava and attach to a wall beyond it;
-- touching spikes or lava silently resets the player to the level entrance;
-- all three original cannons retain their source-map positions and rotations;
+  pass through lava and attach to a wall beyond it; a broken hook prevents
+  another shot for the original 0.7 simulation seconds;
+- touching spikes or lava silently resets the player to the active respawn point;
+- all cannons keep their editor positions and rotations;
   nearby cannons fire once per second, default to an Atari-tuned 350
   pixels/second, and support an individual editor-defined bullet speed, with
   projectile gravity, horizontal drag, wall impact, and deadly player contact;
-- all nine original thwomps are generated from tile entity 17; walls and other
+- all thwomps are generated from tile entity 17; walls and other
   thwomps block their four-way line of sight, and a clear view makes them
-  attack immediately at 150 pixels/second, accelerate at an Atari-tuned 2,500
-  pixels/second squared, and reach up to 500 pixels/second;
+  attack at 150 pixels/second, accelerate at 2,500 pixels/second squared,
+  and reach up to 500 pixels/second;
+- thwomps detect and pursue the player even outside the short
+  viewport; only drawing is culled, so attacks from the left shaft and
+  upper chambers can reach the player;
+- wall impacts advance to the last free pixel before sleeping, allowing
+  16-pixel blocks to turn into the original 16-pixel shafts;
 - thwomps use the original awake, active, and sleep artwork, collide with the
   map and one another, sleep for the original 0.7 seconds after impact, and
   reset the player on contact;
-- all 11 original checkpoints retain their map positions and rotations;
+- all checkpoints keep their editor positions and rotations;
   touching one raises its flag, lowers the previously active flag, and makes
   it the respawn point for hazard deaths and manual resets;
 - hero, mover, rotated spike, cannon, cannonball, thwomp, and checkpoint
@@ -65,15 +73,49 @@ grapple movement with a simple scrolling version of the browser game's full
 
 The original player class has dormant run/jump actions used by the boss AI,
 but normal player input only operates the grapple. This prototype keeps that
-distinction. Enemies other than moving blocks, cannons, and thwomps, plus
-water, dialogue, music, and sound are intentionally omitted from this
-milestone.
+distinction. Bats, the boss, dialogue, music, and sound remain unimplemented.
+
+The original water region (world Y=984..1608) remains visible in cyan, but uses
+the same player, grapple, gravity, and cooldown speed as the black regions.
+Water is currently a solid backdrop;
+translucency over sprites, bubbles, ripples, and splash effects remain to do.
+The viewport remains 160×100 logical pixels, versus the original 160×240.
+Physics is tuned for PAL 50 Hz; NTSC timing and real blitter performance need
+emulator/hardware validation.
+
+## Level layout
+
+`../bin/assets/world.json` is the current default VBXE level exported from the
+editor. The supplied original and an earlier reworked map are kept in
+`../bin/assets/backups/`. In the earlier reworked map rows 0–103 are the
+original gauntlet, minus a few redundant entities that were moved down so the
+formerly empty lower half (rows 104–124 and 156–237, the browser game's bat and
+boss areas) could be built out within the native entity budget:
+
+- rows 104–124: two warm-up rooms with lava veins in the wall and a lava lake;
+  only some rows allow a hook to reach the far wall without breaking;
+- rows 156–170: alternating lava ledges (a hook that crosses lava breaks and
+  the player free-falls for 0.7 s), ending in a bait-and-run thwomp room;
+- rows 173–177: a spiked corridor with a vertical piston block;
+- rows 178–193: a lava-veined shaft with a cannon whose arc crosses the only
+  stone landing gap;
+- rows 194–217: a one-tile thwomp shaft with side pockets; the thwomp must be
+  baited twice, then the final checkpoint sits in a sheltered pocket.
+
+Entities were rebalanced, not added: 41 spikes, 9 thwomps, 6 movers, 3 cannons,
+11 checkpoints, 78 of the 85 lava tiles. Every checkpoint-to-checkpoint section
+was verified reachable with the editor's physics (`../editor/atari-physics.js`)
+by an automated search, and the thwomp/cannon sections were also replayed with
+non-frame-perfect inputs.
 
 ## Controls
 
 - joystick directions: shoot/hold the grapple in that direction;
 - release the joystick: release the grapple and keep momentum;
-- SELECT or `R`: reset to the original level entrance.
+- keyboard `1`: move once to the next checkpoint flag;
+- keyboard `2`: move once to the previous checkpoint flag;
+- teleports and respawns use a generated safe empty tile beside each flag;
+- SELECT or `R`: reset to the active checkpoint, or the entrance before one is activated.
 
 ## Build
 
@@ -96,3 +138,30 @@ From the repository root, build, verify, and launch the game with:
 
 The runner can also be called from any other working directory. It uses the
 saved VBXE Altirra configuration managed by `atari-vbxe-toolkit`.
+
+## Verification
+
+`build.sh` verifies generated assets, entity data, terrain tables, required
+symbols, and non-overlapping XEX segments. Optional assembled-code tests use
+Python 3 and `py65`:
+
+```sh
+python3 test_runtime.py
+```
+
+These tests compare terrain/water pixels against an independent pixel
+reference and exercise movement, full-speed water boundaries, ground friction, hook speed,
+break recovery, thwomp acceleration, offscreen attacks, wall occlusion, and
+the authored chamber’s right/down/left chase. They capture rectangle fills and do not emulate TV timing
+or the VBXE blitter.
+
+## Performance
+
+Tile-row addresses are precomputed, and hook/lava collision uses a direct
+tile lookup instead of scanning all lava entities for each hook pixel. Ground
+friction skips collision probes when horizontal velocity is zero.
+
+Across four sampled depths, terrain traversal now costs about 10,000 CPU
+cycles versus 34,000–40,000 with the outline pass. These measurements exclude
+rectangle-fill execution and blitter waits; they are not a measured frame rate.
+The runtime tests enforce CPU-cycle limits for terrain and hook traversal.

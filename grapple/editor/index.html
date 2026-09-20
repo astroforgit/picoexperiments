@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Grapple Level Editor</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">G</span>
+      <div><strong>Grapple Level Studio</strong><small>Edit, play, refine · Atari VBXE</small></div>
+    </div>
+    <div class="actions">
+      <button id="newMap">New</button>
+      <button id="openMap">Open JSON</button>
+      <button id="reloadOriginal">Reload original</button>
+      <span class="divider"></span>
+      <button id="undo" title="Ctrl+Z">Undo</button>
+      <button id="redo" title="Ctrl+Y">Redo</button>
+      <button id="playMap" class="play-button" disabled title="P · Test the current edits">▶ Playtest <kbd>P</kbd></button>
+      <button id="exportMap" class="primary">Export world.json</button>
+      <input id="fileInput" type="file" accept="application/json,.json" hidden>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="sidebar left-panel">
+      <section>
+        <h2>Tools</h2>
+        <div class="tool-grid" id="toolGrid">
+          <button data-tool="brush" class="active"><span>✎</span>Brush <kbd>B</kbd></button>
+          <button data-tool="eraser"><span>⌫</span>Erase <kbd>E</kbd></button>
+          <button data-tool="fill"><span>▧</span>Fill <kbd>F</kbd></button>
+          <button data-tool="pick"><span>⌾</span>Pick <kbd>I</kbd></button>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-title"><h2>Tiles</h2><span id="selectionName">Wall 1</span></div>
+        <div id="palette" class="palette" aria-label="Tile palette"></div>
+      </section>
+
+      <section>
+        <div class="section-title"><h2>Rotation</h2><span id="rotationText">0°</span></div>
+        <button id="rotate" class="wide">Rotate clockwise <kbd>R</kbd></button>
+        <p class="hint">Rotate moving bricks, cannons, spikes, and flags. Thwomps find their own attack direction.</p>
+      </section>
+
+      <section id="entitySettings" hidden>
+        <h2 id="entitySettingsTitle">Entity settings</h2>
+        <div class="settings-form">
+          <label>Individual ID<input id="entityId" type="text" maxlength="80"></label>
+          <label>Direction
+            <select id="entityDirection"></select>
+          </label>
+          <label><span id="entitySpeedLabel">Speed</span>
+            <span class="number-unit"><input id="entitySpeed" type="number" step="1"><span>px/s</span></span>
+          </label>
+        </div>
+        <p id="entitySettingsHint" class="hint"></p>
+      </section>
+    </aside>
+
+    <section class="editor-shell">
+      <div class="editor-toolbar">
+        <label>Zoom
+          <select id="zoom">
+            <option value="1">1×</option>
+            <option value="2" selected>2×</option>
+            <option value="3">3×</option>
+            <option value="4">4×</option>
+          </select>
+        </label>
+        <label>Jump to row
+          <input id="jumpRow" type="number" min="0" max="239" value="0">
+        </label>
+        <button id="jumpButton">Go</button>
+        <button id="playHere" title="Choose a free cell to start testing">▶ Play from here</button>
+        <label class="check"><input id="showGrid" type="checkbox" checked> Grid</label>
+        <label class="check"><input id="showTracks" type="checkbox" checked> Cannon tracks</label>
+        <span class="spacer"></span>
+        <span id="cursorPosition">Column 0 · Row 0</span>
+      </div>
+      <div id="canvasScroller" class="canvas-scroller">
+        <div class="canvas-frame"><canvas id="mapCanvas"></canvas></div>
+      </div>
+      <footer class="statusbar">
+        <span id="status">Loading original map…</span>
+        <span id="counts"></span>
+      </footer>
+    </section>
+
+    <aside class="sidebar right-panel">
+      <section>
+        <h2>Atari export</h2>
+        <div id="buildStatus" class="build-status" role="status">Loading map…</div>
+        <details class="build-details"><summary>Entity limits</summary><div id="buildDetails"></div></details>
+      </section>
+      <section>
+        <div class="section-title"><h2>Overview</h2><span id="visibleRow">Rows 0–0</span></div>
+        <canvas id="minimap" width="144" height="480"></canvas>
+        <p class="hint">Click or drag the overview to scroll. The mouse wheel scrolls by eight rows.</p>
+      </section>
+      <section>
+        <h2>Map details</h2>
+        <dl class="details">
+          <div><dt>Size</dt><dd>12 × 240</dd></div>
+          <div><dt>Tile size</dt><dd>16 × 16</dd></div>
+          <div><dt>World height</dt><dd>3,840 px</dd></div>
+          <div><dt>Format</dt><dd>VBXE JSON v2</dd></div>
+        </dl>
+      </section>
+      <section>
+        <h2>Shortcuts</h2>
+        <p class="shortcuts"><kbd>Ctrl Z</kbd> undo<br><kbd>Ctrl Y</kbd> redo<br><kbd>R</kbd> rotate<br><kbd>Shift</kbd> straight line<br><kbd>Right click</kbd> erase</p>
+      </section>
+    </aside>
+  </main>
+
+  <dialog id="confirmDialog">
+    <form method="dialog">
+      <h2 id="dialogTitle">Start a new map?</h2>
+      <p id="dialogMessage">Unsaved changes will remain recoverable only in this browser.</p>
+      <div class="dialog-actions"><button value="cancel">Cancel</button><button value="confirm" class="danger">Continue</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="playDialog" aria-labelledby="playTitle">
+    <div class="play-header">
+      <div><span class="eyebrow">CURRENT EDITS · ATARI RULES</span><h2 id="playTitle">Playtest your level</h2></div>
+      <button id="closePlay" aria-label="Close playtest">Back to editor <kbd>Esc</kbd></button>
+    </div>
+    <div class="play-layout">
+      <div class="play-stage">
+        <div class="play-stage-bar"><span id="playState" role="status">Running</span><span>160 × 100 · 50 Hz simulation</span></div>
+        <canvas id="playCanvas" width="320" height="200" tabindex="0" aria-label="Grapple playtest. Use arrow keys or WASD to grapple; release to let go."></canvas>
+        <div class="play-controls">
+          <button id="pausePlay">Pause <kbd>Space</kbd></button>
+          <button id="stepPlay" disabled>Step 1 frame <kbd>.</kbd></button>
+          <button id="resetPlay">Respawn <kbd>R</kbd></button>
+          <button id="restartPlay">Restart test</button>
+        </div>
+        <p class="play-help"><strong>Arrows / WASD</strong> shoot and hold the grapple. Release to let go. No run or jump button.</p>
+        <div class="direction-pad" aria-label="Touch grapple controls">
+          <button data-direction="up" aria-label="Grapple up">↑</button>
+          <button data-direction="left" aria-label="Grapple left">←</button>
+          <button data-direction="down" aria-label="Grapple down">↓</button>
+          <button data-direction="right" aria-label="Grapple right">→</button>
+        </div>
+      </div>
+      <aside class="play-inspector">
+        <label class="start-label">Start at<select id="playStart"></select></label>
+        <dl class="play-stats">
+          <div><dt>Position</dt><dd id="playPosition">—</dd></div>
+          <div><dt>Velocity</dt><dd id="playVelocity">—</dd></div>
+          <div><dt>Deaths</dt><dd id="playDeaths">0</dd></div>
+          <div><dt>Checkpoint</dt><dd id="playCheckpoint">Entrance</dd></div>
+          <div><dt>Movement</dt><dd id="playMovement">Air</dd></div>
+        </dl>
+        <label class="check"><input id="playHitboxes" type="checkbox"> Show collision boxes</label>
+        <button id="editAtPlayer" class="wide">Edit at player position ↗</button>
+        <p id="playEvent" class="play-event" role="status">Ready</p>
+        <details class="simulation-note"><summary>What matches Atari?</summary><p>Atari speeds, 50 Hz updates, narrow player collisions, momentum, water drag, checkpoints, lava, cannons, moving bricks and offscreen thwomp attacks.</p><p>This is a browser simulation, not a hardware emulator. It runs smoothly even where real Atari hardware may drop frames. Sprite clipping and some subpixel edge cases can differ.</p></details>
+      </aside>
+    </div>
+  </dialog>
+
+  <script src="atari-physics.js"></script>
+  <script src="editor.js"></script>
+  <script src="playtest.js"></script>
+</body>
+</html>

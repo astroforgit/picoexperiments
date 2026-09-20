@@ -8,6 +8,8 @@
 var fs = require("fs");
 var path = require("path");
 var zlib = require("zlib");
+var outputDir = process.env.BUILD_DIR || __dirname;
+fs.mkdirSync(outputDir, {recursive: true});
 
 function paeth(a, b, c) {
   var p = a + b - c;
@@ -154,7 +156,7 @@ originalFrames.forEach(function (frame, slot) {
   }
 });
 
-fs.writeFileSync(path.join(__dirname, "player-assets.bin"), output);
+fs.writeFileSync(path.join(outputDir, "player-assets.bin"), output);
 console.log("Generated player-assets.bin (" + output.length + " bytes, " +
   originalFrames.length + " original frames)");
 
@@ -174,7 +176,7 @@ for (var moverY = 0; moverY < 32; moverY += 1) {
     moverOutput[moverY * 32 + moverX] = moverColor;
   }
 }
-fs.writeFileSync(path.join(__dirname, "mover-assets.bin"), moverOutput);
+fs.writeFileSync(path.join(outputDir, "mover-assets.bin"), moverOutput);
 console.log("Generated mover-assets.bin (" + moverOutput.length + " bytes)");
 
 var spikeSource = decodeRgbaPng(path.join(__dirname, "..", "bin", "assets",
@@ -214,7 +216,7 @@ for (var spikeRot = 0; spikeRot < 4; spikeRot += 1) {
     }
   }
 }
-fs.writeFileSync(path.join(__dirname, "spike-assets.bin"), spikeOutput);
+fs.writeFileSync(path.join(outputDir, "spike-assets.bin"), spikeOutput);
 console.log("Generated spike-assets.bin (" + spikeOutput.length + " bytes)");
 
 var cannonSource = decodeRgbaPng(path.join(__dirname, "..", "bin", "assets",
@@ -252,7 +254,7 @@ for (var cannonRot = 0; cannonRot < 4; cannonRot += 1) {
     }
   }
 }
-fs.writeFileSync(path.join(__dirname, "cannon-assets.bin"), cannonOutput);
+fs.writeFileSync(path.join(outputDir, "cannon-assets.bin"), cannonOutput);
 console.log("Generated cannon-assets.bin (" + cannonOutput.length + " bytes)");
 
 var cannonballSource = decodeRgbaPng(path.join(__dirname, "..", "bin",
@@ -272,7 +274,7 @@ for (var ballY = 0; ballY < 20; ballY += 1) {
     cannonballOutput[ballY * 20 + ballX] = ballColor;
   }
 }
-fs.writeFileSync(path.join(__dirname, "cannonball-assets.bin"),
+fs.writeFileSync(path.join(outputDir, "cannonball-assets.bin"),
   cannonballOutput);
 console.log("Generated cannonball-assets.bin (" + cannonballOutput.length +
   " bytes including page padding)");
@@ -302,7 +304,7 @@ for (var thwompFrame = 0; thwompFrame < 3; thwompFrame += 1) {
     }
   }
 }
-fs.writeFileSync(path.join(__dirname, "thwomp-assets.bin"), thwompOutput);
+fs.writeFileSync(path.join(outputDir, "thwomp-assets.bin"), thwompOutput);
 console.log("Generated thwomp-assets.bin (" + thwompOutput.length +
   " bytes, three original frames)");
 
@@ -323,7 +325,7 @@ for (var checkpointFrame = 0; checkpointFrame < 2; checkpointFrame += 1) {
     }
   }
 }
-fs.writeFileSync(path.join(__dirname, "checkpoint-assets.bin"), checkpointOutput);
+fs.writeFileSync(path.join(outputDir, "checkpoint-assets.bin"), checkpointOutput);
 console.log("Generated checkpoint-assets.bin (" + checkpointOutput.length +
   " bytes, low and high frames)");
 
@@ -341,7 +343,7 @@ for (var packedIndex = 0; packedIndex < packedAssets.length;
   }
   packedAssets[packedIndex] = (firstCode << 4) | secondCode;
 }
-fs.writeFileSync(path.join(__dirname, "assets-packed.bin"), packedAssets);
+fs.writeFileSync(path.join(outputDir, "assets-packed.bin"), packedAssets);
 console.log("Generated assets-packed.bin (" + packedAssets.length +
   " bytes from " + unpackedAssets.length + " VBXE pixels)");
 
@@ -350,7 +352,7 @@ console.log("Generated assets-packed.bin (" + packedAssets.length +
  * scrolling game needs. Tiles 1..10 are the browser game's solid world
  * tiles. Entity positions are emitted separately below.
  */
-var world = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "bin",
+var world = JSON.parse(fs.readFileSync(process.env.WORLD_PATH || path.join(__dirname, "..", "bin",
   "assets", "world.json"), "utf8"));
 if (world.tileswide !== 12 || world.tileshigh !== 240 ||
     world.layers.length !== 1) {
@@ -363,14 +365,23 @@ if (sourceTiles.length !== worldMap.length) {
   throw new Error("Unexpected world tile count: " + sourceTiles.length);
 }
 
+var brickIds = new Set();
 sourceTiles.forEach(function (cell, index) {
+  if (cell.x !== index % 12 || cell.y !== Math.floor(index / 12)) {
+    throw new Error("Expected cells in row-major order at index " + index);
+  }
+  if (cell.tile >= 0) {
+    var id = String(cell.id || "brick-" + index);
+    if (brickIds.has(id)) throw new Error("Duplicate brick ID: " + id);
+    brickIds.add(id);
+  }
   worldMap[index] = cell.tile >= 1 && cell.tile <= 10 ? cell.tile : 0;
 });
 
 var moverDirections = {0: 2, 1: 3, 2: 0, 3: 1};
 var moverCells = sourceTiles.filter(function (cell) { return cell.tile === 13; });
-if (moverCells.length !== 6) {
-  throw new Error("Expected six original mover entities");
+if (moverCells.length < 1 || moverCells.length > 31) {
+  throw new Error("VBXE requires 1..31 mover entities");
 }
 var moverData = Buffer.alloc(moverCells.length * 6);
 moverCells.forEach(function (cell, index) {
@@ -385,13 +396,13 @@ moverCells.forEach(function (cell, index) {
   moverData[index * 6 + 4] = speedStep & 255;
   moverData[index * 6 + 5] = speedStep >> 8;
 });
-fs.writeFileSync(path.join(__dirname, "mover-data.bin"), moverData);
+fs.writeFileSync(path.join(outputDir, "mover-data.bin"), moverData);
 console.log("Generated mover-data.bin (" + moverCells.length +
   " VBXE movers with individual speeds)");
 
 var cannonCells = sourceTiles.filter(function (cell) { return cell.tile === 14; });
-if (cannonCells.length !== 3) {
-  throw new Error("Expected three original cannon entities");
+if (cannonCells.length < 1 || cannonCells.length > 28) {
+  throw new Error("VBXE requires 1..28 cannon entities");
 }
 var cannonData = Buffer.alloc(cannonCells.length * 9);
 cannonCells.forEach(function (cell, index) {
@@ -415,48 +426,52 @@ cannonCells.forEach(function (cell, index) {
   cannonData[index * 9 + 7] = vy & 255;
   cannonData[index * 9 + 8] = vy >> 8;
 });
-fs.writeFileSync(path.join(__dirname, "cannon-data.bin"), cannonData);
+fs.writeFileSync(path.join(outputDir, "cannon-data.bin"), cannonData);
 console.log("Generated cannon-data.bin (" + cannonCells.length +
   " VBXE cannons with individual bullet speeds)");
 
 var spikeCells = sourceTiles.filter(function (cell) { return cell.tile === 16; });
-if (spikeCells.length !== 41) {
-  throw new Error("Expected 41 original spike entities");
+if (spikeCells.length < 1 || spikeCells.length > 127) {
+  throw new Error("VBXE requires 1..127 spike entities");
 }
+// Store fields in separate arrays so the 6502 can use an entity index rather
+// than a byte offset. This permits more than 63 four-byte spike records without
+// overflowing the X register.
 var spikeData = Buffer.alloc(spikeCells.length * 4);
 spikeCells.forEach(function (cell, index) {
   var worldX = cell.x * 16 - 8;
   var worldY = cell.y * 16 - 8;
-  spikeData[index * 4] = worldX;
-  spikeData[index * 4 + 1] = worldY & 255;
-  spikeData[index * 4 + 2] = worldY >> 8;
-  spikeData[index * 4 + 3] = cell.rot;
+  spikeData[index] = worldX;
+  spikeData[spikeCells.length + index] = worldY & 255;
+  spikeData[spikeCells.length * 2 + index] = worldY >> 8;
+  spikeData[spikeCells.length * 3 + index] = cell.rot;
 });
-fs.writeFileSync(path.join(__dirname, "spike-data.bin"), spikeData);
+fs.writeFileSync(path.join(outputDir, "spike-data.bin"), spikeData);
 console.log("Generated spike-data.bin (" + spikeCells.length +
   " original spikes)");
 
 var thwompCells = sourceTiles.filter(function (cell) { return cell.tile === 17; });
-if (thwompCells.length !== 9) {
-  throw new Error("Expected nine original thwomp entities");
+if (thwompCells.length < 1 || thwompCells.length > 23) {
+  throw new Error("VBXE requires 1..23 thwomp entities");
 }
-var thwompData = Buffer.alloc(thwompCells.length * 3);
+var thwompData = Buffer.alloc(thwompCells.length * 4);
 thwompCells.forEach(function (cell, index) {
   var worldX = cell.x * 16 - 8;
   var worldY = cell.y * 16 - 8;
-  thwompData[index * 3] = worldX;
-  thwompData[index * 3 + 1] = worldY & 255;
-  thwompData[index * 3 + 2] = worldY >> 8;
+  thwompData[index * 4] = worldX;
+  thwompData[index * 4 + 1] = worldY & 255;
+  thwompData[index * 4 + 2] = worldY >> 8;
+  thwompData[index * 4 + 3] = Math.max(1, Math.min(10, Math.round((Number(cell.speed) || 500) / 50)));
 });
-fs.writeFileSync(path.join(__dirname, "thwomp-data.bin"), thwompData);
+fs.writeFileSync(path.join(outputDir, "thwomp-data.bin"), thwompData);
 console.log("Generated thwomp-data.bin (" + thwompCells.length +
   " original thwomps)");
 
 var checkpointCells = sourceTiles.filter(function (cell) {
   return cell.tile === 11;
 });
-if (checkpointCells.length !== 11) {
-  throw new Error("Expected eleven original checkpoint entities");
+if (checkpointCells.length < 1 || checkpointCells.length > 63) {
+  throw new Error("VBXE requires 1..63 checkpoint entities");
 }
 var checkpointData = Buffer.alloc(checkpointCells.length * 4);
 checkpointCells.forEach(function (cell, index) {
@@ -467,9 +482,40 @@ checkpointCells.forEach(function (cell, index) {
   checkpointData[index * 4 + 2] = worldY >> 8;
   checkpointData[index * 4 + 3] = cell.rot;
 });
-fs.writeFileSync(path.join(__dirname, "checkpoint-data.bin"), checkpointData);
+fs.writeFileSync(path.join(outputDir, "checkpoint-data.bin"), checkpointData);
 console.log("Generated checkpoint-data.bin (" + checkpointCells.length +
   " original checkpoints)");
+
+// Teleports and checkpoint respawns use a neighbouring empty cell instead of
+// dropping the player on top of rotated flag artwork or against an edge wall.
+// Records stay four bytes wide so the runtime can share checkpoint offsets.
+var checkpointTeleportData = Buffer.alloc(checkpointCells.length * 4);
+checkpointCells.forEach(function (cell, index) {
+  var towardCentre = cell.x >= world.tileswide / 2 ? -1 : 1;
+  var candidates = [
+    [cell.x + towardCentre, cell.y], [cell.x, cell.y],
+    [cell.x - towardCentre, cell.y], [cell.x, cell.y - 1],
+    [cell.x, cell.y + 1]
+  ];
+  var destination = candidates.find(function (candidate) {
+    var x = candidate[0], y = candidate[1];
+    return x >= 1 && x < world.tileswide - 1 && y >= 0 &&
+      y < world.tileshigh && sourceTiles[y * world.tileswide + x].tile === -1;
+  });
+  if (!destination) {
+    throw new Error("Checkpoint " + (index + 1) +
+      " has no safe adjacent teleport cell");
+  }
+  var teleportX = destination[0] * 16 - 8;
+  var teleportY = destination[1] * 16 - 1;
+  checkpointTeleportData[index * 4] = teleportX;
+  checkpointTeleportData[index * 4 + 1] = teleportY & 255;
+  checkpointTeleportData[index * 4 + 2] = teleportY >> 8;
+});
+fs.writeFileSync(path.join(outputDir, "checkpoint-teleport-data.bin"),
+  checkpointTeleportData);
+console.log("Generated checkpoint-teleport-data.bin (" +
+  checkpointCells.length + " safe respawn destinations)");
 
 /* Editor format v2 stores lava as ordinary tile-18 cells. Legacy rectangle
  * metadata is rasterized using the same cell-centre rule as the editor. */
@@ -512,7 +558,7 @@ if (lavaRects.length > 85) {
 lavaCells.forEach(function (cell) {
   worldMap[cell.y * world.tileswide + cell.x] = 0;
 });
-fs.writeFileSync(path.join(__dirname, "world-map.bin"), worldMap);
+fs.writeFileSync(path.join(outputDir, "world-map.bin"), worldMap);
 console.log("Generated world-map.bin (" + worldMap.length + " bytes, " +
   worldMap.reduce(function (count, tile) { return count + (tile !== 0); }, 0) +
   " solid tiles)");
@@ -523,7 +569,65 @@ storedLava.forEach(function (rect, index) {
   lavaData[index * 3 + 1] = rect[1] & 255;
   lavaData[index * 3 + 2] = rect[1] >> 8;
 });
-fs.writeFileSync(path.join(__dirname, "lava-data.bin"), lavaData);
-fs.writeFileSync(path.join(__dirname, "level-constants.asm"),
-  "; Generated by generate_assets.js\nLAVA_COUNT = " + storedLava.length + "\n");
+fs.writeFileSync(path.join(outputDir, "lava-data.bin"), lavaData);
+fs.writeFileSync(path.join(outputDir, "level-constants.asm"),
+  "; Generated by generate_assets.js\n" +
+  [["MOVER", moverCells], ["CANNON", cannonCells], ["SPIKE", spikeCells],
+   ["THWOMP", thwompCells], ["CHECKPOINT", checkpointCells], ["LAVA", storedLava]]
+    .map(([name, cells]) => name + "_COUNT = " + cells.length + "\n").join(""));
 console.log("Generated lava-data.bin (" + lavaRects.length + " lava tiles)");
+
+// Constant-time hook collision lookup, sharing the map's tile coordinates.
+var lavaMap = Buffer.alloc(worldMap.length);
+lavaCells.forEach(function (cell) { lavaMap[cell.y * 12 + cell.x] = 1; });
+fs.writeFileSync(path.join(outputDir, "lava-map.bin"), lavaMap);
+
+// Sample DepthFilter at tile-row centres. Four 16px bands approximate each
+// original 64px transition, without per-frame palette or per-pixel CPU work.
+var depthStops = [[180, [255,255,255]], [400, [227,156,115]],
+  [1100, [0,0,255]], [1700, [179,179,179]], [3200, [0,255,0]]];
+var depthPalette = [];
+var depthRows = Buffer.alloc(240);
+for (var row = 0; row < 240; row += 1) {
+  var depth = row * 16 - 8;
+  var rgb = [0,0,0];
+  depthStops.forEach(function (stop) {
+    if (depth <= stop[0]) return;
+    var t = Math.min(1, (depth - stop[0]) / 64);
+    rgb = rgb.map(function (component, channel) {
+      return Math.round(component * (1 - t) + stop[1][channel] * t);
+    });
+  });
+  var key = rgb.join(",");
+  var paletteSlot = depthPalette.indexOf(key);
+  if (paletteSlot < 0) {
+    paletteSlot = depthPalette.length;
+    depthPalette.push(key);
+  }
+  depthRows[row] = 32 + paletteSlot;
+}
+// load_palette indexes four-byte records with X, so all records must fit.
+if ((13 + depthPalette.length) * 4 + 1 > 256) {
+  throw new Error("Depth palette exceeds the 8-bit palette loader");
+}
+fs.writeFileSync(path.join(outputDir, "terrain-colors.bin"), depthRows);
+fs.writeFileSync(path.join(outputDir, "terrain-palette.asm"),
+  "; Generated depth colours, sampled from src/depthFilter.ts\n" +
+  depthPalette.map(function (rgb, i) { return "        dta " + (32 + i) + "," + rgb; }).join("\n") + "\n");
+console.log("Generated lava lookup and " + depthPalette.length + " depth colours");
+
+var rowOffsets = Buffer.alloc(480);
+for (var mapRow = 0; mapRow < 240; mapRow += 1) {
+  rowOffsets[mapRow] = (mapRow * 12) & 255;
+  rowOffsets[240 + mapRow] = (mapRow * 12) >> 8;
+}
+fs.writeFileSync(path.join(outputDir, "map-row-offsets.bin"), rowOffsets);
+
+// IDs remain human-readable; native actors use compact per-type slots.
+var slots = {};
+fs.writeFileSync(path.join(outputDir, "entity-index.json"), JSON.stringify(
+  sourceTiles.filter(cell => [11,13,14,16,17,18].includes(cell.tile)).map(cell => ({
+    id: String(cell.id || "brick-" + (cell.y * 12 + cell.x)), tile: cell.tile,
+    slot: (slots[cell.tile] = (slots[cell.tile] || 0) + 1) - 1,
+    x: cell.x, y: cell.y
+  })), null, 2) + "\n");
