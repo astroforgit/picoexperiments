@@ -144,8 +144,13 @@ C_STONE_HI   = 4
 C_STONE_DARK = 5
 C_ROPE       = 6
 C_HOOK       = 7
-C_PLAYER_RED = 20
-C_PLAYER_WHT = 21
+C_PLAYER_HAIR = 20              ; the hero's own colours: hers alone, so she
+C_PLAYER_SUIT = 17              ; can be restyled without touching anything else
+C_PLAYER_BOOT = 18
+C_PLAYER_SKIN = 16
+C_THWOMP_RED = 19               ; the thwomp's marking, which used to share the
+                                ; hero's index and followed her recolouring
+C_PLAYER_WHT = 21               ; shared white: spikes, checkpoints, outlines
 C_MOVER_DARK = 22
 C_LAVA       = 23
 
@@ -430,6 +435,9 @@ facing_left   dta 0
 frame_counter dta 0
 hero_frame    dta 0
 animation_phase dta 0
+run_phase     dta 0              ; 0..4 over the five-frame run cycle
+run_last_phase dta 0             ; animation_phase the cycle last advanced on
+anim_speed    dta 0              ; |vel_x| low byte while classifying the state
 camera_y      dta a(0)
 
 grapple_cooldown dta 0
@@ -833,11 +841,53 @@ hook_steps_left dta 0
         lda vel_y
         cmp #103                ; 20 px/s animation threshold
         bcs ?fall
+
+        ; Grounded. The browser game runs at the same 20 px/s threshold, so
+        ; take |vel_x| and pick the run cycle over idle above it.
+        lda vel_x+1
+        bpl ?speed_ready
+        sec                     ; negate the 8.8 velocity to get its magnitude
+        lda #0
+        sbc vel_x
+        sta anim_speed
+        lda #0
+        sbc vel_x+1
+        jmp ?speed_test
+?speed_ready
+        lda vel_x
+        sta anim_speed
+        lda vel_x+1
+?speed_test
+        bne ?run                ; a whole pixel per frame is already 50 px/s
+        lda anim_speed
+        cmp #103
+        bcs ?run
+
         ; Match the browser's 12 fps idle cadence. animation_phase advances
         ; at 12.5 fps on PAL, the same timing used by the movement states.
         lda animation_phase
         and #3
         sta hero_frame          ; original idle frames 0..3
+        rts
+
+        ; Five frames will not fall out of a power-of-two mask, so step the
+        ; cycle once per animation_phase change and wrap it by hand.
+?run    lda animation_phase
+        cmp run_last_phase
+        beq ?run_frame
+        sta run_last_phase
+        ldx run_phase
+        inx
+        cpx #5
+        bcc ?run_store
+        ldx #0
+?run_store
+        stx run_phase
+?run_frame
+        lda run_phase
+        clc
+        adc #4                  ; slots 4..8 hold original frames 5..9
+        sta hero_frame
         rts
 .endp
 
@@ -3822,7 +3872,12 @@ vbreg_asset_restore
 current_asset_bank dta 0
 asset_page_in_bank dta 0
 asset_pages_left dta 0
-asset_unpack dta 0,C_PLAYER_RED,C_PLAYER_WHT,C_MOVER_DARK
+; Indexed by a 4-bit code, so all sixteen entries must exist: a stray nibble
+; would otherwise read whatever follows the table as a colour.
+asset_unpack dta 0,C_PLAYER_HAIR,C_PLAYER_WHT,C_MOVER_DARK
+        dta C_PLAYER_SUIT,C_PLAYER_BOOT,C_THWOMP_RED,C_PLAYER_SKIN
+        dta 0,0,0,0
+        dta 0,0,0,0
 
 xdl_data
         dta $74,$08
@@ -3937,7 +3992,8 @@ palette
         dta 5, 28, 15, 29
         dta 6,214,214,225
         dta 7,255,255,255
-        dta 20,255,  0,  0
+        dta 19,255,  0,  0      ; thwomp marking, the browser game's pure red
+        icl 'player-palette.asm'
         dta 21,255,255,255
         dta 22,  0,  0,  0
         dta 23,255,106,  0

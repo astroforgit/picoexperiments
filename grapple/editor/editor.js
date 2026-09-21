@@ -936,7 +936,8 @@ minimap.addEventListener("wheel", event => {
 scroller.addEventListener("scroll", renderMinimap);
 window.addEventListener("resize", renderMinimap);
 window.addEventListener("keydown", event => {
-  if (window.GrapplePlaytest?.isOpen || document.querySelector("#confirmDialog").open) return;
+  if (window.GrapplePlaytest?.isOpen || window.GrappleAssets?.isOpen ||
+      document.querySelector("#confirmDialog").open) return;
   if (["INPUT", "SELECT", "TEXTAREA"].includes(document.activeElement.tagName)) return;
   if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z") {
     event.preventDefault();

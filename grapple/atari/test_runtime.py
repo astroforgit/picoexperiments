@@ -366,3 +366,60 @@ assert ram[top_block + 1] == 24 and ram[top_block + 7] == 3
 ai_cycle_limit = 18000 + max(0, LABELS['thwomp_count'] - 10) * 1500
 assert peak < ai_cycle_limit, (peak, ai_cycle_limit)
 print(f'PASS: offscreen attack, wall occlusion and two-turn chamber chase ({peak} peak AI cycles)')
+
+# Hero animation states. The browser game's five-frame run cycle (original
+# frames 5..9, slots 4..8) is the one the port used to skip: grounded
+# horizontal movement fell through to the idle frames.
+IDLE, RUN, JUMP, FALL, GRAPPLE = range(5)
+STATE_SLOTS = {IDLE: {0, 1, 2, 3}, RUN: {4, 5, 6, 7, 8},
+               JUMP: {9, 10}, FALL: {11, 12}, GRAPPLE: {14, 15}}
+
+
+def animate(vel_x=0, vel_y=0, grapple=0, direction=0, phase=0):
+    put('grapple_state', grapple)
+    put('grapple_dir', direction)
+    put('vel_x', vel_x & 0xFFFF, 2)
+    put('vel_y', vel_y & 0xFFFF, 2)
+    put('frame_counter', (phase * 4) & 0xFF)
+    call('choose_hero_frame')
+    return get('hero_frame')
+
+
+def assert_state(state, **kwargs):
+    slot = animate(**kwargs)
+    assert slot in STATE_SLOTS[state], (state, slot, kwargs)
+    return slot
+
+
+# 20 px/s is the browser threshold: 0.4 px/frame at PAL 50 Hz, 103 in 8.8.
+assert_state(IDLE, vel_x=0)
+assert_state(IDLE, vel_x=102)
+assert_state(IDLE, vel_x=-102)
+assert_state(RUN, vel_x=103)
+assert_state(RUN, vel_x=-103)
+assert_state(RUN, vel_x=0x0200)
+assert_state(RUN, vel_x=-0x0200)
+
+# Airborne and grappling states still win over horizontal speed.
+assert_state(JUMP, vel_x=0x0200, vel_y=-0x0100)
+assert_state(FALL, vel_x=0x0200, vel_y=0x0200)
+assert_state(GRAPPLE, vel_x=0x0200, grapple=1, direction=LABELS.get('dir_right', 2))
+
+# Idle still cycles its four frames on the phase, as before.
+assert [animate(phase=p) for p in range(5)] == [0, 1, 2, 3, 0]
+
+# The run cycle must visit all five frames and wrap cleanly: five is not a
+# power of two, so a phase mask would have stuttered at the wrap.
+put('run_phase', 0)
+put('run_last_phase', 0)
+cycle = [animate(vel_x=0x0200, phase=p) for p in range(12)]
+assert cycle == [4, 5, 6, 7, 8, 4, 5, 6, 7, 8, 4, 5], cycle
+
+# Frames only advance when the phase does, so the cadence stays at 12.5 fps
+# rather than stepping once per 50 Hz frame. The first call here advances
+# because the phase moved; the repeats at the same phase must all hold.
+put('run_phase', 0)
+put('run_last_phase', 0)
+held = [animate(vel_x=0x0200, phase=3) for _ in range(4)]
+assert held == [5, 5, 5, 5], held
+print('PASS: idle, run, jump, fall and grapple frame selection')

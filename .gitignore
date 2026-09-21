@@ -13,6 +13,9 @@ __pycache__/
 .cache/
 coverage/
 
+# Per-character Atari builds from grapple/atari/run-character.sh
+grapple/atari/builds/
+
 # Generated diagnostics and temporary files
 *.log
 *.tmp

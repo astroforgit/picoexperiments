@@ -6,9 +6,36 @@ grapple movement with a scrolling version of the browser game's full
 
 ## Fidelity in this milestone
 
-- the original 16 hero frames used by idle, horizontal grapple, rise, fall,
-  and death states are converted directly from `../bin/assets/player.png`;
+- the original 16 hero frames used by idle, run, horizontal grapple, rise,
+  fall, and death states are converted directly from
+  `../bin/assets/player.png`;
 - the artwork is nearest-neighbour doubled to 32×32 VBXE pixels;
+- the browser game's five-frame run cycle (original frames 5–9) plays while
+  the hero is grounded and moving faster than the same 20 pixels/second
+  threshold the other animation states use; earlier milestones fell through
+  to the idle frames whenever she ran. Five frames do not fit a power-of-two
+  phase mask, so the cycle steps once per animation phase and wraps by hand,
+  holding the browser's 12 fps cadence;
+- `./run-character.sh` builds and runs an alternative hero without replacing
+  the default build. It defaults to PixelCharacterV1 and takes any other sheet
+  as its argument; `--build-only` skips the emulator. Each character is
+  assembled into `builds/<sheet name>/`;
+- `BUILD_DIR` sends a whole build elsewhere. The assembly is copied there
+  before assembling, because mads resolves `icl` and `ins` relative to the
+  directory holding the source file — assembling in place would silently pick
+  up this directory's generated files and build the wrong character;
+- the hero's sheet can mark regions with flat colours instead of drawing them:
+  red is hair, white the top, green the legs, and blue the skin. A sheet using
+  only red and white keeps the older two-colour reading. `PLAYER_SHEET` picks
+  the sheet, and her colours are emitted into the generated
+  `player-palette.asm`, so switching character switches palette with it. See
+  `../design/PixelCharacterV1/` for a converted alternative;
+- the hero has palette entries of her own — hair, top, legs, and skin — so a
+  character can be restyled without disturbing the white shared by spikes,
+  checkpoints, and mover outlines. The original art is two-colour, red hair on
+  a white body, and it keeps exactly those colours: its top and legs are both
+  painted that same white, so the boots the generator derives from the lowest
+  three rows stay invisible unless a character gives them a colour;
 - directional input shoots a four-way grapple, as in the browser game;
 - the hero stops while the hook extends at an Atari-tuned 1,200 logical
   pixels/second;

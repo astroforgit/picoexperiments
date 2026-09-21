@@ -61,6 +61,35 @@ rectangles to tile-18 cells automatically.
 Moving blocks default to an Atari-tuned 64 pixels/second and cannonballs to
 350 pixels/second. Individually saved speed overrides are preserved.
 
+## Assets tab
+
+The **Assets** tab lists every character the VBXE game ships, with each
+animation from `../src/player.ts` running at its real frame rate. Link
+straight to it with `?view=assets`.
+
+Sprites are drawn in the colours the Atari actually uses, not the browser's.
+The tab's classifiers mirror `../atari/generate_assets.js` branch for branch,
+so a frame can be judged before spending a build on it; `assets-core.test.cjs`
+holds them to that by comparing against the generated `*-assets.bin`. Untick
+**Atari VBXE colours** to see the original two-colour source art instead.
+
+Hero frames are captioned with both numbers that matter: the source frame in
+`player.png` and the slot `choose_hero_frame` stores in `hero_frame`.
+
+### Designing a new character
+
+The right-hand workshop edits a replacement hero. Presets are starting points
+rather than finished designs, and each is additive — it only writes into empty
+pixels, so the original poses, which are the part worth keeping, cannot be
+damaged. Pick a pen, choose any of the sixteen frames, and paint.
+
+**Export player.png** writes the 80x64 sheet the pipeline already consumes, in
+its own two colours: pure red for hair, white for body. Drop it over
+`grapple/bin/assets/player.png` and run `grapple/atari/build.sh`. Boots,
+palette packing and the run cycle follow automatically, with no generator
+change — the export of an unedited hero reproduces `player.png` pixel for
+pixel, which is what makes that claim testable.
+
 ## Browser playtesting
 
 Click **Playtest** (or press `P`) to play the current edits immediately. No
@@ -126,6 +155,10 @@ node grapple/editor/reachability.js grapple/bin/assets/world.json 6,7,8,9,10
 python3 grapple/editor/compare-atari.py
 # Optional: requires Playwright and the editor server
 node grapple/editor/browser.test.cjs
+# Assets tab core, against a current Atari build; no browser needed
+node grapple/editor/assets-core.test.cjs
+# Optional: Assets tab UI, requires Playwright and the editor server
+node grapple/editor/assets.test.cjs
 ```
 
 The assembly comparison checks 100 player ticks and 125 ticks of the nine-thwomp

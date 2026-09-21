@@ -80,7 +80,7 @@ if (spikeAssets.length !== 4096 || cannonAssets.length !== 4096 ||
     checkpointAssets.length !== 2048 || packedAssets.length !== 15616) {
   throw new Error("Unexpected hazard or packed asset size");
 }
-var unpackTable = [0, 20, 21, 22];
+var unpackTable = [0, 20, 21, 22, 17, 18, 19, 16];
 var unpackedAssets = Buffer.alloc(packedAssets.length * 2);
 packedAssets.forEach(function (value, index) {
   unpackedAssets[index * 2] = unpackTable[value >> 4];

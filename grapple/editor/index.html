@@ -12,6 +12,10 @@
       <span class="brand-mark">G</span>
       <div><strong>Grapple Level Studio</strong><small>Edit, play, refine · Atari VBXE</small></div>
     </div>
+    <nav class="view-tabs" aria-label="Editor views">
+      <button data-view-tab="map" class="active">Map</button>
+      <button data-view-tab="assets">Assets</button>
+    </nav>
     <div class="actions">
       <button id="newMap">New</button>
       <button id="openMap">Open JSON</button>
@@ -119,6 +123,28 @@
     </aside>
   </main>
 
+  <main class="assets-view" id="assetsView" hidden>
+    <section class="assets-shell">
+      <div class="assets-toolbar">
+        <h2>Character animations</h2>
+        <label>Hero <select id="assetCharacter"></select></label>
+        <label class="check"><input id="assetVbxeColours" type="checkbox" checked> Atari VBXE colours</label>
+        <span class="spacer"></span>
+        <span id="assetsStatus" role="status">Loading sprite sheets…</span>
+      </div>
+      <div id="assetGallery" class="assets-gallery"></div>
+    </section>
+    <aside class="sidebar right-panel assets-workshop">
+      <section>
+        <h2>New character</h2>
+        <p class="hint">Starting points, not finished designs. Each preset only
+          writes into empty pixels, so the original poses stay intact. Edit any
+          frame, then export a sheet the Atari pipeline reads unchanged.</p>
+        <div id="assetWorkshop"></div>
+      </section>
+    </aside>
+  </main>
+
   <dialog id="confirmDialog">
     <form method="dialog">
       <h2 id="dialogTitle">Start a new map?</h2>
@@ -170,5 +196,6 @@
   <script src="atari-physics.js"></script>
   <script src="editor.js"></script>
   <script src="playtest.js"></script>
+  <script src="assets.js"></script>
 </body>
 </html>
