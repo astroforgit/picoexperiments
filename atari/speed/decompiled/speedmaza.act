@@ -1,0 +1,644 @@
+; SPEEDmaza (2014) by Jakub Husak
+; Action! source reconstructed from the compiled binary (see README.md).
+;
+; Names are invented; statements, constants, evaluation order and the
+; memory layout follow the machine code one to one. Each PROC comment gives
+; its address in the original. Variables sit where the original compiler put
+; them: globals first, a PROC's locals in front of that PROC.
+;
+; Not in this source (it is loaded as binary data, see speedmaza.asm):
+;   $1000  title picture, 'MAZA PASSED!' banner, digit font at $1F28
+;   $2000  crash picture
+;   $4C00  RMT player,  $5000 title music,  $5700 game music
+;   $A000  Action! cartridge runtime (DIV, MOD, LSH, RSH, MoveBlock)
+; The maze bitmap ($5C00-$9BFF), the game display list ($9C00) and the
+; player/missile area (PMBASE=$9C) are built at run time.
+
+; ---- hardware and OS
+BYTE rtclok=$14, atract=$4D
+BYTE sdmctl=$22F, gprior=$26F, srtimr=$22B, ch=$2FC
+BYTE dliColPF0=$3E8, dliColPF1=$3E9, dliColPF2=$3EA, dliColBK=$3EB
+BYTE sizem=$D00C, colpf0=$D016, colpf1=$D017, colpf2=$D018, colbk=$D01A
+BYTE gractl=$D01D, hitclr=$D01E, random=$D20A
+BYTE hscrol=$D404, vscrol=$D405, pmbase=$D407, wsync=$D40A, vcount=$D40B
+BYTE nmien=$D40E
+CARD vdslst=$200, sdlstl=$230
+CARD gdlLms=$9C01          ; LMS address of the first line of the game DL
+
+; ---- RMT player (Raster Music Tracker), assembled at $4C00
+PROC RmtInit=$4C00(BYTE line, lo, hi)
+PROC RmtPlay=$4C03()
+PROC RmtSilence=$4C09()
+BYTE rmtVol=$494A          ; player variable, used to pulse the maze colour
+
+; ---- globals ($2840)
+CARD titlePic=[$1000]
+BYTE ARRAY dlTitle=[
+  $10 $50 $70 $70 $CE $00 $00 $0E $0E $0E $0E $0E $0E $0E $0E $0E
+  $0E $0E $0E $0E $0E $0E $0E $0E $0E $0E $0E $0E $0E $0E $0E $0E
+  $0E $0E $0E $70 $70 $70 $0E $0E $0E $0E $0E $0E $0E $0E $70 $30
+  $0E $0E $0E $0E $0E $0E $0E $0E $70 $30 $0E $0E $0E $0E $0E $0E
+  $0E $0E $70 $30 $0E $0E $0E $0E $0E $0E $0E $0E $70 $30 $0E $0E
+  $0E $0E $0E $0E $0E $0E $70 $70 $0E $0E $0E $0E $0E $0E $0E $0E
+  $70 $10 $0E $0E $0E $0E $0E $0E $0E $0E $41 $00 $00]
+BYTE ARRAY dlCrash=[
+  $70 $70 $70 $70 $70 $70 $70 $70 $70 $70 $7E $00 $00 $3E $3E $3E
+  $3E $3E $3E $3E $3E $3E $3E $3E $3E $3E $3E $3E $3E $3E $3E $3E
+  $3E $3E $3E $3E $3E $3E $3E $3E $3E $3E $3E $3E $3E $3E $3E $3E
+  $3E $3E $3E $3E $3E $3E $3E $3E $41 $00 $00]
+BYTE ARRAY dlWin=[
+  $70 $70 $70 $70 $70 $70 $70 $70 $70 $70 $70 $F0 $4E $00 $00 $0E
+  $0E $0E $0E $0E $0E $0E $0E $0E $0E $0E $41 $00 $00]
+; sideways labels drawn inside the speed / progress bars (players 1 and 2)
+BYTE ARRAY barTxt1=[
+  $70 $88 $88 $88 $E8 $00 $88 $A8 $A8 $A8 $F8 $00 $88 $A8 $A8 $A8
+  $F8 $00 $60 $90 $90 $90 $F8 $00 $90 $A8 $A8 $A8 $48]
+BYTE ARRAY barTxt2=[
+  $88 $A8 $A8 $A8 $F8 $00 $88 $88 $88 $70 $00 $F8 $10 $20 $40 $F8
+  $00 $78 $A0 $A0 $A0 $78 $00 $80 $80 $F8 $80 $80 $00 $90 $A8 $A8
+  $A8 $48 $00 $F8 $00 $70 $88 $88 $88 $E8 $00]
+BYTE ARRAY hposp=$D000, m0pf=$D000, hposm=$D004, p0pf=$D004
+BYTE ARRAY color=$2C4, pcolr=$2C0, strig=$284
+CARD cx, cy                ; carving position in BuildMaze (x in words)
+CARD scrX, scrY            ; camera position in the maze
+CARD rowPhase, rowAdr      ; used by ScrollMaze
+CARD score, best
+CARD pathLen               ; sum of the direction codes of the path
+; the maze is always the same: 1=up 2=down 3=right 4=left, 0 = end
+BYTE ARRAY path=[
+  1 4 2 2 2 2 2 2 2 2 2 4 4 4 4 1 1 1 4 4 4 4 2 4 4 4 4 2 3 3 2 2
+  2 2 4 4 4 4 4 4 2 2 3 2 2 2 2 2 2 2 2 4 1 1 4 4 1 1 4 4 2 2 2 3
+  3 3 2 2 2 2 3 3 3 1 4 4 1 3 3 3 2 2 2 4 4 2 2 2 2 2 2 3 2 2 2 2
+  2 2 3 2 2 2 2 2 3 1 1 1 3 3 3 3 1 1 1 1 1 1 4 4 1 1 1 1 1 1 1 1
+  1 1 1 1 1 1 1 1 1 1 1 1 1 3 3 3 3 3 3 3 2 2 2 2 2 3 3 3 3 2 2 4
+  4 2 2 2 2 2 2 3 3 1 3 3 3 3 3 3 3 1 4 1 4 4 4 1 1 4 2 4 4 1 3 1
+  1 1 1 3 3 3 3 3 3 1 1 4 4 2 4 4 4 4 4 2 4 4 4 1 3 3 1 4 4 1 1 1
+  1 1 3 3 2 2 2 2 3 2 3 3 3 3 1 4 1 1 1 1 4 1 1 1 1 1 1 1 3 1 4 4
+  4 2 2 2 2 2 3 1 1 1 1 0]
+; player 0 animation, 4 frames x 8 lines
+BYTE ARRAY shapes=[
+  $00 $04 $0E $1F $0E $04 $00 $00
+  $00 $00 $0E $0E $0E $00 $00 $00
+  $00 $11 $0E $0A $0E $11 $00 $00
+  $00 $00 $0E $0A $0E $00 $00 $00]
+BYTE gi
+CARD POINTER gk
+CARD unused1
+BYTE POINTER gp
+CARD POINTER gq, gr
+CARD gofs
+BYTE dliCycle=[$0C], dliLine
+BYTE unused2, unused3, unused4
+BYTE dliCol
+; 7 more unused bytes at $2ABC
+
+; ------------------------------------------------------------------ $2AC3
+; title screen DLI: rolling COLPF2 stripes and three COLBK bands
+PROC DliTitle()
+  [$48 $98 $48]            ; PHA TYA PHA
+  IF vcount<$1C THEN
+    dliLine=$10 atract=0
+    dliCol=dliCycle
+    dliCycle==+$10
+    WHILE dliLine<$80 DO
+      dliCol==+1
+      colpf2=(dliCol&$F0)%$0C
+      IF dliLine<$1E THEN
+        colbk=$10 wsync=0
+      ELSEIF dliLine<$2F THEN
+        wsync=0 colbk=0
+      ELSEIF dliLine<$70 THEN
+        wsync=0 colbk=$80
+      ELSE
+        wsync=0 colbk=$B0
+      FI
+      dliLine==+1
+    OD
+    colbk=0
+  FI
+  [$68 $A8 $68 $40]        ; PLA TAY PLA RTI
+
+; ------------------------------------------------------------------ $2B62
+; game DLI: colour bars behind the status line, then the maze colours
+PROC DliGame()
+  [$48 $98 $48]
+  IF vcount<$10 THEN
+    dliLine=0 atract=0
+    dliCol=$64
+    dliCycle==+$10
+    WHILE dliLine<5 DO
+      dliCol==+2
+      wsync=0 wsync=0
+      colpf2=dliCol
+      dliLine==+1
+    OD
+    dliLine==+1
+    wsync=0 wsync=0 wsync=0 wsync=0 wsync=0
+    WHILE dliLine>0 DO
+      dliCol==-2
+      wsync=0 wsync=0
+      colpf2=dliCol
+      dliLine==-1
+    OD
+    wsync=0
+    colpf1=dliColPF1 colpf2=dliColPF2 colpf0=dliColPF0
+    wsync=0
+    colbk=dliColBK
+  FI
+  [$68 $A8 $68 $40]
+
+; ------------------------------------------------------------------ $2C13
+; 'MAZA PASSED!' DLI
+PROC DliWin()
+  [$48 $98 $48]
+  dliLine=0 atract=0
+  dliCol=dliCycle
+  dliCycle==+$10
+  WHILE dliLine<$0C DO
+    dliCol==+1
+    colpf2=(dliCol&$F0)%$0C
+    wsync=0
+    dliLine==+1
+  OD
+  [$68 $A8 $68 $40]
+
+; ------------------------------------------------------------------ $2C5A
+PROC Wait(BYTE n)
+  n==+rtclok
+  DO UNTIL n=rtclok OD
+RETURN
+
+; ------------------------------------------------------------------ $2C75
+; never called
+PROC WaitLine(BYTE l)
+  DO UNTIL l<vcount OD
+RETURN
+
+; ------------------------------------------------------------------ $2C88
+; the maze is 128 bytes per row; cx counts words (8 pixels), cy rows
+PROC CarveH(BYTE o)
+  gq=$5C00+((cx+cy LSH 6+o) LSH 1)
+  gq^=0
+  gq==+2
+  gq^=0
+RETURN
+
+PROC CarveLeft()           ; $2D19
+  cx==-2
+  CarveH(0)
+RETURN
+
+PROC CarveRight()          ; $2D33
+  CarveH(1)
+  cx==+2
+RETURN
+
+; ------------------------------------------------------------------ $2D4E
+PROC CarveV(BYTE o)
+  gq=$5C00+((cx+(cy+o) LSH 6) LSH 1)
+  gq^=0
+  gq==+$80
+  gq^=0
+RETURN
+
+PROC CarveUp()             ; $2DDF
+  cy==-2
+  CarveV(0)
+RETURN
+
+PROC CarveDown()           ; $2DF9
+  CarveV(1)
+  cy==+2
+RETURN
+
+; ------------------------------------------------------------------ $2E13
+; $5555 = colour 1: start and exit cells (the exit is detected by collision)
+PROC MarkCell()
+  gk=$5C00+((cx+cy LSH 6) LSH 1)
+  gk^=$5555
+RETURN
+
+; ------------------------------------------------------------------ $2E70
+; no RETURN in the original: the JMP (a) is the last instruction
+PROC CallAddr(CARD a)
+  [$6C a]                  ; JMP (a)
+
+; ------------------------------------------------------------------ $2E86
+PROC BuildMaze()
+  BYTE POINTER p
+  CARD POINTER q
+  CARD i
+  CARD ARRAY dirs(5)       ; storage at $5BA7, after the program
+
+  FOR p=$5C00 TO $9BFF DO p^=$FF OD      ; all wall (colour 3)
+  cx=$2E cy=5
+  i=0
+  dirs(4)=CarveLeft
+  dirs(2)=CarveDown
+  dirs(3)=CarveRight
+  dirs(1)=CarveUp
+  pathLen=0
+  MarkCell()
+  WHILE path(i) DO
+    CallAddr(dirs(path(i)))
+    i==+1
+    pathLen==+path(i)
+  OD
+  MarkCell()
+  ; copy the open cells of the first 10 words of every row 27 words right
+  FOR q=$5C00 TO $9BFF STEP $80 DO
+    FOR i=0 TO 9 DO
+      gq=q+i LSH 1
+      gr=gq+$40-10
+      IF gq^#$FFFF THEN gr^=gq^ FI
+    OD
+  OD
+RETURN
+
+; ------------------------------------------------------------------ $30A6
+PROC HidePM()
+  hposp(0)=0 hposp(1)=0 hposp(2)=0 hposp(3)=0
+  hposm(0)=0 hposm(1)=0 hposm(2)=0 hposm(3)=0
+  gractl=0
+  sdmctl=$22
+RETURN
+
+; ------------------------------------------------------------------ $3143
+; game DL: the top of the title picture as status line, then 26 lines of
+; ANTIC mode 8 with LMS+HSCROL+VSCROL, patched every frame by ScrollMaze
+PROC InitGameDL()
+  BYTE i
+
+  MoveBlock($9C00, dlTitle+4, $20)
+  gp=$9C1F gp^=0
+  HidePM()
+  sdmctl=$22
+  gdlLms=titlePic
+  sdlstl=$9C00
+  gp=$9C20
+  FOR i=0 TO $4B STEP 3 DO
+    gp^=$78
+    gp==+3
+  OD
+  gp=$9C6E gp^=$58
+  gp==+3 gp^=$70
+  gp==+1 gp^=$41
+  gr=$9CCC gr^=$9C00       ; (the JVB operand is at $9C73; the OS resets
+                           ;  the DL pointer every VBLANK, so it works)
+RETURN
+
+; ------------------------------------------------------------------ $3252
+PROC ScrollMaze()
+  gofs=scrX RSH 4+(scrY RSH 6) LSH 7
+  rowPhase=(scrY RSH 3)&7
+  rowAdr=$5C00
+  Wait(1)
+  sdlstl=$9C00
+  hscrol=$0F-(scrX&$0F)
+  vscrol=scrY&7
+  FOR gi=1 TO $4F STEP 3 DO
+    gr=$9C00+gi+$20
+    gr^=gofs+rowAdr
+    rowPhase==+1
+    rowPhase=rowPhase&7
+    IF rowPhase=0 THEN rowAdr==+$80 FI
+  OD
+RETURN
+
+; ------------------------------------------------------------------ $338A
+; 16x8 digit from the font inside the title picture ($1F28)
+PROC DrawDigit(CARD dst, BYTE d)
+  CARD POINTER src, p
+  BYTE i
+
+  src=titlePic+$0F28+d LSH 4
+  p=dst
+  FOR i=0 TO 7 DO
+    p^=0
+    p==+1
+    p^=src^
+    src==+2
+    p==+$27
+  OD
+RETURN
+
+; ------------------------------------------------------------------ $343E
+PROC PrintNum(CARD dst, n)
+  BYTE i
+
+  FOR i=0 TO 12 STEP 3 DO
+    DrawDigit(dst+12-i, n MOD 10)
+    n==/10
+  OD
+RETURN
+
+; ------------------------------------------------------------------ $34BC
+; speed bar (player 1, left) and progress bar (player 2, right)
+PROC DrawBars(BYTE a, b, init)
+  BYTE t, topB, topA
+
+  hposp(1)=$30 hposp(2)=$C8
+  pcolr(1)=$AA pcolr(2)=$5A
+  IF init THEN
+    FOR gp=$9E80 TO $9F7F DO gp^=0 OD
+    FOR gp=$9EC0 TO $9EDC DO gp^=barTxt1(gp-$9EC0) RSH 1 OD
+    FOR gp=$9F30 TO $9F59 DO gp^=barTxt2(gp-$9F30) RSH 1 OD
+    topB=$7F topA=$7F
+  FI
+  gp=$9EFF-a
+  t=$7F-a
+  WHILE t<topA DO
+    IF topA>=$40 AND topA<=$5C THEN
+      gp^=(barTxt1(topA-$40) RSH 1)!$FE
+    ELSE
+      gp^=$FE
+    FI
+    gp==-1
+    topA==-1
+  OD
+  gp=$9F7F-b
+  t=$7F-b
+  WHILE t<topB DO
+    IF topB>=$30 AND topB<=$5A THEN
+      gp^=(barTxt2(topB-$30) RSH 1)!$FE
+    ELSE
+      gp^=$FE
+    FI
+    gp==-1
+    topB==-1
+  OD
+RETURN
+
+; ------------------------------------------------------------------ $372E
+PROC InitPM()
+  BYTE POINTER p
+
+  FOR p=$9D80 TO $9FFF DO p^=0 OD
+  sizem=$FF
+  pmbase=$9C
+  color(3)=0
+  gractl=3
+  gprior=$11
+  MoveBlock($9E40, shapes, 8)
+  FOR p=$9D93 TO $9DFF DO p^=$FF OD      ; missiles: maze side borders
+  Wait(1)
+  sdmctl=$2E
+  Wait(3)
+  hposp(0)=$79
+  hposm(0)=$30 hposm(1)=$38 hposm(2)=$C0 hposm(3)=$C8
+  pcolr(0)=$0E pcolr(1)=$0E pcolr(2)=$0E pcolr(3)=$0E
+RETURN
+
+; ------------------------------------------------------------------ $388B
+; $21 (= SPACE key code) when fire is pressed, a key code, or $FF
+BYTE FUNC GetInput()
+  BYTE key, trig, unused, delay
+
+  IF delay>0 THEN delay==-1 FI
+  delay=delay&$0F
+  IF strig(0)=0 AND trig=1 AND delay=0 THEN
+    trig=0
+    delay=$10
+    RETURN($21)
+  ELSEIF strig(0)=1 AND trig=0 THEN
+    trig=1
+  FI
+  IF ch#$FF THEN
+    key=ch
+    ch=$FF
+    srtimr=$FA
+    RETURN(key)
+  ELSE
+    key=$FF
+  FI
+RETURN($FF)
+
+; ------------------------------------------------------------------ $392F
+BYTE FUNC AnyKey()
+  IF GetInput()#$FF THEN RETURN(1) FI
+RETURN(0)
+
+; ------------------------------------------------------------------ $3948
+PROC StopAll()
+  nmien=$40
+  sdmctl=0
+  RmtSilence()
+  Wait(1)
+RETURN
+
+; ------------------------------------------------------------------ $397F
+; returns 1 = maze passed, 2 = crashed into a wall, $1C = ESC
+; The camera runs by itself, faster and faster; fire / SPACE turns it into
+; the next direction of the path. Touching a wall (colour 3) ends the game.
+BYTE FUNC PlayGame()
+  BYTE dir, frame, key
+  CARD speed, idx, spd10, accX, accY
+  BYTE stepX, stepY
+  BYTE ARRAY dx=[0 0 0 1 $FF]
+  BYTE ARRAY dy=[0 $FF 1 0 0]
+  CARD tick
+
+  dliColPF0=4 dliColPF1=8 dliColPF2=$14 dliColBK=0
+  BuildMaze()
+  scrX=$580 scrY=$100
+  InitGameDL()
+  ScrollMaze()
+  InitPM()
+  DrawBars(0, 0, 1)
+  vdslst=DliGame
+  Wait(1)
+  nmien=$C0
+  speed=$1000
+  dir=0 frame=0            ; compiled as one 16-bit store (frame, then dir)
+  idx=0
+  spd10=0
+  stepX=0 stepY=0
+  score=0
+  spd10=speed RSH 10
+  RmtInit(0, 0, $57)
+  tick=0
+  DO
+    pcolr(0)==+1
+    frame==+1
+    IF frame&$10 THEN dliColPF0=$C4 ELSE dliColPF0=$C8 FI
+    IF frame=$20 AND dir>0 THEN
+      score==+1
+      frame=0
+      IF best<score THEN best=score FI
+    FI
+    PrintNum(titlePic+$360, score)
+    IF dir>0 THEN
+      IF frame=$20 THEN
+        score==+1
+        IF best<score THEN best=score FI
+        frame=0
+      FI
+      speed==+1
+      DrawBars((speed-$1000) RSH 6, (idx LSH 5)/(pathLen RSH 3), 0)
+      accX==+speed
+      accY==+speed
+      stepX=0 stepY=0
+      WHILE accY>$400 DO stepY==+1 accY==-$400 OD
+      WHILE accX>$800 DO stepX==+1 accX==-$800 OD
+    FI
+    MoveBlock($9E40, shapes+(frame&$0C) LSH 1, 8)
+    IF dx(dir)=1 THEN scrX==+stepX FI
+    IF dx(dir)=$FF THEN scrX==-stepX FI
+    IF dy(dir)=1 THEN scrY==+stepY FI
+    IF dy(dir)=$FF THEN scrY==-stepY FI
+    key=GetInput()
+    IF key=$1C THEN              ; ESC
+      StopAll()
+      RETURN(key)
+    FI
+    IF key=$21 THEN              ; fire / SPACE: take the next turn
+      IF dir=0 THEN frame=$1F FI
+      dir=path(idx)
+      WHILE dir=path(idx) DO
+        idx==+1
+        DrawBars((speed-$1000) RSH 6, (idx LSH 6)/$9C, 0)
+      OD
+      ch=$FF
+    FI
+    ; the maze colour pulses with the music, more wildly as time goes on
+    IF tick>$1800 THEN
+      dliColPF2=$10%(rmtVol&$0F)
+      dliColBK=0
+      color(3)=0
+      IF (tick&6)>0 AND rmtVol>0 THEN
+        dliColBK=$6F
+        color(3)=dliColBK
+      FI
+    ELSEIF tick>$0C00 THEN
+      dliColPF2=$10%(rmtVol&$0F)
+      dliColBK=0
+      color(3)=0
+      IF (tick&7)=7 AND rmtVol>4 THEN
+        dliColBK=$6F
+        color(3)=dliColBK
+      FI
+    ELSEIF tick>$0600 THEN
+      dliColPF2=$10%(rmtVol&$0F)
+    ELSEIF tick>$0480 THEN
+      dliColPF2=$10%((rmtVol&$0F) RSH 1+2)
+    ELSEIF tick>$0300 THEN
+      dliColPF2=$10%((rmtVol&$0F) RSH 2+4)
+    ELSE
+      dliColPF2=$14
+    FI
+    ScrollMaze()
+    RmtPlay()
+    tick==+1
+    IF p0pf(0)=4 THEN            ; player 0 touched colour 3 (wall)
+      StopAll()
+      RETURN(2)
+    FI
+    IF idx>$14 AND p0pf(0)=1 THEN  ; touched colour 1 (exit cell)
+      StopAll()
+      RETURN(1)
+    FI
+    hitclr=1
+  OD
+
+; ------------------------------------------------------------------ $3F3F
+PROC TitleScreen()
+  CARD POINTER p
+  BYTE key
+
+  vdslst=DliTitle
+  nmien=$C0
+  HidePM()
+  sdmctl=$22
+  p=dlTitle+5
+  p^=titlePic
+  p==+$66
+  p^=dlTitle
+  sdlstl=dlTitle
+  PrintNum(titlePic+$099F, best)
+  color(0)=$60 color(1)=$62 color(2)=$62 color(4)=0
+  RmtInit(0, 0, $50)
+  DO
+    key=GetInput()
+    IF key#$1C AND key#$FF THEN
+      StopAll()
+      RETURN
+    FI
+    RmtPlay()
+    Wait(1)
+    RmtPlay()
+    FOR gk=0 TO $4B DO wsync=0 OD
+  OD
+
+; ------------------------------------------------------------------ $407D
+PROC WinScreen()
+  CARD POINTER p
+
+  vdslst=DliWin
+  nmien=$C0
+  HidePM()
+  sdmctl=$22
+  p=dlWin+$0D
+  p^=titlePic+$0D48        ; 'MAZA PASSED!' part of the title picture
+  p=dlWin+$1B
+  p^=dlWin
+  sdlstl=dlWin
+  color(0)=6 color(1)=$0A color(2)=$0E color(4)=0
+  RmtInit($25, 0, $57)
+  RmtPlay()
+  DO
+    RmtPlay()
+    Wait(1)
+    IF AnyKey() THEN
+      StopAll()
+      RETURN
+    FI
+  OD
+RETURN
+
+; ------------------------------------------------------------------ $416E
+PROC CrashScreen()
+  CARD POINTER p
+  BYTE n, c
+
+  HidePM()
+  RmtInit($28, 0, $57)
+  n=0
+  sdmctl=$22
+  p=dlCrash+$0B
+  p^=titlePic+$1000        ; crash picture at $2000
+  p=dlCrash+$39
+  p^=dlCrash
+  sdlstl=dlCrash
+  color(0)=4 color(1)=8 color(2)=$0C
+  DO
+    n==+1
+    RmtPlay() Wait(1)
+    RmtPlay() Wait(1)
+    RmtPlay() Wait(1)
+    vscrol=random&7          ; shake
+    hscrol=random&7
+    c=(n LSH 4)&$E0
+    IF n&2 THEN
+      color(0)=4%c color(1)=8%c color(2)=$0E%c color(4)=0
+    ELSE
+      color(0)=8%c color(1)=4%c color(2)=0 color(4)=$0E%c
+    FI
+    IF n>$1C THEN
+      StopAll()
+      color(4)=0
+      Wait($32)
+      RETURN
+    FI
+  OD
+RETURN
+
+; ------------------------------------------------------------------ $433B
+PROC Main()
+  BYTE r
+
+  DO
+    TitleScreen()
+    r=PlayGame()
+    IF r=1 THEN WinScreen() FI
+    IF r=2 THEN CrashScreen() FI
+  OD

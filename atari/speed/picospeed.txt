@@ -1,0 +1,87 @@
+_set_fps(60)l=1o=2h={100,100,100,100}w={"8888888888888999999998888888888888899999999999999888888888888886666668888888888888899999999999999888888888888889999999988888888888",
+"88888999999998888888888888889999999988888888888888999999999999999988888888886666666688888888889999999999999999888888888",
+"88888999999998888888888888889::::::988888888888888887666666788888888888889:::::::9888888888888888889::9998888888",
+"88888999999998888888888888889:::::998888888888888889::::::::::988888888888888899:::::98888888888888889999999988888888"}
+::s::i=1s=t()m={}f={}
+for k=1,4do
+a=cos(k/4)*10b=sin(k/4)*10
+m[k]={x=64+a,y=64+b,a=a,b=b,z=0,u=0,v=0,k=.8-k*.3,r=0,i=2}
+end
+::_::cls(5)n=1q=m[n]
+camera(q.x-64,q.y-64)
+for k=0,1do
+d=64e=64c=0
+for i=1,#w[l]do
+pset(d*.04+q.x\1+32,e*.04+q.y\1-32,1)
+if(i>#f)f[i]={x=d,y=e}
+c+=ord(w[l],i)/32-1.75
+a=cos(c)*8b=sin(c)*8
+for j=1,4do
+circfill(d,e,28-k*4,k>0and 13or j\2%2+7)
+d+=a
+e+=b
+end
+end
+end
+pset(q.x*.04+q.x\1+32,q.y*.04+q.y\1-32,9)
+for n=4,1,-1do
+q=m[n]
+if o<1do
+if n<2do
+a=btn()or 32
+d=a\2%2-a%2
+e=a\32%2-a\16%2
+q.z+=d/128
+a=cos(q.z)b=sin(q.z)
+c=abs(q.u*a+b*q.v)
+if(q.k<.95and c>.7)q.k+=.01
+if(q.k>.1and c<.3)q.k-=.01
+if(q.k<.95)?"\as0i7e",0,0
+else
+a=(f[q.i].x-q.x+q.a)/16b=(f[q.i].y-q.y+q.b)/16
+c=(.5+atan2(a,-b)-q.z)%1-.5
+q.z+=mid(c,-.01,.01)
+a=cos(q.z)b=sin(q.z)
+e=abs(c)<.002and -1or 0
+end
+q.r=max(q.r*.98-e/18)
+q.u=(q.u-q.r*a)*q.k+q.r*a
+q.v=(q.v+q.r*b)*q.k-q.r*b
+end
+a=(f[q.i].x-q.x)/16b=(f[q.i].y-q.y)/16
+c=sqrt(a*a+b*b)
+if(c<3)q.i+=1if(q.i==#w[l])q.i=1if(n<2)i+=1
+end
+if(pget(q.x,q.y)!=13)q.u*=.95q.v*=.95q.r*=.95
+for n=4,1,-1do
+q=m[n]
+a=cos(q.z)b=sin(q.z)
+line()
+for j=1,2do
+for i=.125,1.25,.25do
+d=j*cos(i)*4e=sin(i)*4
+line(q.x\1+d*a+b*e,q.y\1+e*a-b*d,8+n)
+end
+end
+q.x+=q.u
+q.y+=q.v
+end
+camera()
+if o<1do
+p=(t()-s)*100\1/100
+?"time:"..p,0,0,6
+?"best:"..h[l]
+?"lap:"..i
+if(q.i==2and i>3)h[l]=min(h[l],p)o=1
+elseif o<2do
+?"\^w\^ttime:"..p,4,16,9
+?"\^w\^tbest:"..h[l]
+if(btnp(5))o=2flip()goto s
+else
+?"\^w\^t1k racing",4,16,9
+?"track ⬅️"..l.."➡️",11
+?"best:"..h[l]
+a=btnp()l=1+(l-1+a\2%2-a%2)%#w
+if(btnp(4))o=0flip()goto s
+end
+flip()goto _
