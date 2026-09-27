@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """Build the data of SPEEDMAZA RACE from the PICO-8 game and the SpeedMaza image.
 
-Track: track 1 of picospeed.txt: discs of radius 28 along the centre line
-(the PICO-8 track with its kerbs), rasterised into an ANTIC mode 8 map in
-two colours like SpeedMaza's maze: road = background, the rest = walls.
+Track: the centre line of track 1 of picospeed.txt, 3x bigger, its
+straights bent into S-curves, with a road
+of half width 35 around it, drawn into an ANTIC mode 8 map in two colours
+like SpeedMaza's maze (road = background, the rest = walls). Every map row
+is stored as its list of road spans; the game unpacks rows as they scroll
+into view.
 Car: the PICO-8 car outline (small square + long rectangle), pre-rotated in
 32 directions for players 0 and 3.
 
@@ -21,33 +24,64 @@ from PIL import Image
 # ---- geometry -------------------------------------------------------------
 SX = 0.95            # colour clocks per PICO-8 pixel
 SY = 1.52            # scan lines per PICO-8 pixel (keeps circles round)
-MAP_BYTES = 84       # bytes per map row (4 mode-8 pixels each, 16 cc per byte)
-MAP_ROWS = 192       # 4 blocks of 48 rows, one per 4K page ($6000-$9FFF)
-ROWS_PER_BLOCK = 48
+SCALE = 3.0          # track layout 3x the PICO-8 size (a longer lap)
+ROAD_R = 35          # road half width (PICO-8 track: 28)
+RING_ROWS = 32       # rows unpacked at a time ($6000-$7FFF, 256 bytes each)
 VIEW_X = 0x51        # car x minus camera x (see race.asm, UpdateCamera)
 VIEW_Y = 90          # car y minus camera y (scan lines)
 DL_LINES = 27        # mode 8 lines in the game display list
-ROAD_R = 28                      # PICO-8 track: kerb circle r=28 (road r=24)
-CAR_SCALE = 1.25                 # PICO-8 car is 11x6 px; a bit bigger here
-START = (44.0, 64.0)             # car start (PICO-8 coords), before the line
+CAR_SCALE = 1.25     # PICO-8 car is 11x6 px; a bit bigger here
+START_BACK = 20      # car starts this far (PICO-8 px) before the start line
+CP_R = 64            # checkpoint box half size (PICO-8 px)
+WIGGLE_A = 50        # S-bends on the straights: sideways amplitude
+WIGGLE_L = 460       # ... and length of one left-right pair
 
 
 def track_points(txt):
+    """Centre line of PICO-8 track 1, scaled, with S-bends on the straights.
+
+    Returns the polyline (closed) and the checkpoints (one per PICO-8 track
+    character, i.e. every 4th point).
+    """
     m = re.search(r'w=\{(.*?)\}\n', txt, re.S)
     code = re.findall(r'"([^"]*)"', m.group(1))[0]          # track 1
     d = e = 64.0
     c = 0.0
-    sub, cps = [], []
-    for k, ch in enumerate(code):
-        c += ord(ch) / 32 - 1.75
+    pts, bend = [(d, e)], [0.0]
+    for ch in code:
+        dc = ord(ch) / 32 - 1.75                             # turn per character
+        c += dc
         a = math.cos(2 * math.pi * c) * 8
         b = -math.sin(2 * math.pi * c) * 8                   # PICO-8 sin
-        for j in range(1, 5):
-            sub.append((d, e, k, j))                          # disc centres
+        for j in range(4):
             d += a
             e += b
-        cps.append((d, e))
-    return sub, cps
+            pts.append((d, e))
+            bend.append(abs(dc))
+    P = np.array(pts) * SCALE
+    n = len(P)
+    # arc length along the (closed) line
+    seg = np.hypot(*(np.roll(P, -1, 0) - P).T)
+    s = np.concatenate([[0], np.cumsum(seg)[:-1]])
+    L = seg.sum()
+    # weight 1 on straights, fading to 0 at the corners and at the start line
+    straight = (np.array(bend) == 0).astype(float)
+    half = int(WIGGLE_L / 2 / (8 * SCALE))
+    kern = np.ones(2 * half + 1) / (2 * half + 1)
+    w = np.convolve(np.concatenate([straight[-half:], straight, straight[:half]]),
+                    kern, "valid")
+    w = np.clip((w - 0.35) / 0.5, 0, 1)
+    from_start = np.minimum(s, L - s)
+    w *= np.clip((from_start - 0.5 * WIGGLE_L) / (0.5 * WIGGLE_L), 0, 1)
+    # shift sideways by a sine: S-bends
+    t = np.roll(P, -1, 0) - np.roll(P, 1, 0)
+    t /= np.hypot(*t.T)[:, None]
+    normal = np.stack([-t[:, 1], t[:, 0]], 1)
+    off = WIGGLE_A * w * np.sin(2 * math.pi * s / WIGGLE_L)
+    Q = P + normal * off[:, None]
+    line = [tuple(q) for q in Q] + [tuple(Q[0])]
+    cps = [tuple(Q[i]) for i in range(4, n, 4)] + [tuple(Q[0])]
+    return line, cps
 
 
 def main():
@@ -55,57 +89,78 @@ def main():
     mem = open(image, "rb").read()
     os.makedirs(os.path.join(out, "data"), exist_ok=True)
     os.makedirs(os.path.join(out, "gen"), exist_ok=True)
-    sub, cps = track_points(open(pico_txt).read())
+    line, cps = track_points(open(pico_txt).read())
+    start_x, start_y = line[0]
 
-    # ---- placement: every position the car can reach must keep the camera
-    # inside the map (car centre at most kerb + a few pixels off the line)
-    xs = [p[0] for p in sub]
-    ys = [p[1] for p in sub]
+    # ---- map size: the camera must stay inside the map wherever the car
+    # can be (on the road, a few pixels over the edge at most)
     reach = ROAD_R + 4
+    xs = [p[0] for p in line]
+    ys = [p[1] for p in line]
     x_lo, x_hi = min(xs) - reach, max(xs) + reach
     y_lo, y_hi = min(ys) - reach, max(ys) + reach
-    cam_x_max = (MAP_BYTES - 12) * 16
-    cam_y_max = (MAP_ROWS - DL_LINES) * 8
-    room_x = cam_x_max - (x_hi - x_lo) * SX
-    room_y = cam_y_max - (y_hi - y_lo) * SY
-    assert room_x >= 0 and room_y >= 0, (room_x, room_y)
-    off_x = VIEW_X + room_x / 2 - x_lo * SX
-    off_y = VIEW_Y + room_y / 2 - y_lo * SY
+    map_bytes = math.ceil((x_hi - x_lo) * SX / 16) + 12 + 1
+    map_rows = math.ceil((y_hi - y_lo) * SY / 8) + DL_LINES + 1
+    assert map_bytes <= 256, map_bytes
+    cam_x_max = (map_bytes - 12) * 16
+    cam_y_max = (map_rows - DL_LINES) * 8
+    off_x = VIEW_X + (cam_x_max - (x_hi - x_lo) * SX) / 2 - x_lo * SX
+    off_y = VIEW_Y + (cam_y_max - (y_hi - y_lo) * SY) / 2 - y_lo * SY
 
     def to_world(x, y):
         return x * SX + off_x, y * SY + off_y
 
-    # ---- rasterise: sample every mode 8 pixel at its centre
-    W = MAP_BYTES * 4
+    # ---- rasterise: road where a pixel centre is within ROAD_R of the line
+    W = map_bytes * 4
     px = (np.arange(W) * 4 + 2 - off_x) / SX              # pico x per column
-    py = (np.arange(MAP_ROWS) * 8 + 4 - off_y) / SY       # pico y per row
-    PX, PY = np.meshgrid(px, py)
-    col = np.full(PX.shape, 3, np.uint8)                   # wall = PF2 (%11)
-    for (d, e, k, j) in sub:                               # road = background
-        col[(PX - d) ** 2 + (PY - e) ** 2 <= ROAD_R ** 2] = 0
+    py = (np.arange(map_rows) * 8 + 4 - off_y) / SY       # pico y per row
+    dist = np.full((map_rows, W), 1e9)
+    for (x0, y0), (x1, y1) in zip(line, line[1:]):
+        c0 = max(0, np.searchsorted(px, min(x0, x1) - ROAD_R) - 1)
+        c1 = np.searchsorted(px, max(x0, x1) + ROAD_R) + 1
+        r0 = max(0, np.searchsorted(py, min(y0, y1) - ROAD_R) - 1)
+        r1 = np.searchsorted(py, max(y0, y1) + ROAD_R) + 1
+        X, Y = np.meshgrid(px[c0:c1], py[r0:r1])
+        vx, vy = x1 - x0, y1 - y0
+        t = np.clip(((X - x0) * vx + (Y - y0) * vy) / (vx * vx + vy * vy), 0, 1)
+        dd = np.hypot(X - x0 - t * vx, Y - y0 - t * vy)
+        dist[r0:r1, c0:c1] = np.minimum(dist[r0:r1, c0:c1], dd)
+    col = np.where(dist <= ROAD_R, 0, 3).astype(np.uint8)  # road / wall (PF2)
 
-    img = bytearray(0x4000)                                # $6000-$9FFF
-    row_addr = []
-    for r in range(MAP_ROWS):
-        base = (r // ROWS_PER_BLOCK) * 0x1000 + (r % ROWS_PER_BLOCK) * MAP_BYTES
-        row_addr.append(0x6000 + base)
-        for b in range(MAP_BYTES):
-            v = 0
-            for p in range(4):
-                v = v << 2 | int(col[r, b * 4 + p])
-            img[base + b] = v
-    open(os.path.join(out, "data", "track.bin"), "wb").write(img)
+    # ---- compress every row as its road spans. Row = walls ($FF bytes)
+    # except the spans: count, then per span first byte, AND mask for it,
+    # last byte, AND mask for it (bytes in between become 0)
+    def clear_mask(p0, p1):                                # pixels p0..p1 -> 00
+        m = 0xFF
+        for p in range(p0, p1 + 1):
+            m &= ~(3 << (6 - 2 * p)) & 0xFF
+        return m
+    rle = bytearray()
+    row_off = []
+    for r in range(map_rows):
+        road = np.flatnonzero(col[r] == 0)
+        spans = []
+        if len(road):
+            cuts = np.flatnonzero(np.diff(road) > 1)
+            for x0, x1 in zip(np.r_[road[0], road[cuts + 1]], np.r_[road[cuts], road[-1]]):
+                b0, b1 = x0 // 4, x1 // 4
+                if b0 == b1:
+                    m0 = m1 = clear_mask(x0 % 4, x1 % 4)
+                else:
+                    m0, m1 = clear_mask(x0 % 4, 3), clear_mask(0, x1 % 4)
+                spans.append((b0, m0, b1, m1))
+        row_off.append(len(rle))
+        rle.append(len(spans))
+        for sp in spans:
+            rle += bytes(sp)
+    open(os.path.join(out, "data", "track_rle.bin"), "wb").write(rle)
 
-    # preview (mode 8 pixel = 4x8, drawn 4x4 per colour clock/line pair)
-    pal = [(0, 0, 0), (0, 0, 0), (0, 0, 0), (170, 120, 30)]
-    prev = Image.new("RGB", (W, MAP_ROWS))
-    for r in range(MAP_ROWS):
-        for c in range(W):
-            prev.putpixel((c, r), pal[col[r, c]])
-    prev = prev.resize((W * 4, MAP_ROWS * 8 * 4 // 5), Image.NEAREST)
+    # preview: one pixel per mode 8 pixel, rows squeezed to keep proportions
+    prev = Image.fromarray(np.where(col == 0, 0, 150).astype(np.uint8))
+    prev = prev.convert("RGB").resize((W, int(map_rows * 8 / 4 / 1.2)), Image.NEAREST)
 
     # ---- checkpoints (world cc / lines); the last one fires on the line
-    pts = cps[:-1] + [(64.0 + 45 / SX, 64.0)]      # fires at the start x
+    pts = cps[:-1] + [(start_x + CP_R, start_y)]           # fires at the start x
     cpx, cpy = zip(*[to_world(x, y) for x, y in pts])
     n = len(pts)
 
@@ -143,7 +198,7 @@ def main():
             lines.append("\tdta " + ",".join(fmt.format(v) for v in vals[i:i + 16]))
         return "\n".join(lines)
 
-    sx, sy = to_world(*START)
+    sx, sy = to_world(start_x - START_BACK * SCALE, start_y)
     cos_t = [round(127 * math.cos(2 * math.pi * t / 256)) & 0xFF for t in range(256)]
     siny_t = [round(-127 * SY / SX / 2 * math.sin(2 * math.pi * t / 256)) & 0xFF
               for t in range(256)]
@@ -153,16 +208,18 @@ def main():
     g.append(f"CP_COUNT\t= {n}\t; checkpoints (last one = start/finish line)")
     g.append(f"START_X\t= {int(sx)}\t; car start, colour clocks")
     g.append(f"START_Y\t= {int(sy)}\t; car start, scan lines")
-    g.append(f"CP_RX\t= {int(45 * SX)}\t; checkpoint box half width (cc)")
-    g.append(f"CP_RY\t= {int(48 * SY)}\t; checkpoint box half height (lines)")
-    g.append(f"MAP_BYTES\t= {MAP_BYTES}")
-    g.append(f"MAP_ROWS\t= {MAP_ROWS}")
+    g.append(f"CP_RX\t= {int(CP_R * SX)}\t; checkpoint box half width (cc)")
+    g.append(f"CP_RY\t= {int(CP_R * SY)}\t; checkpoint box half height (lines)")
+    g.append(f"MAP_BYTES\t= {map_bytes}")
+    g.append(f"MAP_ROWS\t= {map_rows}")
     g.append(f"CAM_X_MAX\t= {cam_x_max}")
     g.append(f"CAM_Y_MAX\t= {cam_y_max}")
     g.append(f"VIEW_X\t= {VIEW_X}")
     g.append(f"VIEW_Y\t= {VIEW_Y}")
-    g.append(dta("rowLo", [a & 0xFF for a in row_addr]))
-    g.append(dta("rowHi", [a >> 8 for a in row_addr]))
+    g.append("; start of every compressed map row")
+    g.append("rowPtr")
+    for i in range(0, map_rows, 8):
+        g.append("\tdta " + ",".join(f"a(trackRle+{o})" for o in row_off[i:i + 8]))
     g.append(dta("cpXLo", [int(v) & 0xFF for v in cpx]))
     g.append(dta("cpXHi", [int(v) >> 8 for v in cpx]))
     g.append(dta("cpYLo", [int(v) & 0xFF for v in cpy]))
@@ -180,6 +237,9 @@ def main():
     # ---- SpeedMaza assets
     def blob(name, lo, hi):
         open(os.path.join(out, "data", name), "wb").write(mem[lo:hi + 1])
+    for old in ("track.bin",):
+        if os.path.exists(os.path.join(out, "data", old)):
+            os.remove(os.path.join(out, "data", old))
     blob("title_pic.bin", 0x1000, 0x1FFF)
     blob("crash_pic.bin", 0x2000, 0x283F)
     blob("rmt_player.bin", 0x48DF, 0x4FFF)
@@ -197,10 +257,10 @@ def main():
     # preview with checkpoints and start
     from PIL import ImageDraw
     dr = ImageDraw.Draw(prev)
-    fy = (MAP_ROWS * 8 * 4 // 5) / (MAP_ROWS * 8)
+    fx, fy = 1 / 4, 1 / 4 / 1.2
     for x, y in zip(cpx, cpy):
-        dr.rectangle([x - 2, y * fy - 2, x + 2, y * fy + 2], outline=(255, 0, 0))
-    dr.ellipse([sx - 5, sy * fy - 5, sx + 5, sy * fy + 5], outline=(255, 255, 0))
+        dr.rectangle([x * fx - 1, y * fy - 1, x * fx + 1, y * fy + 1], outline=(255, 0, 0))
+    dr.ellipse([sx * fx - 3, sy * fy - 3, sx * fx + 3, sy * fy + 3], outline=(255, 255, 0))
     prev.save(os.path.join(out, "gen", "track_preview.png"))
     sprite = Image.new("RGB", (32 * 18, 14), (0, 0, 0))
     for f in range(32):
@@ -211,7 +271,8 @@ def main():
                     sprite.putpixel((f * 18 + c, r + 1), (255, 150, 0))
     sprite.resize((32 * 18 * 3, 14 * 6), Image.NEAREST).save(
         os.path.join(out, "gen", "car_preview.png"))
-    print(f"checkpoints {n}, start ({int(sx)},{int(sy)}), room x {room_x:.0f} y {room_y:.0f}")
+    print(f"map {map_bytes}x{map_rows}, compressed {len(rle)} bytes, "
+          f"checkpoints {n}, start ({int(sx)},{int(sy)})")
 
 
 if __name__ == "__main__":

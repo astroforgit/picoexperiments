@@ -1,8 +1,9 @@
 # SPEEDMAZA RACE
 
-SpeedMaza (2014, Jakub Husák) turned into a one-lap race on the rounded
-track of the PICO-8 "1k racing" game ([`../picospeed.txt`](../picospeed.txt)),
-for Atari XL/XE.
+SpeedMaza (2014, Jakub Husák) turned into a one-lap race for Atari XL/XE.
+The track is track 1 of the PICO-8 "1k racing" game
+([`../picospeed.txt`](../picospeed.txt)), drawn three times bigger, with its
+straights turned into S-bends.
 
 - **Taken from SpeedMaza** (ported from [`../decompiled`](../decompiled)):
   - the title screen, the HI SCORE line and the digit font;
@@ -11,7 +12,7 @@ for Atari XL/XE.
   - the chunky ANTIC mode 8 scrolling view with two colours: black road,
     and walls that pulse with the music and flash later in the race;
   - the crash screen, the "MAZA PASSED!" screen and the RMT music.
-- **Taken from PICO-8:** track 1 and the car. The car is the PICO-8 outline
+- **Taken from PICO-8:** the track's shape and the car. The car is the PICO-8 outline
   (a long rectangle with a square inside) in orange, and it drifts the same
   way: its velocity follows its heading with limited grip.
 - **Rules as in SpeedMaza:**
@@ -52,14 +53,19 @@ Needs `mads`, and Python 3 with numpy and Pillow.
 
 ## How it works
 
-- **Track.** PICO-8 draws the track as discs of radius 28 along a centre line
-  that bends by the character codes of a string. `make_data.py` rebuilds
-  that line and marks every mode 8 pixel inside a disc as road (background),
-  everything else as wall (colour 3).
-  - The map is 84 × 192 bytes in four 4K pages at `$6000`, so no display
-    line crosses a 4K boundary.
+- **Track.** PICO-8 draws the track along a centre line that bends by the
+  character codes of a string. `make_data.py` rebuilds that line three times
+  bigger and shifts its straight parts sideways along a sine, which turns
+  them into S-bends; the big corners and a short start straight stay. Every
+  mode 8 pixel closer than 35 PICO-8 pixels to the line is road
+  (background), everything else wall (colour 3).
   - One PICO-8 pixel becomes 0.95 colour clocks across and 1.52 scan lines
     down, so bends stay round.
+  - The map is 224 × 494 bytes, too big for memory. With only two colours,
+    each row is stored as its road spans (first and last byte plus an edge
+    mask for each), 7 KB in all.
+  - The game unpacks the rows it shows into a ring of 32 rows at `$6000`,
+    one 256-byte page each, so no display line crosses a 4K boundary.
 - **Screen.** There are two game display lists at `$5C00` and `$5C80`: the
   SpeedMaza status line, then 27 mode 8 lines, each with its own LMS
   address. Each frame the program fills the hidden one, then switches to it
@@ -83,4 +89,11 @@ These constants are at the top of `race.asm`:
 | `FX1`…`FX5` | When the colour effects start |
 | `CAR_COLOR` | Car colour |
 
-With the defaults, the autopilot finishes a lap in about 25 seconds.
+With the defaults, the autopilot finishes a lap in about 70 seconds. A perfect
+run of the original SpeedMaza maze takes about 88 seconds.
+
+In `tools/make_data.py`, `SCALE` and `ROAD_R` set the track size and road
+width, and `WIGGLE_A` and `WIGGLE_L` set how wide and how long the S-bends
+are.
+The map may be at most 256 bytes wide, and the compressed track must fit
+below `$BC00`: `race.asm` stops with an error if it doesn't.

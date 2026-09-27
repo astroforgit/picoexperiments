@@ -67,7 +67,8 @@ PL0	= PMB+$200
 PL1	= PMB+$280
 PL2	= PMB+$300
 PL3	= PMB+$380
-TRACK	= $6000		; track map, 84 bytes x 192 rows in four 4K pages
+RING	= $6000		; 32 unpacked map rows, one 256 byte page each ($6000-$7FFF)
+RING_ROWS = 32
 
 ; ---- test builds: AUTOPILOT=1 drives itself, AUTOPILOT=2 never steers
 	.ifndef AUTOPILOT
@@ -79,16 +80,16 @@ CAR_Y0		= $3A	; top PM line of the car (centre at scan line 128)
 CAR_HPOS	= $78	; player 0; player 3 is 8 colour clocks right
 CAR_COLOR	= $38	; orange (PICO-8 colour 9), apart from the gold walls
 TURN		= 2	; heading units per frame (256 = full turn), as PICO-8
-SPEED_START	= $0200	; 2.0 colour clocks per frame
-SPEED_ACC	= $40	; +1/1024 cc/frame every frame
+SPEED_START	= $0180	; 1.5 colour clocks per frame
+SPEED_ACC	= $30	; +3/4096 cc/frame every frame
 GRIP_MAX	= 64	; how fast the velocity follows the heading (/256)
 GRIP_MIN	= 20	; ... at high speed the car slides more (PICO-8 drift)
-; colour effects start earlier than in SpeedMaza (one lap is ~30 s)
-FX1 = $0180
-FX2 = $0240
-FX3 = $0300
-FX4 = $0600
-FX5 = $0C00
+; colour effects start at SpeedMaza's times (frames)
+FX1 = $0300
+FX2 = $0480
+FX3 = $0600
+FX4 = $0C00
+FX5 = $1800
 
 ; ---- zero page ($6B-$7C belong to the RMT player)
 ptr	= $80
@@ -117,11 +118,18 @@ tmp	= $A9
 apDX	= $AB
 apDY	= $AD
 apZ	= $AF
+row	= $B2		; map row being worked on (16 bit)
+src	= $B4
+dstp	= $B6
+doff	= $B8
+ysave	= $B9
+spans	= $BA		; road spans left in the row being unpacked
+span	= $BB		; first byte, mask, last byte, mask
 
 	opt h+
 
 ; ======================================================================
-; INIT while loading: BASIC off, so $A000-$BFFF is RAM (tables live there)
+; INIT while loading: BASIC off, so $A000-$BFFF is RAM (tables reach it)
 	org $0600
 LoadInit
 	lda PORTB
@@ -753,6 +761,11 @@ RaceGame
 	lda #0
 	sta dliColBK
 	jsr BuildDLs
+	lda #$FF		; no map row unpacked yet
+	ldx #RING_ROWS*2-1
+@	sta slotRow,x
+	dex
+	bpl @-
 	ldx #velY+1-velX	; velocity, heading, fractions = 0
 	lda #0
 @	sta velX,x
@@ -872,12 +885,14 @@ rg_show	lda #<(TITLE+$0360)	; time in the status line
 	sta dst+1
 	ldx #TIME
 	jsr PrintNum
-	sec			; speed bar: (speed - start) / 8
+	sec			; speed bar: (speed - start) / 16
 	lda speed+1
 	sbc #<(SPEED_START)
 	sta tmp
 	lda speed+2
 	sbc #>(SPEED_START)
+	lsr @
+	ror tmp
 	lsr @
 	ror tmp
 	lsr @
@@ -1010,31 +1025,121 @@ UpdateCamera
 	lsr tmp
 	ror @
 	sta boff
-	lda camY+1		; first row = camY / 8
-	sta tmp
+	lda camY+1		; first row = camY / 8 (16 bit)
+	sta row+1
 	lda camY
-	lsr tmp
+	lsr row+1
 	ror @
-	lsr tmp
+	lsr row+1
 	ror @
-	lsr tmp
+	lsr row+1
 	ror @
-	tax
-	ldy #33
-@	clc
-	lda rowLo,x
-	adc boff
+	sta row
+	ldy #33			; LMS of the 27 mode 8 lines
+uc_lp	sty ysave
+	jsr EnsureRow
+	ldy ysave
+	lda boff
 	sta (dlp),y
 	iny
-	lda rowHi,x
-	adc #0
+	lda row
+	and #RING_ROWS-1
+	ora #>RING
 	sta (dlp),y
 	iny
 	iny
-	inx
-	cpy #33+27*3
-	bne @-
+	inc row
+	bne @+
+	inc row+1
+@	cpy #33+27*3
+	bne uc_lp
 	rts
+
+; make sure map row 'row' is unpacked in its ring slot (row & 31)
+EnsureRow
+	lda row
+	and #RING_ROWS-1
+	asl @
+	tax
+	lda slotRow,x
+	cmp row
+	bne er_unpack
+	lda slotRow+1,x
+	cmp row+1
+	bne er_unpack
+	rts
+er_unpack
+	lda row
+	sta slotRow,x
+	lda row+1
+	sta slotRow+1,x
+	lda row			; src = rowPtr[row]
+	asl @
+	sta src
+	lda row+1
+	rol @
+	sta src+1
+	clc
+	lda src
+	adc #<rowPtr
+	sta src
+	lda src+1
+	adc #>rowPtr
+	sta src+1
+	ldy #0
+	lda (src),y
+	tax
+	iny
+	lda (src),y
+	sta src+1
+	stx src
+	lda row			; destination: one 256 byte page per slot
+	and #RING_ROWS-1
+	ora #>RING
+	sta dstp+1
+	lda #0
+	sta dstp
+	lda #$FF		; the whole row is wall ...
+	ldy #MAP_BYTES
+@	dey
+	sta (dstp),y
+	bne @-
+	lda (src),y		; ... except the road spans (Y = 0: span count)
+	sta spans
+er_span	lda spans
+	beq er_x
+	dec spans
+	inc src			; next span: first byte, mask, last byte, mask
+	bne @+
+	inc src+1
+@	ldy #3
+@	lda (src),y
+	sta span,y
+	dey
+	bpl @-
+	ldy span		; first byte: clear its road pixels
+	lda (dstp),y
+	and span+1
+	sta (dstp),y
+	iny
+	lda #0			; bytes in between: all road
+@	cpy span+2
+	bcs @+
+	sta (dstp),y
+	iny
+	bne @-
+@	ldy span+2		; last byte
+	lda (dstp),y
+	and span+3
+	sta (dstp),y
+	clc
+	lda src
+	adc #3
+	sta src
+	bcc er_span
+	inc src+1
+	jmp er_span
+er_x	rts
 
 ; during vertical blank: switch to the display list just built
 Flip	lda dlp
@@ -1630,6 +1735,7 @@ dliCycle .ds 1
 dliLine	.ds 1
 dliCol	.ds 1
 VarsEnd
+slotRow	.ds RING_ROWS*2		; which map row each ring slot holds
 dliColPF0 = $03E8		; same shadows as SpeedMaza
 dliColPF1 = $03E9
 dliColPF2 = $03EA
@@ -1644,13 +1750,13 @@ CodeEnd
 	ins 'data/rmt_player.bin'
 	org MUSIC_TITLE
 	ins 'data/music.bin'
-	org TRACK
-	ins 'data/track.bin'
 
 ; ======================================================================
-	org $A000
+	org $8000
 	icl 'gen/tables.asm'
 	icl 'gen/speedmaza_data.asm'
+trackRle			; map rows as lists of road spans
+	ins 'data/track_rle.bin'
 TablesEnd
 	.if TablesEnd > $BC00
 	.error "tables too big"
