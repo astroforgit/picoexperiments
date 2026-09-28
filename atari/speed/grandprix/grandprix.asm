@@ -1,12 +1,13 @@
-; SPEEDMAZA GRAND PRIX - a 3 car, 3 lap race in the style of SpeedMaza on
-; the curvy PICO-8 track (see ../race for the one car time trial).
+; SPEEDMAZA GRAND PRIX - a championship for up to 3 cars in the style of
+; SpeedMaza on the four PICO-8 tracks (see ../race for the time trial).
 ;
-; 1 PLAYER: you against two computer cars. 2 PLAYERS: joysticks 1 and 2
-; against one computer car. Joystick left/right steers, up/down makes the
-; car a little faster/slower. The speed of everybody grows with time.
-; Points: +10 per checkpoint, -25 for hitting a wall (the car bounces back
-; and is slowed down), -100 for falling behind the screen (the car comes
-; back next to the leader), +1000 for the winner, +500 for second place.
+; Options screen: players (1: you + 2 computer cars, 2: joysticks 1 and 2 +
+; 1 computer car), first track, number of races, laps, difficulty, speed,
+; oil patches. Joystick left/right steers, up/down makes the car a little
+; faster/slower; everybody's speed grows with time. Points: +10 per
+; checkpoint, -25 for hitting a wall (the car bounces back and is slowed),
+; -100 for falling behind the screen (the car comes back next to the
+; leader), +1000 for the winner of a race, +500 for second place.
 ;
 ; Build: ./build.sh   (MADS; tools/make_data.py makes data/ and gen/)
 
@@ -32,6 +33,7 @@ PAL	= $D014
 COLPF0	= $D016
 COLPF1	= $D017
 COLPF2	= $D018
+COLPF3	= $D019
 COLBK	= $D01A
 GRACTL	= $D01D
 HITCLR	= $D01E
@@ -45,6 +47,8 @@ PMBASE	= $D407
 WSYNC	= $D40A
 VCOUNT	= $D40B
 NMIEN	= $D40E
+AUDF4	= $D206		; sound effects use channel 4 over the music
+AUDC4	= $D207
 
 ; ---- SpeedMaza parts at their original addresses
 RMT_INIT	= $4C00	; A = song line, X/Y = module address
@@ -60,7 +64,8 @@ FONT	= TITLE+$0F28	; 16x8 digits inside the title picture
 PMB	= $5C00		; PM graphics base, double-line resolution
 DLA	= $5C00		; two game display lists (double buffered)
 DLB	= $5C80
-DLBUF	= $5D00		; display list of the title / results screen
+DLBUF	= $5D00		; display list of the options / results screen
+UNBUF	= $6000		; a track is unpacked here first (the ring is free then)
 MIS	= PMB+$180
 PL0	= PMB+$200	; players 0-2 = cars 0-2, $80 bytes apart
 RING	= $6000		; 32 unpacked map rows, one 256 byte page each ($6000-$7FFF)
@@ -75,26 +80,21 @@ PM_LAST	= (38+TRACK_H)/2	; first PM line below the track window
 AUTOPILOT = 0
 	.endif
 
-; ---- game rules and tuning
+; ---- game rules and tuning (the options screen picks laps, speed etc.)
 NCARS		= 3
-	.ifndef LAPS
-LAPS		= 3
-	.endif
 TURN		= 2	; heading units per frame (256 = full turn), as PICO-8
-SPEED_START	= $0180	; 1.5 colour clocks per frame
-SPEED_ACC	= $30	; base speed grows by 3/4096 cc/frame every frame ...
-SPEED_MAX	= $0340	; ... up to 3.25
 THR_MAX		= 64	; joystick up/down: speed +-25% (64/256)
 THR_STEP	= 4
 GRIP_MAX	= 64	; how fast the velocity follows the heading (/256)
 GRIP_MIN	= 20	; ... at high speed the car slides more (PICO-8 drift)
+GRIP_OIL	= 6	; ... and much more on oil
+OIL_TIME	= 40	; frames a car slides after touching oil
 STUN_WALL	= 30	; frames at half speed after hitting a wall
 STUN_BUMP	= 10	; ... after two cars bump
 INV_BUMP	= 12	; frames without car collisions after a bump
 INV_RESPAWN	= 60	; ... after coming back next to the leader
 FLASH		= 8	; frames a hit car shows white
-AI_THR		= 0	; throttle of the computer cars (car 2 a bit slower)
-AI2_THR		= -4
+COUNT_STEP	= 50	; frames per step of the 3-2-1-GO countdown
 ; points (BCD)
 PT_CP		= $0010
 PT_WALL		= $0025
@@ -106,6 +106,7 @@ C_CAR0	= $38		; orange (PICO-8 colour 9)
 C_CAR1	= $88		; blue
 C_CAR2	= $C8		; green
 C_HIT	= $0E
+C_OIL	= $08
 FX1 = $0300		; SpeedMaza's colour effects (frames)
 FX2 = $0480
 FX3 = $0600
@@ -179,27 +180,87 @@ Start
 @	sta VarsStart,x
 	dex
 	bpl @-
-	ldx #TextEnd-TextStart-1	; text lines = spaces
-	lda #0
-@	sta TextStart,x
-	dex
-	bpl @-
 	lda #$0C
 	sta dliCycle
+	ldx #OPTS-1		; default options
+@	lda optDefault,x
+	sta optVal,x
+	dex
+	bpl @-
 	lda #1
-	sta players
+	sta optRaces
 	ldx #6			; tenths of a second: 6 frames NTSC, 5 PAL
 	lda PAL
 	and #$0E
 	bne @+
 	ldx #5
 @	stx tenthFrames
+	jsr MoveLow		; packed tracks to $0700 (DOS is not needed any more)
 MainLoop
-	jsr TitleScreen
+	jsr OptionsScreen
+	ldx #NCARS*3-1		; championship: totals = 0
+	lda #0
+@	sta cTotL,x
+	dex
+	bpl @-
+	sta raceNo
+ml_race	lda optTrack		; tracks in turn from the chosen one
+	clc
+	adc raceNo
+	sec
+	sbc #1
+	and #TRACKS-1
+	sta track
+	jsr LoadTrack
 	jsr RaceGame
 	bcs MainLoop		; ESC
+	jsr AddTotals
 	jsr ResultScreen
+	inc raceNo
+	lda raceNo
+	cmp optRaces
+	bcc ml_race
 	jmp MainLoop
+
+; copy the packed tracks loaded at LOW_TEMP down to LOW_AREA
+MoveLow	lda #<LOW_TEMP
+	sta src
+	lda #>LOW_TEMP
+	sta src+1
+	lda #<LOW_AREA
+	sta dstp
+	lda #>LOW_AREA
+	sta dstp+1
+	ldx #>(LOW_SIZE+255)	; whole pages
+	ldy #0
+@	lda (src),y
+	sta (dstp),y
+	iny
+	bne @-
+	inc src+1
+	inc dstp+1
+	dex
+	bne @-
+	rts
+
+; race points -> championship totals (BCD, 3 bytes)
+AddTotals
+	ldx #NCARS-1
+@	sed
+	clc
+	lda cTotL,x
+	adc cScLo,x
+	sta cTotL,x
+	lda cTotM,x
+	adc cScHi,x
+	sta cTotM,x
+	lda cTotH,x
+	adc #0
+	sta cTotH,x
+	cld
+	dex
+	bpl @-
+	rts
 
 ; ----------------------------------------------------------------------
 ; Interrupts (SpeedMaza DliTitle, DliGame, DliWin + one for the text lines)
@@ -208,6 +269,10 @@ DliTitle
 	pha
 	tya
 	pha
+	lda #<DliMenu		; the next DLI (inside this one) colours the menu
+	sta VDSLST
+	lda #>DliMenu
+	sta VDSLST+1
 	lda VCOUNT
 	cmp #$1C
 	bcs dt_x
@@ -331,6 +396,8 @@ DliText
 	sta COLPF1
 	lda #C_CAR2
 	sta COLPF2
+	lda #$0E
+	sta COLPF3
 	lda #0
 	sta COLBK
 	lda dliBack		; back to the DLI at the top of the screen
@@ -503,9 +570,20 @@ dd_lp	ldy #0
 	rts
 
 ; ----------------------------------------------------------------------
-; Title: SpeedMaza's, plus a line to choose 1 or 2 players
+; Options screen: SpeedMaza's logo and colour bands, a menu in big letters,
+; the HI SCORE. Joystick up/down picks a line, left/right changes it, fire
+; (or SPACE / START) starts the championship.
 
-TitleScreen
+OPTS	= 7			; options with a value (the last line is START RACE)
+optPlayers = optVal
+optTrack = optVal+1
+optLaps	= optVal+2
+optDiff	= optVal+3
+optSpeed = optVal+4
+optOil	= optVal+5
+optFx	= optVal+6		; flashing: none, soft, normal, hard
+
+OptionsScreen
 	lda #<DliTitle
 	sta VDSLST
 	lda #>DliTitle
@@ -513,41 +591,39 @@ TitleScreen
 	lda #$C0
 	sta NMIEN
 	jsr HidePM
-	lda #<dlTitleSrc
-	sta ptr
-	lda #>dlTitleSrc
-	sta ptr+1
-	lda #$6A		; all but the JVB ...
-	jsr CopyDL
-	ldx #6			; ... then a text line and the JVB
-@	lda tsTail,x
-	sta DLBUF+$6A,x
+	ldx #OPT_DL_LEN-1
+@	lda optDL,x
+	sta DLBUF,x
 	dex
 	bpl @-
-	lda #<TITLE
-	sta DLBUF+5
-	lda #>TITLE
-	sta DLBUF+6
 	lda #<DLBUF
 	sta SDLSTL
 	lda #>DLBUF
 	sta SDLSTL+1
-	lda #<(TITLE+$099F)	; best score, in the HI SCORE line
-	sta dst
-	lda #>(TITLE+$099F)
-	sta dst+1
-	ldx #BEST
-	jsr PrintNum
-	lda #$60
+	lda #$60		; logo colours as on SpeedMaza's title
 	sta COLOR0
 	lda #$62
 	sta COLOR0+1
 	sta COLOR0+2
 	lda #0
 	sta COLOR0+4
-	lda #$1E		; the players line
-	sta COLOR0+3
-	jsr ShowPlayers
+	ldx #19			; HI SCORE line and help line
+@	lda txtHi,x
+	sta textHi,x
+	lda txtHelp,x
+	sta textHi+20,x
+	dex
+	bpl @-
+	ldx #4
+@	lda digs+BEST,x
+	ora #$10		; '0'..'9'
+	ora #$40		; colour 1
+	sta textHi+13,x
+	dex
+	bpl @-
+	lda #0
+	sta optSel
+	jsr DrawMenu
 	lda #0
 	ldx #<MUSIC_TITLE
 	ldy #>MUSIC_TITLE
@@ -558,39 +634,65 @@ TitleScreen
 	sta CH
 	lda STICK0
 	sta tsStick
-ts_lp	lda STICK0		; joystick moved or SELECT: 1 <-> 2 players
+os_lp	lda STICK0		; act when the joystick moves
 	cmp tsStick
-	beq ts_sel
+	beq os_in
 	sta tsStick
-	cmp #15
-	beq ts_sel
-	jsr TogglePlayers
-ts_sel	lda CONSOL
-	and #2
+	cmp #14			; up
 	bne @+
-	lda tsSel
-	bne ts_in
-	lda #1
-	sta tsSel
-	jsr TogglePlayers
-	jmp ts_in
-@	lda #0
-	sta tsSel
-ts_in
-	.if AUTOPILOT
-	jmp StopAll
-	.endif
-	jsr GetInput
+	dec optSel
+	bpl os_draw
+	lda #OPTS
+	sta optSel
+	jmp os_draw
+@	cmp #13			; down
+	bne @+
+	inc optSel
+	lda optSel
+	cmp #OPTS+1
+	bcc os_draw
+	lda #0
+	sta optSel
+	jmp os_draw
+@	ldx optSel
+	cpx #OPTS
+	bcs os_in		; START RACE line has no value
+	cmp #11			; left
+	bne @+
+	lda optVal,x
+	cmp optMin,x
+	beq os_max
+	dec optVal,x
+	jmp os_draw
+os_max	lda optMax,x
+	sta optVal,x
+	jmp os_draw
+@	cmp #7			; right
+	bne os_in
+	lda optVal,x
+	cmp optMax,x
+	beq os_min
+	inc optVal,x
+	jmp os_draw
+os_min	lda optMin,x
+	sta optVal,x
+os_draw	lda #3
+	jsr SfxStart
+	jsr DrawMenu
+os_in	jsr GetInput
 	cmp #$1C
 	beq @+
 	cmp #$FF
 	beq @+
-	jmp StopAll		; fire / any key: race
-@	lda CONSOL		; START also starts
+	jmp os_go		; fire / any key
+@	lda CONSOL		; START
 	and #1
-	bne @+
-	jmp StopAll
-@	jsr RMT_PLAY
+	beq os_go
+	.if AUTOPILOT
+	jmp os_go
+	.endif
+	jsr RMT_PLAY
+	jsr SfxTick
 	lda #1
 	jsr Wait
 	jsr RMT_PLAY
@@ -598,32 +700,136 @@ ts_in
 @	sta WSYNC
 	dex
 	bpl @-
-	jmp ts_lp
+	jmp os_lp
+os_go	jmp StopAll
 
-tsTail	dta $70,$46,a(textTitle),$41,a(DLBUF)
-
-TogglePlayers
-	lda players
-	eor #3			; 1 <-> 2
-	sta players
-ShowPlayers
-	ldx #19
-@	lda txtOne,x
-	ldy players
-	cpy #2
-	bne *+5
-	lda txtTwo,x
-	ora #$C0		; colour 3 (bright, set in TitleScreen)
-	sta textTitle,x
-	dex
-	bpl @-
+; the eight menu lines: label + value, the chosen line in colour 3
+DrawMenu
+	ldx #0			; line
+dm_line	stx tmp2
+	txa			; Y = line * 20
+	asl @
+	asl @
+	sta tmp
+	asl @
+	asl @
+	adc tmp
+	sta tmp+1		; start of the line in menuText
+	lda #0			; colours: chosen line all colour 3
+	sta colL
+	lda #$40
+	sta colV
+	cpx optSel
+	bne @+
+	lda #$C0
+	sta colL
+	sta colV
+@	txa			; label: 12 characters from optLabel + line * 12
+	asl @
+	sta tmp
+	asl @
+	adc tmp
+	asl @
+	tax			; X = line * 12
+	lda #12
+	sta pnCount
+	ldy tmp+1
+@	lda optLabel,x
+	ora colL
+	sta menuText,y
+	inx
+	iny
+	dec pnCount
+	bne @-
+	ldx tmp2		; value: 6 characters
+	cpx #OPTS
+	bcc @+
+	lda #13			; START RACE: none
+	bne dm_val
+@	lda optVal,x
+	clc
+	adc optStr,x
+dm_val	sta tmp			; string number * 6
+	asl @
+	adc tmp
+	asl @
+	tax
+	lda #6
+	sta pnCount
+@	lda valStr,x
+	ora colV
+	sta menuText,y
+	inx
+	iny
+	dec pnCount
+	bne @-
+	lda #0
+	sta menuText,y
+	sta menuText+1,y
+	ldx tmp2
+	inx
+	cpx #OPTS+1
+	bne dm_line
 	rts
 
-txtOne	dta d'  1 PLAYER  VS 2 AI '
-txtTwo	dta d'  2 PLAYERS  JOY 1+2'
+; the second DLI of the options screen: colours of the menu
+DliMenu	pha
+	lda #$0C		; labels
+	sta COLPF0
+	lda #$1E		; values
+	sta COLPF1
+	lda #$3A		; chosen line
+	sta COLPF3
+	lda #<DliTitle
+	sta VDSLST
+	lda #>DliTitle
+	sta VDSLST+1
+	pla
+	rti
+
+;		slow   normal fast
+spdStartLo dta <$0140, <$0180, <$01C0	; start speed (8.8 colour clocks)
+spdStartHi dta >$0140, >$0180, >$01C0
+spdAcc	dta $20,    $30,    $40	; growth per frame (1/65536)
+spdMaxLo dta <$02C0, <$0340, <$03C0
+spdMaxHi dta >$02C0, >$0340, >$03C0
+
+	.ifdef TESTOPT
+optDefault dta 1,1,1,1,1,1,2	; test: 1 lap
+	.else
+optDefault dta 1,1,3,1,1,1,2
+	.endif
+optMin	dta 1,1,1,0,0,0,0
+optMax	dta 2,TRACKS,5,2,2,1,3
+optStr	dta $FF,$FF,$FF,5,8,11,14	; + value = number of the value string
+optLabel dta d' PLAYERS    '
+	dta d' TRACK      '
+	dta d' LAPS       '
+	dta d' DIFFICULTY '
+	dta d' SPEED      '
+	dta d' OIL        '
+	dta d' FLASH      '
+	dta d' START RACE '
+valStr	dta d'1     2     3     4     5     '
+	dta d'EASY  NORMALHARD  '
+	dta d'SLOW  NORMALFAST  '
+	dta d'OFF   ON    '
+	dta d'      '		; 13: START RACE has no value
+	dta d'NONE  SOFT  NORMALHARD  '
+txtHi	dta d'    HI SCORE        '
+txtHelp	dta d'JOY:MOVE  FIRE:START'
+
+optDL	dta $70,$70,$70,$CE,a(TITLE)
+	:28 dta $0E
+	dta $F0,$47,a(menuText)
+	:OPTS dta $07
+	dta $70,$46,a(textHi),$06,$41,a(DLBUF)
+OPT_DL_LEN = *-optDL
 
 ; ----------------------------------------------------------------------
-; Results: "MAZA PASSED!" and the cars, best score first
+; Results after each race: "MAZA PASSED!", a header and the cars by
+; championship points: place, name, points of this race, total. After the
+; last race the best human total becomes the HI SCORE.
 
 ResultScreen
 	lda #<DliWin
@@ -691,38 +897,79 @@ rs_lp	jsr RMT_PLAY
 	beq rs_lp
 	jmp StopAll
 
-rsTail	dta $F0,$70,$46,a(textRes),$06,$06,$41,a(DLBUF)
+rsTail	dta $F0,$46,a(textRes),$06,$06,$06,$41,a(DLBUF)
 
-; three lines "1 P1 01530" in the car colours, best score first; the best
-; score of a human player becomes the HI SCORE of the title screen
 ResultText
-	ldx #59
+	ldx #79			; 4 lines of spaces
 	lda #0
 @	sta textRes,x
 	dex
 	bpl @-
-	ldx #NCARS-1		; order = 0,1,2, then sort by score
+	ldx #19			; header
+	lda optRaces
+	cmp #1
+	beq rt_one
+	lda raceNo
+	clc
+	adc #1
+	cmp optRaces
+	beq rt_final
+@	lda txtRace,x		; header in colour 3 (white)
+	ora #$C0
+	sta textRes,x
+	dex
+	bpl @-
+	lda raceNo
+	clc
+	adc #$11		; '1'..
+	ora #$C0
+	sta textRes+9
+	lda optRaces
+	clc
+	adc #$10
+	ora #$C0
+	sta textRes+14
+	jmp rt_sort
+rt_one	lda txtResult,x
+	ora #$C0
+	sta textRes,x
+	dex
+	bpl rt_one
+	jmp rt_sort
+rt_final
+	lda txtFinal,x
+	ora #$C0
+	sta textRes,x
+	dex
+	bpl rt_final
+rt_sort	ldx #NCARS-1		; order = 0,1,2, then sort by total
 @	txa
 	sta order,x
 	dex
 	bpl @-
-	ldy #2			; bubble sort, 3 passes are plenty
+	ldy #2
 rt_pass	ldx #0
 rt_cmp	lda order,x
 	sta tmp
 	lda order+1,x
 	sta tmp+1
 	stx tmp2
-	ldx tmp
-	lda cScHi,x
+	ldx tmp			; a < b ? (3 byte BCD)
+	lda cTotH,x
 	ldx tmp+1
-	cmp cScHi,x
+	cmp cTotH,x
 	bcc rt_swap
 	bne rt_next
 	ldx tmp
-	lda cScLo,x
+	lda cTotM,x
 	ldx tmp+1
-	cmp cScLo,x
+	cmp cTotM,x
+	bcc rt_swap
+	bne rt_next
+	ldx tmp
+	lda cTotL,x
+	ldx tmp+1
+	cmp cTotL,x
 	bcs rt_next
 rt_swap	ldx tmp2
 	lda tmp
@@ -735,137 +982,138 @@ rt_next	ldx tmp2
 	bne rt_cmp
 	dey
 	bne rt_pass
-	ldx #0			; write the lines
-	stx tmp2
+	lda #0			; lines 2-4: " 1 P1  1530  04530"
+	sta tmp2
 rt_line	lda tmp2
+	clc
+	adc #1
 	asl @
 	asl @
 	sta tmp
 	asl @
 	asl @
-	adc tmp			; x20
+	adc tmp			; (place + 1) * 20
 	tay
 	ldx tmp2
 	lda order,x
 	tax
-	lda carColBits,x
-	sta tmp
-	lda #0
-	sta textRes,y
-	sta textRes+1,y
 	lda tmp2
 	clc
-	adc #$11		; '1'.. in internal code
-	ora tmp
-	sta textRes+2,y
-	lda #0
-	sta textRes+3,y
-	sta textRes+4,y
-	jsr CarName		; 2 letters for car X at textRes+5,y
-	lda #0
-	sta textRes+7,y
-	sta textRes+8,y
-	sta textRes+9,y
-	lda cScHi,x
-	jsr PutBCD
+	adc #$11		; '1'..
+	ora carColBits,x
+	sta textRes+1,y
+	jsr CarName		; at textRes+3,Y
+	lda cScHi,x		; race points at +6
+	jsr ResBCD
 	lda cScLo,x
-	jsr PutBCD
-	ldx tmp2
-	inx
-	stx tmp2
-	cpx #NCARS
+	jsr ResBCD
+	iny			; total at +12
+	iny
+	lda cTotH,x
+	and #$0F
+	clc
+	adc #$10
+	ora carColBits,x
+	sta textRes+6,y
+	iny
+	lda cTotM,x
+	jsr ResBCD
+	lda cTotL,x
+	jsr ResBCD
+	inc tmp2
+	lda tmp2
+	cmp #NCARS
 	bne rt_line
-	ldy #0			; best human score -> HI SCORE
+	lda raceNo		; last race: best human total -> HI SCORE
+	clc
+	adc #1
+	cmp optRaces
+	bne rt_x
+	ldy #0
 @	ldx order,y
 	lda carHuman,x
-	bne @+
+	bne rt_best
 	iny
 	cpy #NCARS
 	bne @-
-	rts
-@	lda cScHi,x		; digits 0 and 1 stay 0 (scores < 10000)
-	pha
-	lsr @
-	lsr @
-	lsr @
-	lsr @
-	sta tmp
-	pla
-	and #$0F
-	sta tmp+1
-	lda cScLo,x
-	pha
-	lsr @
-	lsr @
-	lsr @
-	lsr @
-	tay
-	pla
-	and #$0F
-	; compare with the best so far (digits BEST+1..BEST+4)
-	sta tmp2+1
-	sty tmp2
-	lda tmp
-	cmp digs+BEST+1
-	bcc rt_x
-	bne rt_new
-	lda tmp+1
-	cmp digs+BEST+2
-	bcc rt_x
-	bne rt_new
-	lda tmp2
-	cmp digs+BEST+3
-	bcc rt_x
-	bne rt_new
-	lda tmp2+1
-	cmp digs+BEST+4
-	bcc rt_x
-rt_new	lda tmp
-	sta digs+BEST+1
-	lda tmp+1
-	sta digs+BEST+2
-	lda tmp2
-	sta digs+BEST+3
-	lda tmp2+1
-	sta digs+BEST+4
 rt_x	rts
+rt_best	lda cTotH,x		; 5 digits
+	and #$0F
+	sta newBest
+	lda cTotM,x
+	lsr @
+	lsr @
+	lsr @
+	lsr @
+	sta newBest+1
+	lda cTotM,x
+	and #$0F
+	sta newBest+2
+	lda cTotL,x
+	lsr @
+	lsr @
+	lsr @
+	lsr @
+	sta newBest+3
+	lda cTotL,x
+	and #$0F
+	sta newBest+4
+	ldx #0			; bigger than the best so far?
+@	lda newBest,x
+	cmp digs+BEST,x
+	bcc rt_x
+	bne @+
+	inx
+	cpx #5
+	bne @-
+	rts
+@	ldx #4
+@	lda newBest,x
+	sta digs+BEST,x
+	dex
+	bpl @-
+	rts
 
-; "P1" / "P2" / "AI" for car X, at textRes+5,Y (colour of the car)
+txtRace	dta d'    RACE 1 OF 4     '
+txtResult dta d'       RESULT       '
+txtFinal dta d'  CHAMPIONSHIP END  '
+
+; "P1" / "P2" / "AI" for car X at textRes+3,Y (colour of the car)
 CarName	lda carHuman,x
 	beq cn_ai
 	lda #$30		; 'P'
 	ora carColBits,x
-	sta textRes+5,y
+	sta textRes+3,y
 	txa
 	clc
 	adc #$11		; '1' / '2'
 	ora carColBits,x
-	sta textRes+6,y
+	sta textRes+4,y
 	rts
 cn_ai	lda #$21		; 'A'
 	ora carColBits,x
-	sta textRes+5,y
+	sta textRes+3,y
 	lda #$29		; 'I'
 	ora carColBits,x
-	sta textRes+6,y
+	sta textRes+4,y
 	rts
 
-; two BCD digits of A at textRes+Y.., Y += 2 (colour of car X)
-PutBCD	pha
+; two BCD digits of A at textRes+6+Y, Y += 2 (colour of car X)
+ResBCD	pha
 	lsr @
 	lsr @
 	lsr @
 	lsr @
 	clc
-	adc #$10		; '0'
+	adc #$10
 	ora carColBits,x
-	sta textRes+10,y
+	sta textRes+6,y
 	pla
 	and #$0F
 	clc
 	adc #$10
 	ora carColBits,x
-	sta textRes+11,y
+	sta textRes+7,y
 	iny
 	iny
 	rts
@@ -876,7 +1124,7 @@ carColBits dta $00,$40,$80	; text colour bits: PF0, PF1, PF2
 ; The race. Returns C = 1 when ESC was pressed.
 
 RaceGame
-	lda #4
+	lda #C_OIL		; colour 1 of the track: oil
 	sta dliColPF0
 	lda #8
 	sta dliColPF1
@@ -911,20 +1159,46 @@ RaceGame
 	sta endWait
 	sta target
 	sta baseSpd
-	lda #<SPEED_START
+	sta sfxT
+	ldx optSpeed		; speed setting
+	lda spdStartLo,x
+	sta speedStart
 	sta baseSpd+1
-	lda #>SPEED_START
+	lda spdStartHi,x
+	sta speedStart+1
 	sta baseSpd+2
+	lda spdAcc,x
+	sta speedAcc
+	lda spdMaxLo,x
+	sta speedMax
+	lda spdMaxHi,x
+	sta speedMax+1
+	lda #1
+	sta cdShow
+	lda #3			; countdown 3-2-1-GO
+	sta cdStep
+	lda #COUNT_STEP
+	sta cdTimer
+	lda #0
+	jsr SfxStart
 	lda tenthFrames
 	sta tdiv
+	lda track		; grid of this track: index track*3+car
+	asl @
+	adc track
+	sta tmp3
 	ldx #NCARS-1		; cars on the grid, facing east
-@	lda gridXLo,x
+@	txa
+	clc
+	adc tmp3
+	tay
+	lda gridXLo,y
 	sta cPosXL,x
-	lda gridXHi,x
+	lda gridXHi,y
 	sta cPosXH,x
-	lda gridYLo,x
+	lda gridYLo,y
 	sta cPosYL,x
-	lda gridYHi,x
+	lda gridYHi,y
 	sta cPosYH,x
 	jsr SetPlaces
 	lda #$FF
@@ -936,16 +1210,12 @@ RaceGame
 	sta carHuman
 	lda #0
 	sta carHuman+2
-	lda players
+	lda optPlayers
 	cmp #2
 	beq @+
 	lda #0
 @	sta carHuman+1
-	lda #AI_THR
-	sta cThr+1
-	lda #<AI2_THR
-	sta cThr+2
-	jsr TextLines
+	jsr CountText
 	lda #<DLA
 	sta dlp
 	lda #>DLA
@@ -975,6 +1245,7 @@ rg_loop	jsr UpdateCamera	; next frame into the back display list
 	jsr Flip		; vertical blank: show it
 	jsr DrawCars
 	jsr RMT_PLAY
+	jsr SfxTick
 	jsr Collisions
 	jsr GetInput
 	cmp #$1C		; ESC
@@ -982,21 +1253,11 @@ rg_loop	jsr UpdateCamera	; next frame into the back display list
 	jsr StopAll
 	sec
 	rts
-@	cmp #$21		; fire starts the race
-	bne @+
-	sta started
 @	inc frame
 	inc tick
 	bne @+
 	inc tick+1
-@
-	.if AUTOPILOT
-	lda frame
-	cmp #60
-	bne @+
-	sta started
-@
-	.endif
+@	jsr Countdown
 	lda started
 	beq rg_show
 	jsr BaseSpeed
@@ -1010,6 +1271,7 @@ rg_car	stx car
 	jsr Checkpoint
 	ldx car
 	jsr SaveCar
+	jsr DriveOff
 	jsr History
 rg_next	ldx car
 	inx
@@ -1034,9 +1296,399 @@ rg_show	lda #<(TITLE+$0360)	; time in the status line
 	sta dst+1
 	ldx #TIME
 	jsr PrintNum
-	jsr TextLines
+	lda cdShow		; countdown text, or points and laps
+	beq @+
+	jsr CountText
+	jmp rg_fx
+@	jsr TextLines
+rg_fx
 	jsr ColourFx
 	jmp rg_loop
+
+; 3-2-1-GO: a beep a step, then the race starts and GO! stays a moment
+Countdown
+	lda cdStep
+	bmi cd_go
+	dec cdTimer
+	bne cd_x
+	lda #COUNT_STEP
+	sta cdTimer
+	dec cdStep
+	bne cd_beep
+	lda #1			; GO
+	sta started
+	lda #40
+	sta cdShow
+	lda #$FF
+	sta cdStep
+	lda #1
+	jmp SfxStart
+cd_beep	lda #0
+	jsr SfxStart
+cd_x	lda #1
+	sta cdShow
+	rts
+cd_go	lda cdShow
+	beq @+
+	dec cdShow
+	bne @+
+	ldx #39			; countdown text gone: clear the lines once
+	lda #0
+cd_clr	sta textLine,x
+	dex
+	bpl cd_clr
+@	rts
+
+; text lines during the countdown: "GET READY 3" / "GO!", track and race
+CountText
+	ldx #19
+@	lda txtReady,x
+	ldy cdStep
+	bpl *+5
+	lda txtGo,x
+	ora #$C0
+	sta textLine,x
+	lda txtTrack,x
+	ora #$C0
+	sta textLine+20,x
+	dex
+	bpl @-
+	lda cdStep
+	bmi @+
+	clc
+	adc #$10
+	ora #$C0
+	sta textLine+15
+@	lda track
+	clc
+	adc #$11
+	ora #$C0
+	sta textLine+20+7
+	lda optLaps
+	clc
+	adc #$10
+	ora #$C0
+	sta textLine+20+17
+	rts
+
+txtReady dta d'    GET READY  3    '
+txtGo	dta d'        GO!         '
+txtTrack dta d' TRACK 1    LAPS 3  '
+
+; ----------------------------------------------------------------------
+; Sound effects on channel 4, written after the music player each frame
+
+SFX_BEEP = 0
+SFX_GO	= 1
+SFX_WALL = 2
+SFX_BUMP = 3
+SFX_BACK = 4
+SFX_OIL	= 5
+
+; start effect A (a new one replaces the old one)
+SfxStart
+	tax
+	lda sfxF0,x
+	sta sfxF
+	lda sfxDF0,x
+	sta sfxDF
+	lda sfxDist0,x
+	sta sfxDist
+	lda sfxVol0,x
+	sta sfxVol
+	lda sfxLen0,x
+	sta sfxT
+	rts
+
+SfxTick	lda sfxT
+	beq @+
+	dec sfxT
+	lda sfxF
+	sta AUDF4
+	clc
+	adc sfxDF
+	sta sfxF
+	lda sfxDist
+	ora sfxVol
+	sta AUDC4
+	lda sfxT		; fade: volume - 1 every 2 frames
+	and #1
+	bne @+
+	lda sfxVol
+	beq @+
+	dec sfxVol
+@	rts
+
+;		beep  GO    wall  bump  back  oil
+sfxF0	dta $50,  $28,  $30,  $A0,  $90,  $04
+sfxDF0	dta 0,    0,    4,    6,    <-5,  0
+sfxDist0 dta $A0, $A0,  $80,  $A0,  $A0,  $80
+sfxVol0	dta 10,   12,   15,   10,   10,   7
+sfxLen0	dta 10,   30,   20,   10,   24,   16
+
+; ----------------------------------------------------------------------
+; Tracks: unpack track 'track' to UNBUF, copy its checkpoint tables to
+; WORK and rebuild its rows as spans at W_SPANS (with the row pointers)
+
+cpXLo	= WORK
+cpXHi	= WORK+MAX_CP
+cpYLo	= WORK+2*MAX_CP
+cpYHi	= WORK+3*MAX_CP
+cpCurve	= WORK+4*MAX_CP		; how sharp the road bends after a checkpoint
+
+LoadTrack
+	ldx track
+	lda tdSrcLo,x
+	sta src
+	lda tdSrcHi,x
+	sta src+1
+	lda #<UNBUF
+	sta dstp
+	lda #>UNBUF
+	sta dstp+1
+	clc
+	lda #<UNBUF
+	adc tdLenLo,x
+	sta upEnd
+	lda #>UNBUF
+	adc tdLenHi,x
+	sta upEnd+1
+	lda tdBytes,x
+	sta mapBytes
+	lda tdRowsLo,x
+	sta mapRows
+	lda tdRowsHi,x
+	sta mapRows+1
+	lda tdCamXLo,x
+	sta camXMax
+	lda tdCamXHi,x
+	sta camXMax+1
+	lda tdCamYLo,x
+	sta camYMax
+	lda tdCamYHi,x
+	sta camYMax+1
+	lda tdCp,x
+	sta cpCount
+	txa			; oil patches of this track
+	asl @
+	sta tmp
+	asl @
+	adc tmp			; x6 (OIL_N)
+	tay
+	ldx #0
+@	lda oilRowLo,y
+	sta oilRL,x
+	lda oilRowHi,y
+	sta oilRH,x
+	lda oilByte,y
+	sta oilB,x
+	iny
+	inx
+	cpx #OIL_N
+	bne @-
+	jsr Unpack
+	ldx #0			; checkpoint tables (5 * MAX_CP bytes) to WORK
+@	lda UNBUF,x
+	sta WORK,x
+	lda UNBUF+$100,x
+	sta WORK+$100,x
+	lda UNBUF+$200,x
+	sta WORK+$200,x
+	inx
+	bne @-
+	; fall through
+
+; rows: count (bit 7: as changes from the row above), then per span the
+; first and last pixel, or their changes -> count, first byte, mask, last
+; byte, mask (see EnsureRow)
+BuildSpans
+	lda #<(UNBUF+CP_TABLES)
+	sta src
+	lda #>(UNBUF+CP_TABLES)
+	sta src+1
+	lda #<W_SPANS
+	sta dstp
+	lda #>W_SPANS
+	sta dstp+1
+	lda #<W_ROWPTR
+	sta ptr2
+	lda #>W_ROWPTR
+	sta ptr2+1
+	lda mapRows
+	sta row
+	lda mapRows+1
+	sta row+1
+bs_row	ldy #0			; row pointer
+	lda dstp
+	sta (ptr2),y
+	iny
+	lda dstp+1
+	sta (ptr2),y
+	lda #2
+	jsr AddPtr2
+	jsr GetSrc		; count
+	sta tmp2+1
+	and #$7F
+	sta spans
+	jsr PutDst
+	ldx #0
+bs_span	cpx spans
+	jeq bs_next
+	lda tmp2+1
+	bpl bs_abs
+	jsr GetSrc		; x0 += change
+	jsr SignExt
+	clc
+	adc bsX0L,x
+	sta bsX0L,x
+	lda tmp
+	adc bsX0H,x
+	sta bsX0H,x
+	jsr GetSrc		; x1 += change
+	jsr SignExt
+	clc
+	adc bsX1L,x
+	sta bsX1L,x
+	lda tmp
+	adc bsX1H,x
+	sta bsX1H,x
+	jmp bs_put
+bs_abs	jsr GetSrc
+	sta bsX0L,x
+	jsr GetSrc
+	sta bsX0H,x
+	jsr GetSrc
+	sta bsX1L,x
+	jsr GetSrc
+	sta bsX1H,x
+bs_put	lda bsX0L,x		; first byte = x0 / 4, mask of x0 & 3
+	and #3
+	tay
+	lda maskL,y
+	sta span+1
+	lda bsX1L,x
+	and #3
+	tay
+	lda maskR,y
+	sta span+3
+	lda bsX0H,x
+	sta tmp
+	lda bsX0L,x
+	lsr tmp
+	ror @
+	lsr tmp
+	ror @
+	sta span
+	lda bsX1H,x
+	sta tmp
+	lda bsX1L,x
+	lsr tmp
+	ror @
+	lsr tmp
+	ror @
+	sta span+2
+	cmp span		; one byte: both masks together
+	bne @+
+	lda span+1
+	ora span+3
+	sta span+1
+	sta span+3
+@	lda span
+	jsr PutDst
+	lda span+1
+	jsr PutDst
+	lda span+2
+	jsr PutDst
+	lda span+3
+	jsr PutDst
+	inx
+	jmp bs_span
+bs_next	lda row
+	bne @+
+	dec row+1
+@	dec row
+	lda row
+	ora row+1
+	jne bs_row
+	rts
+
+maskL	dta $00,$C0,$F0,$FC	; clear pixels p..3
+maskR	dta $3F,$0F,$03,$00	; clear pixels 0..p
+
+; A = next byte of (src)
+GetSrc	ldy #0
+	lda (src),y
+	inc src
+	bne @+
+	inc src+1
+@	cmp #0			; flags of the byte
+	rts
+; (dstp) = A, next
+PutDst	ldy #0
+	sta (dstp),y
+	inc dstp
+	bne @+
+	inc dstp+1
+@	rts
+AddPtr2	clc
+	adc ptr2
+	sta ptr2
+	bcc @+
+	inc ptr2+1
+@	rts
+; tmp = sign extension of A (A kept)
+SignExt	pha
+	and #$80
+	beq @+
+	lda #$FF
+@	sta tmp
+	pla
+	rts
+
+; LZ77 unpack (src) -> (dstp) until upEnd: token < $80: token+1 literal
+; bytes follow; token >= $80: copy (token & $7F) + 3 bytes from 2-byte
+; offset back
+Unpack	lda dstp
+	cmp upEnd
+	bne @+
+	lda dstp+1
+	cmp upEnd+1
+	bne @+
+	rts
+@	jsr GetSrc
+	bmi up_match
+	tax
+	inx
+@	jsr GetSrc
+	jsr PutDst
+	dex
+	bne @-
+	jmp Unpack
+up_match
+	and #$7F
+	clc
+	adc #3
+	tax
+	jsr GetSrc
+	sta tmp
+	jsr GetSrc
+	sta tmp+1
+	sec
+	lda dstp
+	sbc tmp
+	sta ptr
+	lda dstp+1
+	sbc tmp+1
+	sta ptr+1
+	ldy #0
+@	lda (ptr),y
+	jsr PutDst
+	inc ptr
+	bne *+4
+	inc ptr+1
+	dex
+	bne @-
+	jmp Unpack
 
 ; ----------------------------------------------------------------------
 ; Display: two display lists with the SpeedMaza status line, 23 lines of
@@ -1117,14 +1769,14 @@ UpdateCamera
 	lda #0
 	sta camX
 	sta camX+1
-@	lda #<CAM_X_MAX
+@	lda camXMax
 	cmp camX
-	lda #>CAM_X_MAX
+	lda camXMax+1
 	sbc camX+1
 	bcs @+
-	lda #<CAM_X_MAX
+	lda camXMax
 	sta camX
-	lda #>CAM_X_MAX
+	lda camXMax+1
 	sta camX+1
 @	sec
 	lda cPosYL,x
@@ -1137,14 +1789,14 @@ UpdateCamera
 	lda #0
 	sta camY
 	sta camY+1
-@	lda #<CAM_Y_MAX
+@	lda camYMax
 	cmp camY
-	lda #>CAM_Y_MAX
+	lda camYMax+1
 	sbc camY+1
 	bcs @+
-	lda #<CAM_Y_MAX
+	lda camYMax
 	sta camY
-	lda #>CAM_Y_MAX
+	lda camYMax+1
 	sta camY+1
 @	lda camX		; HSCROL = 15 - (camX & 15), as SpeedMaza
 	and #$0F
@@ -1221,10 +1873,10 @@ er_unpack
 	sta src+1
 	clc
 	lda src
-	adc #<rowPtr
+	adc #<W_ROWPTR
 	sta src
 	lda src+1
-	adc #>rowPtr
+	adc #>W_ROWPTR
 	sta src+1
 	ldy #0
 	lda (src),y
@@ -1240,7 +1892,7 @@ er_unpack
 	lda #0
 	sta dstp
 	lda #$FF		; the whole row is wall ...
-	ldy #MAP_BYTES
+	ldy mapBytes
 @	dey
 	sta (dstp),y
 	bne @-
@@ -1279,7 +1931,30 @@ er_span	lda spans
 	bcc er_span
 	inc src+1
 	jmp er_span
-er_x	rts
+er_x	lda optOil		; oil patches: 2 bytes x 3 rows, road -> colour 1
+	beq er_done
+	ldx #OIL_N-1
+er_oil	sec
+	lda row
+	sbc oilRL,x
+	sta tmp
+	lda row+1
+	sbc oilRH,x
+	bne er_no
+	lda tmp
+	cmp #3
+	bcs er_no
+	ldy oilB,x
+	lda (dstp),y
+	ora #$55
+	sta (dstp),y
+	iny
+	lda (dstp),y
+	ora #$55
+	sta (dstp),y
+er_no	dex
+	bpl er_oil
+er_done	rts
 
 ; during vertical blank: switch to the display list just built
 Flip	lda dlp
@@ -1354,6 +2029,10 @@ dc_car	stx car
 	dey
 	bpl @-
 dc_new	ldx car
+	lda cVis,x		; drawn in the frame before / in this one
+	sta cVisPrev,x
+	lda #0
+	sta cVis,x
 	jsr ShownPos
 	lda #$FF
 	sta cRow,x
@@ -1363,6 +2042,8 @@ dc_new	ldx car
 	bne dc_next
 	jsr ScreenPos		; tmp = x - camX, tmp2 = y - camY (16 bit)
 	bcs dc_next		; off screen
+	lda #1
+	sta cVis,x
 	lda tmp			; hpos = x - camX + $2F - 4
 	clc
 	adc #$2B
@@ -1560,16 +2241,16 @@ SaveCar	lda posX
 	sta cHead,x
 	rts
 
-; base speed grows with time, as in SpeedMaza, up to SPEED_MAX
+; base speed grows with time, as in SpeedMaza, up to speedMax
 BaseSpeed
 	lda baseSpd+1
-	cmp #<SPEED_MAX
+	cmp speedMax
 	lda baseSpd+2
-	sbc #>SPEED_MAX
+	sbc speedMax+1
 	bcs @+
 	clc
 	lda baseSpd
-	adc #SPEED_ACC
+	adc speedAcc
 	sta baseSpd
 	bcc @+
 	inc baseSpd+1
@@ -1635,7 +2316,144 @@ ct_zero	lda cThr,x
 	adc #THR_STEP
 	sta cThr,x
 ct_x	rts
-ct_ai	jmp AutoSteer
+ct_ai	jsr AiThrottle
+	jmp AutoSteer
+
+; computer throttle = level + car - braking before bends + catching up
+; (rubber band: faster when behind the best human, slower when ahead),
+; kept within +-THR_MAX
+AiThrottle
+	ldy optDiff
+	lda aiLevel,y
+	clc
+	adc aiCar,x
+	sta tmp2
+	ldy cIdx,x		; braking: bend sharpness * aiBrake / 4
+	lda cpCurve,y
+	sta tmp
+	lda #0
+	ldy optDiff
+	ldx aiBrake,y
+@	clc
+	adc tmp
+	dex
+	bne @-
+	lsr @
+	lsr @
+	sta tmp
+	sec
+	lda tmp2
+	sbc tmp
+	sta tmp2
+	jsr BestHuman		; tmp = best human progress, C = 0: nobody racing
+	bcc ai_clamp
+	ldx car
+	jsr Progress		; ptr2 = progress of this car
+	sec
+	lda tmp
+	sbc ptr2
+	sta tmp
+	lda tmp+1
+	sbc ptr2+1
+	bmi ai_ahead
+	bne ai_max		; far behind
+	lda tmp			; behind by tmp checkpoints: + 2 each
+	asl @
+	bcs ai_max
+	ldy optDiff
+	cmp aiBand,y
+	bcc ai_add
+ai_max	ldy optDiff
+	lda aiBand,y
+ai_add	clc
+	adc tmp2
+	sta tmp2
+	jmp ai_clamp
+ai_ahead
+	cmp #$FF		; ahead: - 2 each
+	bne ai_min
+	lda tmp
+	eor #$FF
+	clc
+	adc #1
+	asl @
+	bcs ai_min
+	ldy optDiff
+	cmp aiBand,y
+	bcc ai_sub
+ai_min	ldy optDiff
+	lda aiBand,y
+ai_sub	sta tmp
+	sec
+	lda tmp2
+	sbc tmp
+	sta tmp2
+ai_clamp
+	ldx car
+	lda tmp2
+	bmi @+
+	cmp #THR_MAX
+	bcc ai_set
+	lda #THR_MAX
+	bne ai_set
+@	cmp #<(-THR_MAX)
+	bcs ai_set
+	lda #<(-THR_MAX)
+ai_set	sta cThr,x
+	rts
+
+;		easy  normal hard
+aiLevel	dta <-20, 0,    16
+aiBrake	dta 4,    3,     2	; x/4 of the bend sharpness
+aiBand	dta 32,   20,    12	; most the rubber band adds or takes
+aiCar	dta 0,    0,    <-6	; car 2 a little slower than car 1
+
+; ptr2 = laps * checkpoints + checkpoint of car X
+Progress
+	lda cIdx,x
+	sta ptr2
+	lda #0
+	sta ptr2+1
+	ldy cLap,x
+	beq pr_x
+@	clc
+	lda ptr2
+	adc cpCount
+	sta ptr2
+	bcc *+4
+	inc ptr2+1
+	dey
+	bne @-
+pr_x	rts
+
+; tmp = best progress of a human car still racing; C = 0 if there is none
+BestHuman
+	lda #0
+	sta tmp
+	sta tmp+1
+	sta tmp3
+	ldx #NCARS-1
+bh_car	lda carHuman,x
+	beq bh_next
+	lda cFin,x
+	bne bh_next
+	jsr Progress
+	lda #1
+	sta tmp3
+	lda ptr2
+	cmp tmp
+	lda ptr2+1
+	sbc tmp+1
+	bcc bh_next
+	lda ptr2
+	sta tmp
+	lda ptr2+1
+	sta tmp+1
+bh_next	dex
+	bpl bh_car
+	lda tmp3
+	lsr @			; C = 1 when a human is racing
+	rts
 
 ; speed = base * (1 + throttle/256), halved while stunned; then the car
 ; follows its heading with some grip (PICO-8: u=(u-r*cos)*k+r*cos) and moves
@@ -1706,10 +2524,10 @@ ph_stun	ldx car
 	jsr FixSign
 	sec			; grip = GRIP_MAX - (speed - start) / 8
 	lda speed+1
-	sbc #<SPEED_START
+	sbc speedStart
 	sta tmp
 	lda speed+2
-	sbc #>SPEED_START
+	sbc speedStart+1
 	bcc ph_max		; slower than the start speed
 	lsr @
 	ror tmp
@@ -1729,7 +2547,23 @@ ph_max	lda #GRIP_MAX
 	bne ph_g
 ph_min	lda #GRIP_MIN
 ph_g	sta grip
-	ldx #0
+	ldx car			; on oil: hardly any grip, and a wobble
+	lda cOil,x
+	beq ph_f
+	dec cOil,x
+	lda #GRIP_OIL
+	sta grip
+	lda RANDOM
+	and #7
+	bne ph_f
+	lda RANDOM
+	and #2
+	sec
+	sbc #1
+	clc
+	adc heading
+	sta heading
+ph_f	ldx #0
 	jsr Follow
 	ldx #2
 	jsr Follow
@@ -1975,13 +2809,13 @@ Checkpoint
 	jsr AddPoints
 	inc cIdx,x
 	lda cIdx,x
-	cmp #CP_COUNT
+	cmp cpCount
 	bcc cp_no
 	lda #0
 	sta cIdx,x
 	inc cLap,x
 	lda cLap,x
-	cmp #LAPS
+	cmp optLaps
 	bcc cp_no
 	inc places		; home
 	lda places
@@ -2115,37 +2949,56 @@ FillHistory
 	bpl @-
 	rts
 
-; the camera follows the leader: most laps, then most checkpoints
+; the camera follows the leading human car still racing (most laps, then
+; most checkpoints); when no human is racing any more, the leading car
 ChooseTarget
-	ldx target
-	lda cFin,x
-	beq @+
-	ldx #0			; target is home: take the first car still racing
-ct_find	lda cFin,x
-	beq ct_set
+	lda #1
+	sta ctHuman
+ch_pass	ldx target
+	jsr CtValid
+	bcs ch_have
+	ldx #0			; target not valid: take the first car that is
+@	jsr CtValid
+	bcs ch_have
 	inx
 	cpx #NCARS
-	bne ct_find
-	rts
-ct_set	stx target
-@	ldx #0
-ct_cmp	cpx target
-	beq ct_nx
-	lda cFin,x
-	bne ct_nx
+	bne @-
+	lda ctHuman		; no human racing: any car
+	beq ch_x
+	lda #0
+	sta ctHuman
+	jmp ch_pass
+ch_have	stx target
+	ldx #0
+ch_cmp	cpx target
+	beq ch_nx
+	jsr CtValid
+	bcc ch_nx
 	ldy target
 	lda cLap,x
 	cmp cLap,y
-	bcc ct_nx
-	bne ct_new
+	bcc ch_nx
+	bne ch_new
 	lda cIdx,x
 	cmp cIdx,y
-	bcc ct_nx
-	beq ct_nx
-ct_new	stx target
-ct_nx	inx
+	bcc ch_nx
+	beq ch_nx
+ch_new	stx target
+ch_nx	inx
 	cpx #NCARS
-	bne ct_cmp
+	bne ch_cmp
+ch_x	rts
+
+; C = 1 when car X may be followed: racing, and human if ctHuman is set
+CtValid	lda cFin,x
+	bne @+
+	lda ctHuman
+	beq cv_yes
+	lda carHuman,x
+	bne cv_yes
+@	clc
+	rts
+cv_yes	sec
 	rts
 
 ; a car that fell off the screen comes back just behind the leader, in the
@@ -2155,11 +3008,13 @@ Respawns
 rp_car	stx car
 	cpx target
 	jeq rp_next
+	lda carHuman,x		; computer cars drive on off the screen
+	jeq rp_next
 	lda cFin,x
 	ora cInv,x		; just came back: give it time
-	bne rp_next
+	jne rp_next
 	jsr ScreenPos
-	bcc rp_next
+	jcc rp_next
 	lda #<PT_RESPAWN
 	ldy #>PT_RESPAWN
 	jsr SubPoints
@@ -2202,6 +3057,9 @@ rp_car	stx car
 	sta cIdx,x
 	lda cLap,y
 	sta cLap,x
+	lda #SFX_BACK
+	jsr SfxStart
+	ldx car
 	lda #INV_RESPAWN
 	sta cInv,x
 	lda #FLASH
@@ -2233,12 +3091,30 @@ co_wall	lda cFin,x
 	lda cInv,x
 	beq @+
 	dec cInv,x
-@	lda hitPF,x
+@	lda hitPF,x		; oil (colour 1): slide for a while
+	and #1
+	beq co_wl
+	lda cOil,x
+	bne @+
+	lda #SFX_OIL
+	stx car
+	jsr SfxStart
+	ldx car
+@	lda #OIL_TIME
+	sta cOil,x
+co_wl	lda cVisPrev,x		; not on screen then: DriveOff checks walls
+	beq co_next
+	lda hitPF,x
 	and #4
 	beq co_safe
 	lda cStun,x		; hit a moment ago: already handled
 	cmp #STUN_WALL-2
-	bcc co_hit
+	bcs co_next
+	lda #SFX_WALL
+	stx car
+	jsr SfxStart
+	ldx car
+	jsr WallHit
 	jmp co_next
 co_safe
 	lda cPrXL,x		; no wall: where it was shown is safe
@@ -2249,9 +3125,22 @@ co_safe
 	sta cSafeYL,x
 	lda cPrYH,x
 	sta cSafeYH,x
-	jmp co_next
-co_hit	stx car
-	lda cSafeXL,x		; back to safety
+co_next	dex
+	jpl co_wall
+	ldx #0			; car pairs (0,1) (0,2) (1,2)
+	ldy #1
+	jsr Bump
+	ldx #0
+	ldy #2
+	jsr Bump
+	ldx #1
+	ldy #2
+	jmp Bump
+
+; car X hit a wall: back to its last safe place, bounce, slow down,
+; -25 points, turn a little towards the road (X kept)
+WallHit	stx car
+	lda cSafeXL,x
 	sta cPosXL,x
 	lda cSafeXH,x
 	sta cPosXH,x
@@ -2276,6 +3165,7 @@ co_hit	stx car
 	sta cVelYH,x
 	lda tmp
 	sta cVelYL,x
+	jsr StepIn		; and a step towards the road
 	lda #STUN_WALL
 	sta cStun,x
 	lda #FLASH
@@ -2283,33 +3173,195 @@ co_hit	stx car
 	lda #<PT_WALL
 	ldy #>PT_WALL
 	jsr SubPoints
-	jsr LoadCar		; turn a little towards the road
+	jsr LoadCar
 	jsr TurnSign
 	pha
 	ldx car
 	pla
-	beq co_next
+	beq wh_x
 	bmi @+
 	lda cHead,x
 	clc
 	adc #12
 	sta cHead,x
-	jmp co_next
+	rts
 @	lda cHead,x
 	sec
 	sbc #12
 	sta cHead,x
-co_next	dex
-	jpl co_wall
-	ldx #0			; car pairs (0,1) (0,2) (1,2)
-	ldy #1
-	jsr Bump
-	ldx #0
-	ldy #2
-	jsr Bump
-	ldx #1
-	ldy #2
-	; fall through
+wh_x	rts
+
+; car X: 3 colour clocks and 4 lines towards its next checkpoint (on the
+; road), and that becomes its safe place, so a car pressed against a wall
+; is walked back onto the track instead of hitting it again and again
+StepIn	ldy cIdx,x
+	sec
+	lda cpXLo,y
+	sbc cPosXL,x
+	lda cpXHi,y
+	sbc cPosXH,x
+	bmi @+
+	lda #3
+	bne si_x
+@	lda #<-3
+si_x	jsr AddX
+	sec
+	lda cpYLo,y
+	sbc cPosYL,x
+	lda cpYHi,y
+	sbc cPosYH,x
+	bmi @+
+	lda #4
+	bne si_y
+@	lda #<-4
+si_y	jsr AddY
+	lda cPosXL,x
+	sta cSafeXL,x
+	lda cPosXH,x
+	sta cSafeXH,x
+	lda cPosYL,x
+	sta cSafeYL,x
+	lda cPosYH,x
+	sta cSafeYH,x
+	rts
+; car X position += A (signed)
+AddX	sta tmp
+	jsr ExtA
+	clc
+	lda cPosXL,x
+	adc tmp
+	sta cPosXL,x
+	lda cPosXH,x
+	adc tmp+1
+	sta cPosXH,x
+	rts
+AddY	sta tmp
+	jsr ExtA
+	clc
+	lda cPosYL,x
+	adc tmp
+	sta cPosYL,x
+	lda cPosYH,x
+	adc tmp+1
+	sta cPosYH,x
+	rts
+
+; a car off the screen has no collision registers: check its centre
+; against the track rows and bounce it off walls in the same way
+DriveOff
+	ldx car
+	jsr ScreenPos
+	bcc do_x		; on screen: the hardware sees it
+	lda cStun,x		; hit a moment ago: already handled
+	cmp #STUN_WALL-2
+	bcs do_x
+	jsr OnRoad
+	ldx car
+	bcc @+
+	lda cPosXL,x		; on the road: safe
+	sta cSafeXL,x
+	lda cPosXH,x
+	sta cSafeXH,x
+	lda cPosYL,x
+	sta cSafeYL,x
+	lda cPosYH,x
+	sta cSafeYH,x
+do_x	rts
+@	jmp WallHit
+
+; C = 1 when the centre of the current car (posX, posY) is on the road,
+; looked up in the span rows of the track (W_ROWPTR, W_SPANS)
+OnRoad	lda posY+2		; row = y / 8
+	sta tmp+1
+	lda posY+1
+	lsr tmp+1
+	ror @
+	lsr tmp+1
+	ror @
+	lsr tmp+1
+	ror @
+	asl @			; x2: row pointer
+	rol tmp+1
+	clc
+	adc #<W_ROWPTR
+	sta src
+	lda tmp+1
+	adc #>W_ROWPTR
+	sta src+1
+	ldy #0
+	lda (src),y
+	tax
+	iny
+	lda (src),y
+	sta src+1
+	stx src
+	lda posX+2		; byte = x / 16, pixel = x / 4 & 3
+	sta tmp+1
+	lda posX+1
+	lsr tmp+1
+	ror @
+	lsr tmp+1
+	ror @
+	tax
+	and #3
+	tay
+	lda pixMask,y
+	sta span+1
+	txa
+	lsr tmp+1
+	ror @
+	lsr tmp+1
+	ror @
+	sta span		; byte
+	ldy #0
+	lda (src),y		; spans in the row
+	beq or_no
+	sta tmp
+	iny
+or_span	lda span		; first byte <= byte <= last byte?
+	cmp (src),y
+	bcc or_next
+	iny
+	iny
+	lda (src),y		; C = last byte >= byte (dey keeps C)
+	cmp span
+	dey
+	dey
+	bcc or_next
+	lda span		; on the first byte: its pixel must be road
+	cmp (src),y
+	bne @+
+	iny
+	lda (src),y
+	dey
+	and span+1
+	bne or_next
+@	iny			; on the last byte: likewise
+	iny
+	lda span
+	cmp (src),y
+	bne or_yes
+	iny
+	lda (src),y
+	and span+1
+	bne or_next3
+or_yes	sec
+	rts
+or_next3
+	dey
+	dey
+	dey
+	jmp or_next
+or_next	iny			; next span (4 bytes)
+	iny
+	iny
+	iny
+	dec tmp
+	bne or_span
+or_no	clc
+	rts
+
+pixMask	dta $C0,$30,$0C,$03
 
 ; cars X and Y touched: swap velocities, push apart
 Bump	lda hitPL,x
@@ -2346,6 +3398,12 @@ Bump	lda hitPL,x
 	sta cVelYH,x
 	pla
 	sta cVelYH,y
+	stx tmp2
+	sty tmp2+1
+	lda #SFX_BUMP
+	jsr SfxStart
+	ldx tmp2
+	ldy tmp2+1
 	lda #INV_BUMP
 	sta cInv,x
 	sta cInv,y
@@ -2562,22 +3620,57 @@ PutTL	pha
 ; SpeedMaza's colour effects: the walls pulse with the music, later the
 ; road and the borders flash
 ColourFx
-	lda RMT_VOL
+	ldx optFx		; FLASH setting
+	bne @+
+	lda #$14		; none: steady walls, no flashes
+	sta dliColPF2
+	lda #0
+	sta dliColBK
+	sta COLOR0+3
+	rts
+@	lda tick		; the time the effects go by
+	sta fxTick
+	lda tick+1
+	sta fxTick+1
+	cpx #1
+	bne @+
+	lda #<FX3		; soft: at most the pulsing of stage 3
+	cmp fxTick
+	lda #>FX3
+	sbc fxTick+1
+	bcs cf_t
+	lda #<FX3
+	sta fxTick
+	lda #>FX3
+	sta fxTick+1
+	jmp cf_t
+@	cpx #3
+	bne cf_t
+	ldx #2			; hard: four times sooner
+@	asl fxTick
+	rol fxTick+1
+	bcc cf_sh
+	lda #$FF
+	sta fxTick
+	sta fxTick+1
+cf_sh	dex
+	bne @-
+cf_t	lda RMT_VOL
 	and #$0F
 	sta tmp
 	lda #<FX5
-	cmp tick
+	cmp fxTick
 	lda #>FX5
-	sbc tick+1
+	sbc fxTick+1
 	bcs cf_4
 	lda tick
 	and #6
 	tax
 	jmp cf_flash
 cf_4	lda #<FX4
-	cmp tick
+	cmp fxTick
 	lda #>FX4
-	sbc tick+1
+	sbc fxTick+1
 	bcs cf_3
 	lda tick
 	and #7
@@ -2605,18 +3698,18 @@ cf_flash
 	sta COLOR0+3
 cf_x	rts
 cf_3	lda #<FX3
-	cmp tick
+	cmp fxTick
 	lda #>FX3
-	sbc tick+1
+	sbc fxTick+1
 	bcs cf_2
 	lda #$10
 	ora tmp
 	sta dliColPF2
 	rts
 cf_2	lda #<FX2
-	cmp tick
+	cmp fxTick
 	lda #>FX2
-	sbc tick+1
+	sbc fxTick+1
 	bcs cf_1
 	lda tmp
 	lsr @
@@ -2626,9 +3719,9 @@ cf_2	lda #<FX2
 	sta dliColPF2
 	rts
 cf_1	lda #<FX1
-	cmp tick
+	cmp fxTick
 	lda #>FX1
-	sbc tick+1
+	sbc fxTick+1
 	bcs cf_0
 	lda tmp
 	lsr @
@@ -2648,7 +3741,6 @@ BEST	= 5
 VarsStart
 digs	.ds 10			; race time digits, best score digits
 tenthFrames .ds 1
-players	.ds 1
 tdiv	.ds 1
 started	.ds 1
 tick	.ds 2
@@ -2659,7 +3751,6 @@ target	.ds 1
 baseSpd	.ds 3
 pnCount	.ds 1
 tsStick	.ds 1
-tsSel	.ds 1
 giDelay	.ds 1
 giTrig	.ds 1
 dliCycle .ds 1
@@ -2670,7 +3761,45 @@ order	.ds NCARS
 hitPF	.ds NCARS
 hitPL	.ds NCARS
 carHuman .ds NCARS
+optSel	.ds 1
+colL	.ds 1
+colV	.ds 1
+raceNo	.ds 1
+track	.ds 1
+tmp3	.ds 1
+fxTick	.ds 2
+ctHuman	.ds 1
+cdStep	.ds 1
+cdTimer	.ds 1
+cdShow	.ds 1
+sfxF	.ds 1
+sfxDF	.ds 1
+sfxDist	.ds 1
+sfxVol	.ds 1
+sfxT	.ds 1
 VarsEnd
+optVal	.ds OPTS
+optRaces .ds 1			; races per game: always 1
+newBest	.ds 5
+cTotL	.ds NCARS		; championship points, BCD (must stay together)
+cTotM	.ds NCARS
+cTotH	.ds NCARS
+upEnd	.ds 2
+mapBytes .ds 1			; the loaded track
+mapRows	.ds 2
+camXMax	.ds 2
+camYMax	.ds 2
+cpCount	.ds 1
+oilRL	.ds OIL_N
+oilRH	.ds OIL_N
+oilB	.ds OIL_N
+bsX0L	.ds 16			; BuildSpans: the spans of the row above
+bsX0H	.ds 16
+bsX1L	.ds 16
+bsX1H	.ds 16
+speedStart .ds 2		; the speed setting
+speedAcc .ds 1
+speedMax .ds 2
 ; per car (cleared when a race starts)
 CarVars
 cPosXF	.ds NCARS
@@ -2691,13 +3820,16 @@ cFin	.ds NCARS		; 0 racing, else finishing place
 cStun	.ds NCARS
 cInv	.ds NCARS
 cFlash	.ds NCARS
-cScLo	.ds NCARS		; points, BCD
+cOil	.ds NCARS		; frames left sliding on oil
+cScLo	.ds NCARS		; points of this race, BCD
 cScHi	.ds NCARS
 cSafeXL	.ds NCARS		; last place without a wall hit
 cSafeXH	.ds NCARS
 cSafeYL	.ds NCARS
 cSafeYH	.ds NCARS
 cRow	.ds NCARS		; PM line of the car picture ($FF = none)
+cVis	.ds NCARS		; drawn in this frame
+cVisPrev .ds NCARS		; drawn in the frame before
 cHist	.ds NCARS
 CarVarsEnd
 ; where each car was shown in this frame and in the one before (the
@@ -2714,11 +3846,16 @@ hX	.ds NCARS*16
 hY	.ds NCARS*16
 hHead	.ds NCARS*16
 slotRow	.ds RING_ROWS*2
-TextStart
+	.align $400		; screen text: ANTIC lines must not cross 4K
+TextBufs
 textLine .ds 40
-textTitle .ds 20
-textRes	.ds 60
+menuText .ds (OPTS+1)*20
+textHi	.ds 40
+textRes	.ds 80
 TextEnd
+	.if (TextBufs^(TextEnd-1))&$F000
+	.error "text buffers cross a 4K boundary"
+	.endif
 dliColPF0 = $03E8		; same shadows as SpeedMaza
 dliColPF1 = $03E9
 dliColPF2 = $03EA
@@ -2727,8 +3864,8 @@ dliColBK  = $03EB
 ; ======================================================================
 	icl 'gen/tables.asm'
 	icl 'gen/speedmaza_data.asm'
-trackRle
-	ins 'data/track_rle.bin'
+tracksHigh			; packed tracks that did not fit at LOW_AREA
+	ins 'data/tracks_high.bin'
 TablesEnd
 	.if TablesEnd > $BC00
 	.error "program too big"
@@ -2738,5 +3875,7 @@ TablesEnd
 	ins 'data/rmt_player.bin'
 	org MUSIC_TITLE
 	ins 'data/music.bin'
+	org LOW_TEMP			; moved to LOW_AREA by MoveLow at start
+	ins 'data/tracks_low.bin'
 
 	run Start

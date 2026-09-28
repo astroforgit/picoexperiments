@@ -1,45 +1,62 @@
 # SPEEDMAZA GRAND PRIX
 
-A 3-car, 3-lap race for Atari XL/XE, made from
+A race for up to three cars on Atari XL/XE, made from
 [SPEEDMAZA RACE](../race). It keeps SpeedMaza's look: status bar, DLI colour
-bars, two-colour track with walls pulsing to the music, and the "MAZA
-PASSED!" screen. It uses the curvy PICO-8 track, drawn twice the PICO-8 size
-with a road wide enough for three cars.
+bands, two-colour tracks with walls pulsing to the music, and the "MAZA
+PASSED!" screen. It races on the four tracks of the PICO-8 "1k racing" game
+([`../picospeed.txt`](../picospeed.txt)), drawn twice the PICO-8 size, with
+S-bends on the straights and a road wide enough for three cars.
 
-## Playing
+![tracks](gen/tracks_preview.png)
 
-On the title screen, move the joystick or press SELECT to choose:
+## Options screen
 
-- **1 PLAYER:** you against two computer cars.
-- **2 PLAYERS:** joystick 1 and joystick 2, plus one computer car.
+Joystick up/down picks a line, left/right changes it. Fire, SPACE or START
+starts the race.
 
-Press fire, SPACE or START to go to the grid. Press fire again to start the
-race. ESC goes back to the title.
-
-| Joystick | What it does |
+| Option | Choices |
 |---|---|
-| Left / right | Steer |
-| Up / down | A little faster / slower (up to ±25%) |
+| PLAYERS | 1 (you + 2 computer cars) or 2 (joysticks 1 and 2 + 1 computer car) |
+| TRACK | 1–4 |
+| LAPS | 1–5 |
+| DIFFICULTY | EASY, NORMAL or HARD: how fast the computer cars drive, how much they brake before bends, and how hard they chase you |
+| SPEED | SLOW, NORMAL or FAST: start speed, how fast it grows, and its limit |
+| OIL | ON or OFF: oil patches on the road |
+| FLASH | How much the screen flashes. NONE: steady colours. SOFT: the walls pulse gently with the music, nothing flashes. NORMAL: as in SpeedMaza, the pulsing grows and the road and borders flash late in the race. HARD: the same, four times sooner |
 
-Everybody's speed also grows with time, as in SpeedMaza, up to a limit.
+The HI SCORE is the best human score.
 
-- **Walls:** you can't leave the road. Hitting a wall bounces the car back
-  onto the road, turns it a little towards the track, slows it down for half
-  a second, and costs **25 points**.
-- **Other cars:** when two cars touch, they swap speeds and are pushed apart,
-  so ramming someone from behind shoves them forward and slows you down.
-- **Falling behind:** the screen follows the leader. A car that drops off the
-  screen comes back just behind the leader, pointing the right way and on the
-  leader's lap, and loses **100 points**.
-- **Points:** +10 for every checkpoint (about 130 per lap). The winner gets
-  **+1000**, second place **+500**.
-- **End of the race:** a moment after the second car finishes, the results
-  screen lists the cars by points. The best human score becomes the HI SCORE
-  on the title screen.
+## Racing
+
+- **Start:** 3-2-1-GO with beeps. The bottom lines show the track and the
+  number of laps.
+- **Controls:** joystick left/right steers. Up/down makes the car a little
+  faster/slower (±25%). Everybody's speed also grows with time, as in
+  SpeedMaza.
+- **Walls:** you can't leave the road. The car bangs (noise), bounces back,
+  turns a little towards the track, is slowed for half a second, and loses
+  **25 points**.
+- **Other cars:** cars that touch swap speeds and are pushed apart (thud).
+- **Oil** (grey patches): the car slides with almost no grip for a moment
+  and wobbles.
+- **The screen** follows you in 1-player mode, and the leading human in
+  2-player mode.
+- **Falling behind (2 players):** if the trailing player drops off the
+  screen, they come back just behind the leader, on the leader's lap, and
+  lose **100 points**.
+- **Computer cars** are never put back. They drive on out of sight with the
+  same physics and walls (the game checks their position against the
+  track), take their checkpoints and laps, and reappear when they catch up
+  or are caught.
+- **Points:** +10 per checkpoint (about 110–130 per lap). The winner of a
+  race gets **+1000**, second place **+500**.
+- **End of a race:** it ends a moment after the second car finishes. The
+  results screen lists the cars by points.
+- **ESC** goes back to the options.
 
 The status bar shows the race time. The two lines at the bottom show each
-car's points and lap (or its place once it has finished), in the car's
-colour: orange (P1), blue (P2 or AI) and green (AI).
+car's points and lap (or its place), in the car's colour: orange (P1), blue
+(P2 or AI) and green (AI).
 
 ## Build and run
 
@@ -55,41 +72,45 @@ file switches BASIC off while loading).
 
 ## How it works
 
-It uses the same engine as [SPEEDMAZA RACE](../race/README.md): a compressed
-map unpacked into a ring of rows, two display lists switched in the vertical
-blank, and the PICO-8 drift physics. The differences:
-
-- **Cars.** Players 0-2 draw the three cars (8 pixels wide, 32 directions).
-  Each car's state is kept in arrays and copied to the zero-page working set
-  for the physics.
-- **Collisions.** Hardware collision registers are used: P*n*PF for walls and
-  P*n*PL between cars. They describe the frame just shown, so the game
-  remembers where each car was shown. The last shown place without a wall
-  hit is where a car goes back to.
-- **Screen.** The display list has the SpeedMaza status bar, 23 mode 8 track
-  lines, then two mode 6 text lines. A second DLI sets the car colours for
-  the text lines.
-- **Camera and respawn.** The camera follows the leader: most laps, then most
-  checkpoints. Every 4 frames each car remembers its position. A car that
-  falls off the screen is put where the leader was 8 frames earlier.
-- **Computer cars.** They steer towards the next checkpoint, as the race's
-  autopilot does. The second one drives slightly slower.
+- **Tracks.** `tools/make_data.py` draws each PICO-8 track into an ANTIC
+  mode 8 map, as the race does, and stores every row as its road spans.
+  Most rows are stored as small changes from the row above. That stream and
+  the checkpoint tables are packed with a small LZ77 variant, about 2 KB per
+  track, 8 KB for all four.
+  - Three packed tracks load at `$6000` and are moved to `$0700-$1FFF` at
+    start-up, where DOS was; the fourth sits after the code.
+  - When a race starts, `LoadTrack` unpacks the chosen track to `$6000` and
+    rebuilds the rows in the work area at `$3000`. From there they are
+    unpacked into the ring of 32 rows as the screen scrolls.
+  - The generator checks that its Python copy of this rebuild gives the
+    same rows, and the 6502 code was checked against it in a simulator.
+- **Computer cars.** They steer towards the next checkpoint. Their throttle
+  is: difficulty level, minus braking by the sharpness of the next bends
+  (precomputed per checkpoint), plus a rubber band (faster when behind the
+  best human, slower when ahead).
+  - Off the screen there are no collision registers, so each frame their
+    centre is looked up in the track's span rows (`OnRoad`), and a wall
+    bounces them as on screen.
+  - After any wall hit a car also steps a few pixels towards its next
+    checkpoint, which becomes its safe place, so a car pressed against a
+    wall always gets back onto the road.
+- **Oil.** Patches are drawn into the rows as they are unpacked (colour 1).
+  The PnPF collision bit for colour 1 makes a car slide.
+- **Sound.** Effects play on channel 4, written right after the RMT player
+  each frame, so they sound over the music.
+- **The rest** is as in the first version: players 0-2 are the cars,
+  hardware collisions for walls and cars, respawn from the leader's
+  position history, and two text lines under the track.
 
 ## Tuning
 
-Constants at the top of `grandprix.asm`:
+At the top of `grandprix.asm`: `TURN`, `THR_MAX`, `GRIP_*`, `OIL_TIME`,
+`STUN_*`, `COUNT_STEP` and `PT_*` (points). Next to the options screen:
+`spdStart/spdAcc/spdMax` (the SPEED choices), `optDefault` (the options at
+power-on) and `aiLevel/aiBrake/aiBand` (the DIFFICULTY choices).
 
-| Constant | What it sets |
-|---|---|
-| `LAPS` | Number of laps |
-| `SPEED_START`, `SPEED_ACC`, `SPEED_MAX` | Starting speed, how fast it grows, and its limit |
-| `THR_MAX` | How much up/down changes the speed |
-| `TURN` | Steering rate |
-| `STUN_WALL`, `STUN_BUMP` | How long a car stays slowed after a hit |
-| `AI_THR`, `AI2_THR` | Speed of the computer cars |
-| `PT_*` | Points |
+In `tools/make_data.py`: `SCALE`, `ROAD_R`, `WIGGLE_*` (track shape), `GRID`
+(starting places) and `OIL` (patches per track).
 
-In `tools/make_data.py`, `SCALE`, `ROAD_R` and `WIGGLE_*` set the track, and
-`GRID` sets the starting places.
-
-With the defaults a lap takes about a minute and the race about 3 minutes.
+For testing, `mads grandprix.asm -d:AUTOPILOT=1 -d:TESTOPT=1` builds a
+self-driving 1-lap race.
