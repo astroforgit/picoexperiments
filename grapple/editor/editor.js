@@ -14,6 +14,12 @@ let selectedChaseSpeed = 500;
 const entityId = document.querySelector("#entityId");
 const VBXE_TILE_IDS = new Set([-1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
   13, 14, 16, 17, 18]);
+// Later art the Atari port has no assets for. The browser game draws and
+// spawns these; a map using them still loads, but cannot be built for VBXE.
+const BROWSER_ONLY_TILE_IDS = new Set([19, 20, 21, 22, 23, 24, 25]);
+const KNOWN_TILE_IDS = new Set([...VBXE_TILE_IDS, ...BROWSER_ONLY_TILE_IDS]);
+const WALL_TILE_IDS = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+  19, 20, 21, 22, 23]);
 const TILE_DEFS = [
   {id: -1, name: "Empty", kind: "empty"},
   {id: 1, name: "Wall 1", kind: "wall"},
@@ -31,7 +37,14 @@ const TILE_DEFS = [
   {id: 14, name: "Cannon", kind: "entity"},
   {id: 16, name: "Spikes", kind: "entity"},
   {id: 17, name: "Thwomp", kind: "entity"},
-  {id: 18, name: "Lava", kind: "entity"}
+  {id: 18, name: "Lava", kind: "entity"},
+  {id: 19, name: "Dripstone", kind: "wall"},
+  {id: 20, name: "Crystals", kind: "wall"},
+  {id: 21, name: "Masonry", kind: "wall"},
+  {id: 22, name: "Arrow slit", kind: "wall"},
+  {id: 23, name: "Binary", kind: "wall"},
+  {id: 24, name: "Sawblade", kind: "entity"},
+  {id: 25, name: "Flame vent", kind: "entity"}
 ];
 const LEGACY_LAVA = [
   {x: 2.5, y: 124.25, width: 5, height: 2.5},
@@ -156,7 +169,7 @@ function validateAndNormalizeMap(data) {
     if (seen.has(index)) throw new Error(`Duplicate tile coordinate: ${x}, ${y}`);
     seen.add(index);
     const sourceTile = Number(cell.tile);
-    const tile = Number.isInteger(sourceTile) && VBXE_TILE_IDS.has(sourceTile) ?
+    const tile = Number.isInteger(sourceTile) && KNOWN_TILE_IDS.has(sourceTile) ?
       sourceTile : -1;
     normalized[index] = cloneCell({
       x, y, index,
@@ -203,9 +216,12 @@ function tileDefinition(id) {
 
 function fallbackColor(id) {
   if (id < 0) return "#080a11";
-  if (id <= 10) return ["#421d30", "#512238", "#602740", "#6e2d48"][id % 4];
+  if (WALL_TILE_IDS.has(id)) {
+    return ["#421d30", "#512238", "#602740", "#6e2d48"][id % 4];
+  }
   return {11: "#69d98a", 12: "#a68cff", 13: "#ff3157", 14: "#ff8a3d",
-    15: "#db4fff", 16: "#f7f4fa", 17: "#59bfe8", 18: "#ff6a00"}[id] || "#fff";
+    15: "#db4fff", 16: "#f7f4fa", 17: "#59bfe8", 18: "#ff6a00",
+    24: "#ffd166", 25: "#ff5c2b"}[id] || "#fff";
 }
 
 function drawDirectionArrow(target, x, y, size, rotation) {
@@ -236,28 +252,38 @@ function drawDirectionArrow(target, x, y, size, rotation) {
   target.restore();
 }
 
+function drawTilesetArt(target, cell, x, y, size) {
+  if (!tileset.complete || !tileset.naturalWidth) return;
+  const sourceX = (cell.tile % 8) * TILE_SIZE;
+  const sourceY = Math.floor(cell.tile / 8) * TILE_SIZE;
+  target.save();
+  target.translate(x + size / 2, y + size / 2);
+  target.rotate(cell.rot * Math.PI / 2);
+  target.scale(cell.flipX ? -1 : 1, 1);
+  target.imageSmoothingEnabled = false;
+  target.drawImage(tileset, sourceX, sourceY, TILE_SIZE, TILE_SIZE,
+    -size / 2, -size / 2, size, size);
+  target.restore();
+}
+
 function drawTile(target, cell, x, y, size, grid) {
   target.fillStyle = "#080a11";
   target.fillRect(x, y, size, size);
   if (cell.tile === 18) {
     target.fillStyle = "#ff6a00";
     target.fillRect(x + 1, y + 1, size - 2, size - 2);
-  } else if (cell.tile >= 1 && cell.tile <= 10) {
+  } else if (WALL_TILE_IDS.has(cell.tile)) {
     target.fillStyle = fallbackColor(cell.tile);
     target.fillRect(x, y, size, size);
     target.fillStyle = "rgba(255,255,255,.055)";
     target.fillRect(x, y, size, Math.max(1, size / 10));
+    // Tiles 1-10 carry no art of their own. The later wall tiles do, and it
+    // is the only thing telling masonry from dripstone, so it goes on top of
+    // the fill rather than replacing it -- a black tile on the near-black
+    // editor background would read as a hole.
+    if (cell.tile >= 11) drawTilesetArt(target, cell, x, y, size);
   } else if (cell.tile >= 11 && tileset.complete && tileset.naturalWidth) {
-    const sourceX = (cell.tile % 8) * TILE_SIZE;
-    const sourceY = Math.floor(cell.tile / 8) * TILE_SIZE;
-    target.save();
-    target.translate(x + size / 2, y + size / 2);
-    target.rotate(cell.rot * Math.PI / 2);
-    target.scale(cell.flipX ? -1 : 1, 1);
-    target.imageSmoothingEnabled = false;
-    target.drawImage(tileset, sourceX, sourceY, TILE_SIZE, TILE_SIZE,
-      -size / 2, -size / 2, size, size);
-    target.restore();
+    drawTilesetArt(target, cell, x, y, size);
   } else if (cell.tile >= 1) {
     target.fillStyle = fallbackColor(cell.tile);
     target.fillRect(x + 1, y + 1, size - 2, size - 2);
@@ -299,7 +325,7 @@ function pointHitsLevel(canvasX, canvasY) {
   const row = Math.floor(canvasY / TILE_SIZE);
   if (col < 0 || col >= COLS || row < 0 || row >= ROWS) return true;
   const tile = mapCells[row * COLS + col].tile;
-  return (tile >= 1 && tile <= 10) || tile === 18;
+  return WALL_TILE_IDS.has(tile) || tile === 18;
 }
 
 function drawCannonTrack(cell) {
@@ -663,7 +689,7 @@ function setStatus(message) {
 }
 
 function updateCounts() {
-  const solids = mapCells.filter(cell => cell.tile >= 1 && cell.tile <= 10).length;
+  const solids = mapCells.filter(cell => WALL_TILE_IDS.has(cell.tile)).length;
   const lava = mapCells.filter(cell => cell.tile === 18).length;
   const entities = mapCells.filter(cell => [11, 13, 14, 16, 17].includes(
     cell.tile)).length;
@@ -687,12 +713,27 @@ function updateBuildStatus() {
     const value = document.createElement("span"); value.textContent = `${count} / ${tile === 18 ? "0–" : "1–"}${required}`;
     line.append(label, value); details.append(line);
   }
+  // Browser-only art is a different kind of problem from a count being out of
+  // range: no amount of editing the count fixes it, the port simply has no
+  // assets for these tiles, so it is reported separately from the limits.
+  const browserOnly = mapCells.filter(c => BROWSER_ONLY_TILE_IDS.has(c.tile)).length;
+  if (browserOnly) {
+    const line = document.createElement("div");
+    line.className = "limit-row invalid";
+    const label = document.createElement("span");
+    label.textContent = "Browser-only tiles";
+    const value = document.createElement("span");
+    value.textContent = `${browserOnly} / 0`;
+    line.append(label, value); details.append(line);
+  }
   const note = document.createElement("p");
   note.textContent = "Atari supports these ranges; the combined tables must also fit native memory. The build checks this. Browser playtests accept other counts.";
   details.append(note);
   const status = document.querySelector("#buildStatus");
-  status.classList.toggle("warning", problems > 0);
-  status.textContent = problems ? `${problems} entity counts need attention for the Atari build. Playtesting is available.` :
+  status.classList.toggle("warning", problems > 0 || browserOnly > 0);
+  status.textContent = browserOnly ?
+    `${browserOnly} tiles the Atari port has no art for. Playtesting is available.` :
+    problems ? `${problems} entity counts need attention for the Atari build. Playtesting is available.` :
     "Entity counts match the Atari build.";
 }
 

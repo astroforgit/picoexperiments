@@ -1,6 +1,7 @@
 ; Sven workshop adaptation, MADS / Atari XL/XE + VBXE FX.
 ; VRAM: 00000/10000 framebuffers, 20000 meadow, 2FA00 sprites,
 ; Sprites are 56x32 at a common 40% scale.
+; $60000 title bitmap (320x200), independent palette in CPU RAM.
 ; 7F000 XDLs, 7F100 blitter command. CPU window: 9000-9FFF.
 reg = $cb
 src = $cd
@@ -13,7 +14,7 @@ MODE_PAUSE = 4
 SPRITE_W = 56
 SPRITE_H = 32
 SPRITE_SIZE = SPRITE_W*SPRITE_H
-SPRITE_COUNT = 38
+SPRITE_COUNT = 106
         org $2000
 upload_bank
         cld
@@ -191,5 +192,6 @@ loop
         icl 'game.asm'
         icl 'renderer.asm'
         ert * > $8000
-        ert $2fa00+SPRITE_COUNT*SPRITE_SIZE > $7f000
+        ert $2fa00+SPRITE_COUNT*SPRITE_SIZE > $60000
+        ert $60000+320*200 > $7f000
         run main

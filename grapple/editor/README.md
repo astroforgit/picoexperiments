@@ -22,9 +22,10 @@ default. An alternative port can be supplied as the first argument.
 
 - Paint with the left mouse button and erase with the right mouse button.
 - Use Brush, Erase, Fill, or Pick from the tool panel.
-- The palette only contains elements implemented by the VBXE game: walls,
-  checkpoints, moving bricks, cannons, spikes, thwomps, and lava. Browser-only
-  bats and the boss are removed when an old map is loaded.
+- The palette contains the elements implemented by the VBXE game -- walls,
+  checkpoints, moving bricks, cannons, spikes, thwomps, and lava -- followed by
+  the browser-only tiles described below. Bats and the boss have no palette
+  entry and are removed when an old map is loaded.
 - Lava is an ordinary single-cell tile. Paint, fill, pick, and erase it exactly
   like spikes; there is no rectangle-selection mode or four-area limit. The
   compact 6502 data table supports up to 85 lava tiles.
@@ -43,6 +44,27 @@ default. An alternative port can be supplied as the first argument.
 - Click or drag in the overview to scroll through the full-height level. The
   mouse wheel over the overview moves eight rows at a time.
 - Undo and redo use `Ctrl+Z` and `Ctrl+Y`.
+
+### Browser-only tiles
+
+The last seven palette entries -- Dripstone, Crystals, Masonry, Arrow slit,
+Binary, Sawblade and Flame vent -- exist in the browser game only. The Atari
+port has no assets for them, so the build panel reports any of them on the map
+as a problem and names the count; it is not a limit that can be edited down.
+They are kept in the palette rather than in a separate tool because a level is
+laid out once, and splitting placement across two editors is worse than a
+warning.
+
+The five terrain tiles are solid walls like tiles 1-10, decorated for the zone
+they belong to: dripstone and crystals for the caves, masonry and the arrow
+slit for the castle band, binary for the digital depths. The two hazards are
+entities. A sawblade is always deadly and, unlike spikes, cuts the grapple, so
+it cannot be swung past. A flame vent rests, sparks a warning, then burns, and
+is only deadly while it burns; `R` aims it, so it works on a ceiling or a wall.
+
+All seven come from `grapple/design/make_tiles.py`, which rewrites
+`grapple/bin/assets/world.png` in place and regenerates the two hazard sheets.
+Edit the shapes there rather than the PNGs.
 
 The editor autosaves changes in browser storage. **Export world.json** creates
 a normal JSON download. To use it in the game, replace
@@ -159,6 +181,8 @@ node grapple/editor/browser.test.cjs
 node grapple/editor/assets-core.test.cjs
 # Optional: Assets tab UI, requires Playwright and the editor server
 node grapple/editor/assets.test.cjs
+# Terrain and hazard art, and the tile ids the game and editor must agree on
+node grapple/editor/tiles.test.cjs
 ```
 
 The assembly comparison checks 100 player ticks and 125 ticks of the nine-thwomp

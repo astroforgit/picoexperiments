@@ -1,4 +1,4 @@
-param([int]$ProcessId, [string]$OutputPath, [string]$Key = '', [int]$HoldMilliseconds = 250)
+param([int]$ProcessId, [string]$OutputPath, [string]$Key = '', [int]$HoldMilliseconds = 250, [switch]$DoublePress)
 $ErrorActionPreference = 'Stop'
 if (-not ('SvenWindow' -as [type])) {
 Add-Type @'
@@ -30,9 +30,12 @@ $keys = @{ A=65; D=68; W=87; S=83; P=80; R=82; Space=32; Left=37; Up=38; Right=3
 if ($Key) {
  $vk = $keys[$Key]
  if (-not $vk) { throw 'Unknown key' }
+ for ($press=0; $press -lt $(if ($DoublePress) {2} else {1}); $press++) {
  [SvenWindow]::keybd_event([byte]$vk,0,0,[UIntPtr]::Zero)
  try { Start-Sleep -Milliseconds $HoldMilliseconds }
  finally { [SvenWindow]::keybd_event([byte]$vk,0,2,[UIntPtr]::Zero) }
+ if ($DoublePress) { Start-Sleep -Milliseconds 80 }
+ }
  Start-Sleep -Milliseconds 200
 }
 if ($OutputPath) {

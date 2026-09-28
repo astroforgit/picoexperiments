@@ -1,3 +1,4 @@
+# Legacy checkpoint timing exercise; active enemies now affect idle runs.
 param([Parameter(Mandatory=$true)][int]$ProcessId)
 $ErrorActionPreference = 'Stop'
 $evidence = Join-Path $PSScriptRoot '../evidence'

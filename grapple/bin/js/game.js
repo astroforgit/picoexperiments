@@ -10964,6 +10964,8 @@ var Assets;
             } },
         'bat': { anchor: Vector2.CENTER, spritesheet: { frameWidth: 16, frameHeight: 16 } },
         'mover': { anchor: Vector2.CENTER },
+        'sawblade': { anchor: Vector2.CENTER, spritesheet: { frameWidth: 16, frameHeight: 16 } },
+        'flamevent': { anchor: Vector2.CENTER, spritesheet: { frameWidth: 16, frameHeight: 16 } },
         'cannon': { anchor: Vector2.CENTER },
         'cannonball': { anchor: Vector2.CENTER },
         'bubble': { anchor: Vector2.CENTER },
@@ -11002,7 +11004,8 @@ var Assets;
         'world': {
             tileWidth: 16,
             tileHeight: 16,
-            collisionIndices: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+            // 19-23 are the later decoration tiles; they are walls like 1-10.
+            collisionIndices: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 19, 20, 21, 22, 23],
         },
     };
     Assets.pyxelTilemaps = {
@@ -11852,6 +11855,89 @@ var DepthFilter = /** @class */ (function (_super) {
     };
     return DepthFilter;
 }(TextureFilter));
+/* A nozzle in the rock that fires on a fixed cycle.
+ *
+ * Every other hazard in the caves is deadly the whole time it is on screen, so
+ * the only answer to one is a route around it. The vent instead sells a safe
+ * window: it rests, it sparks as a warning, it burns, and the player who reads
+ * the tell crosses the gap it is guarding. The warning state is what makes the
+ * hazard fair, so it is never skipped, however short it gets.
+ *
+ * The tile's rotation aims it, so a vent works on a ceiling or a wall. */
+var FlameVent = /** @class */ (function (_super) {
+    __extends(FlameVent, _super);
+    function FlameVent(x, y, angle) {
+        var _this = _super.call(this, {
+            x: x, y: y,
+            angle: angle,
+            animations: [
+                Animations.fromTextureList({ name: 'dormant', texturePrefix: 'flamevent', textures: [0], frameRate: 1 }),
+                // The warning flickers between the bare housing and a lick of
+                // flame; the burn cycles the two tall frames so the jet never
+                // sits still.
+                Animations.fromTextureList({ name: 'warn', texturePrefix: 'flamevent', textures: [0, 1], frameRate: 8, count: -1 }),
+                Animations.fromTextureList({ name: 'burn', texturePrefix: 'flamevent', textures: [3, 2], frameRate: 12, count: -1 }),
+            ],
+            defaultAnimation: 'dormant',
+            layer: 'entities',
+            physicsGroup: 'hazards',
+            // On the flame, not on the housing: the housing is the part that is
+            // safe to stand next to, and the player must be able to.
+            bounds: FlameVent.jetBounds(angle),
+            colliding: false,
+            tags: ['deadly'],
+        }) || this;
+        _this.DORMANT_TIME = 1.5;
+        _this.WARN_TIME = 0.5;
+        _this.BURN_TIME = 1.1;
+        _this.stateMachine.addState('dormant', {
+            callback: function () {
+                _this.playAnimation('dormant');
+                _this.colliding = false;
+            },
+            script: S.wait(_this.DORMANT_TIME),
+            transitions: [{ toState: 'warn' }]
+        });
+        _this.stateMachine.addState('warn', {
+            callback: function () { return _this.playAnimation('warn'); },
+            script: S.wait(_this.WARN_TIME),
+            transitions: [{ toState: 'burn' }]
+        });
+        _this.stateMachine.addState('burn', {
+            callback: function () {
+                _this.playAnimation('burn');
+                _this.colliding = true;
+            },
+            script: S.wait(_this.BURN_TIME),
+            transitions: [{ toState: 'dormant' }]
+        });
+        // Vents placed in a row would otherwise fire in lockstep, which turns a
+        // corridor of them into one wide gate instead of a rhythm. Waiting out
+        // a random slice of the cycle before the first one starts scatters them
+        // without giving each vent a period of its own.
+        _this.stateMachine.addState('stagger', {
+            callback: function () {
+                _this.playAnimation('dormant');
+                _this.colliding = false;
+            },
+            script: S.wait(Random.float(_this.DORMANT_TIME + _this.WARN_TIME + _this.BURN_TIME)),
+            transitions: [{ toState: 'warn' }]
+        });
+        _this.setState('stagger');
+        return _this;
+    }
+    return FlameVent;
+}(Sprite));
+(function (FlameVent) {
+    /* The jet leaves the housing along the tile's up axis, whichever way the
+     * tile was turned. Computed here rather than in the constructor body
+     * because the bounds have to exist before the sprite does. */
+    function jetBounds(angle) {
+        var jet = Vector2.UP.rotated(angle);
+        return new CircleBounds(jet.x * 3, jet.y * 3, 5);
+    }
+    FlameVent.jetBounds = jetBounds;
+})(FlameVent || (FlameVent = {}));
 var Grapple = /** @class */ (function (_super) {
     __extends(Grapple, _super);
     function Grapple(source, offx, offy, direction, color) {
@@ -12316,6 +12402,7 @@ var stages = {
                 'movers': {},
                 'enemies': {},
                 'cannons': { immovable: true },
+                'hazards': { immovable: true },
                 'cannonballs': {},
                 'checkpoints': {},
                 'water': {},
@@ -12331,6 +12418,10 @@ var stages = {
                 { move: 'player', from: 'enemies' },
                 { move: 'cannonballs', from: 'walls' },
                 { move: 'player', from: 'cannons' },
+                { move: 'player', from: 'hazards' },
+                // Not for displacement -- hazards are all deadly or rope-cutting
+                // on contact -- but the grapple has to be told it hit one.
+                { move: 'grapple', from: 'hazards' },
                 { move: 'player', from: 'cannonballs' },
                 { move: 'grapple', from: 'walls' },
                 { move: 'grapple', from: 'enemies' },
@@ -12349,6 +12440,8 @@ var stages = {
             15: function (x, y, tile) { return new Boss(x + 8, y + 8); },
             16: function (x, y, tile) { return new Spikes(x + 8, y + 8, tile.angle); },
             17: function (x, y, tile) { return new Thwomp(x + 8, y + 8); },
+            24: function (x, y, tile) { return new Sawblade(x + 8, y + 8); },
+            25: function (x, y, tile) { return new FlameVent(x + 8, y + 8, tile.angle); },
         };
         var tiles = world.addWorldObject(new Tilemap({
             x: -16, y: -16,
@@ -12713,6 +12806,31 @@ var Puff = /** @class */ (function (_super) {
     }
     Puff.puffWater = puffWater;
 })(Puff || (Puff = {}));
+/* A blade bolted to the rock, always spinning, always deadly.
+ *
+ * It differs from spikes in the one way that matters to a grappling game: the
+ * rope cannot survive it. Spikes are a wall you must not touch but may swing
+ * from; a sawblade cuts the line, so the route past it has to be solved with
+ * momentum already in hand. */
+var Sawblade = /** @class */ (function (_super) {
+    __extends(Sawblade, _super);
+    function Sawblade(x, y) {
+        return _super.call(this, {
+            x: x, y: y,
+            animations: [
+                Animations.fromTextureList({ name: 'spin', texturePrefix: 'sawblade', textures: [0, 1, 2, 3], frameRate: 16, count: -1 }),
+            ],
+            defaultAnimation: 'spin',
+            layer: 'entities',
+            physicsGroup: 'hazards',
+            // Round, unlike the square spike bounds: a blade the player passes
+            // at the corner should not kill across empty tile.
+            bounds: new CircleBounds(0, 0, 7),
+            tags: ['deadly', 'no_grapple'],
+        }) || this;
+    }
+    return Sawblade;
+}(Sprite));
 var Spikes = /** @class */ (function (_super) {
     __extends(Spikes, _super);
     function Spikes(x, y, angle) {

@@ -24,6 +24,7 @@ const stages: Dict<Factory<World>> = {
                 'movers': {},
                 'enemies': {},
                 'cannons': { immovable: true },
+                'hazards': { immovable: true },
                 'cannonballs': {},
                 'checkpoints': {},
                 'water': {},
@@ -39,6 +40,10 @@ const stages: Dict<Factory<World>> = {
                 { move: 'player', from: 'enemies' },
                 { move: 'cannonballs', from: 'walls' },
                 { move: 'player', from: 'cannons' },
+                { move: 'player', from: 'hazards' },
+                // Not for displacement -- hazards are all deadly or rope-cutting
+                // on contact -- but the grapple has to be told it hit one.
+                { move: 'grapple', from: 'hazards' },
                 { move: 'player', from: 'cannonballs' },
                 { move: 'grapple', from: 'walls' },
                 { move: 'grapple', from: 'enemies' },
@@ -58,6 +63,8 @@ const stages: Dict<Factory<World>> = {
             15: (x, y, tile) => new Boss(x+8, y+8),
             16: (x, y, tile) => new Spikes(x+8, y+8, tile.angle),
             17: (x, y, tile) => new Thwomp(x+8, y+8),
+            24: (x, y, tile) => new Sawblade(x+8, y+8),
+            25: (x, y, tile) => new FlameVent(x+8, y+8, tile.angle),
         };
 
         let tiles = world.addWorldObject(new Tilemap({

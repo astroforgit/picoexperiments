@@ -1,5 +1,16 @@
 # Heroes of Lowrez — Atari VBXE prototype
 
+The native **[Greenhaven city screen](city/README.md)** is available separately
+as [city/city-vbxe.xex](city/city-vbxe.xex): five selectable building plots,
+three visual tiers per building, separate building and recruitment actions,
+and five selectable army slots with unit upgrades and dismissal refunds. Duplicate fighters are allowed in all five slots. The city now enters its own
+colorful VBXE battle view, with twelve contracts, rewards and region unlocks. It uses replaceable colorful fantasy PNG components. The battle
+prototype below remains independently runnable.
+
+Select the city's top-center wall gate and press Fire for the encounter map;
+select its lower-left arch with the sunlit green landscape to return. Both
+screens use the same controls.
+
 This is a native 6502/MADS port of the browser prototype in `../web`. It uses
 the same deliberately small data model: a fixed 7×6 odd-row hex board, byte
 arrays for terrain and units, four table-driven battles, and deterministic

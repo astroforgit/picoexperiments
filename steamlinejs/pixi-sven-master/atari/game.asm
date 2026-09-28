@@ -13,6 +13,8 @@ restart
         sta sim_fraction
         sta sound_ticks
         sta fire_pending
+        sta fire_click_ticks
+        sta whistle_pending
         sta $d201
         lda #90
         sta seconds
@@ -26,6 +28,7 @@ reset_sheep
         sta vanish,x
         dex
         bpl reset_sheep
+        jsr init_milestone
         jsr reset_clock
         jmp refresh_message
 
@@ -101,6 +104,19 @@ keyboard_done
         bne console_input
         lda #1
         sta fire_pending
+        lda mode
+        cmp #MODE_PLAY
+        bne console_input
+        lda fire_click_ticks
+        beq first_fire_click
+        lda #0
+        sta fire_click_ticks
+        lda #1
+        sta whistle_pending
+        bne console_input
+first_fire_click
+        lda #15                    ; second press within 0.30 seconds
+        sta fire_click_ticks
 console_input
         lda $d01f
         and #7
@@ -159,6 +175,8 @@ set_pause
         sta mode
         lda #0
         sta fire_pending
+        sta fire_click_ticks
+        sta whistle_pending
         sta $d201
         jsr reset_clock
         jsr refresh_message
@@ -208,6 +226,7 @@ elapsed_low
         bcc sim_time
         lda #0
         sta time_frames
+        jsr age_sheep
         dec seconds
         bne sim_time
         lda #MODE_LOSE
@@ -247,8 +266,23 @@ game_tick
         lda mode
         cmp #MODE_PLAY
         bne tick_done
+        inc world_tick
+        jsr update_protection
+        jsr update_effects
+        lda stun_ticks
+        bne player_stunned
         jsr move_player
-        jsr collect
+        lda speed_ticks
+        beq player_stunned
+        jsr check_water
+        jsr move_player
+player_stunned
+        jsr check_water
+        jsr update_sheep
+        jsr update_enemies
+        jsr interact
+        jsr check_hazards
+        jsr check_mushrooms
 tick_done
         rts
 
@@ -303,7 +337,7 @@ move_up
         lda #4
         sta direction
         lda py
-        cmp #43
+        cmp #15
         bcc animation
         dec py
         inc moving
@@ -312,7 +346,7 @@ move_down
         lda #0
         sta direction
         lda py
-        cmp #148
+        cmp #160
         bcs animation
         inc py
         inc moving
@@ -326,71 +360,11 @@ stop_animation
         sta phase
         rts
 
-collect
-        lda fire_pending
-        beq collect_done
-        lda #0
-        sta fire_pending
-        ; Choose the nearest eligible sheep, using Manhattan distance.
-        lda #255
-        sta nearest
-        sta best_distance
-        ldx #7
-near_sheep
-        lda alive,x
-        cmp #1
-        bne next_sheep
-        lda px
-        sec
-        sbc sheep_x,x
-        bcs positive_x
-        eor #255
-        adc #1
-positive_x
-        cmp #23
-        bcs next_sheep
-        sta distance
-        lda py
-        sec
-        sbc sheep_y,x
-        bcs positive_y
-        eor #255
-        adc #1
-positive_y
-        cmp #17
-        bcs next_sheep
-        clc
-        adc distance
-        cmp best_distance
-        bcs next_sheep
-        sta best_distance
-        stx nearest
-next_sheep
-        dex
-        bpl near_sheep
-        ldx nearest
-        bmi collect_done
-        lda #2
-        sta alive,x
-        inc score
-        lda #12
-        sta sound_ticks
-        lda #60
-        sta sound_pitch
-        lda score
-        cmp #8
-        bne collect_done
-        lda #MODE_WIN
-        sta mode
-        lda #30
-        sta sound_ticks
-        lda #30
-        sta sound_pitch
-        jsr refresh_message
-collect_done
-        rts
-
 update_vanish
+        lda battle_ticks
+        beq battle_done
+        dec battle_ticks
+battle_done
         ldx #7
 vanish_loop
         lda alive,x
@@ -433,6 +407,25 @@ silence
 
 refresh_message
         ldx mode
+        cpx #MODE_LOSE
+        bne normal_message
+        lda lives
+        bne normal_message
+        mwa #caught src
+        jmp message
+normal_message
+        cpx #MODE_PLAY
+        bne default_message
+        lda shock_ticks
+        beq speed_message
+        mwa #shocked_message src
+        jmp message
+speed_message
+        lda speed_ticks
+        beq default_message
+        mwa #boost_message src
+        jmp message
+default_message
         lda messages_lo,x
         sta src
         lda messages_hi,x
@@ -481,3 +474,9 @@ alive :8 dta 1
 vanish :8 dta 0
 sheep_x dta 30,95,185,232,55,165,20,205
 sheep_y dta 44,56,42,78,101,101,138,135
+
+        icl 'milestone.asm'
+        icl 'moods.asm'
+
+fire_click_ticks dta 0
+whistle_pending dta 0

@@ -1,3 +1,4 @@
+# Legacy collection-checkpoint route (53f280f). Use emulator-milestone.ps1 for current gameplay.
 param([Parameter(Mandatory=$true)][int]$ProcessId)
 $ErrorActionPreference = 'Stop'
 $evidence = Join-Path $PSScriptRoot '../evidence'

@@ -24,6 +24,8 @@ namespace Assets {
         }},
         'bat': { anchor: Vector2.CENTER, spritesheet: { frameWidth: 16, frameHeight: 16 } },
         'mover': { anchor: Vector2.CENTER },
+        'sawblade': { anchor: Vector2.CENTER, spritesheet: { frameWidth: 16, frameHeight: 16 } },
+        'flamevent': { anchor: Vector2.CENTER, spritesheet: { frameWidth: 16, frameHeight: 16 } },
         'cannon': { anchor: Vector2.CENTER },
         'cannonball': { anchor: Vector2.CENTER },
         'bubble': { anchor: Vector2.CENTER },
@@ -69,7 +71,8 @@ namespace Assets {
         'world': {
             tileWidth: 16,
             tileHeight: 16,
-            collisionIndices: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+            // 19-23 are the later decoration tiles; they are walls like 1-10.
+            collisionIndices: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 19, 20, 21, 22, 23],
         },
     }
 

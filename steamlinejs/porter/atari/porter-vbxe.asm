@@ -18,6 +18,7 @@ SHAPES_V        = $00000
 SCREEN_A_V      = $10000
 ROOM_CACHE_V    = $20000
 SCREEN_B_V      = $30000
+BACKGROUND_V    = $40000
 XDL_A_V         = $7f000
 XDL_B_V         = $7f020
 BCB_V           = $7f100
@@ -50,6 +51,8 @@ MODE_TITLE      = 0
 MODE_PLAY       = 1
 MODE_END        = 2
 
+        icl 'title-loader.asm'
+
 ; --- zero page --------------------------------------------------------------
         opt h-
         org $80
@@ -73,6 +76,8 @@ row_no          org *+1
 col_no          org *+1
 sprite_id       org *+1
 sprite_flip     org *+1
+sprite_width    org *+1
+sprite_height   org *+1
 dest_bank       org *+1
 dest_pitch      org *+2
 room_dirty      org *+1
@@ -120,6 +125,16 @@ room_clock      org *+1
 crumble_x       org *+1
 crumble_y       org *+1
 crumble_time    org *+1
+background_pending org *+1
+audio_fire_prev org *+1
+audio_tele_pending org *+1
+jump_pending    org *+1
+music_ptr       org *+2
+action_lock     org *+1
+action_frames   org *+1
+action_index    org *+1
+action_tick     org *+1
+action_rate     org *+1
 sound_time      org *+1
 sound_enabled   org *+1
 option_latch    org *+1
@@ -145,6 +160,15 @@ carrier_screen
 sprite_bounce
         :256 dta 0
 
+        org $1600
+music_tick      dta 0
+music_row       dta 0
+music_pattern   dta 0
+music_pitch     dta 0,0
+music_volume    dta 0,0
+        icl 'data/music.inc.asm'
+        ert * > $2000
+
 ; --- code -------------------------------------------------------------------
         org $2000
 
@@ -158,6 +182,9 @@ nmi
         pha
         tya
         pha
+        jsr sound_update            ; fixed VBL rate, independent of rendering
+        jsr poll_audio_input
+        jsr music_update
         inc vblank
         pla
         tay
@@ -189,6 +216,7 @@ irq_keyboard
 @irq_keyboard_space
         lda #1
         sta space_pending
+        sta audio_tele_pending
         bne @irq_keyboard_ack
 @irq_keyboard_prev_level
         lda #1
@@ -209,6 +237,25 @@ irq_keyboard
 start
         sei
         lda #0
+        sta sound_enabled
+        sta sound_time
+        sta action_frames
+        sta action_lock
+        sta action_tick
+        sta audio_tele_pending
+        sta jump_pending
+        sta music_tick
+        sta music_row
+        sta music_pattern
+        sta audc1
+        sta audc2
+        sta audc3
+        sta audc4
+        sta audf1
+        sta audf2
+        sta audf3
+        sta audf4
+        sta audctl
         sta nmien
         sta irqen
         sta irqens
@@ -216,6 +263,8 @@ start
         sta 559
         sta colbak
         sta colbaks
+        lda #1
+        sta audio_fire_prev
         lda #3
         sta skctl
         ; Expose RAM under the ROMs for vectors. All game assets are deliberately
@@ -256,7 +305,6 @@ main_loop_after_wait
         jsr read_joystick
         jsr read_keyboard
         jsr update_sound_toggle
-        jsr sound_update
         jsr update_debug_level
         lda game_mode
         cmp #MODE_TITLE
@@ -278,22 +326,21 @@ main_loop_after_wait
 
 title_loop
         inc frame
+        lda space_pressed
+        bne @title_loop_start
         lda joy_pressed
         and #JOY_FIRE
         bne @title_loop_start
         lda joy_state
         and #(JOY_UP|JOY_DOWN|JOY_LEFT|JOY_RIGHT)
         bne @title_loop_start
-        lda frame
-        cmp #100                    ; original intro also enters play automatically
-        bcc main_loop
+        jmp main_loop               ; let the player enjoy the artwork/credits
 @title_loop_start
-        jsr clear_back_buffer
+        ; Hidden buffers are seeded by draw_game; no slow CPU clear here.
         lda #1
         sta room_dirty
         lda #MODE_PLAY
         sta game_mode
-        jsr sfx_teleport
         jmp main_loop
 
 end_loop
@@ -301,7 +348,6 @@ end_loop
         and #JOY_FIRE
         beq main_loop
         jsr init_game
-        jsr clear_back_buffer
         lda #MODE_PLAY
         sta game_mode
         jmp main_loop
@@ -361,20 +407,21 @@ read_joystick
         lda joy_prev
         eor #$ff
         and joy_state
+        and #$ef                    ; VBI is the sole producer of FIRE presses
         sta joy_pressed
+        lsr jump_pending            ; atomic consume: IRQ/NMI cannot split it
+        bcc @read_joystick_done
+        lda joy_pressed
+        ora #JOY_FIRE
+        sta joy_pressed
+@read_joystick_done
         rts
 
 ; Transfer the keyboard IRQ latch into this gameplay frame.
 read_keyboard
+        lsr space_pending           ; atomic consume of the keyboard IRQ latch
         lda #0
-        sta space_pressed
-        lda space_pending
-        bne @read_keyboard_done
-        rts
-@read_keyboard_done
-        lda #0
-        sta space_pending
-        lda #1
+        rol
         sta space_pressed
         rts
 
@@ -394,6 +441,11 @@ update_sound_toggle
         lda #0
         sta sound_time
         sta audc1
+        sta audc2
+        sta audc3
+        sta audc4
+        sta action_frames
+        sta action_tick
 @update_sound_toggle_done
         rts
 @update_sound_toggle_released
@@ -402,6 +454,8 @@ update_sound_toggle
         rts
 
 init_game
+        lda #2
+        sta background_pending
         lda #1
         ldx #27
 @init_game_coins
@@ -586,10 +640,6 @@ tile_to_pixel
 ; ============================================================================
 
 update_player
-        lda space_pressed
-        beq @update_player_move
-        jsr try_teleport
-@update_player_move
         lda p_ground
         bne @update_player_input
         lda p_coyote
@@ -653,17 +703,26 @@ update_player
         sta p_dy
         lda #0
         sta p_ground
+        sta p_jumpbuf
         lda #8
         sta p_coyote               ; consuming a jump forbids another air jump
-        lda #8
-        jsr start_sound
 
 @update_player_buffer_tick
         lda p_jumpbuf
-        beq @update_player_gravity
+        beq @update_player_teleport
         dec p_jumpbuf
+@update_player_teleport
+        ; A near-simultaneous jump+teleport starts the jump first. Teleport
+        ; preserves that upward impulse instead of pinning Porter to a ledge.
+        lda space_pressed
+        beq @update_player_gravity
+        jsr try_teleport
 
 @update_player_gravity
+        ; A supported player must not fall and "land" again every other frame.
+        ; Ground checking below still detects walking off an edge.
+        lda p_ground
+        bne @update_player_horizontal
         lda frame
         and #1
         bne @update_player_horizontal
@@ -725,10 +784,13 @@ update_player
         sta p_jumpbuf
         lda #$fc
         sta p_dy
+        lda #0
+        sta p_ground
+        lda #8
+        sta p_coyote
         jmp @update_player_after_move
 @update_player_land_sound
-        lda #3
-        jsr start_sound
+        ; Landing is silent: action feedback belongs to the button press.
         jmp @update_player_after_move
 
 @update_player_up_steps
@@ -968,6 +1030,7 @@ player_ground_test
         rts
 
 try_teleport
+        ; Press feedback already played in VBI; resolving a teleport is silent.
         lda joy_state
         and #JOY_UP
         beq @try_teleport_down
@@ -1040,10 +1103,8 @@ try_teleport
         sta p_y+1
 @try_teleport_success
         inc teleports
-        bne @try_teleport_sound
+        bne @try_teleport_done
         inc teleports+1
-@try_teleport_sound
-        jsr sfx_teleport
 @try_teleport_done
         rts
 
@@ -1053,6 +1114,16 @@ try_teleport
 ; early red/blue room: an aim point at its edge now lands on it instead of
 ; requiring the cursor to be exactly centred.
 teleport_snap_to_support
+        ; In a jump, an open destination needs no support search. This keeps
+        ; the exact aim point and avoids a full 153-position search in midair.
+        lda p_dy
+        bpl @teleport_snap_search
+        jsr player_inside_solid
+        bcs @teleport_snap_search
+        lda #0
+        sta p_ground
+        rts
+@teleport_snap_search
         mwa p_x old_x
         mwa p_y old_y
         lda #0
@@ -1071,13 +1142,23 @@ teleport_snap_to_support
         jsr add_signed_to_player_y
         jsr player_inside_solid
         bcs @teleport_snap_next
+        ; The original PICO-8 wall correction does not require a floor.
+        ; An airborne jump may be nudged into clear space beside a ceiling.
+        lda p_dy
+        bmi @teleport_snap_rising
         jsr player_ground_test
         bcc @teleport_snap_next
+        lda p_dy
+        bmi @teleport_snap_rising
         lda #0
         sta p_dy
         lda #1
         sta p_ground
         sta p_can_tele
+        rts
+@teleport_snap_rising
+        lda #0
+        sta p_ground
         rts
 @teleport_snap_next
         inc col_no
@@ -2292,6 +2373,13 @@ update_camera
         rts
 
 draw_game
+        ; Seed each hidden buffer once per game/restart. Never erase or draw
+        ; over the visible title; its old buffer is cleaned after the first flip.
+        lda background_pending
+        beq @draw_game_background_ready
+        jsr background_to_screen
+        dec background_pending
+@draw_game_background_ready
         ; Build the complete frame in the hidden framebuffer. The displayed
         ; framebuffer is never modified while VBXE is scanning it.
         lda room_dirty
@@ -2309,6 +2397,7 @@ draw_game
         jmp present_back_buffer
 
 draw_room
+        jsr background_to_cache
         ; Build the static room entirely in its cache. It is copied only to the
         ; hidden framebuffer, so animated-tile rebuilds cannot erase Porter
         ; partway through a displayed frame.
@@ -2356,6 +2445,46 @@ draw_room
         cmp #16
         bne @draw_room_row
         rts
+
+background_to_screen
+        mwa #background_screen_bcb src_ptr
+        lda back_bank
+        bne copy_background
+
+background_to_cache
+        mwa #background_cache_bcb src_ptr
+        lda #ROOM_CACHE_V>>16
+
+; Templates use opaque copies: scenery is restored before transparent tiles.
+copy_background
+        sta dest_bank
+        jsr wait_blitter
+        ldy #$5d
+        lda #$80+[BCB_V>>14]
+        sta (fx_ptr),y
+        ldy #20
+@copy_background_template
+        lda (src_ptr),y
+        sta MEMW+[BCB_V&$3fff],y
+        dey
+        bpl @copy_background_template
+        lda dest_bank
+        sta MEMW+[BCB_V&$3fff]+8
+        jsr start_blitter
+        jsr wait_blitter
+        ldy #$5d
+        lda #0
+        sta (fx_ptr),y
+        rts
+
+background_screen_bcb
+        dta a(0),BACKGROUND_V>>16,a(SCR_W),1
+        dta a(0),0,a(SCR_W),1
+        dta a(SCR_W-1),SCR_H-1,$ff,0,0,0,0,0
+background_cache_bcb
+        dta a(VIEW_Y*SCR_W+VIEW_X),BACKGROUND_V>>16,a(SCR_W),1
+        dta a(0),ROOM_CACHE_V>>16,a(VIEW_SIZE),1
+        dta a(VIEW_SIZE-1),VIEW_SIZE-1,$ff,0,0,0,0,0
 
 ; Restore the cached 192x192 room into the hidden framebuffer with a single
 ; blitter command. Dynamic sprites are drawn there afterward.
@@ -2560,7 +2689,7 @@ draw_world_actor
         sta tmp3
         jsr set_dst_xy
         lda sprite_id
-        jmp blit_sprite
+        jmp blit_world_sprite
 @draw_world_actor_no
         rts
 
@@ -2581,7 +2710,7 @@ draw_player
         lda p_face
         sta sprite_flip
         lda p_sprite
-        jsr blit_sprite
+        jsr blit_world_sprite
         lda #0
         sta sprite_flip
         rts
@@ -2707,45 +2836,31 @@ times64
 ; ============================================================================
 
 draw_title
-        lda front_bank
-        sta dest_bank
-        jsr clear_buffer
-        mwa #SCR_W dest_pitch
-        lda #0
-        sta sprite_flip
-        ; PORTER logo, assembled as in the PICO-8 title.
-        lda #18
-        ldx #74
-        ldy #42
-        jsr draw_block_2x2
-        lda #20
-        ldx #102
-        ldy #54
-        jsr draw_block_2x2
-        lda #51
-        ldx #130
-        ldy #66
-        jsr draw_block_2x1
-        lda #22
-        ldx #154
-        ldy #42
-        jsr draw_block_1x3
-        lda #39
-        ldx #166
-        ldy #54
-        jsr draw_block_2x2
-        lda #51
-        ldx #194
-        ldy #66
-        jsr draw_block_2x1
-        lda #1
-        ldx #154
-        ldy #122
-        jsr draw_sprite_xy
+        ; The XEX INIT loader has already populated SCREEN_A. Use palette
+        ; entries 16..47 for the title and 48..79 for the clean background.
+        ; Both tables are contiguous; gameplay colours 0..15 stay unchanged.
+        ldy #$44
         lda #16
-        ldx #154
-        ldy #150
-        jsr draw_sprite_xy
+        sta (fx_ptr),y
+        iny
+        lda #1
+        sta (fx_ptr),y
+        ldx #0
+@draw_title_palette
+        ldy #$46
+        lda title_palette,x
+        sta (fx_ptr),y
+        inx
+        iny
+        lda title_palette,x
+        sta (fx_ptr),y
+        inx
+        iny
+        lda title_palette,x
+        sta (fx_ptr),y
+        inx
+        cpx #192
+        bcc @draw_title_palette
         rts
 
 draw_end
@@ -3039,13 +3154,35 @@ clear_buffer
         rts
 
 blit_tile
+blit_sprite
         sta sprite_id
-        lda #0
+        lda #12
+        sta sprite_width
+        sta sprite_height
+        lda #1                    ; colour zero reveals the cavern in the cache
         sta tmp4
         jmp blit_common
 
-blit_sprite
+blit_world_sprite
         sta sprite_id
+        ; World sprites/aim markers can start inside the room but extend into
+        ; its persistent border. Clip the 12x12 blit to the 192x192 playfield.
+        lda #0                    ; right boundary is x=256
+        sec
+        sbc tmp2
+        cmp #12
+        bcc @blit_world_width
+        lda #12
+@blit_world_width
+        sta sprite_width
+        lda #VIEW_Y+VIEW_SIZE
+        sec
+        sbc tmp3
+        cmp #12
+        bcc @blit_world_height
+        lda #12
+@blit_world_height
+        sta sprite_height
         lda #1
         sta tmp4
 
@@ -3092,11 +3229,15 @@ blit_common
         sta MEMW+[BCB_V&$3fff]+10
         lda #1
         sta MEMW+[BCB_V&$3fff]+11
-        lda #11
+        lda sprite_width
+        sec
+        sbc #1
         sta MEMW+[BCB_V&$3fff]+12
         lda #0
         sta MEMW+[BCB_V&$3fff]+13
-        lda #11
+        lda sprite_height
+        sec
+        sbc #1
         sta MEMW+[BCB_V&$3fff]+14
         lda #$ff
         sta MEMW+[BCB_V&$3fff]+15
@@ -3155,18 +3296,18 @@ wait_blitter
 
 xdl_data_a
         dta a($24),b(3)                 ; four blank lines
-        dta a($8862),b(199+4)
+        dta a($8862),b(SCR_H-1)     ; exactly the initialized 200 image rows
         dta a(SCREEN_A_V&$ffff)
         dta b(SCREEN_A_V>>16),a(SCR_W)
-        dta a($ff14)
+        dta a($ff11)                ; palette 1, NORMAL 320-pixel width
 xdl_len = *-xdl_data_a
 
 xdl_data_b
         dta a($24),b(3)
-        dta a($8862),b(199+4)
+        dta a($8862),b(SCR_H-1)     ; exactly the initialized 200 image rows
         dta a(SCREEN_B_V&$ffff)
         dta b(SCREEN_B_V>>16),a(SCR_W)
-        dta a($ff14)
+        dta a($ff11)                ; palette 1, NORMAL 320-pixel width
 
 bcb_template
         dta 0,0,0
@@ -3182,16 +3323,67 @@ bcb_len = *-bcb_template
 ; POKEY event sounds
 ; ============================================================================
 
+poll_audio_input
+        ; Sample physical trigger at VBL even if the main loop is rendering.
+        ; Capture short presses for gameplay; never replay sound on landing.
+        lda action_lock
+        bne @poll_audio_done
+        lda trig0
+        cmp audio_fire_prev
+        beq @poll_audio_teleport
+        sta audio_fire_prev
+        cmp #0
+        bne @poll_audio_teleport
+        lda #1
+        sta jump_pending             ; also starts title/restarts end screen
+        lda game_mode
+        cmp #MODE_PLAY
+        bne @poll_audio_teleport
+        jsr sfx_jump
+@poll_audio_teleport
+        lda audio_tele_pending
+        beq @poll_audio_done
+        lda #0
+        sta audio_tele_pending
+        lda game_mode
+        cmp #MODE_PLAY
+        bne @poll_audio_done
+        jsr sfx_teleport
+@poll_audio_done
+        rts
+
+sfx_jump
+        ldx #0
+        ldy #12
+        lda #1
+        bne start_action_sound
+
 sfx_teleport
+        ldx #12
+        ldy #3                     ; three VBLs: 60ms PAL / 50ms NTSC
+        lda #1
+
+; Dedicated POKEY voice 2: incidental landing/coin sounds on voice 1 cannot
+; truncate the jump sweep or teleport arpeggio. Emit the attack immediately.
+; The VBI skips this voice while its envelope is being replaced.
+start_action_sound
+        pha
+        lda #1
+        sta action_lock
+        lda #0
+        sta action_frames
+        sta audc2
+        sta action_tick
+        stx action_index
+        pla
+        sta action_rate
         lda sound_enabled
-        beq @sfx_teleport_muted
-        lda #180
-        sta audf1
-        lda #$ac
-        sta audc1
-        lda #7
-        sta sound_time
-@sfx_teleport_muted
+        beq @start_action_muted
+        sty action_frames
+        jsr action_sound_update     ; no deferred first note
+@start_action_muted
+        lda #0
+        sta action_lock
         rts
 
 start_sound
@@ -3225,11 +3417,62 @@ sound_update
         lda sound_time
         ora #$a0
         sta audc1
-        rts
+        jmp action_sound_tick
 @sound_update_silent
         lda #0
         sta audc1
+
+action_sound_tick
+        lda action_lock
+        beq action_sound_update
         rts
+
+action_sound_update
+        lda sound_enabled
+        beq @action_silent
+        lda action_frames
+        beq @action_silent
+        lda action_tick
+        beq @action_next
+        dec action_tick
+        rts
+@action_next
+        ldx action_index
+        lda action_pitch,x
+        sta audf2
+        lda action_control,x
+        sta audc2
+        inc action_index
+        dec action_frames
+        lda action_rate
+        sec
+        sbc #1
+        sta action_tick
+        rts
+@action_silent
+        ; Hold the final sample for its full duration, then silence the voice.
+        lda action_tick
+        beq @action_stop
+        dec action_tick
+        lda sound_enabled
+        bne @action_done
+@action_stop
+        lda #0
+        sta audc2
+@action_done
+        rts
+
+; Fred SO.ASM-inspired per-VBL pitch/volume envelope, newly composed for jump.
+; Teleport pitches follow Robbo R1.ASM's teleport table in playback order,
+; reduced to a three-frame attack with a fast volume fade.
+action_pitch
+        dta 112,100,88,77,67,58,50,43,37,32,28,25
+        dta $2c,$4b,$6a
+action_control
+        dta $a8,$a8,$a8,$a7,$a7,$a6,$a6,$a5,$a4,$a3,$a2,$a1
+        dta $a8,$a4,$a1
+
+        icl 'music-player.asm'
 
 ; Signed proximity order: exact, then one pixel left/right, and so on.  The
 ; horizontal range is one 8-pixel tile; vertical correction remains tighter.
@@ -3243,6 +3486,8 @@ teleport_snap_y_offsets
         icl 'data/checkpoints.inc.asm'
         icl 'data/objects.inc.asm'
         icl 'data/palette.inc.asm'
+        icl 'data/title-palette.inc.asm'
+        icl 'data/background-palette.inc.asm'
 
 ; --- cartridge data segments ------------------------------------------------
 ; Keep the complete asset range below BASIC ROM. Some XEX loaders do not write

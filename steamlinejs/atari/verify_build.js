@@ -18,13 +18,21 @@ for (const [group, expected] of Object.entries(expectedCounts)) {
 }
 if (total !== 56) throw new Error(`Expected 56 levels, found ${total}`);
 
-const include = fs.readFileSync(path.join(root, 'levels.inc'), 'utf8');
-const labels = [...include.matchAll(/^level_(\d\d) /gm)].map(match => Number(match[1]));
-if (labels.length !== 56 || labels.some((value, index) => value !== index)) {
+const originalInclude = fs.readFileSync(path.join(root, 'levels.inc'), 'utf8');
+const originalLabels = [...originalInclude.matchAll(/^level_(\d\d) /gm)].map(match => Number(match[1]));
+if (originalLabels.length !== 56 || originalLabels.some((value, index) => value !== index)) {
     throw new Error('levels.inc does not contain the expected level_00..level_55 sequence');
 }
+const include = fs.readFileSync(path.join(root, 'levels-standard.inc'), 'utf8');
+const labels = [...include.matchAll(/^level_(\d\d) /gm)].map(match => Number(match[1]));
+if (labels.length !== 57 || labels.some((value, index) => value !== index)) {
+    throw new Error('levels-standard.inc does not contain the expected level_00..level_56 sequence');
+}
+if (!/^level_12 ; Elephant bonus: upside-down cross$/m.test(include)) {
+    throw new Error('Expected the elephant bonus at standard Atari level 13');
+}
 
-const xex = fs.readFileSync(path.join(root, 'streamline-vbxe.xex'));
+const xex = fs.readFileSync(path.join(root, 'streamline-atari.xex'));
 if (xex.length < 8 || xex[0] !== 0xff || xex[1] !== 0xff) {
     throw new Error('Output is not an Atari segmented executable');
 }
@@ -59,4 +67,4 @@ if (runAddress !== 0x2000) {
     throw new Error(`Expected RUN address $2000, got ${runAddress === null ? 'none' : '$' + runAddress.toString(16)}`);
 }
 
-console.log(`Verified: ${total} levels, ${segmentCount} XEX segments, RUN $${runAddress.toString(16)}, ${xex.length} bytes.`);
+console.log(`Verified: ${total} original levels plus 1 bonus, ${segmentCount} XEX segments, RUN $${runAddress.toString(16)}, ${xex.length} bytes.`);

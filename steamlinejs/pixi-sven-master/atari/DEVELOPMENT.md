@@ -61,3 +61,21 @@ All four assembled-code configurations and missing-VBXE handling pass on the
 final executable. `TESTING.md` records its hash, evidence, commands, and the
 remaining real-hardware/NTSC/D700/audio-listening limits. No further gameplay
 features are needed for this pass; the resulting build is ready for review.
+
+## Milestone 1 after checkpoint 53f280f
+
+The requested checkpoint was committed before implementing the researched core
+loop. The current milestone adds individual sheep moods/progress, whistle,
+pursuing/resting dog, patrolling shepherd, three lives, safe respawns, protection,
+and water escapes. `MILESTONE.md` contains the tuning choices and source links.
+
+A generated 4×4 enemy atlas supplies both characters, four directions and two
+walking poses. The exact built-in imagegen prompt and source PNG are retained
+under `assets/`. Original workshop artwork is kept separately.
+
+Testing found and fixed pale shoreline pixels missing from the escape mask and
+an overly fast horizontal dog step. The final mechanics suite passes at both
+register pages and both video rates, and complete input-only playthroughs win
+with two lives remaining. Local Altirra checks cover the actual screen, input,
+interaction, pursuit, lives, pause and water. The current results and limits are
+in `TESTING.md`; earlier entries above describe the checkpoint build.
