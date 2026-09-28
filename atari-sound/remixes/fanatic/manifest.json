@@ -1,0 +1,57 @@
+{
+  "id": "fanatic",
+  "title": "Fanatic",
+  "remix": "Fanatic / New Horizons",
+  "author": "Bartosz Kalinowski (Bartman) <?>",
+  "directory": "remixes/fanatic",
+  "source": "asma/asma/Composers/Kalinowski_Bartosz/Fanatic.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 102.68,
+  "duration_seconds": 105.89492665977613,
+  "frames": 5280,
+  "lead_channel": 2,
+  "changed_lead_frames": 3380,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 640
+    },
+    {
+      "name": "Second theme",
+      "frame": 1280
+    },
+    {
+      "name": "Answer",
+      "frame": 1920
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 2560
+    },
+    {
+      "name": "Development",
+      "frame": 3200
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 3840
+    },
+    {
+      "name": "Finale",
+      "frame": 4480
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 16094,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

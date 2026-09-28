@@ -1,0 +1,115 @@
+{
+  "title": "Ace Hiragana",
+  "kind": "sfx-audition",
+  "sources": [
+    "[Tools]/Ace Hiragana.p8.png",
+    "allgames/[Tools]/Ace Hiragana.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 1049,
+      "entries": [
+        {
+          "id": 53,
+          "part": 0,
+          "frames": 132,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 54,
+          "part": 0,
+          "frames": 132,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 55,
+          "part": 0,
+          "frames": 93,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 56,
+          "part": 0,
+          "frames": 93,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 57,
+          "part": 0,
+          "frames": 40,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 58,
+          "part": 0,
+          "frames": 13,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 59,
+          "part": 0,
+          "frames": 40,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 60,
+          "part": 0,
+          "frames": 66,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 61,
+          "part": 0,
+          "frames": 66,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 62,
+          "part": 0,
+          "frames": 79,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 63,
+          "part": 0,
+          "frames": 13,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "No audible static music patterns. SFX exported for audition; Lua sequencing is not reconstructed.",
+    "Isolated RMT instruments play the PICO notes; custom waves use the assigned instrument.",
+    "Static PICO score only; gameplay-driven Lua music changes are not executed."
+  ],
+  "literal_music_calls": [],
+  "arrangement": "rmt-instruments-v2",
+  "style_name": "RMT: piraci1",
+  "donor": "piraci1",
+  "controls": "Space / N / P"
+}

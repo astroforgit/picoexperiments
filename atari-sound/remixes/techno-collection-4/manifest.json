@@ -1,0 +1,57 @@
+{
+  "id": "techno-collection-4",
+  "title": "Techno Collection - 4",
+  "remix": "Techno Collection - 4 / Soft Skies",
+  "author": "Marcin Majchrzak (Soldier)",
+  "directory": "remixes/techno-collection-4",
+  "source": "asma/asma/Composers/Majchrzak_Marcin/Techno_Collection_4.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 77.03,
+  "duration_seconds": 105.25313922547446,
+  "frames": 5248,
+  "lead_channel": 2,
+  "changed_lead_frames": 3788,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 640
+    },
+    {
+      "name": "Second theme",
+      "frame": 1280
+    },
+    {
+      "name": "Answer",
+      "frame": 1920
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 2560
+    },
+    {
+      "name": "Development",
+      "frame": 3200
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 3840
+    },
+    {
+      "name": "Finale",
+      "frame": 4480
+    }
+  ],
+  "arrangement": "Soft flute",
+  "compressed_bytes": 13381,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

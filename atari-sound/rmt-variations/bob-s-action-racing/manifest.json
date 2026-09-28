@@ -1,0 +1,91 @@
+{
+  "title": "Bob's Action Racing",
+  "kind": "sfx-audition",
+  "sources": [
+    "[Race]/Bob's Action Racing.p8.png",
+    "allgames/[Race]/Bob's Action Racing.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 2063,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 13,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 119,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 2,
+          "part": 0,
+          "frames": 13,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 3,
+          "part": 0,
+          "frames": 40,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 4,
+          "part": 0,
+          "frames": 93,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 5,
+          "part": 0,
+          "frames": 26,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 6,
+          "part": 0,
+          "frames": 212,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 7,
+          "part": 0,
+          "frames": 26,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "No audible static music patterns. SFX exported for audition; Lua sequencing is not reconstructed.",
+    "Isolated RMT instruments play the PICO notes; custom waves use the assigned instrument.",
+    "Static PICO score only; gameplay-driven Lua music changes are not executed."
+  ],
+  "literal_music_calls": [],
+  "arrangement": "rmt-instruments-v2",
+  "style_name": "RMT: ingame1",
+  "donor": "ingame1",
+  "controls": "Space / N / P"
+}

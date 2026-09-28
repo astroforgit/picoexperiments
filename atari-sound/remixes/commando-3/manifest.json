@@ -1,0 +1,57 @@
+{
+  "id": "commando-3",
+  "title": "Commando - 3",
+  "remix": "Commando - 3 / Echo Flight",
+  "author": "Vratislav Palicka",
+  "directory": "remixes/commando-3",
+  "source": "asma/asma/Composers/Palicka_Vratislav/Commando_3.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 169.43099999999998,
+  "duration_seconds": 169.4318826556418,
+  "frames": 8448,
+  "lead_channel": 2,
+  "changed_lead_frames": 4545,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1056
+    },
+    {
+      "name": "Second theme",
+      "frame": 2112
+    },
+    {
+      "name": "Answer",
+      "frame": 3168
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 4224
+    },
+    {
+      "name": "Development",
+      "frame": 5280
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 6336
+    },
+    {
+      "name": "Finale",
+      "frame": 7392
+    }
+  ],
+  "arrangement": "Octave echo",
+  "compressed_bytes": 11185,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

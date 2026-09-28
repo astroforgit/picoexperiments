@@ -1,0 +1,36 @@
+{
+  "title": "slime_platformer",
+  "kind": "music",
+  "sources": [
+    "slime_platformer.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 411,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 212,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "SFX 0: normalized trailing zero padding from 170 to 168 hex digits.",
+    "SFX 3: normalized trailing zero padding from 169 to 168 hex digits.",
+    "SFX 4: normalized trailing zero padding from 167 to 168 hex digits.",
+    "Isolated RMT instruments play the PICO notes; custom waves use the assigned instrument.",
+    "Static PICO score only; gameplay-driven Lua music changes are not executed."
+  ],
+  "literal_music_calls": [],
+  "arrangement": "rmt-instruments-v2",
+  "style_name": "RMT: ingame1",
+  "donor": "ingame1",
+  "controls": "Space / N / P"
+}

@@ -1,0 +1,40 @@
+{
+  "title": "Unchain",
+  "kind": "music",
+  "sources": [
+    "[Platform]/Unchain.p8.png",
+    "allgames/[Platform]/Unchain.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 3855,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 847,
+          "next_id": 0,
+          "next_part": 0,
+          "next_local": 0
+        },
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 847,
+          "next_id": 1,
+          "next_part": 0,
+          "next_local": 1
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "Lua audio/SFX calls or memory writes detected; gameplay-driven changes are not executed."
+  ],
+  "literal_music_calls": [
+    0,
+    1
+  ]
+}

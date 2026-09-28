@@ -1,0 +1,537 @@
+{
+  "title": "A Dream's Command (v2.2)",
+  "kind": "music",
+  "sources": [
+    "[RPG]/A Dream's Command (v2.2).p8.png",
+    "allgames/[RPG]/A Dream's Command (v2.2).p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 18668,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 238,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 53,
+          "next_id": 1,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 2,
+          "part": 0,
+          "frames": 318,
+          "next_id": 3,
+          "next_part": 0,
+          "next_local": 3
+        },
+        {
+          "id": 3,
+          "part": 0,
+          "frames": 318,
+          "next_id": 4,
+          "next_part": 0,
+          "next_local": 4
+        },
+        {
+          "id": 4,
+          "part": 0,
+          "frames": 318,
+          "next_id": 5,
+          "next_part": 0,
+          "next_local": 5
+        },
+        {
+          "id": 5,
+          "part": 0,
+          "frames": 318,
+          "next_id": 2,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 6,
+          "part": 0,
+          "frames": 199,
+          "next_id": 7,
+          "next_part": 0,
+          "next_local": 7
+        },
+        {
+          "id": 7,
+          "part": 0,
+          "frames": 199,
+          "next_id": 8,
+          "next_part": 0,
+          "next_local": 8
+        },
+        {
+          "id": 8,
+          "part": 0,
+          "frames": 199,
+          "next_id": 9,
+          "next_part": 0,
+          "next_local": 9
+        },
+        {
+          "id": 9,
+          "part": 0,
+          "frames": 199,
+          "next_id": 10,
+          "next_part": 0,
+          "next_local": 10
+        },
+        {
+          "id": 10,
+          "part": 0,
+          "frames": 199,
+          "next_id": 11,
+          "next_part": 0,
+          "next_local": 11
+        },
+        {
+          "id": 11,
+          "part": 0,
+          "frames": 199,
+          "next_id": 12,
+          "next_part": 0,
+          "next_local": 12
+        },
+        {
+          "id": 12,
+          "part": 0,
+          "frames": 199,
+          "next_id": 13,
+          "next_part": 0,
+          "next_local": 13
+        },
+        {
+          "id": 13,
+          "part": 0,
+          "frames": 199,
+          "next_id": 14,
+          "next_part": 0,
+          "next_local": 14
+        },
+        {
+          "id": 14,
+          "part": 0,
+          "frames": 199,
+          "next_id": 15,
+          "next_part": 0,
+          "next_local": 15
+        },
+        {
+          "id": 15,
+          "part": 0,
+          "frames": 199,
+          "next_id": 16,
+          "next_part": 0,
+          "next_local": 16
+        },
+        {
+          "id": 16,
+          "part": 0,
+          "frames": 199,
+          "next_id": 7,
+          "next_part": 0,
+          "next_local": 7
+        },
+        {
+          "id": 17,
+          "part": 0,
+          "frames": 371,
+          "next_id": 18,
+          "next_part": 0,
+          "next_local": 18
+        },
+        {
+          "id": 18,
+          "part": 0,
+          "frames": 371,
+          "next_id": 19,
+          "next_part": 0,
+          "next_local": 19
+        },
+        {
+          "id": 19,
+          "part": 0,
+          "frames": 371,
+          "next_id": 20,
+          "next_part": 0,
+          "next_local": 20
+        },
+        {
+          "id": 20,
+          "part": 0,
+          "frames": 371,
+          "next_id": 17,
+          "next_part": 0,
+          "next_local": 17
+        },
+        {
+          "id": 21,
+          "part": 0,
+          "frames": 199,
+          "next_id": 22,
+          "next_part": 0,
+          "next_local": 22
+        },
+        {
+          "id": 22,
+          "part": 0,
+          "frames": 199,
+          "next_id": 23,
+          "next_part": 0,
+          "next_local": 23
+        },
+        {
+          "id": 23,
+          "part": 0,
+          "frames": 199,
+          "next_id": 24,
+          "next_part": 0,
+          "next_local": 24
+        },
+        {
+          "id": 24,
+          "part": 0,
+          "frames": 199,
+          "next_id": 25,
+          "next_part": 0,
+          "next_local": 25
+        },
+        {
+          "id": 25,
+          "part": 0,
+          "frames": 199,
+          "next_id": 26,
+          "next_part": 0,
+          "next_local": 26
+        },
+        {
+          "id": 26,
+          "part": 0,
+          "frames": 199,
+          "next_id": 22,
+          "next_part": 0,
+          "next_local": 22
+        },
+        {
+          "id": 27,
+          "part": 0,
+          "frames": 318,
+          "next_id": 28,
+          "next_part": 0,
+          "next_local": 28
+        },
+        {
+          "id": 28,
+          "part": 0,
+          "frames": 318,
+          "next_id": 29,
+          "next_part": 0,
+          "next_local": 29
+        },
+        {
+          "id": 29,
+          "part": 0,
+          "frames": 318,
+          "next_id": 30,
+          "next_part": 0,
+          "next_local": 30
+        },
+        {
+          "id": 30,
+          "part": 0,
+          "frames": 318,
+          "next_id": 27,
+          "next_part": 0,
+          "next_local": 27
+        },
+        {
+          "id": 31,
+          "part": 0,
+          "frames": 318,
+          "next_id": 32,
+          "next_part": 0,
+          "next_local": 32
+        },
+        {
+          "id": 32,
+          "part": 0,
+          "frames": 318,
+          "next_id": 33,
+          "next_part": 0,
+          "next_local": 33
+        },
+        {
+          "id": 33,
+          "part": 0,
+          "frames": 318,
+          "next_id": 34,
+          "next_part": 0,
+          "next_local": 34
+        },
+        {
+          "id": 34,
+          "part": 0,
+          "frames": 318,
+          "next_id": 35,
+          "next_part": 0,
+          "next_local": 35
+        },
+        {
+          "id": 35,
+          "part": 0,
+          "frames": 318,
+          "next_id": 36,
+          "next_part": 0,
+          "next_local": 36
+        },
+        {
+          "id": 36,
+          "part": 0,
+          "frames": 318,
+          "next_id": 37,
+          "next_part": 0,
+          "next_local": 37
+        },
+        {
+          "id": 37,
+          "part": 0,
+          "frames": 318,
+          "next_id": 31,
+          "next_part": 0,
+          "next_local": 31
+        },
+        {
+          "id": 38,
+          "part": 0,
+          "frames": 318,
+          "next_id": 31,
+          "next_part": 0,
+          "next_local": 31
+        },
+        {
+          "id": 39,
+          "part": 0,
+          "frames": 265,
+          "next_id": 40,
+          "next_part": 0,
+          "next_local": 40
+        },
+        {
+          "id": 40,
+          "part": 0,
+          "frames": 265,
+          "next_id": 41,
+          "next_part": 0,
+          "next_local": 41
+        },
+        {
+          "id": 41,
+          "part": 0,
+          "frames": 265,
+          "next_id": 42,
+          "next_part": 0,
+          "next_local": 42
+        },
+        {
+          "id": 42,
+          "part": 0,
+          "frames": 265,
+          "next_id": 39,
+          "next_part": 0,
+          "next_local": 39
+        },
+        {
+          "id": 43,
+          "part": 0,
+          "frames": 119,
+          "next_id": 44,
+          "next_part": 0,
+          "next_local": 44
+        },
+        {
+          "id": 44,
+          "part": 0,
+          "frames": 119,
+          "next_id": 45,
+          "next_part": 0,
+          "next_local": 45
+        },
+        {
+          "id": 45,
+          "part": 0,
+          "frames": 119,
+          "next_id": 46,
+          "next_part": 0,
+          "next_local": 46
+        },
+        {
+          "id": 46,
+          "part": 0,
+          "frames": 119,
+          "next_id": 47,
+          "next_part": 0,
+          "next_local": 47
+        },
+        {
+          "id": 47,
+          "part": 0,
+          "frames": 119,
+          "next_id": 48,
+          "next_part": 0,
+          "next_local": 48
+        },
+        {
+          "id": 48,
+          "part": 0,
+          "frames": 119,
+          "next_id": 49,
+          "next_part": 0,
+          "next_local": 49
+        },
+        {
+          "id": 49,
+          "part": 0,
+          "frames": 119,
+          "next_id": 50,
+          "next_part": 0,
+          "next_local": 50
+        },
+        {
+          "id": 50,
+          "part": 0,
+          "frames": 119,
+          "next_id": 51,
+          "next_part": 0,
+          "next_local": 51
+        },
+        {
+          "id": 51,
+          "part": 0,
+          "frames": 119,
+          "next_id": 52,
+          "next_part": 0,
+          "next_local": 52
+        },
+        {
+          "id": 52,
+          "part": 0,
+          "frames": 119,
+          "next_id": 53,
+          "next_part": 0,
+          "next_local": 53
+        },
+        {
+          "id": 53,
+          "part": 0,
+          "frames": 119,
+          "next_id": 54,
+          "next_part": 0,
+          "next_local": 54
+        },
+        {
+          "id": 54,
+          "part": 0,
+          "frames": 119,
+          "next_id": 55,
+          "next_part": 0,
+          "next_local": 55
+        },
+        {
+          "id": 55,
+          "part": 0,
+          "frames": 119,
+          "next_id": 56,
+          "next_part": 0,
+          "next_local": 56
+        },
+        {
+          "id": 56,
+          "part": 0,
+          "frames": 119,
+          "next_id": 57,
+          "next_part": 0,
+          "next_local": 57
+        },
+        {
+          "id": 57,
+          "part": 0,
+          "frames": 119,
+          "next_id": 58,
+          "next_part": 0,
+          "next_local": 58
+        },
+        {
+          "id": 58,
+          "part": 0,
+          "frames": 119,
+          "next_id": 59,
+          "next_part": 0,
+          "next_local": 59
+        },
+        {
+          "id": 59,
+          "part": 0,
+          "frames": 119,
+          "next_id": 60,
+          "next_part": 0,
+          "next_local": 60
+        },
+        {
+          "id": 60,
+          "part": 0,
+          "frames": 119,
+          "next_id": 61,
+          "next_part": 0,
+          "next_local": 61
+        },
+        {
+          "id": 61,
+          "part": 0,
+          "frames": 119,
+          "next_id": 62,
+          "next_part": 0,
+          "next_local": 62
+        },
+        {
+          "id": 62,
+          "part": 0,
+          "frames": 119,
+          "next_id": 63,
+          "next_part": 0,
+          "next_local": 63
+        },
+        {
+          "id": 63,
+          "part": 0,
+          "frames": 119,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "Lua audio/SFX calls or memory writes detected; gameplay-driven changes are not executed."
+  ],
+  "literal_music_calls": [
+    1,
+    6,
+    27
+  ]
+}

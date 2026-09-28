@@ -1,0 +1,57 @@
+{
+  "id": "dizzy-the-ultimate-cartoon-adventure-1",
+  "title": "Dizzy - The Ultimate Cartoon Adventure - 1",
+  "remix": "Dizzy - The Ultimate Cartoon Adventure - 1 / Soft Skies",
+  "author": "Christian Krueger (Irgendwer)",
+  "directory": "remixes/dizzy-the-ultimate-cartoon-adventure-1",
+  "source": "asma/asma/Composers/Krueger_Christian/Dizzy_Cartoon_Adventure_1.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 94.824,
+  "duration_seconds": 108.46207639698282,
+  "frames": 5408,
+  "lead_channel": 4,
+  "changed_lead_frames": 3303,
+  "allowed_changed_registers": [
+    6,
+    7
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 624
+    },
+    {
+      "name": "Second theme",
+      "frame": 1248
+    },
+    {
+      "name": "Answer",
+      "frame": 1872
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 2704
+    },
+    {
+      "name": "Development",
+      "frame": 3328
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 3952
+    },
+    {
+      "name": "Finale",
+      "frame": 4576
+    }
+  ],
+  "arrangement": "Soft flute",
+  "compressed_bytes": 14756,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

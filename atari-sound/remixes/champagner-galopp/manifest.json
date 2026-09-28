@@ -1,0 +1,57 @@
+{
+  "id": "champagner-galopp",
+  "title": "Champagner Galopp",
+  "remix": "Champagner Galopp / Echo Flight",
+  "author": "Ralf Thomas Quack",
+  "directory": "remixes/champagner-galopp",
+  "source": "asma/asma/Composers/Quack_Ralf_Thomas/Champagner_Galopp.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 149.45,
+  "duration_seconds": 150.1782596265916,
+  "frames": 7488,
+  "lead_channel": 1,
+  "changed_lead_frames": 6192,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 768
+    },
+    {
+      "name": "Second theme",
+      "frame": 1728
+    },
+    {
+      "name": "Answer",
+      "frame": 2688
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 3648
+    },
+    {
+      "name": "Development",
+      "frame": 4608
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 5568
+    },
+    {
+      "name": "Finale",
+      "frame": 6528
+    }
+  ],
+  "arrangement": "Octave echo",
+  "compressed_bytes": 13031,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

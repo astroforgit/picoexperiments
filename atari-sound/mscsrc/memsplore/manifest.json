@@ -1,0 +1,30 @@
+{
+  "title": "memsplore",
+  "kind": "sfx-audition",
+  "sources": [
+    "[Tools]/memsplore.p8.png",
+    "allgames/[Tools]/memsplore.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 339,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 106,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "No audible static music patterns. SFX exported for audition; Lua sequencing is not reconstructed.",
+    "Lua audio/SFX calls or memory writes detected; gameplay-driven changes are not executed."
+  ],
+  "literal_music_calls": []
+}

@@ -1,0 +1,57 @@
+{
+  "id": "territorial-pissings",
+  "title": "Territorial Pissings",
+  "remix": "Territorial Pissings / Soft Skies",
+  "author": "Adam Hay (Sack)",
+  "directory": "remixes/territorial-pissings",
+  "source": "asma/asma/Composers/Hay_Adam/Territorial_Pissings.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 111.42,
+  "duration_seconds": 111.67101356849119,
+  "frames": 5568,
+  "lead_channel": 3,
+  "changed_lead_frames": 4021,
+  "allowed_changed_registers": [
+    4,
+    5
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 576
+    },
+    {
+      "name": "Second theme",
+      "frame": 1344
+    },
+    {
+      "name": "Answer",
+      "frame": 1920
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 2688
+    },
+    {
+      "name": "Development",
+      "frame": 3456
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 4032
+    },
+    {
+      "name": "Finale",
+      "frame": 4800
+    }
+  ],
+  "arrangement": "Soft flute",
+  "compressed_bytes": 16869,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

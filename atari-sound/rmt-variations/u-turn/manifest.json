@@ -1,0 +1,138 @@
+{
+  "title": "U-turn",
+  "kind": "music",
+  "sources": [
+    "[Platform]/U-turn.p8.png",
+    "allgames/[Platform]/U-turn.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 6320,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 212,
+          "next_id": 1,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 212,
+          "next_id": 2,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 2,
+          "part": 0,
+          "frames": 212,
+          "next_id": 3,
+          "next_part": 0,
+          "next_local": 3
+        },
+        {
+          "id": 3,
+          "part": 0,
+          "frames": 212,
+          "next_id": 0,
+          "next_part": 0,
+          "next_local": 0
+        },
+        {
+          "id": 8,
+          "part": 0,
+          "frames": 212,
+          "next_id": 9,
+          "next_part": 0,
+          "next_local": 5
+        },
+        {
+          "id": 9,
+          "part": 0,
+          "frames": 212,
+          "next_id": 10,
+          "next_part": 0,
+          "next_local": 6
+        },
+        {
+          "id": 10,
+          "part": 0,
+          "frames": 212,
+          "next_id": 11,
+          "next_part": 0,
+          "next_local": 7
+        },
+        {
+          "id": 11,
+          "part": 0,
+          "frames": 212,
+          "next_id": 12,
+          "next_part": 0,
+          "next_local": 8
+        },
+        {
+          "id": 12,
+          "part": 0,
+          "frames": 212,
+          "next_id": 13,
+          "next_part": 0,
+          "next_local": 9
+        },
+        {
+          "id": 13,
+          "part": 0,
+          "frames": 212,
+          "next_id": 14,
+          "next_part": 0,
+          "next_local": 10
+        },
+        {
+          "id": 14,
+          "part": 0,
+          "frames": 212,
+          "next_id": 15,
+          "next_part": 0,
+          "next_local": 11
+        },
+        {
+          "id": 15,
+          "part": 0,
+          "frames": 212,
+          "next_id": 16,
+          "next_part": 0,
+          "next_local": 12
+        },
+        {
+          "id": 16,
+          "part": 0,
+          "frames": 212,
+          "next_id": 17,
+          "next_part": 0,
+          "next_local": 13
+        },
+        {
+          "id": 17,
+          "part": 0,
+          "frames": 212,
+          "next_id": 10,
+          "next_part": 0,
+          "next_local": 6
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "Isolated RMT instruments play the PICO notes; custom waves use the assigned instrument.",
+    "Static PICO score only; gameplay-driven Lua music changes are not executed."
+  ],
+  "literal_music_calls": [],
+  "arrangement": "rmt-instruments-v2",
+  "style_name": "RMT: Why Do You Dance With Me",
+  "donor": "Why Do You Dance With Me",
+  "controls": "Space / N / P"
+}

@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+player/*.lab
+player/*.lst
+player/launcher-state.json
+player/comparison-state.json

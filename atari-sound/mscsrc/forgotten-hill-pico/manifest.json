@@ -1,0 +1,39 @@
+{
+  "title": "Forgotten Hill Pico",
+  "kind": "music",
+  "sources": [
+    "[Adventure-Visual]/Forgotten Hill Pico.p8.png",
+    "allgames/[Adventure-Visual]/Forgotten Hill Pico.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 9681,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 1801,
+          "next_id": 1,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 1801,
+          "next_id": 1,
+          "next_part": 0,
+          "next_local": 1
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "Lua audio/SFX calls or memory writes detected; gameplay-driven changes are not executed."
+  ],
+  "literal_music_calls": [
+    0
+  ]
+}

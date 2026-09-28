@@ -1,0 +1,57 @@
+{
+  "id": "one-man-and-his-droid",
+  "title": "One Man and His Droid",
+  "remix": "One Man and His Droid / Echo Flight",
+  "author": "<?>",
+  "directory": "remixes/one-man-and-his-droid",
+  "source": "asma/asma/Games/One_Man_and_His_Droid.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 51.34,
+  "duration_seconds": 105.89492665977613,
+  "frames": 5280,
+  "lead_channel": 1,
+  "changed_lead_frames": 4549,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 640
+    },
+    {
+      "name": "Second theme",
+      "frame": 1280
+    },
+    {
+      "name": "Answer",
+      "frame": 1920
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 2560
+    },
+    {
+      "name": "Development",
+      "frame": 3200
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 3840
+    },
+    {
+      "name": "Finale",
+      "frame": 4480
+    }
+  ],
+  "arrangement": "Octave echo",
+  "compressed_bytes": 5253,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

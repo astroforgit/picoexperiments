@@ -1,0 +1,57 @@
+{
+  "id": "the-jet-action",
+  "title": "The Jet Action",
+  "remix": "The Jet Action / Echo Flight",
+  "author": "Dariusz Zolna",
+  "directory": "remixes/the-jet-action",
+  "source": "asma/asma/Games/Jet_Action.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 292.65,
+  "duration_seconds": 211.78985331955226,
+  "frames": 10560,
+  "lead_channel": 4,
+  "changed_lead_frames": 7923,
+  "allowed_changed_registers": [
+    6,
+    7
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1152
+    },
+    {
+      "name": "Second theme",
+      "frame": 2496
+    },
+    {
+      "name": "Answer",
+      "frame": 3840
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 5184
+    },
+    {
+      "name": "Development",
+      "frame": 6528
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 7872
+    },
+    {
+      "name": "Finale",
+      "frame": 9216
+    }
+  ],
+  "arrangement": "Octave echo",
+  "compressed_bytes": 20233,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

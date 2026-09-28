@@ -1,0 +1,416 @@
+{
+  "title": "Marballs",
+  "kind": "music",
+  "sources": [
+    "[Misc]/Marballs.p8.png",
+    "allgames/[Misc]/Marballs.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC01",
+      "bytes": 24209,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 185,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 278,
+          "next_id": 2,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 2,
+          "part": 0,
+          "frames": 278,
+          "next_id": 3,
+          "next_part": 0,
+          "next_local": 3
+        },
+        {
+          "id": 3,
+          "part": 0,
+          "frames": 278,
+          "next_id": 4,
+          "next_part": 0,
+          "next_local": 4
+        },
+        {
+          "id": 4,
+          "part": 0,
+          "frames": 278,
+          "next_id": 5,
+          "next_part": 0,
+          "next_local": 5
+        },
+        {
+          "id": 5,
+          "part": 0,
+          "frames": 278,
+          "next_id": 6,
+          "next_part": 0,
+          "next_local": 6
+        },
+        {
+          "id": 6,
+          "part": 0,
+          "frames": 278,
+          "next_id": 7,
+          "next_part": 0,
+          "next_local": 7
+        },
+        {
+          "id": 7,
+          "part": 0,
+          "frames": 278,
+          "next_id": 8,
+          "next_part": 0,
+          "next_local": 8
+        },
+        {
+          "id": 8,
+          "part": 0,
+          "frames": 278,
+          "next_id": 9,
+          "next_part": 0,
+          "next_local": 9
+        },
+        {
+          "id": 9,
+          "part": 0,
+          "frames": 278,
+          "next_id": 10,
+          "next_part": 0,
+          "next_local": 10
+        },
+        {
+          "id": 10,
+          "part": 0,
+          "frames": 278,
+          "next_id": 3,
+          "next_part": 0,
+          "next_local": 3
+        },
+        {
+          "id": 11,
+          "part": 0,
+          "frames": 609,
+          "next_id": 12,
+          "next_part": 0,
+          "next_local": 12
+        },
+        {
+          "id": 12,
+          "part": 0,
+          "frames": 609,
+          "next_id": 13,
+          "next_part": 0,
+          "next_local": 13
+        },
+        {
+          "id": 13,
+          "part": 0,
+          "frames": 609,
+          "next_id": 14,
+          "next_part": 0,
+          "next_local": 14
+        },
+        {
+          "id": 14,
+          "part": 0,
+          "frames": 609,
+          "next_id": 11,
+          "next_part": 0,
+          "next_local": 11
+        },
+        {
+          "id": 15,
+          "part": 0,
+          "frames": 861,
+          "next_id": 16,
+          "next_part": 0,
+          "next_local": 16
+        },
+        {
+          "id": 16,
+          "part": 0,
+          "frames": 861,
+          "next_id": 15,
+          "next_part": 0,
+          "next_local": 15
+        },
+        {
+          "id": 17,
+          "part": 0,
+          "frames": 371,
+          "next_id": 18,
+          "next_part": 0,
+          "next_local": 18
+        },
+        {
+          "id": 18,
+          "part": 0,
+          "frames": 185,
+          "next_id": 18,
+          "next_part": 0,
+          "next_local": 18
+        }
+      ],
+      "bank_boundary_stops": []
+    },
+    {
+      "file": "MUSIC02",
+      "bytes": 18011,
+      "entries": [
+        {
+          "id": 19,
+          "part": 0,
+          "frames": 371,
+          "next_id": 20,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 20,
+          "part": 0,
+          "frames": 371,
+          "next_id": 21,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 21,
+          "part": 0,
+          "frames": 371,
+          "next_id": 22,
+          "next_part": 0,
+          "next_local": 3
+        },
+        {
+          "id": 22,
+          "part": 0,
+          "frames": 371,
+          "next_id": 23,
+          "next_part": 0,
+          "next_local": 4
+        },
+        {
+          "id": 23,
+          "part": 0,
+          "frames": 185,
+          "next_id": 24,
+          "next_part": 0,
+          "next_local": 5
+        },
+        {
+          "id": 24,
+          "part": 0,
+          "frames": 185,
+          "next_id": 25,
+          "next_part": 0,
+          "next_local": 6
+        },
+        {
+          "id": 25,
+          "part": 0,
+          "frames": 185,
+          "next_id": 26,
+          "next_part": 0,
+          "next_local": 7
+        },
+        {
+          "id": 26,
+          "part": 0,
+          "frames": 185,
+          "next_id": 27,
+          "next_part": 0,
+          "next_local": 8
+        },
+        {
+          "id": 27,
+          "part": 0,
+          "frames": 185,
+          "next_id": 28,
+          "next_part": 0,
+          "next_local": 9
+        },
+        {
+          "id": 28,
+          "part": 0,
+          "frames": 185,
+          "next_id": 29,
+          "next_part": 0,
+          "next_local": 10
+        },
+        {
+          "id": 29,
+          "part": 0,
+          "frames": 185,
+          "next_id": 30,
+          "next_part": 0,
+          "next_local": 11
+        },
+        {
+          "id": 30,
+          "part": 0,
+          "frames": 185,
+          "next_id": 31,
+          "next_part": 0,
+          "next_local": 12
+        },
+        {
+          "id": 31,
+          "part": 0,
+          "frames": 371,
+          "next_id": 32,
+          "next_part": 0,
+          "next_local": 13
+        },
+        {
+          "id": 32,
+          "part": 0,
+          "frames": 185,
+          "next_id": 33,
+          "next_part": 0,
+          "next_local": 14
+        },
+        {
+          "id": 33,
+          "part": 0,
+          "frames": 185,
+          "next_id": 34,
+          "next_part": 0,
+          "next_local": 15
+        },
+        {
+          "id": 34,
+          "part": 0,
+          "frames": 185,
+          "next_id": 35,
+          "next_part": 0,
+          "next_local": 16
+        },
+        {
+          "id": 35,
+          "part": 0,
+          "frames": 185,
+          "next_id": 19,
+          "next_part": 0,
+          "next_local": 0
+        },
+        {
+          "id": 37,
+          "part": 0,
+          "frames": 185,
+          "next_id": 38,
+          "next_part": 0,
+          "next_local": 18
+        },
+        {
+          "id": 38,
+          "part": 0,
+          "frames": 185,
+          "next_id": 39,
+          "next_part": 0,
+          "next_local": 19
+        },
+        {
+          "id": 39,
+          "part": 0,
+          "frames": 185,
+          "next_id": 40,
+          "next_part": 0,
+          "next_local": 20
+        },
+        {
+          "id": 40,
+          "part": 0,
+          "frames": 172,
+          "next_id": 41,
+          "next_part": 0,
+          "next_local": 21
+        },
+        {
+          "id": 41,
+          "part": 0,
+          "frames": 172,
+          "next_id": 42,
+          "next_part": 0,
+          "next_local": 22
+        },
+        {
+          "id": 42,
+          "part": 0,
+          "frames": 172,
+          "next_id": 43,
+          "next_part": 0,
+          "next_local": 23
+        },
+        {
+          "id": 43,
+          "part": 0,
+          "frames": 172,
+          "next_id": 44,
+          "next_part": 0,
+          "next_local": 24
+        },
+        {
+          "id": 44,
+          "part": 0,
+          "frames": 172,
+          "next_id": 19,
+          "next_part": 0,
+          "next_local": 0
+        },
+        {
+          "id": 45,
+          "part": 0,
+          "frames": 185,
+          "next_id": 46,
+          "next_part": 0,
+          "next_local": 26
+        },
+        {
+          "id": 46,
+          "part": 0,
+          "frames": 185,
+          "next_id": 47,
+          "next_part": 0,
+          "next_local": 27
+        },
+        {
+          "id": 47,
+          "part": 0,
+          "frames": 185,
+          "next_id": 48,
+          "next_part": 0,
+          "next_local": 28
+        },
+        {
+          "id": 48,
+          "part": 0,
+          "frames": 185,
+          "next_id": 19,
+          "next_part": 0,
+          "next_local": 0
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "Lua audio/SFX calls or memory writes detected; gameplay-driven changes are not executed."
+  ],
+  "literal_music_calls": [
+    0,
+    11,
+    15
+  ]
+}

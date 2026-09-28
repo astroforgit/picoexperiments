@@ -1,0 +1,57 @@
+{
+  "id": "treasure-island-dizzy",
+  "title": "Treasure Island Dizzy",
+  "remix": "Treasure Island Dizzy / Glass Trails",
+  "author": "Michal Szpilowski (Miker)",
+  "directory": "remixes/treasure-island-dizzy",
+  "source": "asma/asma/Composers/Szpilowski_Michal/Treasure_Island_Dizzy.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 115.521,
+  "duration_seconds": 116.80531304290457,
+  "frames": 5824,
+  "lead_channel": 3,
+  "changed_lead_frames": 4873,
+  "allowed_changed_registers": [
+    4,
+    5
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 672
+    },
+    {
+      "name": "Second theme",
+      "frame": 1344
+    },
+    {
+      "name": "Answer",
+      "frame": 2016
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 2912
+    },
+    {
+      "name": "Development",
+      "frame": 3584
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 4256
+    },
+    {
+      "name": "Finale",
+      "frame": 4928
+    }
+  ],
+  "arrangement": "Glass pluck",
+  "compressed_bytes": 21143,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

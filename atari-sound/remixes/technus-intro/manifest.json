@@ -1,0 +1,57 @@
+{
+  "id": "technus-intro",
+  "title": "Technus - Intro",
+  "remix": "Technus - Intro / New Horizons",
+  "author": "Tomasz Liebich",
+  "directory": "remixes/technus-intro",
+  "source": "asma/asma/Composers/Liebich_Tomasz/Technus_Intro.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 272.11,
+  "duration_seconds": 211.78985331955226,
+  "frames": 10560,
+  "lead_channel": 1,
+  "changed_lead_frames": 4591,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1200
+    },
+    {
+      "name": "Second theme",
+      "frame": 2640
+    },
+    {
+      "name": "Answer",
+      "frame": 3840
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 5280
+    },
+    {
+      "name": "Development",
+      "frame": 6480
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 7920
+    },
+    {
+      "name": "Finale",
+      "frame": 9120
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 18603,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

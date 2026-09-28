@@ -1,0 +1,215 @@
+{
+  "title": "Temple Explorer",
+  "kind": "sfx-audition",
+  "sources": [
+    "[Platform]/Temple Explorer.p8.png",
+    "allgames/[Platform]/Temple Explorer.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 8515,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 199,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 199,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 2,
+          "part": 0,
+          "frames": 199,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 3,
+          "part": 0,
+          "frames": 199,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 4,
+          "part": 0,
+          "frames": 199,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 5,
+          "part": 0,
+          "frames": 93,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 6,
+          "part": 0,
+          "frames": 40,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 7,
+          "part": 0,
+          "frames": 344,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 8,
+          "part": 0,
+          "frames": 53,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 9,
+          "part": 0,
+          "frames": 530,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 10,
+          "part": 0,
+          "frames": 199,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 11,
+          "part": 0,
+          "frames": 199,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 12,
+          "part": 0,
+          "frames": 66,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 13,
+          "part": 0,
+          "frames": 93,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 14,
+          "part": 0,
+          "frames": 93,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 15,
+          "part": 0,
+          "frames": 728,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 16,
+          "part": 0,
+          "frames": 212,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 17,
+          "part": 0,
+          "frames": 344,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 18,
+          "part": 0,
+          "frames": 344,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 19,
+          "part": 0,
+          "frames": 344,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 20,
+          "part": 0,
+          "frames": 212,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 21,
+          "part": 0,
+          "frames": 530,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 22,
+          "part": 0,
+          "frames": 93,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 23,
+          "part": 0,
+          "frames": 212,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "No audible static music patterns. SFX exported for audition; Lua sequencing is not reconstructed.",
+    "Custom instruments approximated as nested note sequences; phase/timbre can differ.",
+    "Lua audio/SFX calls or memory writes detected; gameplay-driven changes are not executed."
+  ],
+  "literal_music_calls": []
+}

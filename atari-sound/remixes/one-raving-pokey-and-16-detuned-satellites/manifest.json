@@ -1,0 +1,57 @@
+{
+  "id": "one-raving-pokey-and-16-detuned-satellites",
+  "title": "One Raving Pokey and 16 Detuned Satellites",
+  "remix": "One Raving Pokey and 16 Detuned Satellites / New Horizons",
+  "author": "Roland Voss (Triace)",
+  "directory": "remixes/one-raving-pokey-and-16-detuned-satellites",
+  "source": "asma/asma/Composers/Voss_Roland/One_Raving_Pokey_and_16_Detuned_Satellites.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 192.656,
+  "duration_seconds": 195.10338002770874,
+  "frames": 9728,
+  "lead_channel": 1,
+  "changed_lead_frames": 5950,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1152
+    },
+    {
+      "name": "Second theme",
+      "frame": 2432
+    },
+    {
+      "name": "Answer",
+      "frame": 3584
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 4864
+    },
+    {
+      "name": "Development",
+      "frame": 6016
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 7296
+    },
+    {
+      "name": "Finale",
+      "frame": 8448
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 22562,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

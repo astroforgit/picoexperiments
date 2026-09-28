@@ -1,0 +1,57 @@
+{
+  "id": "nowhere-man",
+  "title": "Nowhere Man",
+  "remix": "Nowhere Man / New Horizons",
+  "author": "Chuck Ristau",
+  "directory": "remixes/nowhere-man",
+  "source": "asma/asma/Composers/Ristau_Chuck/Nowhere_Man.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 143.76,
+  "duration_seconds": 143.76038528357486,
+  "frames": 7168,
+  "lead_channel": 2,
+  "changed_lead_frames": 6038,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 896
+    },
+    {
+      "name": "Second theme",
+      "frame": 1792
+    },
+    {
+      "name": "Answer",
+      "frame": 2688
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 3584
+    },
+    {
+      "name": "Development",
+      "frame": 4480
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 5376
+    },
+    {
+      "name": "Finale",
+      "frame": 6272
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 6498,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

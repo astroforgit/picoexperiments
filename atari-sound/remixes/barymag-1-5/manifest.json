@@ -1,0 +1,57 @@
+{
+  "id": "barymag-1-5",
+  "title": "Barymag #1 - 5",
+  "remix": "Barymag #1 - 5 / Echo Flight",
+  "author": "Michal Szpilowski (Miker)",
+  "directory": "remixes/barymag-1-5",
+  "source": "asma/asma/Composers/Szpilowski_Michal/Barymag_1_5.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 277.25,
+  "duration_seconds": 210.5062784509489,
+  "frames": 10496,
+  "lead_channel": 2,
+  "changed_lead_frames": 8648,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1280
+    },
+    {
+      "name": "Second theme",
+      "frame": 2560
+    },
+    {
+      "name": "Answer",
+      "frame": 3840
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 5120
+    },
+    {
+      "name": "Development",
+      "frame": 6400
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 7680
+    },
+    {
+      "name": "Finale",
+      "frame": 8960
+    }
+  ],
+  "arrangement": "Octave echo",
+  "compressed_bytes": 21864,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

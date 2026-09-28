@@ -1,0 +1,55 @@
+{
+  "id": "draconus",
+  "title": "Draconus",
+  "remix": "Emberflight",
+  "author": "Adam Gilmore",
+  "directory": "remixes/draconus",
+  "source": "asma/asma/Composers/Gilmore_Adam/Draconus.sap",
+  "duration_seconds": 179.7004816044686,
+  "frames": 8960,
+  "lead_channel": 3,
+  "changed_lead_frames": 8555,
+  "original_subsong": 0,
+  "preservation": "Original backing, drums, clock and lead distortion; new evolving melody with opening/breakdown dynamics.",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1120
+    },
+    {
+      "name": "Second theme",
+      "frame": 2240
+    },
+    {
+      "name": "Answer",
+      "frame": 3360
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 4480
+    },
+    {
+      "name": "Development",
+      "frame": 5600
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 6720
+    },
+    {
+      "name": "Finale",
+      "frame": 7840
+    }
+  ],
+  "format": "PMZ1",
+  "arrangement": "Full arrangement",
+  "allowed_changed_registers": [
+    4,
+    5
+  ],
+  "compressed_bytes": 16717
+}

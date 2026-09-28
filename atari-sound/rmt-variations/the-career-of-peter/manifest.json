@@ -1,0 +1,58 @@
+{
+  "title": "The Career of Peter",
+  "kind": "music",
+  "sources": [
+    "[Adventure-Visual]/The Career of Peter.p8.png",
+    "allgames/[Adventure-Visual]/The Career of Peter.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 5312,
+      "entries": [
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 212,
+          "next_id": 2,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 2,
+          "part": 0,
+          "frames": 212,
+          "next_id": 3,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 3,
+          "part": 0,
+          "frames": 212,
+          "next_id": 4,
+          "next_part": 0,
+          "next_local": 3
+        },
+        {
+          "id": 4,
+          "part": 0,
+          "frames": 212,
+          "next_id": 1,
+          "next_part": 0,
+          "next_local": 0
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "Isolated RMT instruments play the PICO notes; custom waves use the assigned instrument.",
+    "Static PICO score only; gameplay-driven Lua music changes are not executed."
+  ],
+  "literal_music_calls": [],
+  "arrangement": "rmt-instruments-v2",
+  "style_name": "RMT: Chicken Valley",
+  "donor": "Chicken Valley",
+  "controls": "Space / N / P"
+}

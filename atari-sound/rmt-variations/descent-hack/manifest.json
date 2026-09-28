@@ -1,0 +1,281 @@
+{
+  "title": "Descent [Hack]",
+  "kind": "music",
+  "sources": [
+    "[Hacks]/Celeste Hacks/Descent [Hack].p8.png",
+    "allgames/[Hacks]/Celeste Hacks/Descent [Hack].p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC01",
+      "bytes": 14885,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 424,
+          "next_id": 1,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 212,
+          "next_id": 2,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 2,
+          "part": 0,
+          "frames": 212,
+          "next_id": 3,
+          "next_part": 0,
+          "next_local": 3
+        },
+        {
+          "id": 3,
+          "part": 0,
+          "frames": 424,
+          "next_id": 4,
+          "next_part": 0,
+          "next_local": 4
+        },
+        {
+          "id": 4,
+          "part": 0,
+          "frames": 424,
+          "next_id": 5,
+          "next_part": 0,
+          "next_local": 5
+        },
+        {
+          "id": 5,
+          "part": 0,
+          "frames": 212,
+          "next_id": 6,
+          "next_part": 0,
+          "next_local": 6
+        },
+        {
+          "id": 6,
+          "part": 0,
+          "frames": 212,
+          "next_id": 7,
+          "next_part": 0,
+          "next_local": 7
+        },
+        {
+          "id": 7,
+          "part": 0,
+          "frames": 212,
+          "next_id": 0,
+          "next_part": 0,
+          "next_local": 0
+        },
+        {
+          "id": 10,
+          "part": 0,
+          "frames": 318,
+          "next_id": 11,
+          "next_part": 0,
+          "next_local": 9
+        },
+        {
+          "id": 11,
+          "part": 0,
+          "frames": 318,
+          "next_id": 12,
+          "next_part": 0,
+          "next_local": 10
+        },
+        {
+          "id": 12,
+          "part": 0,
+          "frames": 318,
+          "next_id": 13,
+          "next_part": 0,
+          "next_local": 11
+        },
+        {
+          "id": 13,
+          "part": 0,
+          "frames": 318,
+          "next_id": 14,
+          "next_part": 0,
+          "next_local": 12
+        },
+        {
+          "id": 14,
+          "part": 0,
+          "frames": 159,
+          "next_id": 15,
+          "next_part": 0,
+          "next_local": 13
+        },
+        {
+          "id": 15,
+          "part": 0,
+          "frames": 159,
+          "next_id": 16,
+          "next_part": 0,
+          "next_local": 14
+        },
+        {
+          "id": 16,
+          "part": 0,
+          "frames": 159,
+          "next_id": 17,
+          "next_part": 0,
+          "next_local": 15
+        },
+        {
+          "id": 17,
+          "part": 0,
+          "frames": 159,
+          "next_id": 10,
+          "next_part": 0,
+          "next_local": 8
+        }
+      ],
+      "bank_boundary_stops": []
+    },
+    {
+      "file": "MUSIC02",
+      "bytes": 21178,
+      "entries": [
+        {
+          "id": 20,
+          "part": 0,
+          "frames": 424,
+          "next_id": 21,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 21,
+          "part": 0,
+          "frames": 424,
+          "next_id": 22,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 22,
+          "part": 0,
+          "frames": 212,
+          "next_id": 23,
+          "next_part": 0,
+          "next_local": 3
+        },
+        {
+          "id": 23,
+          "part": 0,
+          "frames": 212,
+          "next_id": 24,
+          "next_part": 0,
+          "next_local": 4
+        },
+        {
+          "id": 24,
+          "part": 0,
+          "frames": 212,
+          "next_id": 25,
+          "next_part": 0,
+          "next_local": 5
+        },
+        {
+          "id": 25,
+          "part": 0,
+          "frames": 212,
+          "next_id": 26,
+          "next_part": 0,
+          "next_local": 6
+        },
+        {
+          "id": 26,
+          "part": 0,
+          "frames": 424,
+          "next_id": 27,
+          "next_part": 0,
+          "next_local": 7
+        },
+        {
+          "id": 27,
+          "part": 0,
+          "frames": 424,
+          "next_id": 28,
+          "next_part": 0,
+          "next_local": 8
+        },
+        {
+          "id": 28,
+          "part": 0,
+          "frames": 424,
+          "next_id": 20,
+          "next_part": 0,
+          "next_local": 0
+        },
+        {
+          "id": 30,
+          "part": 0,
+          "frames": 212,
+          "next_id": 31,
+          "next_part": 0,
+          "next_local": 10
+        },
+        {
+          "id": 31,
+          "part": 0,
+          "frames": 212,
+          "next_id": 32,
+          "next_part": 0,
+          "next_local": 11
+        },
+        {
+          "id": 32,
+          "part": 0,
+          "frames": 212,
+          "next_id": 33,
+          "next_part": 0,
+          "next_local": 12
+        },
+        {
+          "id": 33,
+          "part": 0,
+          "frames": 847,
+          "next_id": 30,
+          "next_part": 0,
+          "next_local": 9
+        },
+        {
+          "id": 40,
+          "part": 0,
+          "frames": 212,
+          "next_id": 41,
+          "next_part": 0,
+          "next_local": 14
+        },
+        {
+          "id": 41,
+          "part": 0,
+          "frames": 212,
+          "next_id": 40,
+          "next_part": 0,
+          "next_local": 13
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "Isolated RMT instruments play the PICO notes; custom waves use the assigned instrument.",
+    "Static PICO score only; gameplay-driven Lua music changes are not executed."
+  ],
+  "literal_music_calls": [],
+  "arrangement": "rmt-instruments-v2",
+  "style_name": "RMT: ingame",
+  "donor": "ingame",
+  "controls": "Space / N / P"
+}

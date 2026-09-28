@@ -1,0 +1,39 @@
+{
+  "title": "Charon",
+  "kind": "music",
+  "sources": [
+    "[RPG]/Charon.p8.png",
+    "allgames/[RPG]/Charon.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 5829,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 3178,
+          "next_id": 0,
+          "next_part": 0,
+          "next_local": 0
+        },
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 3377,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "Lua audio/SFX calls or memory writes detected; gameplay-driven changes are not executed."
+  ],
+  "literal_music_calls": [
+    0
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "whistlers-brothers",
+  "title": "Whistlers Brothers",
+  "remix": "Whistlers Brothers / New Horizons",
+  "author": "Louis Ewens",
+  "directory": "remixes/whistlers-brothers",
+  "source": "asma/asma/Games/Whistlers_Brothers.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 37.62,
+  "duration_seconds": 106.85760781122863,
+  "frames": 5328,
+  "lead_channel": 1,
+  "changed_lead_frames": 4851,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 576
+    },
+    {
+      "name": "Second theme",
+      "frame": 1296
+    },
+    {
+      "name": "Answer",
+      "frame": 1872
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 2592
+    },
+    {
+      "name": "Development",
+      "frame": 3312
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 3888
+    },
+    {
+      "name": "Finale",
+      "frame": 4608
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 4860,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

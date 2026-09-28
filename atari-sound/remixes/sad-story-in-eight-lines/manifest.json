@@ -1,0 +1,57 @@
+{
+  "id": "sad-story-in-eight-lines",
+  "title": "Sad Story in Eight Lines",
+  "remix": "Sad Story in Eight Lines / Glass Trails",
+  "author": "Michal Szpilowski (Miker)",
+  "directory": "remixes/sad-story-in-eight-lines",
+  "source": "asma/asma/Composers/Szpilowski_Michal/Sad_Story_in_Eight_Lines.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 141.193,
+  "duration_seconds": 141.19323554636816,
+  "frames": 7040,
+  "lead_channel": 2,
+  "changed_lead_frames": 3496,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 768
+    },
+    {
+      "name": "Second theme",
+      "frame": 1664
+    },
+    {
+      "name": "Answer",
+      "frame": 2560
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 3456
+    },
+    {
+      "name": "Development",
+      "frame": 4352
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 5248
+    },
+    {
+      "name": "Finale",
+      "frame": 6144
+    }
+  ],
+  "arrangement": "Glass pluck",
+  "compressed_bytes": 29976,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

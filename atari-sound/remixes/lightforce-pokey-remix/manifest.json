@@ -1,0 +1,57 @@
+{
+  "id": "lightforce-pokey-remix",
+  "title": "Lightforce - Pokey Remix",
+  "remix": "Lightforce - Pokey Remix / New Horizons",
+  "author": "Mario Krix (emkay)",
+  "directory": "remixes/lightforce-pokey-remix",
+  "source": "asma/asma/Composers/Krix_Mario/Lightforce_Pokey_Remix.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 126.131,
+  "duration_seconds": 128.03659314318386,
+  "frames": 6384,
+  "lead_channel": 2,
+  "changed_lead_frames": 5115,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 784
+    },
+    {
+      "name": "Second theme",
+      "frame": 1568
+    },
+    {
+      "name": "Answer",
+      "frame": 2352
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 3136
+    },
+    {
+      "name": "Development",
+      "frame": 3920
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 4704
+    },
+    {
+      "name": "Finale",
+      "frame": 5488
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 7088,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

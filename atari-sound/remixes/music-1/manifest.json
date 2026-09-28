@@ -1,0 +1,57 @@
+{
+  "id": "music-1",
+  "title": "Music 1",
+  "remix": "Music 1 / Echo Flight",
+  "author": "Dariusz Vogt (DJ V)",
+  "directory": "remixes/music-1",
+  "source": "asma/asma/Composers/Vogt_Dariusz/Music_1.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 169.55,
+  "duration_seconds": 171.9990323928485,
+  "frames": 8576,
+  "lead_channel": 3,
+  "changed_lead_frames": 5112,
+  "allowed_changed_registers": [
+    4,
+    5
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1024
+    },
+    {
+      "name": "Second theme",
+      "frame": 2048
+    },
+    {
+      "name": "Answer",
+      "frame": 3200
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 4224
+    },
+    {
+      "name": "Development",
+      "frame": 5248
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 6400
+    },
+    {
+      "name": "Finale",
+      "frame": 7424
+    }
+  ],
+  "arrangement": "Octave echo",
+  "compressed_bytes": 16624,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

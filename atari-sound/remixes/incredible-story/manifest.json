@@ -1,0 +1,57 @@
+{
+  "id": "incredible-story",
+  "title": "Incredible Story",
+  "remix": "Incredible Story / New Horizons",
+  "author": "Michal Lepkowski (Josh)",
+  "directory": "remixes/incredible-story",
+  "source": "asma/asma/Composers/Lepkowski_Michal/Incredible_Story.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 191.89,
+  "duration_seconds": 192.53623029050206,
+  "frames": 9600,
+  "lead_channel": 3,
+  "changed_lead_frames": 6591,
+  "allowed_changed_registers": [
+    4,
+    5
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1152
+    },
+    {
+      "name": "Second theme",
+      "frame": 2304
+    },
+    {
+      "name": "Answer",
+      "frame": 3584
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 4736
+    },
+    {
+      "name": "Development",
+      "frame": 5888
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 7168
+    },
+    {
+      "name": "Finale",
+      "frame": 8320
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 23361,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

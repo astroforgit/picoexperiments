@@ -1,0 +1,57 @@
+{
+  "id": "dan-strikes-back",
+  "title": "Dan Strikes Back",
+  "remix": "Dan Strikes Back / Soft Skies",
+  "author": "<?>",
+  "directory": "remixes/dan-strikes-back",
+  "source": "asma/asma/Games/Dan_Strikes_Back.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 31.2,
+  "duration_seconds": 105.25313922547446,
+  "frames": 5248,
+  "lead_channel": 1,
+  "changed_lead_frames": 4368,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 640
+    },
+    {
+      "name": "Second theme",
+      "frame": 1280
+    },
+    {
+      "name": "Answer",
+      "frame": 1920
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 2560
+    },
+    {
+      "name": "Development",
+      "frame": 3200
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 3840
+    },
+    {
+      "name": "Finale",
+      "frame": 4480
+    }
+  ],
+  "arrangement": "Soft flute",
+  "compressed_bytes": 9454,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

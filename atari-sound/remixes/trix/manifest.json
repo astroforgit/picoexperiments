@@ -1,0 +1,57 @@
+{
+  "id": "trix",
+  "title": "Trix",
+  "remix": "Trix / New Horizons",
+  "author": "Janusz Pelc <?>",
+  "directory": "remixes/trix",
+  "source": "asma/asma/Composers/Pelc_Janusz/Trix.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 254.3,
+  "duration_seconds": 211.1480658852506,
+  "frames": 10528,
+  "lead_channel": 2,
+  "changed_lead_frames": 7110,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1120
+    },
+    {
+      "name": "Second theme",
+      "frame": 2464
+    },
+    {
+      "name": "Answer",
+      "frame": 3808
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 5152
+    },
+    {
+      "name": "Development",
+      "frame": 6496
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 7840
+    },
+    {
+      "name": "Finale",
+      "frame": 9184
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 31517,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

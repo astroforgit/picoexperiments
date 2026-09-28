@@ -1,0 +1,57 @@
+{
+  "id": "powrot",
+  "title": "Powrot",
+  "remix": "Powrot / New Horizons",
+  "author": "Michal Radecki (stRing)",
+  "directory": "remixes/powrot",
+  "source": "asma/asma/Composers/Radecki_Michal/Powrot.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 98.19,
+  "duration_seconds": 107.82028896268115,
+  "frames": 5376,
+  "lead_channel": 1,
+  "changed_lead_frames": 4126,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 576
+    },
+    {
+      "name": "Second theme",
+      "frame": 1344
+    },
+    {
+      "name": "Answer",
+      "frame": 1920
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 2688
+    },
+    {
+      "name": "Development",
+      "frame": 3264
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 4032
+    },
+    {
+      "name": "Finale",
+      "frame": 4608
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 11101,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

@@ -1,0 +1,57 @@
+{
+  "id": "tompr",
+  "title": "Tompr",
+  "remix": "Tompr / New Horizons",
+  "author": "Adam Bienias (SoTe)",
+  "directory": "remixes/tompr",
+  "source": "asma/asma/Composers/Bienias_Adam/Tompr.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 169.43099999999998,
+  "duration_seconds": 170.07367008994348,
+  "frames": 8480,
+  "lead_channel": 2,
+  "changed_lead_frames": 7281,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1040
+    },
+    {
+      "name": "Second theme",
+      "frame": 2080
+    },
+    {
+      "name": "Answer",
+      "frame": 3120
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 4240
+    },
+    {
+      "name": "Development",
+      "frame": 5280
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 6320
+    },
+    {
+      "name": "Finale",
+      "frame": 7360
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 24640,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

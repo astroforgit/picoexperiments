@@ -1,0 +1,57 @@
+{
+  "id": "psychodela",
+  "title": "Psychodela",
+  "remix": "Psychodela / Soft Skies",
+  "author": "Marcin Majchrzak (Soldier)",
+  "directory": "remixes/psychodela",
+  "source": "asma/asma/Composers/Majchrzak_Marcin/Psychodela.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 215.54,
+  "duration_seconds": 210.82717216809974,
+  "frames": 10512,
+  "lead_channel": 3,
+  "changed_lead_frames": 3598,
+  "allowed_changed_registers": [
+    4,
+    5
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1296
+    },
+    {
+      "name": "Second theme",
+      "frame": 2592
+    },
+    {
+      "name": "Answer",
+      "frame": 3888
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 5184
+    },
+    {
+      "name": "Development",
+      "frame": 6480
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 7776
+    },
+    {
+      "name": "Finale",
+      "frame": 9072
+    }
+  ],
+  "arrangement": "Soft flute",
+  "compressed_bytes": 29471,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

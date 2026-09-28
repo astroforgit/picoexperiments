@@ -1,0 +1,82 @@
+{
+  "title": "Forever Lost In The Never Ending Museum Of Still Life",
+  "kind": "music",
+  "sources": [
+    "[Adventure-Visual]/Forever Lost In The Never Ending Museum Of Still Life.p8.png",
+    "allgames/[Adventure-Visual]/Forever Lost In The Never Ending Museum Of Still Life.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 22160,
+      "entries": [
+        {
+          "id": 5,
+          "part": 0,
+          "frames": 199,
+          "next_id": 6,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 6,
+          "part": 0,
+          "frames": 397,
+          "next_id": 7,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 7,
+          "part": 0,
+          "frames": 397,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 8,
+          "part": 0,
+          "frames": 795,
+          "next_id": 9,
+          "next_part": 0,
+          "next_local": 4
+        },
+        {
+          "id": 9,
+          "part": 0,
+          "frames": 795,
+          "next_id": 8,
+          "next_part": 0,
+          "next_local": 3
+        },
+        {
+          "id": 10,
+          "part": 0,
+          "frames": 795,
+          "next_id": 11,
+          "next_part": 0,
+          "next_local": 6
+        },
+        {
+          "id": 11,
+          "part": 0,
+          "frames": 795,
+          "next_id": 10,
+          "next_part": 0,
+          "next_local": 5
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "Isolated RMT instruments play the PICO notes; custom waves use the assigned instrument.",
+    "Static PICO score only; gameplay-driven Lua music changes are not executed."
+  ],
+  "literal_music_calls": [],
+  "arrangement": "rmt-instruments-v2",
+  "style_name": "RMT: Chicken Valley",
+  "donor": "Chicken Valley",
+  "controls": "Space / N / P"
+}

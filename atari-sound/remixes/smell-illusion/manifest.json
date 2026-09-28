@@ -1,0 +1,57 @@
+{
+  "id": "smell-illusion",
+  "title": "Smell Illusion",
+  "remix": "Smell Illusion / New Horizons",
+  "author": "Lukasz Sychowicz (X-Ray)",
+  "directory": "remixes/smell-illusion",
+  "source": "asma/asma/Composers/Sychowicz_Lukasz/Smell_Illusion.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 192.55,
+  "duration_seconds": 194.46159259340706,
+  "frames": 9696,
+  "lead_channel": 4,
+  "changed_lead_frames": 9013,
+  "allowed_changed_registers": [
+    6,
+    7
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1152
+    },
+    {
+      "name": "Second theme",
+      "frame": 2400
+    },
+    {
+      "name": "Answer",
+      "frame": 3552
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 4800
+    },
+    {
+      "name": "Development",
+      "frame": 6048
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 7200
+    },
+    {
+      "name": "Finale",
+      "frame": 8448
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 19410,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

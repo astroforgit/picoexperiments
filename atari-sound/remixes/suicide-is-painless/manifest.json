@@ -1,0 +1,57 @@
+{
+  "id": "suicide-is-painless",
+  "title": "Suicide Is Painless",
+  "remix": "Suicide Is Painless / New Horizons",
+  "author": "Chuck Ristau",
+  "directory": "remixes/suicide-is-painless",
+  "source": "asma/asma/Composers/Ristau_Chuck/Mash.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 217.56,
+  "duration_seconds": 211.78985331955226,
+  "frames": 10560,
+  "lead_channel": 2,
+  "changed_lead_frames": 8247,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1152
+    },
+    {
+      "name": "Second theme",
+      "frame": 2496
+    },
+    {
+      "name": "Answer",
+      "frame": 3840
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 5184
+    },
+    {
+      "name": "Development",
+      "frame": 6528
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 7872
+    },
+    {
+      "name": "Finale",
+      "frame": 9216
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 8484,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

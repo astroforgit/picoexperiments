@@ -1,0 +1,90 @@
+{
+  "title": "Endless Plants vs Zombies",
+  "kind": "music",
+  "sources": [
+    "[Strategy-Gestion]/Endless Plants vs Zombies.p8.png",
+    "allgames/[Strategy-Gestion]/Endless Plants vs Zombies.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 6822,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 225,
+          "next_id": 1,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 225,
+          "next_id": 2,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 2,
+          "part": 0,
+          "frames": 238,
+          "next_id": 3,
+          "next_part": 0,
+          "next_local": 3
+        },
+        {
+          "id": 3,
+          "part": 0,
+          "frames": 238,
+          "next_id": 0,
+          "next_part": 0,
+          "next_local": 0
+        },
+        {
+          "id": 16,
+          "part": 0,
+          "frames": 159,
+          "next_id": 17,
+          "next_part": 0,
+          "next_local": 5
+        },
+        {
+          "id": 17,
+          "part": 0,
+          "frames": 159,
+          "next_id": 18,
+          "next_part": 0,
+          "next_local": 6
+        },
+        {
+          "id": 18,
+          "part": 0,
+          "frames": 159,
+          "next_id": 16,
+          "next_part": 0,
+          "next_local": 4
+        },
+        {
+          "id": 19,
+          "part": 0,
+          "frames": 172,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "Isolated RMT instruments play the PICO notes; custom waves use the assigned instrument.",
+    "Static PICO score only; gameplay-driven Lua music changes are not executed."
+  ],
+  "literal_music_calls": [],
+  "arrangement": "rmt-instruments-v2",
+  "style_name": "RMT: Chicken Valley",
+  "donor": "Chicken Valley",
+  "controls": "Space / N / P"
+}

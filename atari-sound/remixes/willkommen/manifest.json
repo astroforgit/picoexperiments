@@ -1,0 +1,57 @@
+{
+  "id": "willkommen",
+  "title": "Willkommen",
+  "remix": "Willkommen / Glass Trails",
+  "author": "John W. Lusth",
+  "directory": "remixes/willkommen",
+  "source": "asma/asma/Composers/Lusth_John_W/Willkommen.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 71.56,
+  "duration_seconds": 107.82028896268115,
+  "frames": 5376,
+  "lead_channel": 1,
+  "changed_lead_frames": 2892,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 512
+    },
+    {
+      "name": "Second theme",
+      "frame": 1280
+    },
+    {
+      "name": "Answer",
+      "frame": 1792
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 2560
+    },
+    {
+      "name": "Development",
+      "frame": 3328
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 3840
+    },
+    {
+      "name": "Finale",
+      "frame": 4608
+    }
+  ],
+  "arrangement": "Glass pluck",
+  "compressed_bytes": 3630,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

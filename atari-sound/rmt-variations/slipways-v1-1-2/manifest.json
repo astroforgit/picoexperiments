@@ -1,0 +1,378 @@
+{
+  "title": "SlipWays (v1.1.2)",
+  "kind": "music",
+  "sources": [
+    "[Strategy-Gestion]/SlipWays (v1.1.2).p8.png",
+    "allgames/[Strategy-Gestion]/SlipWays (v1.1.2).p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC01",
+      "bytes": 20014,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 2278,
+          "next_id": 1,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 2278,
+          "next_id": 2,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": [
+        {
+          "from_pattern": 1,
+          "from_frame": 0,
+          "to_pattern": 2,
+          "to_frame": 0,
+          "to_file": "MUSIC02.XEX"
+        }
+      ]
+    },
+    {
+      "file": "MUSIC02",
+      "bytes": 10519,
+      "entries": [
+        {
+          "id": 2,
+          "part": 0,
+          "frames": 2278,
+          "next_id": 1,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": [
+        {
+          "from_pattern": 2,
+          "from_frame": 0,
+          "to_pattern": 1,
+          "to_frame": 0,
+          "to_file": "MUSIC01.XEX"
+        }
+      ]
+    },
+    {
+      "file": "MUSIC03",
+      "bytes": 21164,
+      "entries": [
+        {
+          "id": 3,
+          "part": 0,
+          "frames": 2278,
+          "next_id": 4,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 4,
+          "part": 0,
+          "frames": 2278,
+          "next_id": 5,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": [
+        {
+          "from_pattern": 4,
+          "from_frame": 0,
+          "to_pattern": 5,
+          "to_frame": 0,
+          "to_file": "MUSIC04.XEX"
+        }
+      ]
+    },
+    {
+      "file": "MUSIC04",
+      "bytes": 16370,
+      "entries": [
+        {
+          "id": 5,
+          "part": 0,
+          "frames": 1960,
+          "next_id": 4,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 6,
+          "part": 0,
+          "frames": 847,
+          "next_id": 7,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 7,
+          "part": 0,
+          "frames": 847,
+          "next_id": 6,
+          "next_part": 0,
+          "next_local": 1
+        }
+      ],
+      "bank_boundary_stops": [
+        {
+          "from_pattern": 5,
+          "from_frame": 0,
+          "to_pattern": 4,
+          "to_frame": 0,
+          "to_file": "MUSIC03.XEX"
+        }
+      ]
+    },
+    {
+      "file": "MUSIC05",
+      "bytes": 22188,
+      "entries": [
+        {
+          "id": 8,
+          "part": 0,
+          "frames": 1695,
+          "next_id": 9,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 9,
+          "part": 0,
+          "frames": 1695,
+          "next_id": 10,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 10,
+          "part": 0,
+          "frames": 1695,
+          "next_id": 9,
+          "next_part": 0,
+          "next_local": 1
+        }
+      ],
+      "bank_boundary_stops": []
+    },
+    {
+      "file": "MUSIC06",
+      "bytes": 28024,
+      "entries": [
+        {
+          "id": 11,
+          "part": 0,
+          "frames": 1695,
+          "next_id": 12,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 12,
+          "part": 0,
+          "frames": 1695,
+          "next_id": 13,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 13,
+          "part": 0,
+          "frames": 1695,
+          "next_id": 14,
+          "next_part": 0,
+          "next_local": 3
+        },
+        {
+          "id": 14,
+          "part": 0,
+          "frames": 1695,
+          "next_id": 12,
+          "next_part": 0,
+          "next_local": 1
+        }
+      ],
+      "bank_boundary_stops": []
+    },
+    {
+      "file": "MUSIC07",
+      "bytes": 24464,
+      "entries": [
+        {
+          "id": 15,
+          "part": 0,
+          "frames": 1695,
+          "next_id": 16,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 16,
+          "part": 0,
+          "frames": 1695,
+          "next_id": 17,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 17,
+          "part": 0,
+          "frames": 424,
+          "next_id": 18,
+          "next_part": 0,
+          "next_local": 3
+        },
+        {
+          "id": 18,
+          "part": 0,
+          "frames": 424,
+          "next_id": 19,
+          "next_part": 0,
+          "next_local": 4
+        },
+        {
+          "id": 19,
+          "part": 0,
+          "frames": 1695,
+          "next_id": 12,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": [
+        {
+          "from_pattern": 19,
+          "from_frame": 0,
+          "to_pattern": 12,
+          "to_frame": 0,
+          "to_file": "MUSIC06.XEX"
+        }
+      ]
+    },
+    {
+      "file": "MUSIC08",
+      "bytes": 23255,
+      "entries": [
+        {
+          "id": 20,
+          "part": 0,
+          "frames": 424,
+          "next_id": 21,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 21,
+          "part": 0,
+          "frames": 1695,
+          "next_id": 22,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 22,
+          "part": 0,
+          "frames": 1695,
+          "next_id": 23,
+          "next_part": 0,
+          "next_local": 3
+        },
+        {
+          "id": 23,
+          "part": 0,
+          "frames": 1695,
+          "next_id": 24,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": [
+        {
+          "from_pattern": 23,
+          "from_frame": 0,
+          "to_pattern": 24,
+          "to_frame": 0,
+          "to_file": "MUSIC09.XEX"
+        }
+      ]
+    },
+    {
+      "file": "MUSIC09",
+      "bytes": 23660,
+      "entries": [
+        {
+          "id": 24,
+          "part": 0,
+          "frames": 1695,
+          "next_id": 25,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 25,
+          "part": 0,
+          "frames": 1695,
+          "next_id": 26,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 26,
+          "part": 0,
+          "frames": 424,
+          "next_id": 27,
+          "next_part": 0,
+          "next_local": 3
+        },
+        {
+          "id": 27,
+          "part": 0,
+          "frames": 1695,
+          "next_id": 20,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": [
+        {
+          "from_pattern": 27,
+          "from_frame": 0,
+          "to_pattern": 20,
+          "to_frame": 0,
+          "to_file": "MUSIC08.XEX"
+        }
+      ]
+    },
+    {
+      "file": "MUSIC10",
+      "bytes": 7247,
+      "entries": [
+        {
+          "id": 52,
+          "part": 0,
+          "frames": 1695,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "Memory bank boundaries stop playback. Load the next numbered XEX; see bank_boundary_stops.",
+    "Isolated RMT instruments play the PICO notes; custom waves use the assigned instrument.",
+    "Static PICO score only; gameplay-driven Lua music changes are not executed."
+  ],
+  "literal_music_calls": [],
+  "arrangement": "rmt-instruments-v2",
+  "style_name": "RMT: ingame1",
+  "donor": "ingame1",
+  "controls": "Space / N / P"
+}

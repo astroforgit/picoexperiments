@@ -1,0 +1,57 @@
+{
+  "id": "culmins-2",
+  "title": "Culmins - 2",
+  "remix": "Culmins - 2 / Soft Skies",
+  "author": "Guillermo Fuenzalida (Willysoft)",
+  "directory": "remixes/culmins-2",
+  "source": "asma/asma/Games/Culmins_2.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 80.865,
+  "duration_seconds": 106.85760781122863,
+  "frames": 5328,
+  "lead_channel": 3,
+  "changed_lead_frames": 5227,
+  "allowed_changed_registers": [
+    4,
+    5
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 576
+    },
+    {
+      "name": "Second theme",
+      "frame": 1296
+    },
+    {
+      "name": "Answer",
+      "frame": 1872
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 2592
+    },
+    {
+      "name": "Development",
+      "frame": 3312
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 3888
+    },
+    {
+      "name": "Finale",
+      "frame": 4608
+    }
+  ],
+  "arrangement": "Soft flute",
+  "compressed_bytes": 17788,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

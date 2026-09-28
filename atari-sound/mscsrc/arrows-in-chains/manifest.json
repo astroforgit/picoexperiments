@@ -1,0 +1,27 @@
+{
+  "title": "Arrows in Chains",
+  "kind": "music",
+  "sources": [
+    "[Puzzle]/Arrows in Chains.p8.png",
+    "allgames/[Puzzle]/Arrows in Chains.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 457,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 212,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [],
+  "literal_music_calls": []
+}

@@ -1,0 +1,55 @@
+{
+  "id": "warhawk",
+  "title": "Warhawk",
+  "remix": "Afterburner",
+  "author": "Rob Hubbard",
+  "directory": "remixes/warhawk",
+  "source": "asma/asma/Composers/Hubbard_Rob/Warhawk.sap",
+  "duration_seconds": 217.4054933696919,
+  "frames": 10840,
+  "lead_channel": 3,
+  "changed_lead_frames": 8754,
+  "original_subsong": 0,
+  "preservation": "Original backing, drums, clock and lead distortion; new evolving melody with opening/breakdown dynamics.",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1124
+    },
+    {
+      "name": "Second theme",
+      "frame": 2529
+    },
+    {
+      "name": "Answer",
+      "frame": 3934
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 5339
+    },
+    {
+      "name": "Development",
+      "frame": 6744
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 8149
+    },
+    {
+      "name": "Finale",
+      "frame": 9554
+    }
+  ],
+  "format": "PMZ1",
+  "arrangement": "Full arrangement",
+  "allowed_changed_registers": [
+    4,
+    5
+  ],
+  "compressed_bytes": 22775
+}

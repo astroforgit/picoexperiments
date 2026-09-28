@@ -1,0 +1,55 @@
+{
+  "title": "The Burger Massacre",
+  "kind": "music",
+  "sources": [
+    "[Music-Rythm]/The Burger Massacre.p8.png",
+    "allgames/[Music-Rythm]/The Burger Massacre.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 2062,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 212,
+          "next_id": 1,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 212,
+          "next_id": 2,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 2,
+          "part": 0,
+          "frames": 212,
+          "next_id": 3,
+          "next_part": 0,
+          "next_local": 3
+        },
+        {
+          "id": 3,
+          "part": 0,
+          "frames": 212,
+          "next_id": 0,
+          "next_part": 0,
+          "next_local": 0
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "Lua audio/SFX calls or memory writes detected; gameplay-driven changes are not executed."
+  ],
+  "literal_music_calls": [
+    0
+  ]
+}

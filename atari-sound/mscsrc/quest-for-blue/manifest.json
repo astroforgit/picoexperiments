@@ -1,0 +1,89 @@
+{
+  "title": "Quest for Blue",
+  "kind": "music",
+  "sources": [
+    "[Misc]/Quest for Blue.p8.png",
+    "allgames/[Misc]/Quest for Blue.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 5841,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 318,
+          "next_id": 1,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 318,
+          "next_id": 2,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 2,
+          "part": 0,
+          "frames": 318,
+          "next_id": 0,
+          "next_part": 0,
+          "next_local": 0
+        },
+        {
+          "id": 3,
+          "part": 0,
+          "frames": 318,
+          "next_id": 4,
+          "next_part": 0,
+          "next_local": 4
+        },
+        {
+          "id": 4,
+          "part": 0,
+          "frames": 129,
+          "next_id": 5,
+          "next_part": 0,
+          "next_local": 5
+        },
+        {
+          "id": 5,
+          "part": 0,
+          "frames": 129,
+          "next_id": 6,
+          "next_part": 0,
+          "next_local": 6
+        },
+        {
+          "id": 6,
+          "part": 0,
+          "frames": 129,
+          "next_id": 5,
+          "next_part": 0,
+          "next_local": 5
+        },
+        {
+          "id": 7,
+          "part": 0,
+          "frames": 1986,
+          "next_id": 7,
+          "next_part": 0,
+          "next_local": 7
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "Lua audio/SFX calls or memory writes detected; gameplay-driven changes are not executed."
+  ],
+  "literal_music_calls": [
+    0,
+    3,
+    7
+  ]
+}

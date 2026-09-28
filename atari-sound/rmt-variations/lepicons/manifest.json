@@ -1,0 +1,50 @@
+{
+  "title": "Lepicons",
+  "kind": "music",
+  "sources": [
+    "[Puzzle]/Lepicons.p8.png",
+    "allgames/[Puzzle]/Lepicons.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 2764,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 344,
+          "next_id": 1,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 344,
+          "next_id": 1,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 2,
+          "part": 0,
+          "frames": 344,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "Isolated RMT instruments play the PICO notes; custom waves use the assigned instrument.",
+    "Static PICO score only; gameplay-driven Lua music changes are not executed."
+  ],
+  "literal_music_calls": [],
+  "arrangement": "rmt-instruments-v2",
+  "style_name": "RMT: ingame",
+  "donor": "ingame",
+  "controls": "Space / N / P"
+}

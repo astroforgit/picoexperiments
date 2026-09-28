@@ -1,0 +1,57 @@
+{
+  "id": "draconus-zybex",
+  "title": "Draconus & Zybex",
+  "remix": "Draconus & Zybex / Soft Skies",
+  "author": "Andrzej Kidaj (Andy)",
+  "directory": "remixes/draconus-zybex",
+  "source": "asma/asma/Composers/Kidaj_Andrzej/Draconus_And_Zybex.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 180.98,
+  "duration_seconds": 182.90941877597695,
+  "frames": 9120,
+  "lead_channel": 2,
+  "changed_lead_frames": 3664,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1120
+    },
+    {
+      "name": "Second theme",
+      "frame": 2240
+    },
+    {
+      "name": "Answer",
+      "frame": 3360
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 4480
+    },
+    {
+      "name": "Development",
+      "frame": 5600
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 6720
+    },
+    {
+      "name": "Finale",
+      "frame": 7840
+    }
+  ],
+  "arrangement": "Soft flute",
+  "compressed_bytes": 19097,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

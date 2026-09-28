@@ -1,0 +1,57 @@
+{
+  "id": "janosik",
+  "title": "Janosik",
+  "remix": "Janosik / Glass Trails",
+  "author": "Zbigniew Jablonski (Zbycho Jabol)",
+  "directory": "remixes/janosik",
+  "source": "asma/asma/Misc/Janosik.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 352.983,
+  "duration_seconds": 211.78985331955226,
+  "frames": 10560,
+  "lead_channel": 2,
+  "changed_lead_frames": 7898,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1232
+    },
+    {
+      "name": "Second theme",
+      "frame": 2640
+    },
+    {
+      "name": "Answer",
+      "frame": 3872
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 5280
+    },
+    {
+      "name": "Development",
+      "frame": 6512
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 7920
+    },
+    {
+      "name": "Finale",
+      "frame": 9152
+    }
+  ],
+  "arrangement": "Glass pluck",
+  "compressed_bytes": 15160,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

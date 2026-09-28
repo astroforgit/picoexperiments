@@ -1,0 +1,57 @@
+{
+  "id": "ninja",
+  "title": "Ninja",
+  "remix": "Ninja / Echo Flight",
+  "author": "Andrey Derkach (DJ Andrey Balkonsky)",
+  "directory": "remixes/ninja",
+  "source": "asma/asma/Composers/Derkach_Andrey/Ninja.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 128.357,
+  "duration_seconds": 128.3574868603347,
+  "frames": 6400,
+  "lead_channel": 1,
+  "changed_lead_frames": 5105,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 768
+    },
+    {
+      "name": "Second theme",
+      "frame": 1536
+    },
+    {
+      "name": "Answer",
+      "frame": 2304
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 3200
+    },
+    {
+      "name": "Development",
+      "frame": 3968
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 4736
+    },
+    {
+      "name": "Finale",
+      "frame": 5504
+    }
+  ],
+  "arrangement": "Octave echo",
+  "compressed_bytes": 13768,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

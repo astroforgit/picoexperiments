@@ -1,0 +1,57 @@
+{
+  "id": "arkanoid-ii",
+  "title": "Arkanoid II",
+  "remix": "Arkanoid II / New Horizons",
+  "author": "Waldemar Rymorz",
+  "directory": "remixes/arkanoid-ii",
+  "source": "asma/asma/Composers/Rymorz_Waldemar/Arkanoid_II.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 173.1,
+  "duration_seconds": 173.28260726145186,
+  "frames": 8640,
+  "lead_channel": 1,
+  "changed_lead_frames": 5740,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 960
+    },
+    {
+      "name": "Second theme",
+      "frame": 2080
+    },
+    {
+      "name": "Answer",
+      "frame": 3200
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 4320
+    },
+    {
+      "name": "Development",
+      "frame": 5280
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 6400
+    },
+    {
+      "name": "Finale",
+      "frame": 7520
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 12669,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

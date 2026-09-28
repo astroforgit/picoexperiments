@@ -1,0 +1,57 @@
+{
+  "id": "uht03",
+  "title": "Uht03",
+  "remix": "Uht03 / New Horizons",
+  "author": "Jakub Karwacki (Yezus)",
+  "directory": "remixes/uht03",
+  "source": "asma/asma/Composers/Karwacki_Jakub/Uht03.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 118.58,
+  "duration_seconds": 121.29782508301629,
+  "frames": 6048,
+  "lead_channel": 3,
+  "changed_lead_frames": 2983,
+  "allowed_changed_registers": [
+    4,
+    5
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 720
+    },
+    {
+      "name": "Second theme",
+      "frame": 1440
+    },
+    {
+      "name": "Answer",
+      "frame": 2160
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 3024
+    },
+    {
+      "name": "Development",
+      "frame": 3744
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 4464
+    },
+    {
+      "name": "Finale",
+      "frame": 5184
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 14495,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

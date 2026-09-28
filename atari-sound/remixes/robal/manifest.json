@@ -1,0 +1,57 @@
+{
+  "id": "robal",
+  "title": "Robal",
+  "remix": "Robal / Soft Skies",
+  "author": "Piotr Kulikiewicz (Presley) <?>",
+  "directory": "remixes/robal",
+  "source": "asma/asma/Games/Robal.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 154.11,
+  "duration_seconds": 156.59613396960833,
+  "frames": 7808,
+  "lead_channel": 3,
+  "changed_lead_frames": 1923,
+  "allowed_changed_registers": [
+    4,
+    5
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 896
+    },
+    {
+      "name": "Second theme",
+      "frame": 1920
+    },
+    {
+      "name": "Answer",
+      "frame": 2816
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 3840
+    },
+    {
+      "name": "Development",
+      "frame": 4864
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 5760
+    },
+    {
+      "name": "Finale",
+      "frame": 6784
+    }
+  ],
+  "arrangement": "Soft flute",
+  "compressed_bytes": 24759,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

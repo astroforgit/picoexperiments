@@ -1,0 +1,57 @@
+{
+  "id": "black-lamp-ingame",
+  "title": "Black Lamp - Ingame",
+  "remix": "Black Lamp - Ingame / New Horizons",
+  "author": "Richard Munns",
+  "directory": "remixes/black-lamp-ingame",
+  "source": "asma/asma/Composers/Munns_Richard/Black_Lamp_Ingame.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 135.97,
+  "duration_seconds": 138.62608580916148,
+  "frames": 6912,
+  "lead_channel": 1,
+  "changed_lead_frames": 5700,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 768
+    },
+    {
+      "name": "Second theme",
+      "frame": 1536
+    },
+    {
+      "name": "Answer",
+      "frame": 2560
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 3328
+    },
+    {
+      "name": "Development",
+      "frame": 4096
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 5120
+    },
+    {
+      "name": "Finale",
+      "frame": 5888
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 16751,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

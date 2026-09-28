@@ -1,0 +1,57 @@
+{
+  "id": "klony-ingame-1",
+  "title": "Klony - Ingame #1",
+  "remix": "Klony - Ingame #1 / Soft Skies",
+  "author": "Michal Radecki (stRing)",
+  "directory": "remixes/klony-ingame-1",
+  "source": "asma/asma/Composers/Radecki_Michal/Klony_Ingame_1.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 206.65,
+  "duration_seconds": 206.65555384513885,
+  "frames": 10304,
+  "lead_channel": 2,
+  "changed_lead_frames": 7573,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1120
+    },
+    {
+      "name": "Second theme",
+      "frame": 2464
+    },
+    {
+      "name": "Answer",
+      "frame": 3808
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 5152
+    },
+    {
+      "name": "Development",
+      "frame": 6272
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 7616
+    },
+    {
+      "name": "Finale",
+      "frame": 8960
+    }
+  ],
+  "arrangement": "Soft flute",
+  "compressed_bytes": 16290,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

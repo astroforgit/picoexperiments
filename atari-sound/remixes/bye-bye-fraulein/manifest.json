@@ -1,0 +1,57 @@
+{
+  "id": "bye-bye-fraulein",
+  "title": "Bye Bye Fraulein",
+  "remix": "Bye Bye Fraulein / Echo Flight",
+  "author": "Ralf Thomas Quack",
+  "directory": "remixes/bye-bye-fraulein",
+  "source": "asma/asma/Composers/Quack_Ralf_Thomas/Bye_Bye_Fraulein.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 107.47999999999999,
+  "duration_seconds": 109.1038638312845,
+  "frames": 5440,
+  "lead_channel": 1,
+  "changed_lead_frames": 4716,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 640
+    },
+    {
+      "name": "Second theme",
+      "frame": 1280
+    },
+    {
+      "name": "Answer",
+      "frame": 1920
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 2720
+    },
+    {
+      "name": "Development",
+      "frame": 3360
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 4000
+    },
+    {
+      "name": "Finale",
+      "frame": 4640
+    }
+  ],
+  "arrangement": "Octave echo",
+  "compressed_bytes": 10448,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

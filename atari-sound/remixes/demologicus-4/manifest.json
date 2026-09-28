@@ -1,0 +1,57 @@
+{
+  "id": "demologicus-4",
+  "title": "Demologicus 4",
+  "remix": "Demologicus 4 / Glass Trails",
+  "author": "Adrian Galinski (Daxey)",
+  "directory": "remixes/demologicus-4",
+  "source": "asma/asma/Composers/Galinski_Adrian/Demologicus_4.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 173.28,
+  "duration_seconds": 173.28260726145186,
+  "frames": 8640,
+  "lead_channel": 2,
+  "changed_lead_frames": 7132,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1040
+    },
+    {
+      "name": "Second theme",
+      "frame": 2160
+    },
+    {
+      "name": "Answer",
+      "frame": 3200
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 4320
+    },
+    {
+      "name": "Development",
+      "frame": 5360
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 6480
+    },
+    {
+      "name": "Finale",
+      "frame": 7520
+    }
+  ],
+  "arrangement": "Glass pluck",
+  "compressed_bytes": 17139,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

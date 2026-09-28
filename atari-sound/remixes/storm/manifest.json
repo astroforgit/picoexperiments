@@ -1,0 +1,57 @@
+{
+  "id": "storm",
+  "title": "Storm",
+  "remix": "Storm / New Horizons",
+  "author": "Marek Pesout (Poison)",
+  "directory": "remixes/storm",
+  "source": "asma/asma/Composers/Pesout_Marek/Storm.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 161.73,
+  "duration_seconds": 162.3722208783234,
+  "frames": 8096,
+  "lead_channel": 1,
+  "changed_lead_frames": 3781,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 880
+    },
+    {
+      "name": "Second theme",
+      "frame": 1936
+    },
+    {
+      "name": "Answer",
+      "frame": 2992
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 4048
+    },
+    {
+      "name": "Development",
+      "frame": 4928
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 5984
+    },
+    {
+      "name": "Finale",
+      "frame": 7040
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 25841,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

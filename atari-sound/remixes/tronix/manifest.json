@@ -1,0 +1,57 @@
+{
+  "id": "tronix",
+  "title": "Tronix",
+  "remix": "Tronix / Echo Flight",
+  "author": "Zdenek Eisenhammer (PG)",
+  "directory": "remixes/tronix",
+  "source": "asma/asma/Composers/Eisenhammer_Zdenek/Tronix.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 159.644,
+  "duration_seconds": 162.69311459547424,
+  "frames": 8112,
+  "lead_channel": 2,
+  "changed_lead_frames": 3090,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 832
+    },
+    {
+      "name": "Second theme",
+      "frame": 1872
+    },
+    {
+      "name": "Answer",
+      "frame": 2912
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 3952
+    },
+    {
+      "name": "Development",
+      "frame": 4992
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 6032
+    },
+    {
+      "name": "Finale",
+      "frame": 7072
+    }
+  ],
+  "arrangement": "Octave echo",
+  "compressed_bytes": 15399,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

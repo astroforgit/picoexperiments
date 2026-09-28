@@ -1,0 +1,57 @@
+{
+  "id": "nemesis",
+  "title": "Nemesis",
+  "remix": "Nemesis / Echo Flight",
+  "author": "Marek Badkowski (Bac)",
+  "directory": "remixes/nemesis",
+  "source": "asma/asma/Composers/Badkowski_Marek/Nemesis.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 92.69800000000001,
+  "duration_seconds": 105.89492665977613,
+  "frames": 5280,
+  "lead_channel": 1,
+  "changed_lead_frames": 4407,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 576
+    },
+    {
+      "name": "Second theme",
+      "frame": 1248
+    },
+    {
+      "name": "Answer",
+      "frame": 1920
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 2592
+    },
+    {
+      "name": "Development",
+      "frame": 3264
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 3936
+    },
+    {
+      "name": "Finale",
+      "frame": 4608
+    }
+  ],
+  "arrangement": "Octave echo",
+  "compressed_bytes": 18909,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

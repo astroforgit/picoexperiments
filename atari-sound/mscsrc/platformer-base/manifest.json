@@ -1,0 +1,29 @@
+{
+  "title": "Platformer Base",
+  "kind": "music",
+  "sources": [
+    "[Platform]/Platformer Base.p8.png",
+    "allgames/[Platform]/Platformer Base.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 445,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 424,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "Lua audio/SFX calls or memory writes detected; gameplay-driven changes are not executed."
+  ],
+  "literal_music_calls": []
+}

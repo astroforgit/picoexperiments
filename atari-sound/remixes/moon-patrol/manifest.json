@@ -1,0 +1,57 @@
+{
+  "id": "moon-patrol",
+  "title": "Moon Patrol",
+  "remix": "Moon Patrol / New Horizons",
+  "author": "Bernhard Pos (Analmux)",
+  "directory": "remixes/moon-patrol",
+  "source": "asma/asma/Composers/Pos_Bernhard/Moon_Patrol.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 80.423,
+  "duration_seconds": 105.89492665977613,
+  "frames": 5280,
+  "lead_channel": 2,
+  "changed_lead_frames": 3219,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 640
+    },
+    {
+      "name": "Second theme",
+      "frame": 1280
+    },
+    {
+      "name": "Answer",
+      "frame": 1920
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 2640
+    },
+    {
+      "name": "Development",
+      "frame": 3280
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 3920
+    },
+    {
+      "name": "Finale",
+      "frame": 4560
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 9320,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

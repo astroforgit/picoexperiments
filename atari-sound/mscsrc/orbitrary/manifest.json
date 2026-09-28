@@ -1,0 +1,70 @@
+{
+  "title": "Orbitrary",
+  "kind": "sfx-audition",
+  "sources": [
+    "[Misc]/Orbitrary.p8.png",
+    "allgames/[Misc]/Orbitrary.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 571,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 13,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 53,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 2,
+          "part": 0,
+          "frames": 53,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 3,
+          "part": 0,
+          "frames": 93,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 4,
+          "part": 0,
+          "frames": 79,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 5,
+          "part": 0,
+          "frames": 53,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "No audible static music patterns. SFX exported for audition; Lua sequencing is not reconstructed.",
+    "Lua audio/SFX calls or memory writes detected; gameplay-driven changes are not executed."
+  ],
+  "literal_music_calls": []
+}

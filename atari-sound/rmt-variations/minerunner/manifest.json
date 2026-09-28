@@ -1,0 +1,42 @@
+{
+  "title": "Minerunner",
+  "kind": "music",
+  "sources": [
+    "[Puzzle]/Minerunner.p8.png",
+    "allgames/[Puzzle]/Minerunner.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 2490,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 424,
+          "next_id": 0,
+          "next_part": 0,
+          "next_local": 0
+        },
+        {
+          "id": 5,
+          "part": 0,
+          "frames": 318,
+          "next_id": 5,
+          "next_part": 0,
+          "next_local": 1
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "Isolated RMT instruments play the PICO notes; custom waves use the assigned instrument.",
+    "Static PICO score only; gameplay-driven Lua music changes are not executed."
+  ],
+  "literal_music_calls": [],
+  "arrangement": "rmt-instruments-v2",
+  "style_name": "RMT: piraci",
+  "donor": "piraci",
+  "controls": "Space / N / P"
+}

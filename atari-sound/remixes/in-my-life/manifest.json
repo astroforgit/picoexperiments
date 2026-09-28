@@ -1,0 +1,57 @@
+{
+  "id": "in-my-life",
+  "title": "In My Life",
+  "remix": "In My Life / Glass Trails",
+  "author": "Ireneusz Kuczek",
+  "directory": "remixes/in-my-life",
+  "source": "asma/asma/Composers/Kuczek_Ireneusz/In_My_Life.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 120.59,
+  "duration_seconds": 120.65603764871462,
+  "frames": 6016,
+  "lead_channel": 2,
+  "changed_lead_frames": 3130,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 640
+    },
+    {
+      "name": "Second theme",
+      "frame": 1408
+    },
+    {
+      "name": "Answer",
+      "frame": 2176
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 2944
+    },
+    {
+      "name": "Development",
+      "frame": 3712
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 4480
+    },
+    {
+      "name": "Finale",
+      "frame": 5248
+    }
+  ],
+  "arrangement": "Glass pluck",
+  "compressed_bytes": 13872,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

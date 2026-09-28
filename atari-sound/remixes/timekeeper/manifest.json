@@ -1,0 +1,57 @@
+{
+  "id": "timekeeper",
+  "title": "Timekeeper",
+  "remix": "Timekeeper / New Horizons",
+  "author": "Jaroslaw Padula (Solo)",
+  "directory": "remixes/timekeeper",
+  "source": "asma/asma/Composers/Padula_Jaroslaw/Timekeeper.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 193.51,
+  "duration_seconds": 194.46159259340706,
+  "frames": 9696,
+  "lead_channel": 1,
+  "changed_lead_frames": 3879,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1152
+    },
+    {
+      "name": "Second theme",
+      "frame": 2400
+    },
+    {
+      "name": "Answer",
+      "frame": 3552
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 4800
+    },
+    {
+      "name": "Development",
+      "frame": 6048
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 7200
+    },
+    {
+      "name": "Finale",
+      "frame": 8448
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 15317,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

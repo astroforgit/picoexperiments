@@ -1,0 +1,57 @@
+{
+  "id": "ibm-tetris",
+  "title": "IBM Tetris",
+  "remix": "IBM Tetris / Soft Skies",
+  "author": "Martin Benes",
+  "directory": "remixes/ibm-tetris",
+  "source": "asma/asma/Games/IBM_Tetris.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 80.88,
+  "duration_seconds": 107.82028896268115,
+  "frames": 5376,
+  "lead_channel": 1,
+  "changed_lead_frames": 4998,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 672
+    },
+    {
+      "name": "Second theme",
+      "frame": 1344
+    },
+    {
+      "name": "Answer",
+      "frame": 2016
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 2688
+    },
+    {
+      "name": "Development",
+      "frame": 3360
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 4032
+    },
+    {
+      "name": "Finale",
+      "frame": 4704
+    }
+  ],
+  "arrangement": "Soft flute",
+  "compressed_bytes": 8447,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

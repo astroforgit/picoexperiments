@@ -1,0 +1,57 @@
+{
+  "id": "mountain-bike",
+  "title": "Mountain Bike",
+  "remix": "Mountain Bike / Echo Flight",
+  "author": "Adam Gilmore",
+  "directory": "remixes/mountain-bike",
+  "source": "asma/asma/Composers/Gilmore_Adam/Mountain_Bike.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 170.6,
+  "duration_seconds": 171.9990323928485,
+  "frames": 8576,
+  "lead_channel": 4,
+  "changed_lead_frames": 7286,
+  "allowed_changed_registers": [
+    6,
+    7
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1024
+    },
+    {
+      "name": "Second theme",
+      "frame": 2048
+    },
+    {
+      "name": "Answer",
+      "frame": 3200
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 4224
+    },
+    {
+      "name": "Development",
+      "frame": 5248
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 6400
+    },
+    {
+      "name": "Finale",
+      "frame": 7424
+    }
+  ],
+  "arrangement": "Octave echo",
+  "compressed_bytes": 17959,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

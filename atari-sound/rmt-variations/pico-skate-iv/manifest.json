@@ -1,0 +1,138 @@
+{
+  "title": "Pico Skate IV",
+  "kind": "music",
+  "sources": [
+    "[Sport]/Pico Skate IV.p8.png",
+    "allgames/[Sport]/Pico Skate IV.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 8148,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 238,
+          "next_id": 1,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 238,
+          "next_id": 2,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 2,
+          "part": 0,
+          "frames": 238,
+          "next_id": 3,
+          "next_part": 0,
+          "next_local": 3
+        },
+        {
+          "id": 3,
+          "part": 0,
+          "frames": 238,
+          "next_id": 4,
+          "next_part": 0,
+          "next_local": 4
+        },
+        {
+          "id": 4,
+          "part": 0,
+          "frames": 238,
+          "next_id": 0,
+          "next_part": 0,
+          "next_local": 0
+        },
+        {
+          "id": 8,
+          "part": 0,
+          "frames": 238,
+          "next_id": 9,
+          "next_part": 0,
+          "next_local": 6
+        },
+        {
+          "id": 9,
+          "part": 0,
+          "frames": 238,
+          "next_id": 8,
+          "next_part": 0,
+          "next_local": 5
+        },
+        {
+          "id": 16,
+          "part": 0,
+          "frames": 15,
+          "next_id": 17,
+          "next_part": 0,
+          "next_local": 8
+        },
+        {
+          "id": 17,
+          "part": 0,
+          "frames": 238,
+          "next_id": 18,
+          "next_part": 0,
+          "next_local": 9
+        },
+        {
+          "id": 18,
+          "part": 0,
+          "frames": 238,
+          "next_id": 19,
+          "next_part": 0,
+          "next_local": 10
+        },
+        {
+          "id": 19,
+          "part": 0,
+          "frames": 238,
+          "next_id": 20,
+          "next_part": 0,
+          "next_local": 11
+        },
+        {
+          "id": 20,
+          "part": 0,
+          "frames": 238,
+          "next_id": 21,
+          "next_part": 0,
+          "next_local": 12
+        },
+        {
+          "id": 21,
+          "part": 0,
+          "frames": 238,
+          "next_id": 22,
+          "next_part": 0,
+          "next_local": 13
+        },
+        {
+          "id": 22,
+          "part": 0,
+          "frames": 238,
+          "next_id": 16,
+          "next_part": 0,
+          "next_local": 7
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "Isolated RMT instruments play the PICO notes; custom waves use the assigned instrument.",
+    "Static PICO score only; gameplay-driven Lua music changes are not executed."
+  ],
+  "literal_music_calls": [],
+  "arrangement": "rmt-instruments-v2",
+  "style_name": "RMT: ingame",
+  "donor": "ingame",
+  "controls": "Space / N / P"
+}

@@ -1,0 +1,57 @@
+{
+  "id": "puzzlito",
+  "title": "Puzzlito",
+  "remix": "Puzzlito / Soft Skies",
+  "author": "<?>",
+  "directory": "remixes/puzzlito",
+  "source": "asma/asma/Games/Puzzlito.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 133.43,
+  "duration_seconds": 133.4917863347481,
+  "frames": 6656,
+  "lead_channel": 3,
+  "changed_lead_frames": 5863,
+  "allowed_changed_registers": [
+    4,
+    5
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 768
+    },
+    {
+      "name": "Second theme",
+      "frame": 1536
+    },
+    {
+      "name": "Answer",
+      "frame": 2304
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 3328
+    },
+    {
+      "name": "Development",
+      "frame": 4096
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 4864
+    },
+    {
+      "name": "Finale",
+      "frame": 5632
+    }
+  ],
+  "arrangement": "Soft flute",
+  "compressed_bytes": 8203,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

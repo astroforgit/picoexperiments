@@ -1,0 +1,57 @@
+{
+  "id": "blinky",
+  "title": "Blinky",
+  "remix": "Blinky / Soft Skies",
+  "author": "Andrey Derkach (DJ Andrey Balkonsky)",
+  "directory": "remixes/blinky",
+  "source": "asma/asma/Composers/Derkach_Andrey/Blinky.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 160.446,
+  "duration_seconds": 161.7304334440217,
+  "frames": 8064,
+  "lead_channel": 1,
+  "changed_lead_frames": 4405,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 896
+    },
+    {
+      "name": "Second theme",
+      "frame": 1920
+    },
+    {
+      "name": "Answer",
+      "frame": 2944
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 3968
+    },
+    {
+      "name": "Development",
+      "frame": 4992
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 6016
+    },
+    {
+      "name": "Finale",
+      "frame": 7040
+    }
+  ],
+  "arrangement": "Soft flute",
+  "compressed_bytes": 17071,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

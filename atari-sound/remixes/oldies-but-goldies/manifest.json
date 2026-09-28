@@ -1,0 +1,57 @@
+{
+  "id": "oldies-but-goldies",
+  "title": "Oldies but Goldies",
+  "remix": "Oldies but Goldies / New Horizons",
+  "author": "Uwe Bruenninski (Hu-Soft)",
+  "directory": "remixes/oldies-but-goldies",
+  "source": "asma/asma/Composers/Bruenninski_Uwe/Oldies_but_Goldies.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 747.04,
+  "duration_seconds": 211.78985331955226,
+  "frames": 10560,
+  "lead_channel": 1,
+  "changed_lead_frames": 8412,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1248
+    },
+    {
+      "name": "Second theme",
+      "frame": 2592
+    },
+    {
+      "name": "Answer",
+      "frame": 3936
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 5280
+    },
+    {
+      "name": "Development",
+      "frame": 6528
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 7872
+    },
+    {
+      "name": "Finale",
+      "frame": 9216
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 15492,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

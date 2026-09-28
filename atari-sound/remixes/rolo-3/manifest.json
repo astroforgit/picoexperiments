@@ -1,0 +1,57 @@
+{
+  "id": "rolo-3",
+  "title": "Rolo 3",
+  "remix": "Rolo 3 / New Horizons",
+  "author": "<?> (Ce-Pumpkin)",
+  "directory": "remixes/rolo-3",
+  "source": "asma/asma/Composers/Ce_Pumpkin/Rolo_3.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 157.88,
+  "duration_seconds": 159.8050711411167,
+  "frames": 7968,
+  "lead_channel": 2,
+  "changed_lead_frames": 2365,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 960
+    },
+    {
+      "name": "Second theme",
+      "frame": 1920
+    },
+    {
+      "name": "Answer",
+      "frame": 2976
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 3936
+    },
+    {
+      "name": "Development",
+      "frame": 4896
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 5952
+    },
+    {
+      "name": "Finale",
+      "frame": 6912
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 18609,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

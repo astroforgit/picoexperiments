@@ -1,0 +1,57 @@
+{
+  "id": "popcorn-song",
+  "title": "Popcorn Song",
+  "remix": "Popcorn Song / Echo Flight",
+  "author": "Chris Martin (Cybernoid)",
+  "directory": "remixes/popcorn-song",
+  "source": "asma/asma/Composers/Martin_Chris/Popcorn_Song.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 123.223,
+  "duration_seconds": 123.2231873859213,
+  "frames": 6144,
+  "lead_channel": 3,
+  "changed_lead_frames": 3255,
+  "allowed_changed_registers": [
+    4,
+    5
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 768
+    },
+    {
+      "name": "Second theme",
+      "frame": 1536
+    },
+    {
+      "name": "Answer",
+      "frame": 2304
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 3072
+    },
+    {
+      "name": "Development",
+      "frame": 3840
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 4608
+    },
+    {
+      "name": "Finale",
+      "frame": 5376
+    }
+  ],
+  "arrangement": "Octave echo",
+  "compressed_bytes": 10785,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

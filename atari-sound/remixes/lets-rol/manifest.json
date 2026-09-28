@@ -1,0 +1,57 @@
+{
+  "id": "lets-rol",
+  "title": "Lets Rol",
+  "remix": "Lets Rol / New Horizons",
+  "author": "Michal Radecki (stRing)",
+  "directory": "remixes/lets-rol",
+  "source": "asma/asma/Composers/Radecki_Michal/Lets_Rol.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 115.521,
+  "duration_seconds": 115.52173817430123,
+  "frames": 5760,
+  "lead_channel": 4,
+  "changed_lead_frames": 4327,
+  "allowed_changed_registers": [
+    6,
+    7
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 672
+    },
+    {
+      "name": "Second theme",
+      "frame": 1440
+    },
+    {
+      "name": "Answer",
+      "frame": 2112
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 2880
+    },
+    {
+      "name": "Development",
+      "frame": 3552
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 4320
+    },
+    {
+      "name": "Finale",
+      "frame": 4992
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 23016,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

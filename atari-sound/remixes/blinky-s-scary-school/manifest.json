@@ -1,0 +1,57 @@
+{
+  "id": "blinky-s-scary-school",
+  "title": "Blinky's Scary School",
+  "remix": "Blinky's Scary School / Glass Trails",
+  "author": "Adam Gilmore",
+  "directory": "remixes/blinky-s-scary-school",
+  "source": "asma/asma/Composers/Gilmore_Adam/Blinkys_Scary_School.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 160.44,
+  "duration_seconds": 161.7304334440217,
+  "frames": 8064,
+  "lead_channel": 3,
+  "changed_lead_frames": 6884,
+  "allowed_changed_registers": [
+    4,
+    5
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 896
+    },
+    {
+      "name": "Second theme",
+      "frame": 1920
+    },
+    {
+      "name": "Answer",
+      "frame": 2944
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 3968
+    },
+    {
+      "name": "Development",
+      "frame": 4992
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 6016
+    },
+    {
+      "name": "Finale",
+      "frame": 7040
+    }
+  ],
+  "arrangement": "Glass pluck",
+  "compressed_bytes": 13617,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

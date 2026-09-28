@@ -1,0 +1,57 @@
+{
+  "id": "atomia",
+  "title": "Atomia",
+  "remix": "Atomia / Echo Flight",
+  "author": "Mateusz Radziszewski",
+  "directory": "remixes/atomia",
+  "source": "asma/asma/Games/Atomia.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 128.35,
+  "duration_seconds": 128.3574868603347,
+  "frames": 6400,
+  "lead_channel": 2,
+  "changed_lead_frames": 4023,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 800
+    },
+    {
+      "name": "Second theme",
+      "frame": 1600
+    },
+    {
+      "name": "Answer",
+      "frame": 2400
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 3200
+    },
+    {
+      "name": "Development",
+      "frame": 4000
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 4800
+    },
+    {
+      "name": "Finale",
+      "frame": 5600
+    }
+  ],
+  "arrangement": "Octave echo",
+  "compressed_bytes": 8749,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

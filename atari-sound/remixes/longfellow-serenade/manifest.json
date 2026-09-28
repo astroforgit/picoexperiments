@@ -1,0 +1,57 @@
+{
+  "id": "longfellow-serenade",
+  "title": "Longfellow Serenade",
+  "remix": "Longfellow Serenade / New Horizons",
+  "author": "Ralf Thomas Quack",
+  "directory": "remixes/longfellow-serenade",
+  "source": "asma/asma/Composers/Quack_Ralf_Thomas/Longfellow_Serenade.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 117.44,
+  "duration_seconds": 118.08888791150792,
+  "frames": 5888,
+  "lead_channel": 3,
+  "changed_lead_frames": 4460,
+  "allowed_changed_registers": [
+    4,
+    5
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 640
+    },
+    {
+      "name": "Second theme",
+      "frame": 1408
+    },
+    {
+      "name": "Answer",
+      "frame": 2176
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 2944
+    },
+    {
+      "name": "Development",
+      "frame": 3584
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 4352
+    },
+    {
+      "name": "Finale",
+      "frame": 5120
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 8890,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

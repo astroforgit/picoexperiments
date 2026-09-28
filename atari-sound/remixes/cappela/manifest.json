@@ -1,0 +1,57 @@
+{
+  "id": "cappela",
+  "title": "Cappela",
+  "remix": "Cappela / New Horizons",
+  "author": "Gabriel Takacs (GMX)",
+  "directory": "remixes/cappela",
+  "source": "asma/asma/Composers/Takacs_Gabriel/Cappela.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 247.45,
+  "duration_seconds": 211.78985331955226,
+  "frames": 10560,
+  "lead_channel": 2,
+  "changed_lead_frames": 6887,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1248
+    },
+    {
+      "name": "Second theme",
+      "frame": 2592
+    },
+    {
+      "name": "Answer",
+      "frame": 3936
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 5280
+    },
+    {
+      "name": "Development",
+      "frame": 6528
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 7872
+    },
+    {
+      "name": "Finale",
+      "frame": 9216
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 15203,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

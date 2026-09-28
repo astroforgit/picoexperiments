@@ -1,0 +1,57 @@
+{
+  "id": "axel-f",
+  "title": "Axel F",
+  "remix": "Axel F / Glass Trails",
+  "author": "Sal Esquivel (Kjmann)",
+  "directory": "remixes/axel-f",
+  "source": "asma/asma/Composers/Esquivel_Sal/Axel_F.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 166.46,
+  "duration_seconds": 169.4318826556418,
+  "frames": 8448,
+  "lead_channel": 1,
+  "changed_lead_frames": 5007,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 960
+    },
+    {
+      "name": "Second theme",
+      "frame": 2112
+    },
+    {
+      "name": "Answer",
+      "frame": 3072
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 4224
+    },
+    {
+      "name": "Development",
+      "frame": 5184
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 6336
+    },
+    {
+      "name": "Finale",
+      "frame": 7296
+    }
+  ],
+  "arrangement": "Glass pluck",
+  "compressed_bytes": 16108,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

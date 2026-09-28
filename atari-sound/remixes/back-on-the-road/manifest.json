@@ -1,0 +1,57 @@
+{
+  "id": "back-on-the-road",
+  "title": "Back On The Road",
+  "remix": "Back On The Road / Soft Skies",
+  "author": "Jan Mahn",
+  "directory": "remixes/back-on-the-road",
+  "source": "asma/asma/Composers/Mahn_Jan/Back_On_The_Road.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 165.34,
+  "duration_seconds": 165.58115804983177,
+  "frames": 8256,
+  "lead_channel": 3,
+  "changed_lead_frames": 5658,
+  "allowed_changed_registers": [
+    4,
+    5
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 960
+    },
+    {
+      "name": "Second theme",
+      "frame": 1920
+    },
+    {
+      "name": "Answer",
+      "frame": 3072
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 4032
+    },
+    {
+      "name": "Development",
+      "frame": 4992
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 6144
+    },
+    {
+      "name": "Finale",
+      "frame": 7104
+    }
+  ],
+  "arrangement": "Soft flute",
+  "compressed_bytes": 12373,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

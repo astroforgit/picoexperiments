@@ -1,0 +1,57 @@
+{
+  "id": "techno-florid",
+  "title": "Techno Florid",
+  "remix": "Techno Florid / Soft Skies",
+  "author": "Adam Bienias (SoTe)",
+  "directory": "remixes/techno-florid",
+  "source": "asma/asma/Composers/Bienias_Adam/Techno_Florid.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 140.37,
+  "duration_seconds": 141.83502298066983,
+  "frames": 7072,
+  "lead_channel": 1,
+  "changed_lead_frames": 5476,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 832
+    },
+    {
+      "name": "Second theme",
+      "frame": 1664
+    },
+    {
+      "name": "Answer",
+      "frame": 2496
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 3536
+    },
+    {
+      "name": "Development",
+      "frame": 4368
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 5200
+    },
+    {
+      "name": "Finale",
+      "frame": 6032
+    }
+  ],
+  "arrangement": "Soft flute",
+  "compressed_bytes": 31890,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

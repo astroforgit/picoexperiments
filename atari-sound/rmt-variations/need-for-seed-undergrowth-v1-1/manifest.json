@@ -1,0 +1,34 @@
+{
+  "title": "Need For Seed - Undergrowth (v1.1)",
+  "kind": "music",
+  "sources": [
+    "[Misc]/Need For Seed - Undergrowth (v1.1).p8.png",
+    "allgames/[Misc]/Need For Seed - Undergrowth (v1.1).p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 442,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 53,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "Isolated RMT instruments play the PICO notes; custom waves use the assigned instrument.",
+    "Static PICO score only; gameplay-driven Lua music changes are not executed."
+  ],
+  "literal_music_calls": [],
+  "arrangement": "rmt-instruments-v2",
+  "style_name": "RMT: piraci",
+  "donor": "piraci",
+  "controls": "Space / N / P"
+}

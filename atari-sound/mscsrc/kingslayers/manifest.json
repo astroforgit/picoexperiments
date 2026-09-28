@@ -1,0 +1,29 @@
+{
+  "title": "Kingslayers",
+  "kind": "music",
+  "sources": [
+    "[Strategy-Gestion]/Kingslayers.p8.png",
+    "allgames/[Strategy-Gestion]/Kingslayers.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 484,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 265,
+          "next_id": 0,
+          "next_part": 0,
+          "next_local": 0
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "Lua audio/SFX calls or memory writes detected; gameplay-driven changes are not executed."
+  ],
+  "literal_music_calls": []
+}

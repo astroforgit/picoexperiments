@@ -1,0 +1,57 @@
+{
+  "id": "sexy-six-alfa-title",
+  "title": "Sexy Six Alfa - Title",
+  "remix": "Sexy Six Alfa - Title / Echo Flight",
+  "author": "Michal Szpilowski (Miker)",
+  "directory": "remixes/sexy-six-alfa-title",
+  "source": "asma/asma/Composers/Szpilowski_Michal/Sexy_Six_Alfa_Title.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 103.97,
+  "duration_seconds": 106.85760781122863,
+  "frames": 5328,
+  "lead_channel": 2,
+  "changed_lead_frames": 3987,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 576
+    },
+    {
+      "name": "Second theme",
+      "frame": 1296
+    },
+    {
+      "name": "Answer",
+      "frame": 1872
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 2592
+    },
+    {
+      "name": "Development",
+      "frame": 3312
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 3888
+    },
+    {
+      "name": "Finale",
+      "frame": 4608
+    }
+  ],
+  "arrangement": "Octave echo",
+  "compressed_bytes": 12004,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

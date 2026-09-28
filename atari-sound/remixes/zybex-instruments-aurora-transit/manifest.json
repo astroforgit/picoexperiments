@@ -1,0 +1,69 @@
+{
+  "id": "zybex-instruments-aurora-transit",
+  "title": "Zybex",
+  "remix": "Aurora Transit",
+  "author": "Adam Gilmore",
+  "directory": "remixes/zybex-instruments-aurora-transit",
+  "source": "asma/asma/Composers/Gilmore_Adam/Zybex.sap",
+  "original_subsong": 4,
+  "source_duration_seconds": 130.9,
+  "duration_seconds": 179.7004816044686,
+  "frames": 8960,
+  "lead_channel": 3,
+  "changed_lead_frames": 8951,
+  "allowed_changed_registers": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "The station wakes",
+      "frame": 0
+    },
+    {
+      "name": "Aurora Transit",
+      "frame": 560
+    },
+    {
+      "name": "Beyond the city lights",
+      "frame": 1680
+    },
+    {
+      "name": "Night window",
+      "frame": 2800
+    },
+    {
+      "name": "Stars in the glass",
+      "frame": 3920
+    },
+    {
+      "name": "Over the suspension bridge",
+      "frame": 4480
+    },
+    {
+      "name": "The northern line",
+      "frame": 5600
+    },
+    {
+      "name": "First colours of morning",
+      "frame": 6720
+    },
+    {
+      "name": "Arrival",
+      "frame": 7840
+    }
+  ],
+  "arrangement": "New composition",
+  "composition_module": "compose_zybex_new_song",
+  "compressed_bytes": 6451,
+  "description": "A new E-major journey in flowing 7/8, with a C#-minor night window and luminous arrival.",
+  "preservation": "Zybex subtune 4 supplies only isolated singing/plucked envelopes, the joined-bass envelope and a single four-frame percussion attack. No source melodies, harmonic sequences, bass phrases, drum patterns or song form are retained.",
+  "validation": "Native original startup and every full remix frame/loop checked; MP3s decoded and durations verified."
+}

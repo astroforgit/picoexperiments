@@ -1,0 +1,57 @@
+{
+  "id": "amberstar-ode-to-schnism",
+  "title": "Amberstar - Ode to Schnism",
+  "remix": "Amberstar - Ode to Schnism / New Horizons",
+  "author": "Vin Samuel (VinsCool)",
+  "directory": "remixes/amberstar-ode-to-schnism",
+  "source": "asma/asma/Composers/Samuel_Vin/Amberstar_Ode_to_Schnism.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 238.744,
+  "duration_seconds": 211.1480658852506,
+  "frames": 10528,
+  "lead_channel": 1,
+  "changed_lead_frames": 9334,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1232
+    },
+    {
+      "name": "Second theme",
+      "frame": 2576
+    },
+    {
+      "name": "Answer",
+      "frame": 3920
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 5264
+    },
+    {
+      "name": "Development",
+      "frame": 6496
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 7840
+    },
+    {
+      "name": "Finale",
+      "frame": 9184
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 31421,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

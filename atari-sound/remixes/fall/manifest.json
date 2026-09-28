@@ -1,0 +1,57 @@
+{
+  "id": "fall",
+  "title": "Fall",
+  "remix": "Fall / New Horizons",
+  "author": "Jacek Dojwa <?>",
+  "directory": "remixes/fall",
+  "source": "asma/asma/Composers/Dojwa_Jacek/Fall.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 146.327,
+  "duration_seconds": 146.32753502078157,
+  "frames": 7296,
+  "lead_channel": 2,
+  "changed_lead_frames": 5172,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 768
+    },
+    {
+      "name": "Second theme",
+      "frame": 1728
+    },
+    {
+      "name": "Answer",
+      "frame": 2688
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 3648
+    },
+    {
+      "name": "Development",
+      "frame": 4416
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 5376
+    },
+    {
+      "name": "Finale",
+      "frame": 6336
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 7059,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

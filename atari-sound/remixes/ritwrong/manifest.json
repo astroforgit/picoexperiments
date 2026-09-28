@@ -1,0 +1,57 @@
+{
+  "id": "ritwrong",
+  "title": "Ritwrong <?>",
+  "remix": "Ritwrong <?> / New Horizons",
+  "author": "<?>",
+  "directory": "remixes/ritwrong",
+  "source": "asma/asma/Unknown/Ritwrong.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 188.44,
+  "duration_seconds": 189.96908055329536,
+  "frames": 9472,
+  "lead_channel": 1,
+  "changed_lead_frames": 7907,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1152
+    },
+    {
+      "name": "Second theme",
+      "frame": 2304
+    },
+    {
+      "name": "Answer",
+      "frame": 3456
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 4736
+    },
+    {
+      "name": "Development",
+      "frame": 5888
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 7040
+    },
+    {
+      "name": "Finale",
+      "frame": 8192
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 8728,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

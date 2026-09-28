@@ -1,0 +1,62 @@
+{
+  "title": "The Floor Is Shaking, Also There Is Lava",
+  "kind": "sfx-audition",
+  "sources": [
+    "[Misc]/The Floor Is Shaking, Also There Is Lava.p8.png",
+    "allgames/[Misc]/The Floor Is Shaking, Also There Is Lava.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 632,
+      "entries": [
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 26,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 2,
+          "part": 0,
+          "frames": 212,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 3,
+          "part": 0,
+          "frames": 185,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 4,
+          "part": 0,
+          "frames": 159,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 5,
+          "part": 0,
+          "frames": 106,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "No audible static music patterns. SFX exported for audition; Lua sequencing is not reconstructed.",
+    "Lua audio/SFX calls or memory writes detected; gameplay-driven changes are not executed."
+  ],
+  "literal_music_calls": []
+}

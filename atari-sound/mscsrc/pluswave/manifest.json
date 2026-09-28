@@ -1,0 +1,126 @@
+{
+  "title": "PlusWave",
+  "kind": "sfx-audition",
+  "sources": [
+    "[Puzzle]/PlusWave.p8.png",
+    "allgames/[Puzzle]/PlusWave.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 1292,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 490,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 26,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 2,
+          "part": 0,
+          "frames": 503,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 3,
+          "part": 0,
+          "frames": 106,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 4,
+          "part": 0,
+          "frames": 40,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 5,
+          "part": 0,
+          "frames": 66,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 6,
+          "part": 0,
+          "frames": 344,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 7,
+          "part": 0,
+          "frames": 265,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 8,
+          "part": 0,
+          "frames": 40,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 9,
+          "part": 0,
+          "frames": 331,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 10,
+          "part": 0,
+          "frames": 331,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 11,
+          "part": 0,
+          "frames": 318,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 12,
+          "part": 0,
+          "frames": 146,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "No audible static music patterns. SFX exported for audition; Lua sequencing is not reconstructed.",
+    "Lua audio/SFX calls or memory writes detected; gameplay-driven changes are not executed."
+  ],
+  "literal_music_calls": []
+}

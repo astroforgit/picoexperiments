@@ -1,0 +1,45 @@
+{
+  "title": "Fen Friends",
+  "kind": "sfx-audition",
+  "sources": [
+    "[Adventure-Visual]/Fen Friends.p8.png",
+    "allgames/[Adventure-Visual]/Fen Friends.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 524,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 146,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 212,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 2,
+          "part": 0,
+          "frames": 212,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "No audible static music patterns. SFX exported for audition; Lua sequencing is not reconstructed."
+  ],
+  "literal_music_calls": []
+}

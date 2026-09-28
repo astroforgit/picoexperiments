@@ -1,0 +1,57 @@
+{
+  "id": "nightshade",
+  "title": "NightShade",
+  "remix": "NightShade / Glass Trails",
+  "author": "Michal Szpilowski (Miker)",
+  "directory": "remixes/nightshade",
+  "source": "asma/asma/Composers/Szpilowski_Michal/NightShade.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 197.349,
+  "duration_seconds": 197.67052976491544,
+  "frames": 9856,
+  "lead_channel": 3,
+  "changed_lead_frames": 4804,
+  "allowed_changed_registers": [
+    4,
+    5
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1120
+    },
+    {
+      "name": "Second theme",
+      "frame": 2464
+    },
+    {
+      "name": "Answer",
+      "frame": 3584
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 4928
+    },
+    {
+      "name": "Development",
+      "frame": 6048
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 7392
+    },
+    {
+      "name": "Finale",
+      "frame": 8512
+    }
+  ],
+  "arrangement": "Glass pluck",
+  "compressed_bytes": 20111,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

@@ -1,0 +1,76 @@
+{
+  "title": "Base Attack",
+  "kind": "sfx-audition",
+  "sources": [
+    "[ShootEmUp]/Base Attack.p8.png",
+    "allgames/[ShootEmUp]/Base Attack.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 1514,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 26,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 53,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 2,
+          "part": 0,
+          "frames": 185,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 3,
+          "part": 0,
+          "frames": 40,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 4,
+          "part": 0,
+          "frames": 119,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 5,
+          "part": 0,
+          "frames": 132,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "No audible static music patterns. SFX exported for audition; Lua sequencing is not reconstructed.",
+    "PICO filter flags (including detune/reverb/damping) are not emulated.",
+    "Isolated RMT instruments play the PICO notes; custom waves use the assigned instrument.",
+    "Static PICO score only; gameplay-driven Lua music changes are not executed."
+  ],
+  "literal_music_calls": [],
+  "arrangement": "rmt-instruments-v2",
+  "style_name": "RMT: ingame",
+  "donor": "ingame",
+  "controls": "Space / N / P"
+}

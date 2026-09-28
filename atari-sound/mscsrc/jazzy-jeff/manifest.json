@@ -1,0 +1,120 @@
+{
+  "title": "Jazzy Jeff",
+  "kind": "music",
+  "sources": [
+    "[Misc]/Jazzy Jeff.p8.png",
+    "allgames/[Misc]/Jazzy Jeff.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 6040,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 212,
+          "next_id": 1,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 212,
+          "next_id": 2,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 2,
+          "part": 0,
+          "frames": 212,
+          "next_id": 3,
+          "next_part": 0,
+          "next_local": 3
+        },
+        {
+          "id": 3,
+          "part": 0,
+          "frames": 212,
+          "next_id": 4,
+          "next_part": 0,
+          "next_local": 4
+        },
+        {
+          "id": 4,
+          "part": 0,
+          "frames": 212,
+          "next_id": 5,
+          "next_part": 0,
+          "next_local": 5
+        },
+        {
+          "id": 5,
+          "part": 0,
+          "frames": 212,
+          "next_id": 6,
+          "next_part": 0,
+          "next_local": 6
+        },
+        {
+          "id": 6,
+          "part": 0,
+          "frames": 212,
+          "next_id": 7,
+          "next_part": 0,
+          "next_local": 7
+        },
+        {
+          "id": 7,
+          "part": 0,
+          "frames": 212,
+          "next_id": 0,
+          "next_part": 0,
+          "next_local": 0
+        },
+        {
+          "id": 8,
+          "part": 0,
+          "frames": 212,
+          "next_id": 9,
+          "next_part": 0,
+          "next_local": 9
+        },
+        {
+          "id": 9,
+          "part": 0,
+          "frames": 212,
+          "next_id": 10,
+          "next_part": 0,
+          "next_local": 10
+        },
+        {
+          "id": 10,
+          "part": 0,
+          "frames": 212,
+          "next_id": 11,
+          "next_part": 0,
+          "next_local": 11
+        },
+        {
+          "id": 11,
+          "part": 0,
+          "frames": 212,
+          "next_id": 10,
+          "next_part": 0,
+          "next_local": 10
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "Lua audio/SFX calls or memory writes detected; gameplay-driven changes are not executed."
+  ],
+  "literal_music_calls": [
+    0,
+    8
+  ]
+}

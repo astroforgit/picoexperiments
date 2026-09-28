@@ -1,0 +1,57 @@
+{
+  "id": "the-rain",
+  "title": "The Rain",
+  "remix": "The Rain / Glass Trails",
+  "author": "Tomasz Kucisz (VLX)",
+  "directory": "remixes/the-rain",
+  "source": "asma/asma/Composers/Kucisz_Tomasz/The_Rain.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 210.506,
+  "duration_seconds": 210.5062784509489,
+  "frames": 10496,
+  "lead_channel": 3,
+  "changed_lead_frames": 2939,
+  "allowed_changed_registers": [
+    4,
+    5
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1280
+    },
+    {
+      "name": "Second theme",
+      "frame": 2560
+    },
+    {
+      "name": "Answer",
+      "frame": 3840
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 5120
+    },
+    {
+      "name": "Development",
+      "frame": 6400
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 7680
+    },
+    {
+      "name": "Finale",
+      "frame": 8960
+    }
+  ],
+  "arrangement": "Glass pluck",
+  "compressed_bytes": 15932,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

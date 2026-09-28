@@ -1,0 +1,40 @@
+{
+  "title": "Minerunner",
+  "kind": "music",
+  "sources": [
+    "[Puzzle]/Minerunner.p8.png",
+    "allgames/[Puzzle]/Minerunner.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 2284,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 424,
+          "next_id": 0,
+          "next_part": 0,
+          "next_local": 0
+        },
+        {
+          "id": 5,
+          "part": 0,
+          "frames": 318,
+          "next_id": 5,
+          "next_part": 0,
+          "next_local": 1
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "Lua audio/SFX calls or memory writes detected; gameplay-driven changes are not executed."
+  ],
+  "literal_music_calls": [
+    0,
+    5
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "atari-blast-music-5",
+  "title": "Atari Blast! (music 5)",
+  "remix": "Atari Blast! (music 5) / New Horizons",
+  "author": "Mario Krix (emkay)",
+  "directory": "remixes/atari-blast-music-5",
+  "source": "asma/asma/Composers/Krix_Mario/Atari_Blast_music_5.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 61.611,
+  "duration_seconds": 107.82028896268115,
+  "frames": 5376,
+  "lead_channel": 3,
+  "changed_lead_frames": 4694,
+  "allowed_changed_registers": [
+    4,
+    5
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 576
+    },
+    {
+      "name": "Second theme",
+      "frame": 1344
+    },
+    {
+      "name": "Answer",
+      "frame": 1920
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 2688
+    },
+    {
+      "name": "Development",
+      "frame": 3264
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 4032
+    },
+    {
+      "name": "Finale",
+      "frame": 4608
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 11407,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

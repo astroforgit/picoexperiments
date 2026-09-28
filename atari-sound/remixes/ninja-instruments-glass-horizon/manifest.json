@@ -1,0 +1,69 @@
+{
+  "id": "ninja-instruments-glass-horizon",
+  "title": "Ninja Commando",
+  "remix": "Glass Horizon",
+  "author": "Adam Gilmore",
+  "directory": "remixes/ninja-instruments-glass-horizon",
+  "source": "asma/asma/Composers/Gilmore_Adam/Ninja_Commando.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 121.94,
+  "duration_seconds": 197.67052976491544,
+  "frames": 9856,
+  "lead_channel": 4,
+  "changed_lead_frames": 9670,
+  "allowed_changed_registers": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "A line of light",
+      "frame": 0
+    },
+    {
+      "name": "Glass Horizon - theme",
+      "frame": 896
+    },
+    {
+      "name": "Wide open sky",
+      "frame": 2688
+    },
+    {
+      "name": "The city below",
+      "frame": 4480
+    },
+    {
+      "name": "Floating lights",
+      "frame": 5376
+    },
+    {
+      "name": "Towards the horizon",
+      "frame": 6272
+    },
+    {
+      "name": "Silver currents",
+      "frame": 7168
+    },
+    {
+      "name": "Wide open sky - return",
+      "frame": 8064
+    },
+    {
+      "name": "The last reflection",
+      "frame": 8960
+    }
+  ],
+  "arrangement": "New composition",
+  "composition_module": "compose_ninja_new_song",
+  "compressed_bytes": 9517,
+  "description": "A new C#-minor song opening into E major, with a syncopated bass groove, broad sky theme and quiet interlude.",
+  "preservation": "Short instrument envelopes and vibrato only; no source melody, harmony, bass rhythm or backing frames.",
+  "validation": "Native original startup and every full remix frame/loop checked; MP3s decoded and durations verified."
+}

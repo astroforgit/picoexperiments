@@ -1,0 +1,57 @@
+{
+  "id": "dagobar-ingame-2",
+  "title": "Dagobar - Ingame - 2",
+  "remix": "Dagobar - Ingame - 2 / New Horizons",
+  "author": "Janusz Pelc & Daniel Kleczynski (D.K.)",
+  "directory": "remixes/dagobar-ingame-2",
+  "source": "asma/asma/Composers/Pelc_Janusz/Dagobar_Ingame_2.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 128.41,
+  "duration_seconds": 131.56642403184307,
+  "frames": 6560,
+  "lead_channel": 1,
+  "changed_lead_frames": 4707,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 800
+    },
+    {
+      "name": "Second theme",
+      "frame": 1600
+    },
+    {
+      "name": "Answer",
+      "frame": 2400
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 3200
+    },
+    {
+      "name": "Development",
+      "frame": 4000
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 4800
+    },
+    {
+      "name": "Finale",
+      "frame": 5600
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 13046,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

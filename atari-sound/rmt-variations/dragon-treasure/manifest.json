@@ -1,0 +1,42 @@
+{
+  "title": "Dragon Treasure",
+  "kind": "music",
+  "sources": [
+    "[Action-Adventure]/Dragon Treasure.p8.png",
+    "allgames/[Action-Adventure]/Dragon Treasure.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 1322,
+      "entries": [
+        {
+          "id": 10,
+          "part": 0,
+          "frames": 185,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 12,
+          "part": 0,
+          "frames": 212,
+          "next_id": 12,
+          "next_part": 0,
+          "next_local": 1
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "Isolated RMT instruments play the PICO notes; custom waves use the assigned instrument.",
+    "Static PICO score only; gameplay-driven Lua music changes are not executed."
+  ],
+  "literal_music_calls": [],
+  "arrangement": "rmt-instruments-v2",
+  "style_name": "RMT: ingame",
+  "donor": "ingame",
+  "controls": "Space / N / P"
+}

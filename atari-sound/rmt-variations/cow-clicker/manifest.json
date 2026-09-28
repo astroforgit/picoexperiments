@@ -1,0 +1,58 @@
+{
+  "title": "Cow Clicker",
+  "kind": "music",
+  "sources": [
+    "[Misc]/Cow Clicker.p8.png",
+    "allgames/[Misc]/Cow Clicker.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 1020,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 199,
+          "next_id": 1,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 199,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 3,
+          "part": 0,
+          "frames": 212,
+          "next_id": 4,
+          "next_part": 0,
+          "next_local": 3
+        },
+        {
+          "id": 4,
+          "part": 0,
+          "frames": 212,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "Isolated RMT instruments play the PICO notes; custom waves use the assigned instrument.",
+    "Static PICO score only; gameplay-driven Lua music changes are not executed."
+  ],
+  "literal_music_calls": [],
+  "arrangement": "rmt-instruments-v2",
+  "style_name": "RMT: piraci",
+  "donor": "piraci",
+  "controls": "Space / N / P"
+}

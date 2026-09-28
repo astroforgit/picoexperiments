@@ -1,0 +1,59 @@
+{
+  "title": "About 1600mm",
+  "kind": "sfx-audition",
+  "sources": [
+    "[Misc]/About 1600mm.p8.png",
+    "allgames/[Misc]/About 1600mm.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 664,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 106,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 106,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 2,
+          "part": 0,
+          "frames": 106,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 3,
+          "part": 0,
+          "frames": 212,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "No audible static music patterns. SFX exported for audition; Lua sequencing is not reconstructed.",
+    "Isolated RMT instruments play the PICO notes; custom waves use the assigned instrument.",
+    "Static PICO score only; gameplay-driven Lua music changes are not executed."
+  ],
+  "literal_music_calls": [],
+  "arrangement": "rmt-instruments-v2",
+  "style_name": "RMT: piraci",
+  "donor": "piraci",
+  "controls": "Space / N / P"
+}

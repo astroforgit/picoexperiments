@@ -1,0 +1,273 @@
+{
+  "title": "Bathos",
+  "kind": "music",
+  "sources": [
+    "[Action-Adventure]/Bathos.p8.png",
+    "allgames/[Action-Adventure]/Bathos.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC01",
+      "bytes": 10279,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 66,
+          "next_id": 1,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 371,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 2,
+          "part": 0,
+          "frames": 132,
+          "next_id": 3,
+          "next_part": 0,
+          "next_local": 3
+        },
+        {
+          "id": 3,
+          "part": 0,
+          "frames": 318,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 4,
+          "part": 0,
+          "frames": 477,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 5,
+          "part": 0,
+          "frames": 265,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 6,
+          "part": 0,
+          "frames": 238,
+          "next_id": 7,
+          "next_part": 0,
+          "next_local": 7
+        },
+        {
+          "id": 7,
+          "part": 0,
+          "frames": 212,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 8,
+          "part": 0,
+          "frames": 212,
+          "next_id": 9,
+          "next_part": 0,
+          "next_local": 9
+        },
+        {
+          "id": 9,
+          "part": 0,
+          "frames": 106,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 10,
+          "part": 0,
+          "frames": 265,
+          "next_id": 11,
+          "next_part": 0,
+          "next_local": 11
+        },
+        {
+          "id": 11,
+          "part": 0,
+          "frames": 318,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 12,
+          "part": 0,
+          "frames": 212,
+          "next_id": 13,
+          "next_part": 0,
+          "next_local": 13
+        },
+        {
+          "id": 13,
+          "part": 0,
+          "frames": 318,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 14,
+          "part": 0,
+          "frames": 265,
+          "next_id": 15,
+          "next_part": 0,
+          "next_local": 15
+        },
+        {
+          "id": 15,
+          "part": 0,
+          "frames": 212,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 16,
+          "part": 0,
+          "frames": 265,
+          "next_id": 17,
+          "next_part": 0,
+          "next_local": 17
+        },
+        {
+          "id": 17,
+          "part": 0,
+          "frames": 212,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 18,
+          "part": 0,
+          "frames": 185,
+          "next_id": 19,
+          "next_part": 0,
+          "next_local": 19
+        },
+        {
+          "id": 19,
+          "part": 0,
+          "frames": 106,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 20,
+          "part": 0,
+          "frames": 265,
+          "next_id": 21,
+          "next_part": 0,
+          "next_local": 21
+        },
+        {
+          "id": 21,
+          "part": 0,
+          "frames": 212,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 22,
+          "part": 0,
+          "frames": 1086,
+          "next_id": 22,
+          "next_part": 0,
+          "next_local": 22
+        },
+        {
+          "id": 23,
+          "part": 0,
+          "frames": 40,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 24,
+          "part": 0,
+          "frames": 212,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 25,
+          "part": 0,
+          "frames": 172,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    },
+    {
+      "file": "MUSIC02",
+      "bytes": 20834,
+      "entries": [
+        {
+          "id": 26,
+          "part": 0,
+          "frames": 3377,
+          "next_id": 27,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 27,
+          "part": 0,
+          "frames": 40,
+          "next_id": 28,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 28,
+          "part": 0,
+          "frames": 40,
+          "next_id": 29,
+          "next_part": 0,
+          "next_local": 3
+        },
+        {
+          "id": 29,
+          "part": 0,
+          "frames": 3377,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "Lua audio/SFX calls or memory writes detected; gameplay-driven changes are not executed."
+  ],
+  "literal_music_calls": [
+    0,
+    22,
+    23,
+    26
+  ]
+}

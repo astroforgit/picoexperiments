@@ -1,0 +1,57 @@
+{
+  "id": "dagobar",
+  "title": "Dagobar",
+  "remix": "Dagobar / Echo Flight",
+  "author": "Janusz Pelc & Daniel Kleczynski (D.K.)",
+  "directory": "remixes/dagobar",
+  "source": "asma/asma/Composers/Pelc_Janusz/Dagobar.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 125.18,
+  "duration_seconds": 127.07391199173135,
+  "frames": 6336,
+  "lead_channel": 2,
+  "changed_lead_frames": 3130,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 768
+    },
+    {
+      "name": "Second theme",
+      "frame": 1536
+    },
+    {
+      "name": "Answer",
+      "frame": 2304
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 3168
+    },
+    {
+      "name": "Development",
+      "frame": 3936
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 4704
+    },
+    {
+      "name": "Finale",
+      "frame": 5472
+    }
+  ],
+  "arrangement": "Octave echo",
+  "compressed_bytes": 14249,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

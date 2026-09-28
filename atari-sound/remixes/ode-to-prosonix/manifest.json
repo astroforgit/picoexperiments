@@ -1,0 +1,57 @@
+{
+  "id": "ode-to-prosonix",
+  "title": "Ode to Prosonix",
+  "remix": "Ode to Prosonix / Glass Trails",
+  "author": "Adam Hay (Sack)",
+  "directory": "remixes/ode-to-prosonix",
+  "source": "asma/asma/Composers/Hay_Adam/Ode_to_Prosonix.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 139.75,
+  "duration_seconds": 141.19323554636816,
+  "frames": 7040,
+  "lead_channel": 3,
+  "changed_lead_frames": 6537,
+  "allowed_changed_registers": [
+    4,
+    5
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 880
+    },
+    {
+      "name": "Second theme",
+      "frame": 1760
+    },
+    {
+      "name": "Answer",
+      "frame": 2640
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 3520
+    },
+    {
+      "name": "Development",
+      "frame": 4400
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 5280
+    },
+    {
+      "name": "Finale",
+      "frame": 6160
+    }
+  ],
+  "arrangement": "Glass pluck",
+  "compressed_bytes": 28433,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

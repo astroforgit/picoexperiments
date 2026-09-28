@@ -1,0 +1,57 @@
+{
+  "id": "geek-beatz",
+  "title": "Geek BeatZ",
+  "remix": "Geek BeatZ / Glass Trails",
+  "author": "Piotr Jankowski (MotionRide) & <?> (MotionRide)",
+  "directory": "remixes/geek-beatz",
+  "source": "asma/asma/Composers/Jankowski_Piotr/Geek_BeatZ.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 208.761,
+  "duration_seconds": 208.90180986519474,
+  "frames": 10416,
+  "lead_channel": 2,
+  "changed_lead_frames": 7457,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1232
+    },
+    {
+      "name": "Second theme",
+      "frame": 2576
+    },
+    {
+      "name": "Answer",
+      "frame": 3808
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 5152
+    },
+    {
+      "name": "Development",
+      "frame": 6496
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 7728
+    },
+    {
+      "name": "Finale",
+      "frame": 9072
+    }
+  ],
+  "arrangement": "Glass pluck",
+  "compressed_bytes": 23355,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

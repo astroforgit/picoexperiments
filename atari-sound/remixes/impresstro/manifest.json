@@ -1,0 +1,57 @@
+{
+  "id": "impresstro",
+  "title": "Impresstro",
+  "remix": "Impresstro / Soft Skies",
+  "author": "Mario Krix (emkay)",
+  "directory": "remixes/impresstro",
+  "source": "asma/asma/Composers/Krix_Mario/Impresstro.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 138.585,
+  "duration_seconds": 138.62608580916148,
+  "frames": 6912,
+  "lead_channel": 2,
+  "changed_lead_frames": 5239,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 864
+    },
+    {
+      "name": "Second theme",
+      "frame": 1728
+    },
+    {
+      "name": "Answer",
+      "frame": 2592
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 3456
+    },
+    {
+      "name": "Development",
+      "frame": 4320
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 5184
+    },
+    {
+      "name": "Finale",
+      "frame": 6048
+    }
+  ],
+  "arrangement": "Soft flute",
+  "compressed_bytes": 23369,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

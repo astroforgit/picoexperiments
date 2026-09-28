@@ -1,0 +1,57 @@
+{
+  "id": "hobgoblin",
+  "title": "Hobgoblin",
+  "remix": "Hobgoblin / New Horizons",
+  "author": "Michal Radecki (stRing)",
+  "directory": "remixes/hobgoblin",
+  "source": "asma/asma/Composers/Radecki_Michal/Hobgoblin.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 176.32999999999998,
+  "duration_seconds": 179.7004816044686,
+  "frames": 8960,
+  "lead_channel": 4,
+  "changed_lead_frames": 4117,
+  "allowed_changed_registers": [
+    6,
+    7
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1024
+    },
+    {
+      "name": "Second theme",
+      "frame": 2048
+    },
+    {
+      "name": "Answer",
+      "frame": 3328
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 4352
+    },
+    {
+      "name": "Development",
+      "frame": 5376
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 6656
+    },
+    {
+      "name": "Finale",
+      "frame": 7680
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 26634,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

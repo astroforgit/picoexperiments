@@ -1,0 +1,57 @@
+{
+  "id": "h3x0r-deluxe-ingame",
+  "title": "h3x0r Deluxe - Ingame",
+  "remix": "h3x0r Deluxe - Ingame / Echo Flight",
+  "author": "Vojtech Nedved (Nooly)",
+  "directory": "remixes/h3x0r-deluxe-ingame",
+  "source": "asma/asma/Composers/Nedved_Vojtech/h3x0r_Deluxe_Ingame.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 242.535,
+  "duration_seconds": 211.78985331955226,
+  "frames": 10560,
+  "lead_channel": 3,
+  "changed_lead_frames": 3830,
+  "allowed_changed_registers": [
+    4,
+    5
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1248
+    },
+    {
+      "name": "Second theme",
+      "frame": 2592
+    },
+    {
+      "name": "Answer",
+      "frame": 3936
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 5280
+    },
+    {
+      "name": "Development",
+      "frame": 6528
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 7872
+    },
+    {
+      "name": "Finale",
+      "frame": 9216
+    }
+  ],
+  "arrangement": "Octave echo",
+  "compressed_bytes": 25978,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

@@ -1,0 +1,57 @@
+{
+  "id": "samurai-3",
+  "title": "Samurai 3",
+  "remix": "Samurai 3 / New Horizons",
+  "author": "Piotr Swierszcz (Samurai)",
+  "directory": "remixes/samurai-3",
+  "source": "asma/asma/Composers/Swierszcz_Piotr/Samurai_3.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 154.02,
+  "duration_seconds": 154.02898423240165,
+  "frames": 7680,
+  "lead_channel": 2,
+  "changed_lead_frames": 5986,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 960
+    },
+    {
+      "name": "Second theme",
+      "frame": 1920
+    },
+    {
+      "name": "Answer",
+      "frame": 2880
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 3840
+    },
+    {
+      "name": "Development",
+      "frame": 4800
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 5760
+    },
+    {
+      "name": "Finale",
+      "frame": 6720
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 19973,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

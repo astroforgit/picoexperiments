@@ -1,0 +1,57 @@
+{
+  "id": "lynx-quest-legacy",
+  "title": "Lynx Quest Legacy",
+  "remix": "Lynx Quest Legacy / Soft Skies",
+  "author": "Michal Szpilowski (Miker)",
+  "directory": "remixes/lynx-quest-legacy",
+  "source": "asma/asma/Composers/Szpilowski_Michal/Lynx_Quest_Legacy.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 106.376,
+  "duration_seconds": 107.49939524553031,
+  "frames": 5360,
+  "lead_channel": 3,
+  "changed_lead_frames": 4489,
+  "allowed_changed_registers": [
+    4,
+    5
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 640
+    },
+    {
+      "name": "Second theme",
+      "frame": 1280
+    },
+    {
+      "name": "Answer",
+      "frame": 2000
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 2640
+    },
+    {
+      "name": "Development",
+      "frame": 3280
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 4000
+    },
+    {
+      "name": "Finale",
+      "frame": 4640
+    }
+  ],
+  "arrangement": "Soft flute",
+  "compressed_bytes": 22243,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

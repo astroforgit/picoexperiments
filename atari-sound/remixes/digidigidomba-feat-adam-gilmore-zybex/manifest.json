@@ -1,0 +1,57 @@
+{
+  "id": "digidigidomba-feat-adam-gilmore-zybex",
+  "title": "DigiDigiDomba feat Adam Gilmore - Zybex",
+  "remix": "DigiDigiDomba feat Adam Gilmore - Zybex / Echo Flight",
+  "author": "Slawek Sledz (Slaves)",
+  "directory": "remixes/digidigidomba-feat-adam-gilmore-zybex",
+  "source": "asma/asma/Composers/Sledz_Slawek/DigiDigiDomba_feat_Adam_Gi.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 141.05,
+  "duration_seconds": 141.19323554636816,
+  "frames": 7040,
+  "lead_channel": 2,
+  "changed_lead_frames": 1805,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 880
+    },
+    {
+      "name": "Second theme",
+      "frame": 1760
+    },
+    {
+      "name": "Answer",
+      "frame": 2640
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 3520
+    },
+    {
+      "name": "Development",
+      "frame": 4400
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 5280
+    },
+    {
+      "name": "Finale",
+      "frame": 6160
+    }
+  ],
+  "arrangement": "Octave echo",
+  "compressed_bytes": 17482,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

@@ -1,0 +1,57 @@
+{
+  "id": "frank-mark",
+  "title": "Frank & Mark",
+  "remix": "Frank & Mark / Glass Trails",
+  "author": "Michal Luberda",
+  "directory": "remixes/frank-mark",
+  "source": "asma/asma/Composers/Luberda_Michal/Frank_and_Mark.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 184.83,
+  "duration_seconds": 184.83478107888197,
+  "frames": 9216,
+  "lead_channel": 1,
+  "changed_lead_frames": 2279,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1152
+    },
+    {
+      "name": "Second theme",
+      "frame": 2304
+    },
+    {
+      "name": "Answer",
+      "frame": 3456
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 4608
+    },
+    {
+      "name": "Development",
+      "frame": 5760
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 6912
+    },
+    {
+      "name": "Finale",
+      "frame": 8064
+    }
+  ],
+  "arrangement": "Glass pluck",
+  "compressed_bytes": 14145,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

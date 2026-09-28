@@ -1,0 +1,69 @@
+{
+  "id": "bmx-instruments-after-the-rain",
+  "title": "BMX Simulator",
+  "remix": "After the Rain",
+  "author": "David Whittaker",
+  "directory": "remixes/bmx-instruments-after-the-rain",
+  "source": "asma/asma/Composers/Whittaker_David/BMX_Simulator.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 381.22,
+  "duration_seconds": 173.28260726145186,
+  "frames": 8640,
+  "lead_channel": 3,
+  "changed_lead_frames": 8465,
+  "allowed_changed_registers": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "First light",
+      "frame": 0
+    },
+    {
+      "name": "After the Rain - theme",
+      "frame": 960
+    },
+    {
+      "name": "Windows opening",
+      "frame": 1920
+    },
+    {
+      "name": "River reflections",
+      "frame": 2880
+    },
+    {
+      "name": "Still water",
+      "frame": 3840
+    },
+    {
+      "name": "Crossing the bridge",
+      "frame": 4800
+    },
+    {
+      "name": "Sun through clouds",
+      "frame": 5760
+    },
+    {
+      "name": "After the Rain - homecoming",
+      "frame": 6720
+    },
+    {
+      "name": "Clear sky",
+      "frame": 7680
+    }
+  ],
+  "arrangement": "New composition",
+  "composition_module": "compose_bmx_new_song",
+  "compressed_bytes": 5772,
+  "description": "A new D-major song in 6/8, with a lyrical hook, minor river theme and warm return.",
+  "preservation": "Only instrument palette retained: native distortion-C joined bass, pure lead envelope and isolated noise hits. No source music phrases reused.",
+  "validation": "Native original startup and every full remix frame/loop checked; MP3s decoded and durations verified."
+}

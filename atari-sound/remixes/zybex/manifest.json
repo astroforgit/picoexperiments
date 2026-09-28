@@ -1,0 +1,57 @@
+{
+  "id": "zybex",
+  "title": "Zybex",
+  "remix": "Zybex / Glass Trails",
+  "author": "Adam Gilmore",
+  "directory": "remixes/zybex",
+  "source": "asma/asma/Composers/Gilmore_Adam/Zybex.sap",
+  "original_subsong": 4,
+  "source_duration_seconds": 130.9,
+  "duration_seconds": 130.9246365975414,
+  "frames": 6528,
+  "lead_channel": 3,
+  "changed_lead_frames": 5270,
+  "allowed_changed_registers": [
+    4,
+    5
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 768
+    },
+    {
+      "name": "Second theme",
+      "frame": 1632
+    },
+    {
+      "name": "Answer",
+      "frame": 2400
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 3264
+    },
+    {
+      "name": "Development",
+      "frame": 4032
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 4896
+    },
+    {
+      "name": "Finale",
+      "frame": 5664
+    }
+  ],
+  "arrangement": "Glass pluck",
+  "compressed_bytes": 7741,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

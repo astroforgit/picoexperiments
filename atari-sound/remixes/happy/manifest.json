@@ -1,0 +1,57 @@
+{
+  "id": "happy",
+  "title": "Happy",
+  "remix": "Happy / Soft Skies",
+  "author": "Pawel Banas (Zilq)",
+  "directory": "remixes/happy",
+  "source": "asma/asma/Composers/Banas_Pawel/Happy.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 166.864,
+  "duration_seconds": 166.86473291843512,
+  "frames": 8320,
+  "lead_channel": 1,
+  "changed_lead_frames": 7324,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1024
+    },
+    {
+      "name": "Second theme",
+      "frame": 2048
+    },
+    {
+      "name": "Answer",
+      "frame": 3072
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 4096
+    },
+    {
+      "name": "Development",
+      "frame": 5120
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 6144
+    },
+    {
+      "name": "Finale",
+      "frame": 7168
+    }
+  ],
+  "arrangement": "Soft flute",
+  "compressed_bytes": 27315,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

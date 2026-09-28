@@ -1,0 +1,57 @@
+{
+  "id": "pogoman",
+  "title": "Pogoman",
+  "remix": "Pogoman / Glass Trails",
+  "author": "Terry Feinberg",
+  "directory": "remixes/pogoman",
+  "source": "asma/asma/Games/Pogoman.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 48.13,
+  "duration_seconds": 105.89492665977613,
+  "frames": 5280,
+  "lead_channel": 3,
+  "changed_lead_frames": 4531,
+  "allowed_changed_registers": [
+    4,
+    5
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 480
+    },
+    {
+      "name": "Second theme",
+      "frame": 1200
+    },
+    {
+      "name": "Answer",
+      "frame": 1920
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 2640
+    },
+    {
+      "name": "Development",
+      "frame": 3120
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 3840
+    },
+    {
+      "name": "Finale",
+      "frame": 4560
+    }
+  ],
+  "arrangement": "Glass pluck",
+  "compressed_bytes": 1775,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

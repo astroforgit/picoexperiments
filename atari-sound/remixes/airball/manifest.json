@@ -1,0 +1,57 @@
+{
+  "id": "airball",
+  "title": "Airball",
+  "remix": "Airball / Glass Trails",
+  "author": "<?>",
+  "directory": "remixes/airball",
+  "source": "asma/asma/Games/Airball.sap",
+  "original_subsong": 1,
+  "source_duration_seconds": 108.44,
+  "duration_seconds": 110.38743869988784,
+  "frames": 5504,
+  "lead_channel": 1,
+  "changed_lead_frames": 4772,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 640
+    },
+    {
+      "name": "Second theme",
+      "frame": 1280
+    },
+    {
+      "name": "Answer",
+      "frame": 2048
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 2688
+    },
+    {
+      "name": "Development",
+      "frame": 3328
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 4096
+    },
+    {
+      "name": "Finale",
+      "frame": 4736
+    }
+  ],
+  "arrangement": "Glass pluck",
+  "compressed_bytes": 7027,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

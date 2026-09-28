@@ -1,0 +1,65 @@
+{
+  "id": "bmx-simulator-golden-lap",
+  "title": "BMX Simulator",
+  "remix": "Golden Lap",
+  "author": "David Whittaker",
+  "directory": "remixes/bmx-simulator-golden-lap",
+  "source": "asma/asma/Composers/Whittaker_David/BMX_Simulator.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 381.22,
+  "duration_seconds": 184.83478107888197,
+  "frames": 9216,
+  "lead_channel": 3,
+  "changed_lead_frames": 8772,
+  "allowed_changed_registers": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Starting gate",
+      "frame": 0
+    },
+    {
+      "name": "Golden Lap - main hook",
+      "frame": 768
+    },
+    {
+      "name": "Open road - answer",
+      "frame": 2304
+    },
+    {
+      "name": "Banked turns",
+      "frame": 3840
+    },
+    {
+      "name": "Dusk over the track",
+      "frame": 4608
+    },
+    {
+      "name": "Climb and chase",
+      "frame": 5376
+    },
+    {
+      "name": "Golden Lap - final sprint",
+      "frame": 6912
+    },
+    {
+      "name": "Finish line",
+      "frame": 8448
+    }
+  ],
+  "arrangement": "Individual composition",
+  "composition_module": "compose_bmx_individual",
+  "compressed_bytes": 14839,
+  "description": "A rising racing hook, lyrical answer, minor-key dusk passage and final sprint.",
+  "preservation": "Whittaker bass and percussion bars are explicitly rearranged; new melody and section dynamics.",
+  "validation": "Native original startup and every full remix frame/loop checked; MP3s decoded and durations verified."
+}

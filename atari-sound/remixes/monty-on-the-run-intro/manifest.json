@@ -1,0 +1,57 @@
+{
+  "id": "monty-on-the-run-intro",
+  "title": "Monty on the Run - Intro",
+  "remix": "Monty on the Run - Intro / New Horizons",
+  "author": "Michal Szpilowski (Miker)",
+  "directory": "remixes/monty-on-the-run-intro",
+  "source": "asma/asma/Composers/Szpilowski_Michal/Monty_on_the_Run_Intro.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 148.894,
+  "duration_seconds": 148.89468475798824,
+  "frames": 7424,
+  "lead_channel": 4,
+  "changed_lead_frames": 7027,
+  "allowed_changed_registers": [
+    6,
+    7
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 896
+    },
+    {
+      "name": "Second theme",
+      "frame": 1792
+    },
+    {
+      "name": "Answer",
+      "frame": 2688
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 3712
+    },
+    {
+      "name": "Development",
+      "frame": 4608
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 5504
+    },
+    {
+      "name": "Finale",
+      "frame": 6400
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 9732,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

@@ -1,0 +1,57 @@
+{
+  "id": "riders-from-the-stars",
+  "title": "Riders From the Stars",
+  "remix": "Riders From the Stars / New Horizons",
+  "author": "Tomasz Majewski (Mayonez)",
+  "directory": "remixes/riders-from-the-stars",
+  "source": "asma/asma/Composers/Majewski_Tomasz/Riders_From_the_Stars.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 162.67000000000002,
+  "duration_seconds": 163.65579574692674,
+  "frames": 8160,
+  "lead_channel": 3,
+  "changed_lead_frames": 6954,
+  "allowed_changed_registers": [
+    4,
+    5
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 960
+    },
+    {
+      "name": "Second theme",
+      "frame": 2016
+    },
+    {
+      "name": "Answer",
+      "frame": 2976
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 4032
+    },
+    {
+      "name": "Development",
+      "frame": 5088
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 6048
+    },
+    {
+      "name": "Finale",
+      "frame": 7104
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 29850,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

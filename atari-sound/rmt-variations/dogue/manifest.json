@@ -1,0 +1,35 @@
+{
+  "title": "Dogue",
+  "kind": "sfx-audition",
+  "sources": [
+    "[RPG]/Dogue.p8.png",
+    "allgames/[RPG]/Dogue.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 1372,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 477,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "No audible static music patterns. SFX exported for audition; Lua sequencing is not reconstructed.",
+    "Isolated RMT instruments play the PICO notes; custom waves use the assigned instrument.",
+    "Static PICO score only; gameplay-driven Lua music changes are not executed."
+  ],
+  "literal_music_calls": [],
+  "arrangement": "rmt-instruments-v2",
+  "style_name": "RMT: Why Do You Dance With Me",
+  "donor": "Why Do You Dance With Me",
+  "controls": "Space / N / P"
+}

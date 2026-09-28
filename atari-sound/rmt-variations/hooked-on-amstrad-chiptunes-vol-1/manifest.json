@@ -1,0 +1,624 @@
+{
+  "title": "Hooked on Amstrad Chiptunes - Vol. 1",
+  "kind": "music",
+  "sources": [
+    "[Music-Rythm]/Hooked on Amstrad Chiptunes - Vol. 1.p8.png",
+    "allgames/[Music-Rythm]/Hooked on Amstrad Chiptunes - Vol. 1.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC01",
+      "bytes": 10987,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 185,
+          "next_id": 1,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 93,
+          "next_id": 2,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 2,
+          "part": 0,
+          "frames": 1695,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 3,
+          "part": 0,
+          "frames": 93,
+          "next_id": 4,
+          "next_part": 0,
+          "next_local": 4
+        },
+        {
+          "id": 4,
+          "part": 0,
+          "frames": 1311,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    },
+    {
+      "file": "MUSIC02",
+      "bytes": 19849,
+      "entries": [
+        {
+          "id": 5,
+          "part": 0,
+          "frames": 3205,
+          "next_id": 6,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 6,
+          "part": 0,
+          "frames": 3205,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 7,
+          "part": 0,
+          "frames": 159,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    },
+    {
+      "file": "MUSIC03",
+      "bytes": 24254,
+      "entries": [
+        {
+          "id": 8,
+          "part": 0,
+          "frames": 3205,
+          "next_id": 8,
+          "next_part": 0,
+          "next_local": 0
+        },
+        {
+          "id": 9,
+          "part": 0,
+          "frames": 3072,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    },
+    {
+      "file": "MUSIC04",
+      "bytes": 27229,
+      "entries": [
+        {
+          "id": 10,
+          "part": 0,
+          "frames": 3205,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 11,
+          "part": 0,
+          "frames": 503,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 12,
+          "part": 0,
+          "frames": 3072,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    },
+    {
+      "file": "MUSIC05",
+      "bytes": 28519,
+      "entries": [
+        {
+          "id": 13,
+          "part": 0,
+          "frames": 503,
+          "next_id": 13,
+          "next_part": 0,
+          "next_local": 0
+        },
+        {
+          "id": 14,
+          "part": 0,
+          "frames": 3205,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 15,
+          "part": 0,
+          "frames": 503,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 16,
+          "part": 0,
+          "frames": 53,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 17,
+          "part": 0,
+          "frames": 1695,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 18,
+          "part": 0,
+          "frames": 689,
+          "next_id": 18,
+          "next_part": 0,
+          "next_local": 5
+        },
+        {
+          "id": 19,
+          "part": 0,
+          "frames": 3072,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 20,
+          "part": 0,
+          "frames": 53,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    },
+    {
+      "file": "MUSIC06",
+      "bytes": 21991,
+      "entries": [
+        {
+          "id": 21,
+          "part": 0,
+          "frames": 159,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 22,
+          "part": 0,
+          "frames": 3072,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 23,
+          "part": 0,
+          "frames": 503,
+          "next_id": 23,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 24,
+          "part": 0,
+          "frames": 3072,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    },
+    {
+      "file": "MUSIC07",
+      "bytes": 25910,
+      "entries": [
+        {
+          "id": 25,
+          "part": 0,
+          "frames": 1364,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 26,
+          "part": 0,
+          "frames": 2635,
+          "next_id": 25,
+          "next_part": 0,
+          "next_local": 0
+        },
+        {
+          "id": 27,
+          "part": 0,
+          "frames": 358,
+          "next_id": 25,
+          "next_part": 0,
+          "next_local": 0
+        },
+        {
+          "id": 28,
+          "part": 0,
+          "frames": 1390,
+          "next_id": 25,
+          "next_part": 0,
+          "next_local": 0
+        },
+        {
+          "id": 29,
+          "part": 0,
+          "frames": 53,
+          "next_id": 25,
+          "next_part": 0,
+          "next_local": 0
+        },
+        {
+          "id": 30,
+          "part": 0,
+          "frames": 675,
+          "next_id": 25,
+          "next_part": 0,
+          "next_local": 0
+        },
+        {
+          "id": 31,
+          "part": 0,
+          "frames": 9,
+          "next_id": 32,
+          "next_part": 0,
+          "next_local": 7
+        },
+        {
+          "id": 32,
+          "part": 0,
+          "frames": 53,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 33,
+          "part": 0,
+          "frames": 9,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 34,
+          "part": 0,
+          "frames": 53,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 35,
+          "part": 0,
+          "frames": 9,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 36,
+          "part": 0,
+          "frames": 265,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 37,
+          "part": 0,
+          "frames": 265,
+          "next_id": 38,
+          "next_part": 0,
+          "next_local": 13
+        },
+        {
+          "id": 38,
+          "part": 0,
+          "frames": 358,
+          "next_id": 39,
+          "next_part": 0,
+          "next_local": 14
+        },
+        {
+          "id": 39,
+          "part": 0,
+          "frames": 1311,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 40,
+          "part": 0,
+          "frames": 689,
+          "next_id": 41,
+          "next_part": 0,
+          "next_local": 16
+        },
+        {
+          "id": 41,
+          "part": 0,
+          "frames": 9,
+          "next_id": 41,
+          "next_part": 0,
+          "next_local": 16
+        }
+      ],
+      "bank_boundary_stops": []
+    },
+    {
+      "file": "MUSIC08",
+      "bytes": 23264,
+      "entries": [
+        {
+          "id": 42,
+          "part": 0,
+          "frames": 3099,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 43,
+          "part": 0,
+          "frames": 265,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 45,
+          "part": 0,
+          "frames": 3099,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 46,
+          "part": 0,
+          "frames": 265,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 47,
+          "part": 0,
+          "frames": 1112,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 48,
+          "part": 0,
+          "frames": 93,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    },
+    {
+      "file": "MUSIC09",
+      "bytes": 9376,
+      "entries": [
+        {
+          "id": 49,
+          "part": 0,
+          "frames": 3377,
+          "next_id": 49,
+          "next_part": 0,
+          "next_local": 0
+        },
+        {
+          "id": 50,
+          "part": 0,
+          "frames": 1695,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    },
+    {
+      "file": "MUSIC10",
+      "bytes": 19438,
+      "entries": [
+        {
+          "id": 51,
+          "part": 0,
+          "frames": 781,
+          "next_id": 52,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 52,
+          "part": 0,
+          "frames": 3377,
+          "next_id": 53,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 53,
+          "part": 0,
+          "frames": 26,
+          "next_id": 54,
+          "next_part": 0,
+          "next_local": 3
+        },
+        {
+          "id": 54,
+          "part": 0,
+          "frames": 503,
+          "next_id": 55,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": [
+        {
+          "from_pattern": 54,
+          "from_frame": 0,
+          "to_pattern": 55,
+          "to_frame": 0,
+          "to_file": "MUSIC11.XEX"
+        }
+      ]
+    },
+    {
+      "file": "MUSIC11",
+      "bytes": 27405,
+      "entries": [
+        {
+          "id": 55,
+          "part": 0,
+          "frames": 3112,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 56,
+          "part": 0,
+          "frames": 3377,
+          "next_id": 57,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 57,
+          "part": 0,
+          "frames": 1695,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    },
+    {
+      "file": "MUSIC12",
+      "bytes": 27042,
+      "entries": [
+        {
+          "id": 58,
+          "part": 0,
+          "frames": 2648,
+          "next_id": 59,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 59,
+          "part": 0,
+          "frames": 3377,
+          "next_id": 60,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 60,
+          "part": 0,
+          "frames": 3072,
+          "next_id": 60,
+          "next_part": 0,
+          "next_local": 2
+        }
+      ],
+      "bank_boundary_stops": []
+    },
+    {
+      "file": "MUSIC13",
+      "bytes": 11737,
+      "entries": [
+        {
+          "id": 61,
+          "part": 0,
+          "frames": 26,
+          "next_id": 62,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 62,
+          "part": 0,
+          "frames": 503,
+          "next_id": 63,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 63,
+          "part": 0,
+          "frames": 3205,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "PICO filter flags (including detune/reverb/damping) are not emulated.",
+    "Memory bank boundaries stop playback. Load the next numbered XEX; see bank_boundary_stops.",
+    "Isolated RMT instruments play the PICO notes; custom waves use the assigned instrument.",
+    "Static PICO score only; gameplay-driven Lua music changes are not executed."
+  ],
+  "literal_music_calls": [],
+  "arrangement": "rmt-instruments-v2",
+  "style_name": "RMT: ingame",
+  "donor": "ingame",
+  "controls": "Space / N / P"
+}

@@ -1,0 +1,162 @@
+{
+  "title": "Propulsion",
+  "kind": "music",
+  "sources": [
+    "[Puzzle]/Propulsion.p8.png",
+    "allgames/[Puzzle]/Propulsion.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC01",
+      "bytes": 28416,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 397,
+          "next_id": 1,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 397,
+          "next_id": 2,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 2,
+          "part": 0,
+          "frames": 397,
+          "next_id": 3,
+          "next_part": 0,
+          "next_local": 3
+        },
+        {
+          "id": 3,
+          "part": 0,
+          "frames": 397,
+          "next_id": 4,
+          "next_part": 0,
+          "next_local": 4
+        },
+        {
+          "id": 4,
+          "part": 0,
+          "frames": 397,
+          "next_id": 5,
+          "next_part": 0,
+          "next_local": 5
+        },
+        {
+          "id": 5,
+          "part": 0,
+          "frames": 397,
+          "next_id": 6,
+          "next_part": 0,
+          "next_local": 6
+        },
+        {
+          "id": 6,
+          "part": 0,
+          "frames": 397,
+          "next_id": 7,
+          "next_part": 0,
+          "next_local": 7
+        },
+        {
+          "id": 7,
+          "part": 0,
+          "frames": 397,
+          "next_id": 8,
+          "next_part": 0,
+          "next_local": 8
+        },
+        {
+          "id": 8,
+          "part": 0,
+          "frames": 397,
+          "next_id": 9,
+          "next_part": 0,
+          "next_local": 9
+        },
+        {
+          "id": 9,
+          "part": 0,
+          "frames": 397,
+          "next_id": 10,
+          "next_part": 0,
+          "next_local": 10
+        },
+        {
+          "id": 10,
+          "part": 0,
+          "frames": 397,
+          "next_id": 11,
+          "next_part": 0,
+          "next_local": 11
+        },
+        {
+          "id": 11,
+          "part": 0,
+          "frames": 397,
+          "next_id": 12,
+          "next_part": 0,
+          "next_local": 12
+        },
+        {
+          "id": 12,
+          "part": 0,
+          "frames": 397,
+          "next_id": 13,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": [
+        {
+          "from_pattern": 12,
+          "from_frame": 0,
+          "to_pattern": 13,
+          "to_frame": 0,
+          "to_file": "MUSIC02.XEX"
+        }
+      ]
+    },
+    {
+      "file": "MUSIC02",
+      "bytes": 2267,
+      "entries": [
+        {
+          "id": 13,
+          "part": 0,
+          "frames": 397,
+          "next_id": 0,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": [
+        {
+          "from_pattern": 13,
+          "from_frame": 0,
+          "to_pattern": 0,
+          "to_frame": 0,
+          "to_file": "MUSIC01.XEX"
+        }
+      ]
+    }
+  ],
+  "warnings": [
+    "Memory bank boundaries stop playback. Load the next numbered XEX; see bank_boundary_stops.",
+    "Isolated RMT instruments play the PICO notes; custom waves use the assigned instrument.",
+    "Static PICO score only; gameplay-driven Lua music changes are not executed."
+  ],
+  "literal_music_calls": [],
+  "arrangement": "rmt-instruments-v2",
+  "style_name": "RMT: Chicken Valley",
+  "donor": "Chicken Valley",
+  "controls": "Space / N / P"
+}

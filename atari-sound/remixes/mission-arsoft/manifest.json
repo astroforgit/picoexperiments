@@ -1,0 +1,57 @@
+{
+  "id": "mission-arsoft",
+  "title": "Mission ArSoft",
+  "remix": "Mission ArSoft / Echo Flight",
+  "author": "Michal Szpilowski (Miker)",
+  "directory": "remixes/mission-arsoft",
+  "source": "asma/asma/Composers/Szpilowski_Michal/Mission_ArSoft.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 115.521,
+  "duration_seconds": 115.52173817430123,
+  "frames": 5760,
+  "lead_channel": 2,
+  "changed_lead_frames": 3253,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 640
+    },
+    {
+      "name": "Second theme",
+      "frame": 1408
+    },
+    {
+      "name": "Answer",
+      "frame": 2048
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 2816
+    },
+    {
+      "name": "Development",
+      "frame": 3584
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 4224
+    },
+    {
+      "name": "Finale",
+      "frame": 4992
+    }
+  ],
+  "arrangement": "Octave echo",
+  "compressed_bytes": 12829,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

@@ -1,0 +1,57 @@
+{
+  "id": "micro-funk",
+  "title": "Micro Funk",
+  "remix": "Micro Funk / Glass Trails",
+  "author": "Michal Brzeski (MCH)",
+  "directory": "remixes/micro-funk",
+  "source": "asma/asma/Composers/Brzeski_Michal/Micro_Funk.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 145.184,
+  "duration_seconds": 146.32753502078157,
+  "frames": 7296,
+  "lead_channel": 2,
+  "changed_lead_frames": 3972,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 896
+    },
+    {
+      "name": "Second theme",
+      "frame": 1792
+    },
+    {
+      "name": "Answer",
+      "frame": 2688
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 3584
+    },
+    {
+      "name": "Development",
+      "frame": 4480
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 5376
+    },
+    {
+      "name": "Finale",
+      "frame": 6272
+    }
+  ],
+  "arrangement": "Glass pluck",
+  "compressed_bytes": 29224,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

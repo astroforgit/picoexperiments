@@ -1,0 +1,57 @@
+{
+  "id": "klony-ingame-2",
+  "title": "Klony - Ingame #2",
+  "remix": "Klony - Ingame #2 / Echo Flight",
+  "author": "Michal Radecki (stRing)",
+  "directory": "remixes/klony-ingame-2",
+  "source": "asma/asma/Composers/Radecki_Michal/Klony_Ingame_2.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 179.7,
+  "duration_seconds": 179.7004816044686,
+  "frames": 8960,
+  "lead_channel": 2,
+  "changed_lead_frames": 4914,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1120
+    },
+    {
+      "name": "Second theme",
+      "frame": 2240
+    },
+    {
+      "name": "Answer",
+      "frame": 3360
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 4480
+    },
+    {
+      "name": "Development",
+      "frame": 5600
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 6720
+    },
+    {
+      "name": "Finale",
+      "frame": 7840
+    }
+  ],
+  "arrangement": "Octave echo",
+  "compressed_bytes": 6463,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

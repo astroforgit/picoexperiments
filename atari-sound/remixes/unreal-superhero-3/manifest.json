@@ -1,0 +1,57 @@
+{
+  "id": "unreal-superhero-3",
+  "title": "Unreal Superhero 3",
+  "remix": "Unreal Superhero 3 / Echo Flight",
+  "author": "Sal Esquivel (Kjmann)",
+  "directory": "remixes/unreal-superhero-3",
+  "source": "asma/asma/Composers/Esquivel_Sal/Unreal_Superhero_3.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 116.424,
+  "duration_seconds": 117.12620676005541,
+  "frames": 5840,
+  "lead_channel": 3,
+  "changed_lead_frames": 4804,
+  "allowed_changed_registers": [
+    4,
+    5
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 720
+    },
+    {
+      "name": "Second theme",
+      "frame": 1440
+    },
+    {
+      "name": "Answer",
+      "frame": 2160
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 2880
+    },
+    {
+      "name": "Development",
+      "frame": 3600
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 4320
+    },
+    {
+      "name": "Finale",
+      "frame": 5040
+    }
+  ],
+  "arrangement": "Octave echo",
+  "compressed_bytes": 23159,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

@@ -1,0 +1,57 @@
+{
+  "id": "kaktus",
+  "title": "Kaktus",
+  "remix": "Kaktus / Echo Flight",
+  "author": "Michal Szpilowski (Miker)",
+  "directory": "remixes/kaktus",
+  "source": "asma/asma/Composers/Szpilowski_Michal/Kaktus.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 184.834,
+  "duration_seconds": 186.11835594748533,
+  "frames": 9280,
+  "lead_channel": 1,
+  "changed_lead_frames": 7783,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1120
+    },
+    {
+      "name": "Second theme",
+      "frame": 2320
+    },
+    {
+      "name": "Answer",
+      "frame": 3440
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 4640
+    },
+    {
+      "name": "Development",
+      "frame": 5760
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 6960
+    },
+    {
+      "name": "Finale",
+      "frame": 8080
+    }
+  ],
+  "arrangement": "Octave echo",
+  "compressed_bytes": 29565,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

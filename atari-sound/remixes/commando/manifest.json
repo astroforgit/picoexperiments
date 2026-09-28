@@ -1,0 +1,55 @@
+{
+  "id": "commando",
+  "title": "Commando",
+  "remix": "Night Patrol",
+  "author": "<?>",
+  "directory": "remixes/commando",
+  "source": "asma/asma/Games/Commando.sap",
+  "duration_seconds": 138.62608580916148,
+  "frames": 6912,
+  "lead_channel": 4,
+  "changed_lead_frames": 3848,
+  "original_subsong": 0,
+  "preservation": "Original backing, drums, clock and lead distortion; new evolving melody with opening/breakdown dynamics.",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 768
+    },
+    {
+      "name": "Second theme",
+      "frame": 1728
+    },
+    {
+      "name": "Answer",
+      "frame": 2496
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 3456
+    },
+    {
+      "name": "Development",
+      "frame": 4224
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 5184
+    },
+    {
+      "name": "Finale",
+      "frame": 5952
+    }
+  ],
+  "format": "PMZ1",
+  "arrangement": "Full arrangement",
+  "allowed_changed_registers": [
+    6,
+    7
+  ],
+  "compressed_bytes": 3763
+}

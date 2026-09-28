@@ -1,0 +1,57 @@
+{
+  "id": "outrun-splash-wave",
+  "title": "OutRun - Splash Wave",
+  "remix": "OutRun - Splash Wave / New Horizons",
+  "author": "Sal Esquivel (Kjmann)",
+  "directory": "remixes/outrun-splash-wave",
+  "source": "asma/asma/Composers/Esquivel_Sal/OutRun_Splash_Wave.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 291.69,
+  "duration_seconds": 210.82717216809974,
+  "frames": 10512,
+  "lead_channel": 2,
+  "changed_lead_frames": 9181,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1296
+    },
+    {
+      "name": "Second theme",
+      "frame": 2592
+    },
+    {
+      "name": "Answer",
+      "frame": 3888
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 5184
+    },
+    {
+      "name": "Development",
+      "frame": 6480
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 7776
+    },
+    {
+      "name": "Finale",
+      "frame": 9072
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 28280,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

@@ -1,0 +1,57 @@
+{
+  "id": "project-xanthien",
+  "title": "Project Xanthien",
+  "remix": "Project Xanthien / New Horizons",
+  "author": "Richard Munns",
+  "directory": "remixes/project-xanthien",
+  "source": "asma/asma/Composers/Munns_Richard/Project_Xanthien.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 197.67000000000002,
+  "duration_seconds": 197.67052976491544,
+  "frames": 9856,
+  "lead_channel": 1,
+  "changed_lead_frames": 7955,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1232
+    },
+    {
+      "name": "Second theme",
+      "frame": 2464
+    },
+    {
+      "name": "Answer",
+      "frame": 3696
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 4928
+    },
+    {
+      "name": "Development",
+      "frame": 6160
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 7392
+    },
+    {
+      "name": "Finale",
+      "frame": 8624
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 28704,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

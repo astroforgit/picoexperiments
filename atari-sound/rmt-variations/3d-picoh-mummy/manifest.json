@@ -1,0 +1,90 @@
+{
+  "title": "3D Picoh Mummy",
+  "kind": "music",
+  "sources": [
+    "[Misc]/3D Picoh Mummy.p8.png",
+    "allgames/[Misc]/3D Picoh Mummy.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 2608,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 106,
+          "next_id": 0,
+          "next_part": 0,
+          "next_local": 0
+        },
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 93,
+          "next_id": 1,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 2,
+          "part": 0,
+          "frames": 79,
+          "next_id": 2,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 3,
+          "part": 0,
+          "frames": 66,
+          "next_id": 3,
+          "next_part": 0,
+          "next_local": 3
+        },
+        {
+          "id": 4,
+          "part": 0,
+          "frames": 53,
+          "next_id": 4,
+          "next_part": 0,
+          "next_local": 4
+        },
+        {
+          "id": 5,
+          "part": 0,
+          "frames": 40,
+          "next_id": 5,
+          "next_part": 0,
+          "next_local": 5
+        },
+        {
+          "id": 6,
+          "part": 0,
+          "frames": 252,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 7,
+          "part": 0,
+          "frames": 424,
+          "next_id": 7,
+          "next_part": 0,
+          "next_local": 7
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "Isolated RMT instruments play the PICO notes; custom waves use the assigned instrument.",
+    "Static PICO score only; gameplay-driven Lua music changes are not executed."
+  ],
+  "literal_music_calls": [],
+  "arrangement": "rmt-instruments-v2",
+  "style_name": "RMT: ingame",
+  "donor": "ingame",
+  "controls": "Space / N / P"
+}

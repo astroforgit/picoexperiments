@@ -1,0 +1,69 @@
+{
+  "id": "commando-instruments-paper-lantern-parade",
+  "title": "Commando",
+  "remix": "Paper Lantern Parade",
+  "author": "<?>",
+  "directory": "remixes/commando-instruments-paper-lantern-parade",
+  "source": "asma/asma/Games/Commando.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 34.65,
+  "duration_seconds": 184.83478107888197,
+  "frames": 9216,
+  "lead_channel": 4,
+  "changed_lead_frames": 9100,
+  "allowed_changed_registers": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Lanterns are lit",
+      "frame": 0
+    },
+    {
+      "name": "Paper Lantern Parade",
+      "frame": 576
+    },
+    {
+      "name": "Across the square",
+      "frame": 1728
+    },
+    {
+      "name": "Letters from far away",
+      "frame": 2880
+    },
+    {
+      "name": "The empty courtyard",
+      "frame": 4032
+    },
+    {
+      "name": "Wind in the ribbons",
+      "frame": 4608
+    },
+    {
+      "name": "One more turn",
+      "frame": 5760
+    },
+    {
+      "name": "Everyone comes home",
+      "frame": 6912
+    },
+    {
+      "name": "The last lantern",
+      "frame": 8064
+    }
+  ],
+  "arrangement": "New composition",
+  "composition_module": "compose_commando_new_song",
+  "compressed_bytes": 6280,
+  "description": "A new G-major lantern waltz, with a soaring refrain and a wistful E-minor letter.",
+  "preservation": "Commando supplies only its distortion-E attack/decay colours and one quiet isolated noise hit. No source melody, backing phrase, chord sequence, drum pattern or song structure is retained.",
+  "validation": "Native original startup and every full remix frame/loop checked; MP3s decoded and durations verified."
+}

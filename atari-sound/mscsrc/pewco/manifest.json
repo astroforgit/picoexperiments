@@ -1,0 +1,187 @@
+{
+  "title": "Pewco",
+  "kind": "music",
+  "sources": [
+    "[ShootEmUp]/Pewco.p8.png",
+    "allgames/[ShootEmUp]/Pewco.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 13415,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 212,
+          "next_id": 1,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 212,
+          "next_id": 2,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 2,
+          "part": 0,
+          "frames": 212,
+          "next_id": 2,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 3,
+          "part": 0,
+          "frames": 265,
+          "next_id": 4,
+          "next_part": 0,
+          "next_local": 4
+        },
+        {
+          "id": 4,
+          "part": 0,
+          "frames": 265,
+          "next_id": 5,
+          "next_part": 0,
+          "next_local": 5
+        },
+        {
+          "id": 5,
+          "part": 0,
+          "frames": 265,
+          "next_id": 6,
+          "next_part": 0,
+          "next_local": 6
+        },
+        {
+          "id": 6,
+          "part": 0,
+          "frames": 265,
+          "next_id": 7,
+          "next_part": 0,
+          "next_local": 7
+        },
+        {
+          "id": 7,
+          "part": 0,
+          "frames": 265,
+          "next_id": 5,
+          "next_part": 0,
+          "next_local": 5
+        },
+        {
+          "id": 8,
+          "part": 0,
+          "frames": 185,
+          "next_id": 9,
+          "next_part": 0,
+          "next_local": 9
+        },
+        {
+          "id": 9,
+          "part": 0,
+          "frames": 185,
+          "next_id": 10,
+          "next_part": 0,
+          "next_local": 10
+        },
+        {
+          "id": 10,
+          "part": 0,
+          "frames": 185,
+          "next_id": 11,
+          "next_part": 0,
+          "next_local": 11
+        },
+        {
+          "id": 11,
+          "part": 0,
+          "frames": 185,
+          "next_id": 12,
+          "next_part": 0,
+          "next_local": 12
+        },
+        {
+          "id": 12,
+          "part": 0,
+          "frames": 185,
+          "next_id": 10,
+          "next_part": 0,
+          "next_local": 10
+        },
+        {
+          "id": 13,
+          "part": 0,
+          "frames": 291,
+          "next_id": 14,
+          "next_part": 0,
+          "next_local": 14
+        },
+        {
+          "id": 14,
+          "part": 0,
+          "frames": 291,
+          "next_id": 15,
+          "next_part": 0,
+          "next_local": 15
+        },
+        {
+          "id": 15,
+          "part": 0,
+          "frames": 291,
+          "next_id": 16,
+          "next_part": 0,
+          "next_local": 16
+        },
+        {
+          "id": 16,
+          "part": 0,
+          "frames": 291,
+          "next_id": 17,
+          "next_part": 0,
+          "next_local": 17
+        },
+        {
+          "id": 17,
+          "part": 0,
+          "frames": 291,
+          "next_id": 14,
+          "next_part": 0,
+          "next_local": 14
+        },
+        {
+          "id": 18,
+          "part": 0,
+          "frames": 159,
+          "next_id": 18,
+          "next_part": 0,
+          "next_local": 18
+        },
+        {
+          "id": 19,
+          "part": 0,
+          "frames": 212,
+          "next_id": 19,
+          "next_part": 0,
+          "next_local": 19
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "Lua audio/SFX calls or memory writes detected; gameplay-driven changes are not executed."
+  ],
+  "literal_music_calls": [
+    0,
+    3,
+    8,
+    13,
+    19
+  ]
+}

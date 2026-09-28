@@ -1,0 +1,57 @@
+{
+  "id": "jaw-breaker-2",
+  "title": "Jaw Breaker 2",
+  "remix": "Jaw Breaker 2 / New Horizons",
+  "author": "Chuck Bueche <?>",
+  "directory": "remixes/jaw-breaker-2",
+  "source": "asma/asma/Games/Jaw_Breaker_2.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 41.09,
+  "duration_seconds": 107.82028896268115,
+  "frames": 5376,
+  "lead_channel": 2,
+  "changed_lead_frames": 4618,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 512
+    },
+    {
+      "name": "Second theme",
+      "frame": 1280
+    },
+    {
+      "name": "Answer",
+      "frame": 1792
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 2560
+    },
+    {
+      "name": "Development",
+      "frame": 3328
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 3840
+    },
+    {
+      "name": "Finale",
+      "frame": 4608
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 6146,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

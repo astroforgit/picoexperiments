@@ -1,0 +1,104 @@
+{
+  "title": "Snow Business!",
+  "kind": "music",
+  "sources": [
+    "[Sport]/Snow Business!.p8.png",
+    "allgames/[Sport]/Snow Business!.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 6534,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 424,
+          "next_id": 1,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 424,
+          "next_id": 2,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 2,
+          "part": 0,
+          "frames": 424,
+          "next_id": 3,
+          "next_part": 0,
+          "next_local": 3
+        },
+        {
+          "id": 3,
+          "part": 0,
+          "frames": 424,
+          "next_id": 4,
+          "next_part": 0,
+          "next_local": 4
+        },
+        {
+          "id": 4,
+          "part": 0,
+          "frames": 424,
+          "next_id": 5,
+          "next_part": 0,
+          "next_local": 5
+        },
+        {
+          "id": 5,
+          "part": 0,
+          "frames": 424,
+          "next_id": 4,
+          "next_part": 0,
+          "next_local": 4
+        },
+        {
+          "id": 8,
+          "part": 0,
+          "frames": 212,
+          "next_id": 9,
+          "next_part": 0,
+          "next_local": 7
+        },
+        {
+          "id": 9,
+          "part": 0,
+          "frames": 212,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 24,
+          "part": 0,
+          "frames": 212,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 31,
+          "part": 0,
+          "frames": 212,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "PICO filter flags (including detune/reverb/damping) are not emulated.",
+    "Lua audio/SFX calls or memory writes detected; gameplay-driven changes are not executed."
+  ],
+  "literal_music_calls": [
+    4
+  ]
+}

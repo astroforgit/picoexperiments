@@ -1,0 +1,57 @@
+{
+  "id": "smus",
+  "title": "Smus",
+  "remix": "Smus / New Horizons",
+  "author": "Tomasz Liebich",
+  "directory": "remixes/smus",
+  "source": "asma/asma/Composers/Liebich_Tomasz/Smus.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 311.9,
+  "duration_seconds": 210.82717216809974,
+  "frames": 10512,
+  "lead_channel": 2,
+  "changed_lead_frames": 7691,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1296
+    },
+    {
+      "name": "Second theme",
+      "frame": 2592
+    },
+    {
+      "name": "Answer",
+      "frame": 3888
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 5184
+    },
+    {
+      "name": "Development",
+      "frame": 6480
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 7776
+    },
+    {
+      "name": "Finale",
+      "frame": 9072
+    }
+  ],
+  "arrangement": "Original voices",
+  "compressed_bytes": 17312,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

@@ -1,0 +1,57 @@
+{
+  "id": "filthy-rich",
+  "title": "Filthy Rich",
+  "remix": "Filthy Rich / Glass Trails",
+  "author": "Richard Munns",
+  "directory": "remixes/filthy-rich",
+  "source": "asma/asma/Composers/Munns_Richard/Filthy_Rich.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 157.88,
+  "duration_seconds": 159.16328370681504,
+  "frames": 7936,
+  "lead_channel": 1,
+  "changed_lead_frames": 6772,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 768
+    },
+    {
+      "name": "Second theme",
+      "frame": 1792
+    },
+    {
+      "name": "Answer",
+      "frame": 2816
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 3840
+    },
+    {
+      "name": "Development",
+      "frame": 4864
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 5888
+    },
+    {
+      "name": "Finale",
+      "frame": 6912
+    }
+  ],
+  "arrangement": "Glass pluck",
+  "compressed_bytes": 19379,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

@@ -1,0 +1,57 @@
+{
+  "id": "mambo",
+  "title": "Mambo",
+  "remix": "Mambo / Soft Skies",
+  "author": "<?>",
+  "directory": "remixes/mambo",
+  "source": "asma/asma/Unknown/Mambo.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 130.924,
+  "duration_seconds": 130.9246365975414,
+  "frames": 6528,
+  "lead_channel": 1,
+  "changed_lead_frames": 5085,
+  "allowed_changed_registers": [
+    0,
+    1
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 768
+    },
+    {
+      "name": "Second theme",
+      "frame": 1536
+    },
+    {
+      "name": "Answer",
+      "frame": 2304
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 3264
+    },
+    {
+      "name": "Development",
+      "frame": 4032
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 4800
+    },
+    {
+      "name": "Finale",
+      "frame": 5568
+    }
+  ],
+  "arrangement": "Soft flute",
+  "compressed_bytes": 23237,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}

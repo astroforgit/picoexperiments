@@ -1,0 +1,579 @@
+{
+  "title": "Hypercolor Paint",
+  "kind": "music",
+  "sources": [
+    "[Tools]/Hypercolor Paint.p8.png",
+    "allgames/[Tools]/Hypercolor Paint.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC01",
+      "bytes": 21849,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 2476,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 1,
+          "part": 0,
+          "frames": 2476,
+          "next_id": 1,
+          "next_part": 0,
+          "next_local": 1
+        }
+      ],
+      "bank_boundary_stops": []
+    },
+    {
+      "file": "MUSIC02",
+      "bytes": 21274,
+      "entries": [
+        {
+          "id": 2,
+          "part": 0,
+          "frames": 2635,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 3,
+          "part": 0,
+          "frames": 2635,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    },
+    {
+      "file": "MUSIC03",
+      "bytes": 14968,
+      "entries": [
+        {
+          "id": 4,
+          "part": 0,
+          "frames": 2225,
+          "next_id": 4,
+          "next_part": 0,
+          "next_local": 0
+        },
+        {
+          "id": 5,
+          "part": 0,
+          "frames": 291,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 22,
+          "part": 0,
+          "frames": 1377,
+          "next_id": 5,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 6,
+          "part": 0,
+          "frames": 291,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    },
+    {
+      "file": "MUSIC04",
+      "bytes": 18693,
+      "entries": [
+        {
+          "id": 7,
+          "part": 0,
+          "frames": 1960,
+          "next_id": 8,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 8,
+          "part": 0,
+          "frames": 2635,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 9,
+          "part": 0,
+          "frames": 291,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    },
+    {
+      "file": "MUSIC05",
+      "bytes": 19324,
+      "entries": [
+        {
+          "id": 10,
+          "part": 0,
+          "frames": 1457,
+          "next_id": 11,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 11,
+          "part": 0,
+          "frames": 2648,
+          "next_id": 12,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 12,
+          "part": 0,
+          "frames": 2648,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    },
+    {
+      "file": "MUSIC06",
+      "bytes": 23720,
+      "entries": [
+        {
+          "id": 13,
+          "part": 0,
+          "frames": 1960,
+          "next_id": 14,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 14,
+          "part": 0,
+          "frames": 2648,
+          "next_id": 15,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 15,
+          "part": 0,
+          "frames": 2648,
+          "next_id": 16,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": [
+        {
+          "from_pattern": 15,
+          "from_frame": 0,
+          "to_pattern": 16,
+          "to_frame": 0,
+          "to_file": "MUSIC07.XEX"
+        }
+      ]
+    },
+    {
+      "file": "MUSIC07",
+      "bytes": 13307,
+      "entries": [
+        {
+          "id": 16,
+          "part": 0,
+          "frames": 1457,
+          "next_id": 17,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 17,
+          "part": 0,
+          "frames": 305,
+          "next_id": 18,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 18,
+          "part": 0,
+          "frames": 1457,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    },
+    {
+      "file": "MUSIC08",
+      "bytes": 17552,
+      "entries": [
+        {
+          "id": 19,
+          "part": 0,
+          "frames": 2648,
+          "next_id": 20,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 20,
+          "part": 0,
+          "frames": 1602,
+          "next_id": 21,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 21,
+          "part": 0,
+          "frames": 1602,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    },
+    {
+      "file": "MUSIC09",
+      "bytes": 27053,
+      "entries": [
+        {
+          "id": 23,
+          "part": 0,
+          "frames": 2675,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 25,
+          "part": 0,
+          "frames": 2662,
+          "next_id": 23,
+          "next_part": 0,
+          "next_local": 0
+        },
+        {
+          "id": 24,
+          "part": 0,
+          "frames": 3072,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    },
+    {
+      "file": "MUSIC10",
+      "bytes": 13411,
+      "entries": [
+        {
+          "id": 26,
+          "part": 0,
+          "frames": 1443,
+          "next_id": 27,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 27,
+          "part": 0,
+          "frames": 2635,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 28,
+          "part": 0,
+          "frames": 212,
+          "next_id": 28,
+          "next_part": 0,
+          "next_local": 2
+        }
+      ],
+      "bank_boundary_stops": []
+    },
+    {
+      "file": "MUSIC11",
+      "bytes": 26035,
+      "entries": [
+        {
+          "id": 29,
+          "part": 0,
+          "frames": 291,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 30,
+          "part": 0,
+          "frames": 3072,
+          "next_id": 31,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 31,
+          "part": 0,
+          "frames": 2648,
+          "next_id": 32,
+          "next_part": 0,
+          "next_local": 3
+        },
+        {
+          "id": 32,
+          "part": 0,
+          "frames": 2648,
+          "next_id": 33,
+          "next_part": 0,
+          "next_local": 4
+        },
+        {
+          "id": 33,
+          "part": 0,
+          "frames": 1602,
+          "next_id": 29,
+          "next_part": 0,
+          "next_local": 0
+        }
+      ],
+      "bank_boundary_stops": []
+    },
+    {
+      "file": "MUSIC12",
+      "bytes": 23717,
+      "entries": [
+        {
+          "id": 34,
+          "part": 0,
+          "frames": 2026,
+          "next_id": 34,
+          "next_part": 0,
+          "next_local": 0
+        },
+        {
+          "id": 35,
+          "part": 0,
+          "frames": 291,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 38,
+          "part": 0,
+          "frames": 2860,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 39,
+          "part": 0,
+          "frames": 900,
+          "next_id": 38,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 40,
+          "part": 0,
+          "frames": 212,
+          "next_id": 41,
+          "next_part": 0,
+          "next_local": 5
+        },
+        {
+          "id": 41,
+          "part": 0,
+          "frames": 2238,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    },
+    {
+      "file": "MUSIC13",
+      "bytes": 28305,
+      "entries": [
+        {
+          "id": 42,
+          "part": 0,
+          "frames": 2662,
+          "next_id": 43,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 43,
+          "part": 0,
+          "frames": 1020,
+          "next_id": 42,
+          "next_part": 0,
+          "next_local": 0
+        },
+        {
+          "id": 44,
+          "part": 0,
+          "frames": 2860,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 45,
+          "part": 0,
+          "frames": 212,
+          "next_id": 44,
+          "next_part": 0,
+          "next_local": 2
+        },
+        {
+          "id": 47,
+          "part": 0,
+          "frames": 291,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 48,
+          "part": 0,
+          "frames": 2662,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 49,
+          "part": 0,
+          "frames": 212,
+          "next_id": 49,
+          "next_part": 0,
+          "next_local": 6
+        },
+        {
+          "id": 51,
+          "part": 0,
+          "frames": 212,
+          "next_id": 51,
+          "next_part": 0,
+          "next_local": 7
+        },
+        {
+          "id": 53,
+          "part": 0,
+          "frames": 1377,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    },
+    {
+      "file": "MUSIC14",
+      "bytes": 9944,
+      "entries": [
+        {
+          "id": 54,
+          "part": 0,
+          "frames": 212,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 55,
+          "part": 0,
+          "frames": 212,
+          "next_id": 55,
+          "next_part": 0,
+          "next_local": 1
+        },
+        {
+          "id": 56,
+          "part": 0,
+          "frames": 1377,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 57,
+          "part": 0,
+          "frames": 212,
+          "next_id": 57,
+          "next_part": 0,
+          "next_local": 3
+        },
+        {
+          "id": 59,
+          "part": 0,
+          "frames": 900,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 60,
+          "part": 0,
+          "frames": 212,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        },
+        {
+          "id": 61,
+          "part": 0,
+          "frames": 212,
+          "next_id": 61,
+          "next_part": 0,
+          "next_local": 6
+        },
+        {
+          "id": 63,
+          "part": 0,
+          "frames": 212,
+          "next_id": null,
+          "next_part": 0,
+          "next_local": 255
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "PICO filter flags (including detune/reverb/damping) are not emulated.",
+    "Custom instruments approximated as nested note sequences; phase/timbre can differ.",
+    "Memory bank boundaries stop playback. Load the next numbered XEX; see bank_boundary_stops.",
+    "Lua audio/SFX calls or memory writes detected; gameplay-driven changes are not executed."
+  ],
+  "literal_music_calls": []
+}

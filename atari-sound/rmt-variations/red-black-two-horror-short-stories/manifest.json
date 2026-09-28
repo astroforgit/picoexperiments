@@ -1,0 +1,34 @@
+{
+  "title": "Red-Black - Two Horror Short Stories",
+  "kind": "music",
+  "sources": [
+    "[Adventure-Visual]/Red-Black - Two Horror Short Stories.p8.png",
+    "allgames/[Adventure-Visual]/Red-Black - Two Horror Short Stories.p8"
+  ],
+  "banks": [
+    {
+      "file": "MUSIC",
+      "bytes": 1320,
+      "entries": [
+        {
+          "id": 0,
+          "part": 0,
+          "frames": 847,
+          "next_id": 0,
+          "next_part": 0,
+          "next_local": 0
+        }
+      ],
+      "bank_boundary_stops": []
+    }
+  ],
+  "warnings": [
+    "Isolated RMT instruments play the PICO notes; custom waves use the assigned instrument.",
+    "Static PICO score only; gameplay-driven Lua music changes are not executed."
+  ],
+  "literal_music_calls": [],
+  "arrangement": "rmt-instruments-v2",
+  "style_name": "RMT: ingame",
+  "donor": "ingame",
+  "controls": "Space / N / P"
+}

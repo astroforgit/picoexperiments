@@ -1,0 +1,57 @@
+{
+  "id": "robbo-4-ingame",
+  "title": "Robbo 4 - Ingame",
+  "remix": "Robbo 4 - Ingame / Echo Flight",
+  "author": "Andrey Derkach (DJ Andrey Balkonsky)",
+  "directory": "remixes/robbo-4-ingame",
+  "source": "asma/asma/Composers/Derkach_Andrey/Robbo_4_Ingame.sap",
+  "original_subsong": 0,
+  "source_duration_seconds": 477.489,
+  "duration_seconds": 211.78985331955226,
+  "frames": 10560,
+  "lead_channel": 2,
+  "changed_lead_frames": 5171,
+  "allowed_changed_registers": [
+    2,
+    3
+  ],
+  "format": "PMZ1",
+  "sections": [
+    {
+      "name": "Opening",
+      "frame": 0
+    },
+    {
+      "name": "Main theme",
+      "frame": 1152
+    },
+    {
+      "name": "Second theme",
+      "frame": 2496
+    },
+    {
+      "name": "Answer",
+      "frame": 3840
+    },
+    {
+      "name": "Quiet passage",
+      "frame": 5184
+    },
+    {
+      "name": "Development",
+      "frame": 6528
+    },
+    {
+      "name": "Main theme returns",
+      "frame": 7872
+    },
+    {
+      "name": "Finale",
+      "frame": 9216
+    }
+  ],
+  "arrangement": "Octave echo",
+  "compressed_bytes": 23307,
+  "preservation": "Original bass, percussion, clock and lead distortion; new sectioned melody and lead envelopes.",
+  "validation": "Native wrapper: 40 frames match ASAP from dirty POKEY state; PCM and compression checks passed."
+}
