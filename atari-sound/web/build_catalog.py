@@ -49,8 +49,9 @@ def main():
         })
     midi = []
     for track in json.loads((ROOT / 'midi-catalog.json').read_text())['tracks']:
-        if not (ROOT / track['file']).is_file():
-            raise FileNotFoundError(ROOT / track['file'])
+        for key in ('file', 'midi', 'audio'):
+            if not (ROOT / track[key]).is_file():
+                raise FileNotFoundError(ROOT / track[key])
         midi.append(track)
     OUT.write_text(json.dumps({'pico': pico, 'remixes': remixes, 'midi': midi}, ensure_ascii=False, separators=(',', ':')) + '\n')
     print(f'Wrote {len(pico)} PICO pairs, {len(remixes)} Atari remix pairs, and {len(midi)} MIDI conversions to {OUT}')

@@ -32,7 +32,8 @@ def main():
         paths.add(Path('atari-sound') / 'remixes' / track['id'] / 'original.sap')
         paths.add(Path('atari-sound') / 'remixes' / track['id'] / 'remix.sap')
     for track in catalog.get('midi', []):
-        paths.add(Path('atari-sound') / track['file'])
+        for key in ('file', 'midi', 'audio'):
+            paths.add(Path('atari-sound') / track[key])
         if track.get('report'):
             paths.add(Path('atari-sound') / track['report'])
     for relative in sorted(paths):

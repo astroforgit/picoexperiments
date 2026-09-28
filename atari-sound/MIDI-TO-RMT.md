@@ -35,3 +35,5 @@ seconds long. The RMT file loops after the final song line.
 
 The converted example is also available in the **MIDI to RMT** tab of the
 [Atari Sound web app](https://astroforgit.github.io/picoexperiments/atari-sound/web/).
+That tab also has the original `.mid` download and an MP3 audio preview made
+from the original MIDI with TiMidity++ and FreePats General MIDI instruments.

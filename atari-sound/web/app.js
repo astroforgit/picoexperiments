@@ -4,12 +4,13 @@ const $ = id => document.getElementById(id);
 const state = { collection: 'pico', page: 0, query: '', includeSfx: false, data: null, current: null, file: null, bytes: null, request: 0 };
 const PAGE_SIZE = 25;
 const cache = new Map();
+const midiAudio = new Audio();
 
 function pathFor(track, side, bank = 0) {
   const segments = state.collection === 'pico'
     ? [side === 'original' ? 'mscsrc' : 'rmt-variations', track.id, (side === 'original' ? track.banks : track.variations)[bank]]
     : state.collection === 'midi'
-      ? [track.file]
+      ? [side === 'midi' ? track.midi : side === 'preview' ? track.audio : track.file]
       : ['remixes', track.id, side === 'original' ? 'original.sap' : 'remix.sap'];
   return '../' + segments.map(encodeURIComponent).join('/');
 }
@@ -34,7 +35,7 @@ function render() {
     const empty = document.createElement('div'); empty.className = 'empty'; empty.textContent = 'No tracks match your search.'; list.append(empty);
   }
   for (const track of rows.slice(state.page * PAGE_SIZE, (state.page + 1) * PAGE_SIZE)) {
-    const row = document.createElement('div'); row.className = 'track-row'; row.setAttribute('role', 'listitem');
+    const row = document.createElement('div'); row.className = `track-row${state.collection === 'midi' ? ' midi-row' : ''}`; row.setAttribute('role', 'listitem');
     const name = document.createElement('div');
     const title = document.createElement('span'); title.className = 'track-name'; title.textContent = track.title;
     const sub = document.createElement('span'); sub.className = 'track-sub';
@@ -45,21 +46,23 @@ function render() {
         : `${track.author && track.author !== '<?>' ? track.author + ' · ' : ''}${track.remix} · ${formatTime(track.duration)}`;
     name.append(title, sub);
     const actions = document.createElement('div'); actions.className = 'row-actions';
-    for (const side of state.collection === 'midi' ? ['rmt'] : ['original', 'variation']) {
+    for (const side of state.collection === 'midi' ? ['preview', 'rmt'] : ['original', 'variation']) {
       const button = document.createElement('button'); button.className = `play-version ${side === 'variation' ? 'secondary' : ''}`;
-      button.textContent = side === 'rmt' ? '▶ Play' : side === 'original' ? '▶ Original' : (state.collection === 'pico' ? '▶ RMT' : '▶ Remix');
-      button.setAttribute('aria-label', `Play ${side === 'rmt' ? 'RMT conversion' : side === 'original' ? 'original' : state.collection === 'pico' ? 'RMT variation' : 'remix'} of ${track.title}`);
+      button.textContent = side === 'preview' ? '▶ MIDI' : side === 'rmt' ? '▶ RMT' : side === 'original' ? '▶ Original' : (state.collection === 'pico' ? '▶ RMT' : '▶ Remix');
+      button.setAttribute('aria-label', `Play ${side === 'preview' ? 'original MIDI rendition' : side === 'rmt' ? 'RMT conversion' : side === 'original' ? 'original' : state.collection === 'pico' ? 'RMT variation' : 'remix'} of ${track.title}`);
       if (state.current?.id === track.id && state.current?.side === side && state.current?.collection === state.collection) button.classList.add('active');
       button.addEventListener('click', () => play(track, side)); actions.append(button);
     }
     if (state.collection === 'midi') {
-      const download = document.createElement('a');
-      download.className = 'play-version download-link';
-      download.href = pathFor(track, 'rmt');
-      download.download = track.file;
-      download.textContent = '↓ RMT file';
-      download.setAttribute('aria-label', `Download ${track.title} RMT file`);
-      actions.append(download);
+      for (const side of ['midi', 'rmt']) {
+        const download = document.createElement('a');
+        download.className = 'play-version download-link';
+        download.href = pathFor(track, side);
+        download.download = side === 'midi' ? track.midi : track.file;
+        download.textContent = side === 'midi' ? '↓ MIDI' : '↓ RMT';
+        download.setAttribute('aria-label', `Download ${track.title} ${side.toUpperCase()} file`);
+        actions.append(download);
+      }
     }
     row.append(name, actions); list.append(row);
   }
@@ -74,7 +77,7 @@ function setCollection(collection) {
   const labels = {
     pico: ['PICO-8 → ATARI', 'PICO conversions', 'Original PICO music conversions and versions using RMT instruments.', 'Search games or RMT donors'],
     remixes: ['ATARI ORIGINALS → NEW ARRANGEMENTS', 'Atari remixes', 'Classic Atari tracks beside new arrangements. Choose either version.', 'Search titles, remixes or composers'],
-    midi: ['MIDI → RASTER MUSIC TRACKER', 'MIDI to RMT', 'Pokey Overdrive arranged for four POKEY voices with instruments from an existing RMT track.', 'Search MIDI conversions'],
+    midi: ['MIDI → RASTER MUSIC TRACKER', 'MIDI to RMT', 'Hear the original MIDI rendition beside its four-voice POKEY arrangement, and download either file.', 'Search MIDI conversions'],
   }[collection];
   $('section-kicker').textContent = labels[0];
   $('section-title').textContent = labels[1];
@@ -89,6 +92,21 @@ async function play(track, side, bank = 0, song) {
   $('playing-title').textContent = track.title;
   $('playing-version').textContent = 'Loading…';
   try {
+    if (collection === 'midi' && side === 'preview') {
+      stopEngines();
+      state.current = { ...track, side, collection, bank: 0 };
+      state.file = file; state.bytes = null;
+      midiAudio.src = file;
+      $('playing-version').textContent = 'Original MIDI · General MIDI rendition';
+      $('pause').disabled = false; $('pause').textContent = 'Ⅱ'; $('stop').disabled = false;
+      $('bank').replaceChildren(); $('bank').disabled = true;
+      $('song').replaceChildren(); $('song').disabled = true;
+      $('elapsed').textContent = '0:00'; $('duration').textContent = formatTime(track.duration);
+      $('seek').disabled = false; $('seek').max = String(track.duration * 1000); $('seek').value = '0';
+      render();
+      await midiAudio.play();
+      return;
+    }
     let bytes = cache.get(file);
     if (!bytes) {
       const response = await fetch(file);
@@ -98,6 +116,7 @@ async function play(track, side, bank = 0, song) {
       if (cache.size > 24) cache.delete(cache.keys().next().value);
     }
     if (request !== state.request) return;
+    stopEngines();
     // ASAP's official browser player renders the Atari 6502/POKEY sound locally.
     asapWeb.playContent(file, bytes, song);
     if (!asapWeb.asap) throw new Error('ASAP could not open this track');
@@ -122,7 +141,17 @@ async function play(track, side, bank = 0, song) {
   }
 }
 function updateProgress() {
-  if (!state.current || !asapWeb.asap) return;
+  if (!state.current) return;
+  if (state.current.side === 'preview') {
+    const duration = Number.isFinite(midiAudio.duration) ? midiAudio.duration : state.current.duration;
+    const elapsed = midiAudio.currentTime;
+    $('elapsed').textContent = formatTime(elapsed);
+    $('duration').textContent = formatTime(duration);
+    $('seek').disabled = !duration;
+    if (duration && document.activeElement !== $('seek')) { $('seek').max = String(Math.round(duration * 1000)); $('seek').value = String(Math.round(elapsed * 1000)); }
+    return;
+  }
+  if (!asapWeb.asap) return;
   const info = asapWeb.asap.getInfo();
   const song = Number($('song').value || info.getDefaultSong());
   const duration = info.getDuration(song);
@@ -132,11 +161,17 @@ function updateProgress() {
   $('seek').disabled = duration <= 0;
   if (duration > 0 && document.activeElement !== $('seek')) { $('seek').max = String(duration); $('seek').value = String(Math.min(duration, elapsed)); }
 }
-function stop() {
-  ++state.request;
+function stopEngines() {
+  midiAudio.pause();
+  midiAudio.removeAttribute('src');
+  midiAudio.load();
   asapWeb.stop();
   if (asapWeb.context) { asapWeb.context.close(); delete asapWeb.context; }
   delete asapWeb.asap;
+}
+function stop() {
+  ++state.request;
+  stopEngines();
   state.current = null; state.file = null; state.bytes = null;
   $('playing-title').textContent = 'Choose a track'; $('playing-version').textContent = 'Select a version to listen';
   $('pause').disabled = true; $('stop').disabled = true; $('bank').disabled = true; $('song').disabled = true; $('seek').disabled = true;
@@ -154,11 +189,23 @@ async function main() {
   $('include-sfx').addEventListener('change', e => { state.includeSfx = e.target.checked; state.page = 0; render(); });
   $('prev-page').addEventListener('click', () => { state.page--; render(); });
   $('next-page').addEventListener('click', () => { state.page++; render(); });
-  $('pause').addEventListener('click', () => { const paused = asapWeb.togglePause(); $('pause').textContent = paused ? '▶' : 'Ⅱ'; $('pause').setAttribute('aria-label', paused ? 'Resume' : 'Pause'); });
+  midiAudio.addEventListener('timeupdate', updateProgress);
+  midiAudio.addEventListener('loadedmetadata', updateProgress);
+  midiAudio.addEventListener('ended', () => { if (state.current?.side === 'preview') { $('pause').textContent = '▶'; $('pause').setAttribute('aria-label', 'Replay'); updateProgress(); } });
+  $('pause').addEventListener('click', async () => {
+    if (state.current?.side === 'preview') {
+      if (midiAudio.paused) { try { await midiAudio.play(); } catch (error) { $('playing-version').textContent = error.message; } }
+      else midiAudio.pause();
+      $('pause').textContent = midiAudio.paused ? '▶' : 'Ⅱ';
+      $('pause').setAttribute('aria-label', midiAudio.paused ? 'Resume' : 'Pause');
+    } else {
+      const paused = asapWeb.togglePause(); $('pause').textContent = paused ? '▶' : 'Ⅱ'; $('pause').setAttribute('aria-label', paused ? 'Resume' : 'Pause');
+    }
+  });
   $('stop').addEventListener('click', stop);
   $('bank').addEventListener('change', () => { if (state.current) play(state.current, state.current.side, Number($('bank').value)); });
   $('song').addEventListener('change', () => { if (state.current) play(state.current, state.current.side, state.current.bank, Number($('song').value)); });
-  $('seek').addEventListener('change', () => { if (state.current) { asapWeb.seek(Number($('seek').value)); updateProgress(); } });
+  $('seek').addEventListener('change', () => { if (state.current) { if (state.current.side === 'preview') midiAudio.currentTime = Number($('seek').value) / 1000; else asapWeb.seek(Number($('seek').value)); updateProgress(); } });
   setCollection('pico');
 }
 main().catch(error => { $('track-list').textContent = `Unable to load the music catalog: ${error.message}. Start a local HTTP server as described in README.md.`; console.error(error); });
