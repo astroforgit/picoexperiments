@@ -1,0 +1,43 @@
+{
+  "instrument_source": "asma/asma/Misc/Chicken_Valley.rmt",
+  "instrument_ids": {
+    "melody": 2,
+    "accompaniment": 7,
+    "bass": 0,
+    "kick": 4,
+    "snare": 5,
+    "hat": 6
+  },
+  "rmt_rows": 384,
+  "row_seconds": 0.16044685857541838,
+  "duration_seconds": 61.61159369296065,
+  "source_notes": 1180,
+  "retained_note_onsets": 781,
+  "dropped_notes": 399,
+  "voices": {
+    "melody": {
+      "midi_track": "Melody",
+      "source_notes": 230,
+      "retained_note_onsets": 222,
+      "octave_shifted_onsets": 0
+    },
+    "accompaniment": {
+      "midi_track": "Accompaniment",
+      "source_notes": 149,
+      "retained_note_onsets": 121,
+      "octave_shifted_onsets": 0
+    },
+    "bass": {
+      "midi_track": "Bass",
+      "source_notes": 225,
+      "retained_note_onsets": 146,
+      "octave_shifted_onsets": 28
+    },
+    "drums": {
+      "midi_track": "Drums",
+      "source_notes": 576,
+      "retained_note_onsets": 292,
+      "octave_shifted_onsets": 0
+    }
+  }
+}

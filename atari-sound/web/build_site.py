@@ -31,6 +31,10 @@ def main():
     for track in catalog['remixes']:
         paths.add(Path('atari-sound') / 'remixes' / track['id'] / 'original.sap')
         paths.add(Path('atari-sound') / 'remixes' / track['id'] / 'remix.sap')
+    for track in catalog.get('midi', []):
+        paths.add(Path('atari-sound') / track['file'])
+        if track.get('report'):
+            paths.add(Path('atari-sound') / track['report'])
     for relative in sorted(paths):
         source = ROOT / relative
         if not source.is_file():
@@ -40,7 +44,7 @@ def main():
         shutil.copy2(source, target)
     (output / 'index.html').write_text('<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=atari-sound/web/"><title>Atari Sound</title><a href="atari-sound/web/">Open Atari Sound</a>\n')
     (output / '.nojekyll').touch()
-    print(f'Built Pages site with {len(paths)} SAP files at {output}')
+    print(f'Built Pages site with {len(paths)} audio and metadata files at {output}')
 
 
 if __name__ == '__main__':

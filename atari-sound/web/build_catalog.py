@@ -47,8 +47,13 @@ def main():
             'author': track.get('author', ''),
             'duration': round(track['duration_seconds']),
         })
-    OUT.write_text(json.dumps({'pico': pico, 'remixes': remixes}, ensure_ascii=False, separators=(',', ':')) + '\n')
-    print(f'Wrote {len(pico)} PICO pairs and {len(remixes)} Atari remix pairs to {OUT}')
+    midi = []
+    for track in json.loads((ROOT / 'midi-catalog.json').read_text())['tracks']:
+        if not (ROOT / track['file']).is_file():
+            raise FileNotFoundError(ROOT / track['file'])
+        midi.append(track)
+    OUT.write_text(json.dumps({'pico': pico, 'remixes': remixes, 'midi': midi}, ensure_ascii=False, separators=(',', ':')) + '\n')
+    print(f'Wrote {len(pico)} PICO pairs, {len(remixes)} Atari remix pairs, and {len(midi)} MIDI conversions to {OUT}')
 
 
 if __name__ == '__main__':

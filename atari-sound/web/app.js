@@ -8,7 +8,9 @@ const cache = new Map();
 function pathFor(track, side, bank = 0) {
   const segments = state.collection === 'pico'
     ? [side === 'original' ? 'mscsrc' : 'rmt-variations', track.id, (side === 'original' ? track.banks : track.variations)[bank]]
-    : ['remixes', track.id, side === 'original' ? 'original.sap' : 'remix.sap'];
+    : state.collection === 'midi'
+      ? [track.file]
+      : ['remixes', track.id, side === 'original' ? 'original.sap' : 'remix.sap'];
   return '../' + segments.map(encodeURIComponent).join('/');
 }
 function formatTime(seconds) {
@@ -36,15 +38,28 @@ function render() {
     const name = document.createElement('div');
     const title = document.createElement('span'); title.className = 'track-name'; title.textContent = track.title;
     const sub = document.createElement('span'); sub.className = 'track-sub';
-    sub.textContent = state.collection === 'pico' ? (track.kind === 'music' ? `${track.donor || 'RMT instruments'} · ${track.banks.length} bank${track.banks.length === 1 ? '' : 's'}` : `SFX audition · ${track.donor || 'RMT instruments'}`) : `${track.author && track.author !== '<?>' ? track.author + ' · ' : ''}${track.remix} · ${formatTime(track.duration)}`;
+    sub.textContent = state.collection === 'pico'
+      ? (track.kind === 'music' ? `${track.donor || 'RMT instruments'} · ${track.banks.length} bank${track.banks.length === 1 ? '' : 's'}` : `SFX audition · ${track.donor || 'RMT instruments'}`)
+      : state.collection === 'midi'
+        ? `MIDI arrangement · ${track.donor} instruments · ${formatTime(track.duration)}`
+        : `${track.author && track.author !== '<?>' ? track.author + ' · ' : ''}${track.remix} · ${formatTime(track.duration)}`;
     name.append(title, sub);
     const actions = document.createElement('div'); actions.className = 'row-actions';
-    for (const side of ['original', 'variation']) {
+    for (const side of state.collection === 'midi' ? ['rmt'] : ['original', 'variation']) {
       const button = document.createElement('button'); button.className = `play-version ${side === 'variation' ? 'secondary' : ''}`;
-      button.textContent = side === 'original' ? '▶ Original' : (state.collection === 'pico' ? '▶ RMT' : '▶ Remix');
-      button.setAttribute('aria-label', `Play ${side === 'original' ? 'original' : state.collection === 'pico' ? 'RMT variation' : 'remix'} of ${track.title}`);
+      button.textContent = side === 'rmt' ? '▶ Play' : side === 'original' ? '▶ Original' : (state.collection === 'pico' ? '▶ RMT' : '▶ Remix');
+      button.setAttribute('aria-label', `Play ${side === 'rmt' ? 'RMT conversion' : side === 'original' ? 'original' : state.collection === 'pico' ? 'RMT variation' : 'remix'} of ${track.title}`);
       if (state.current?.id === track.id && state.current?.side === side && state.current?.collection === state.collection) button.classList.add('active');
       button.addEventListener('click', () => play(track, side)); actions.append(button);
+    }
+    if (state.collection === 'midi') {
+      const download = document.createElement('a');
+      download.className = 'play-version download-link';
+      download.href = pathFor(track, 'rmt');
+      download.download = track.file;
+      download.textContent = '↓ RMT file';
+      download.setAttribute('aria-label', `Download ${track.title} RMT file`);
+      actions.append(download);
     }
     row.append(name, actions); list.append(row);
   }
@@ -56,10 +71,15 @@ function setCollection(collection) {
   if (state.collection !== collection) stop();
   state.collection = collection; state.page = 0; state.query = ''; $('search').value = '';
   for (const button of document.querySelectorAll('.tab')) { const active = button.dataset.tab === collection; button.classList.toggle('active', active); button.setAttribute('aria-selected', String(active)); }
-  $('section-kicker').textContent = collection === 'pico' ? 'PICO-8 → ATARI' : 'ATARI ORIGINALS → NEW ARRANGEMENTS';
-  $('section-title').textContent = collection === 'pico' ? 'PICO conversions' : 'Atari remixes';
-  $('section-description').textContent = collection === 'pico' ? 'Original PICO music conversions and versions using RMT instruments.' : 'Classic Atari tracks beside new arrangements. Choose either version.';
-  $('search').placeholder = collection === 'pico' ? 'Search games or RMT donors' : 'Search titles, remixes or composers';
+  const labels = {
+    pico: ['PICO-8 → ATARI', 'PICO conversions', 'Original PICO music conversions and versions using RMT instruments.', 'Search games or RMT donors'],
+    remixes: ['ATARI ORIGINALS → NEW ARRANGEMENTS', 'Atari remixes', 'Classic Atari tracks beside new arrangements. Choose either version.', 'Search titles, remixes or composers'],
+    midi: ['MIDI → RASTER MUSIC TRACKER', 'MIDI to RMT', 'Pokey Overdrive arranged for four POKEY voices with instruments from an existing RMT track.', 'Search MIDI conversions'],
+  }[collection];
+  $('section-kicker').textContent = labels[0];
+  $('section-title').textContent = labels[1];
+  $('section-description').textContent = labels[2];
+  $('search').placeholder = labels[3];
   $('sfx-option').hidden = collection !== 'pico'; render();
 }
 async function play(track, side, bank = 0, song) {
@@ -84,9 +104,9 @@ async function play(track, side, bank = 0, song) {
     asapWeb.onUpdate = updateProgress;
     state.current = { ...track, side, collection, bank };
     state.file = file; state.bytes = bytes;
-    $('playing-version').textContent = side === 'original' ? 'Original Atari sound' : collection === 'pico' ? `${track.donor || 'RMT instrument version'}` : `Remix: ${track.remix}`;
+    $('playing-version').textContent = collection === 'midi' ? `RMT · ${track.donor} instruments` : side === 'original' ? 'Original Atari sound' : collection === 'pico' ? `${track.donor || 'RMT instrument version'}` : `Remix: ${track.remix}`;
     $('pause').disabled = false; $('pause').textContent = 'Ⅱ'; $('stop').disabled = false;
-    const banks = collection === 'pico' ? (side === 'original' ? track.banks : track.variations) : [file];
+    const banks = collection === 'pico' ? (side === 'original' ? track.banks : track.variations) : collection === 'midi' ? [track.file] : [file];
     $('bank').replaceChildren();
     banks.forEach((filename, i) => $('bank').add(new Option(filename.replace('.sap', '').replace('MUSIC', 'Bank ') || `Bank ${i + 1}`, String(i))));
     $('bank').value = String(bank); $('bank').disabled = banks.length < 2;
@@ -128,6 +148,7 @@ async function main() {
   state.data = await response.json();
   $('pico-count').textContent = state.data.pico.filter(t => t.kind === 'music').length;
   $('remix-count').textContent = state.data.remixes.length;
+  $('midi-count').textContent = state.data.midi.length;
   document.querySelectorAll('.tab').forEach(button => button.addEventListener('click', () => setCollection(button.dataset.tab)));
   $('search').addEventListener('input', e => { state.query = e.target.value; state.page = 0; render(); });
   $('include-sfx').addEventListener('change', e => { state.includeSfx = e.target.checked; state.page = 0; render(); });
