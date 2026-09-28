@@ -75,7 +75,7 @@ TRACK_H	= TRACK_LINES*8-7	; ... 177 scan lines (VSCROL shortens the ends)
 PM_LAST	= (38+TRACK_H)/2	; first PM line below the track window
 
 ; ---- test build: AUTOPILOT=1 starts by itself and lets the computer drive
-; car 0 too
+; car 0 too; AUTOPILOT=2 lets car 0 drive straight on (wall test)
 	.ifndef AUTOPILOT
 AUTOPILOT = 0
 	.endif
@@ -95,6 +95,11 @@ INV_BUMP	= 12	; frames without car collisions after a bump
 INV_RESPAWN	= 60	; ... after coming back next to the leader
 FLASH		= 8	; frames a hit car shows white
 COUNT_STEP	= 50	; frames per step of the 3-2-1-GO countdown
+SPIN_TIME	= 32	; oil: frames of spinning (8 heading units a frame = 1 turn)
+BOOST_MAX	= 9	; booster: charge 1..9 ...
+BOOST_FILL	= 90	; ... one step more every 90 frames ...
+BOOST_USE	= 20	; ... one step less every 20 frames of boosting (9 = 3 s)
+CATCH_ON	= 90	; a computer car catching up keeps boosting this long on screen
 ; points (BCD)
 PT_CP		= $0010
 PT_WALL		= $0025
@@ -212,6 +217,7 @@ ml_race	lda optTrack		; tracks in turn from the chosen one
 	and #TRACKS-1
 	sta track
 	jsr LoadTrack
+	jsr CountScreens
 	jsr RaceGame
 	bcs MainLoop		; ESC
 	jsr AddTotals
@@ -329,7 +335,27 @@ DliGame
 	cmp #$10
 	bcc @+
 	jmp dg_x
-@	ldy #0
+@	lda P0PF		; collisions of the frame just shown (the
+	sta hitPF		; registers are cleared below the minimap)
+	lda P0PF+1
+	sta hitPF+1
+	lda P0PF+2
+	sta hitPF+2
+	lda P0PL
+	sta hitPL
+	lda P0PL+1
+	sta hitPL+1
+	lda P0PL+2
+	sta hitPL+2
+	lda #1
+	sta hitNew
+	lda miniHpos		; players: dots on the minimap first
+	sta HPOSP0
+	lda miniHpos+1
+	sta HPOSP0+1
+	lda miniHpos+2
+	sta HPOSP0+2
+	ldy #0
 	sty dliLine
 	sty ATRACT
 	lda #$64
@@ -374,6 +400,14 @@ dg_2e	sty WSYNC
 	sta COLPF2
 	lda dliColPF0
 	sta COLPF0
+	lda carHpos		; ... then the cars on the track
+	sta HPOSP0
+	lda carHpos+1
+	sta HPOSP0+1
+	lda carHpos+2
+	sta HPOSP0+2
+	sta HITCLR		; the dots must not count as collisions (DliGame
+				; saved the registers at its start)
 	sty WSYNC
 	lda dliColBK
 	sta COLBK
@@ -574,7 +608,7 @@ dd_lp	ldy #0
 ; the HI SCORE. Joystick up/down picks a line, left/right changes it, fire
 ; (or SPACE / START) starts the championship.
 
-OPTS	= 7			; options with a value (the last line is START RACE)
+OPTS	= 9			; settings
 optPlayers = optVal
 optTrack = optVal+1
 optLaps	= optVal+2
@@ -582,6 +616,12 @@ optDiff	= optVal+3
 optSpeed = optVal+4
 optOil	= optVal+5
 optFx	= optVal+6		; flashing: none, soft, normal, hard
+optMap	= optVal+7		; minimap in the status bar
+optBoost = optVal+8		; booster
+MENU_LINES = 7			; lines on the options screen
+IT_MORE	= $80			; menu lines that are not settings
+IT_START = $81
+IT_BACK	= $82
 
 OptionsScreen
 	lda #<DliTitle
@@ -607,11 +647,9 @@ OptionsScreen
 	sta COLOR0+2
 	lda #0
 	sta COLOR0+4
-	ldx #19			; HI SCORE line and help line
+	ldx #19			; HI SCORE line
 @	lda txtHi,x
 	sta textHi,x
-	lda txtHelp,x
-	sta textHi+20,x
 	dex
 	bpl @-
 	ldx #4
@@ -621,8 +659,9 @@ OptionsScreen
 	sta textHi+13,x
 	dex
 	bpl @-
-	lda #0
+	lda #0			; main menu, first line
 	sta optSel
+	sta optPage
 	jsr DrawMenu
 	lda #0
 	ldx #<MUSIC_TITLE
@@ -636,27 +675,32 @@ OptionsScreen
 	sta tsStick
 os_lp	lda STICK0		; act when the joystick moves
 	cmp tsStick
-	beq os_in
+	jeq os_in
 	sta tsStick
 	cmp #14			; up
 	bne @+
 	dec optSel
 	bpl os_draw
-	lda #OPTS
-	sta optSel
+	ldx optPage
+	ldy menuLen,x
+	dey
+	sty optSel
 	jmp os_draw
 @	cmp #13			; down
 	bne @+
 	inc optSel
+	ldx optPage
 	lda optSel
-	cmp #OPTS+1
+	cmp menuLen,x
 	bcc os_draw
 	lda #0
 	sta optSel
 	jmp os_draw
-@	ldx optSel
-	cpx #OPTS
-	bcs os_in		; START RACE line has no value
+@	pha
+	jsr SelItem		; X = setting of the chosen line (N: not a setting)
+	pla
+	cpx #0
+	bmi os_spec
 	cmp #11			; left
 	bne @+
 	lda optVal,x
@@ -676,7 +720,12 @@ os_max	lda optMax,x
 	jmp os_draw
 os_min	lda optMin,x
 	sta optVal,x
-os_draw	lda #3
+	jmp os_draw
+os_spec	cmp #7			; right on MORE OPTIONS / BACK: go there
+	bne os_in
+	jsr MenuEnter
+	bcs os_go
+os_draw	lda #SFX_BUMP
 	jsr SfxStart
 	jsr DrawMenu
 os_in	jsr GetInput
@@ -684,7 +733,14 @@ os_in	jsr GetInput
 	beq @+
 	cmp #$FF
 	beq @+
-	jmp os_go		; fire / any key
+	jsr SelItem		; fire: MORE / BACK switch pages, START starts;
+	bmi os_ent		; on a setting line: main page starts, the
+	ldx optPage		; other page goes back
+	beq os_go
+	ldx #IT_BACK
+os_ent	jsr MenuEnter
+	bcs os_go
+	jmp os_draw
 @	lda CONSOL		; START
 	and #1
 	beq os_go
@@ -703,35 +759,99 @@ os_in	jsr GetInput
 	jmp os_lp
 os_go	jmp StopAll
 
-; the eight menu lines: label + value, the chosen line in colour 3
+; X = item of the chosen line (a setting number, or IT_...), flags of X
+SelItem	ldx optPage
+	lda menuStart,x
+	clc
+	adc optSel
+	tax
+	lda menuItems,x
+	tax
+	rts
+
+; MORE OPTIONS / BACK / START RACE (item X): C = 1 to start the race
+MenuEnter
+	cpx #IT_START
+	beq me_go
+	cpx #IT_MORE
+	bne @+
+	lda #1			; to the second page
+	sta optPage
+	lda #0
+	sta optSel
+	clc
+	rts
+@	cpx #IT_BACK
+	bne me_no
+	lda #0			; back: main page, on MORE OPTIONS
+	sta optPage
+	lda #MORE_LINE
+	sta optSel
+me_no	clc
+	rts
+me_go	sec
+	rts
+
+; the menu lines of the page: label, value; the chosen line in colour 3
 DrawMenu
-	ldx #0			; line
-dm_line	stx tmp2
-	txa			; Y = line * 20
-	asl @
+	ldx #MENU_LINES*20-1	; empty lines
+	lda #0
+@	sta menuText,x
+	dex
+	cpx #$FF
+	bne @-
+	ldx optPage		; help line of the page
+	ldy helpOfs,x
+	ldx #0
+@	lda txtHelp,y
+	sta textHi+20,x
+	iny
+	inx
+	cpx #20
+	bne @-
+	lda #0
+	sta dmLine
+dm_line	ldx optPage
+	lda dmLine
+	cmp menuLen,x
+	bcc @+
+	rts
+@	asl @			; start of the line: dmLine * 20
 	asl @
 	sta tmp
 	asl @
 	asl @
 	adc tmp
-	sta tmp+1		; start of the line in menuText
+	sta tmp+1
 	lda #0			; colours: chosen line all colour 3
 	sta colL
 	lda #$40
 	sta colV
-	cpx optSel
+	lda dmLine
+	cmp optSel
 	bne @+
 	lda #$C0
 	sta colL
 	sta colV
-@	txa			; label: 12 characters from optLabel + line * 12
+@	lda dmLine
+	clc
+	adc menuStart,x
+	tax
+	lda menuItems,x
+	sta dmItem
+	and #$7F		; label: 18 characters, settings first then IT_...
+	bit dmItem
+	bpl @+
+	clc
+	adc #OPTS
+@	sta tmp			; x 18
 	asl @
-	sta tmp
+	asl @
 	asl @
 	adc tmp
 	asl @
-	tax			; X = line * 12
-	lda #12
+	tax
+	lda #18
 	sta pnCount
 	ldy tmp+1
 @	lda optLabel,x
@@ -741,19 +861,20 @@ dm_line	stx tmp2
 	iny
 	dec pnCount
 	bne @-
-	ldx tmp2		; value: 6 characters
-	cpx #OPTS
-	bcc @+
-	lda #13			; START RACE: none
-	bne dm_val
-@	lda optVal,x
+	ldx dmItem		; value of a setting over the last 6 characters
+	bmi dm_next
+	lda optVal,x
 	clc
 	adc optStr,x
-dm_val	sta tmp			; string number * 6
+	sta tmp			; string number * 6
 	asl @
 	adc tmp
 	asl @
 	tax
+	lda tmp+1
+	clc
+	adc #12
+	tay
 	lda #6
 	sta pnCount
 @	lda valStr,x
@@ -763,14 +884,8 @@ dm_val	sta tmp			; string number * 6
 	iny
 	dec pnCount
 	bne @-
-	lda #0
-	sta menuText,y
-	sta menuText+1,y
-	ldx tmp2
-	inx
-	cpx #OPTS+1
-	bne dm_line
-	rts
+dm_next	inc dmLine
+	jmp dm_line
 
 ; the second DLI of the options screen: colours of the menu
 DliMenu	pha
@@ -794,35 +909,50 @@ spdAcc	dta $20,    $30,    $40	; growth per frame (1/65536)
 spdMaxLo dta <$02C0, <$0340, <$03C0
 spdMaxHi dta >$02C0, >$0340, >$03C0
 
+; settings: players, track, laps, difficulty, speed, oil, flash, map, booster
 	.ifdef TESTOPT
-optDefault dta 1,1,1,1,1,1,2	; test: 1 lap
+optDefault dta 1,1,1,1,1,1,2,1,1	; test: 1 lap
 	.else
-optDefault dta 1,1,3,1,1,1,2
+optDefault dta 1,1,3,1,1,1,2,1,1
 	.endif
-optMin	dta 1,1,1,0,0,0,0
-optMax	dta 2,TRACKS,5,2,2,1,3
-optStr	dta $FF,$FF,$FF,5,8,11,14	; + value = number of the value string
-optLabel dta d' PLAYERS    '
-	dta d' TRACK      '
-	dta d' LAPS       '
-	dta d' DIFFICULTY '
-	dta d' SPEED      '
-	dta d' OIL        '
-	dta d' FLASH      '
-	dta d' START RACE '
+optMin	dta 1,1,1,0,0,0,0,0,0
+optMax	dta 2,TRACKS,5,2,2,1,3,1,1
+optStr	dta $FF,$FF,$FF,5,8,11,14,11,11	; + value = number of the value string
+; the two pages: items of their lines
+menuItems
+menuMain dta 0,1,2,3,4,IT_MORE,IT_START
+menuMore dta 5,6,7,8,IT_BACK
+menuStart dta 0,menuMore-menuItems
+menuLen	dta menuMore-menuMain,menuStart-menuMore
+MORE_LINE = 5			; line of MORE OPTIONS on the main page
+helpOfs	dta 0,20
+; labels (18 characters): the settings, then MORE OPTIONS, START RACE, BACK
+optLabel dta d' PLAYERS          '
+	dta d' TRACK            '
+	dta d' LAPS             '
+	dta d' DIFFICULTY       '
+	dta d' SPEED            '
+	dta d' OIL              '
+	dta d' FLASH            '
+	dta d' MAP              '
+	dta d' BOOSTER          '
+	dta d' MORE OPTIONS     '
+	dta d' START RACE       '
+	dta d' BACK             '
 valStr	dta d'1     2     3     4     5     '
 	dta d'EASY  NORMALHARD  '
 	dta d'SLOW  NORMALFAST  '
 	dta d'OFF   ON    '
-	dta d'      '		; 13: START RACE has no value
+	dta d'      '		; 13: not used
 	dta d'NONE  SOFT  NORMALHARD  '
 txtHi	dta d'    HI SCORE        '
 txtHelp	dta d'JOY:MOVE  FIRE:START'
+	dta d'JOY:MOVE  FIRE:BACK '
 
 optDL	dta $70,$70,$70,$CE,a(TITLE)
 	:28 dta $0E
 	dta $F0,$47,a(menuText)
-	:OPTS dta $07
+	:MENU_LINES-1 dta $07
 	dta $70,$46,a(textHi),$06,$41,a(DLBUF)
 OPT_DL_LEN = *-optDL
 
@@ -1137,6 +1267,8 @@ RaceGame
 	lda #>DliGame
 	sta dliBack+1
 	jsr BuildDLs
+	jsr MiniDraw
+	jsr BoostLabels
 	lda #$FF		; no map row unpacked yet
 	ldx #RING_ROWS*2-1
 @	sta slotRow,x
@@ -1173,14 +1305,12 @@ RaceGame
 	sta speedMax
 	lda spdMaxHi,x
 	sta speedMax+1
-	lda #1
-	sta cdShow
-	lda #3			; countdown 3-2-1-GO
+	lda #40			; the race starts at once (the 3-2-1-START
+	sta cdShow		; screens came before); GO! stays a moment
+	lda #$FF
 	sta cdStep
-	lda #COUNT_STEP
-	sta cdTimer
-	lda #0
-	jsr SfxStart
+	lda #1
+	sta started
 	lda tenthFrames
 	sta tdiv
 	lda track		; grid of this track: index track*3+car
@@ -1206,6 +1336,10 @@ RaceGame
 	jsr FillHistory
 	dex
 	bpl @-
+	lda #1			; booster charge at the start
+	sta cBoost
+	sta cBoost+1
+	sta cBoost+2
 	lda #1			; who drives what
 	sta carHuman
 	lda #0
@@ -1244,6 +1378,7 @@ rg_loop	jsr UpdateCamera	; next frame into the back display list
 	beq @-
 	jsr Flip		; vertical blank: show it
 	jsr DrawCars
+	jsr MiniDots
 	jsr RMT_PLAY
 	jsr SfxTick
 	jsr Collisions
@@ -1269,6 +1404,7 @@ rg_car	stx car
 	jsr Control
 	jsr Physics
 	jsr Checkpoint
+	jsr BoostTick
 	ldx car
 	jsr SaveCar
 	jsr DriveOff
@@ -1279,6 +1415,7 @@ rg_next	ldx car
 	bne rg_car
 	jsr ChooseTarget
 	jsr Respawns
+	jsr MiniAhead
 	jsr Timer
 	lda places		; race over when two cars are home
 	cmp #2
@@ -1290,12 +1427,7 @@ rg_next	ldx car
 	jsr StopAll
 	clc
 	rts
-rg_show	lda #<(TITLE+$0360)	; time in the status line
-	sta dst
-	lda #>(TITLE+$0360)
-	sta dst+1
-	ldx #TIME
-	jsr PrintNum
+rg_show	jsr BoostShow
 	lda cdShow		; countdown text, or points and laps
 	beq @+
 	jsr CountText
@@ -1376,6 +1508,254 @@ txtGo	dta d'        GO!         '
 txtTrack dta d' TRACK 1    LAPS 3  '
 
 ; ----------------------------------------------------------------------
+; 3, 2, 1, START: four screens like SpeedMaza's crash screen (shaking,
+; flashing colours; FLASH NONE keeps them still), big blocky letters drawn
+; into UNBUF (free until the race starts), 48 bytes x 44 lines, mode E
+
+CS_FRAMES = 45			; frames per screen
+
+CountScreens
+	jsr HidePM
+	lda #<dlCrashSrc
+	sta ptr
+	lda #>dlCrashSrc
+	sta ptr+1
+	lda #$3B
+	jsr CopyDL
+	lda #<UNBUF
+	sta DLBUF+$0B
+	lda #>UNBUF
+	sta DLBUF+$0C
+	lda #<DLBUF
+	sta DLBUF+$39
+	sta SDLSTL
+	lda #>DLBUF
+	sta DLBUF+$3A
+	sta SDLSTL+1
+	lda #0
+	sta csStep
+	sta csN
+cs_step	jsr DrawBig
+	lda #$22		; picture on
+	sta SDMCTL
+	ldx #SFX_BEEP
+	lda csStep
+	cmp #3
+	bcc @+
+	ldx #SFX_GO
+@	txa
+	jsr SfxStart
+	lda #CS_FRAMES
+	sta csT
+cs_fr	inc csN
+	jsr SfxTick
+	lda #1
+	jsr Wait
+	lda optFx		; FLASH NONE: still picture, steady colours
+	bne @+
+	sta VSCROL
+	sta HSCROL
+	lda #4
+	sta COLOR0
+	lda #8
+	sta COLOR0+1
+	lda #$0C
+	sta COLOR0+2
+	lda #0
+	sta COLOR0+4
+	jmp cs_nx
+@	lda RANDOM		; shake
+	and #7
+	sta VSCROL
+	lda RANDOM
+	and #7
+	sta HSCROL
+	lda csN			; colours as the crash screen
+	asl @
+	asl @
+	asl @
+	asl @
+	and #$E0
+	sta tmp
+	lda csN
+	and #2
+	beq cs_b
+	lda #4
+	ora tmp
+	sta COLOR0
+	lda #8
+	ora tmp
+	sta COLOR0+1
+	lda #$0E
+	ora tmp
+	sta COLOR0+2
+	lda #0
+	sta COLOR0+4
+	jmp cs_nx
+cs_b	lda #8
+	ora tmp
+	sta COLOR0
+	lda #4
+	ora tmp
+	sta COLOR0+1
+	lda #0
+	sta COLOR0+2
+	lda #$0E
+	ora tmp
+	sta COLOR0+4
+cs_nx	dec csT
+	jne cs_fr
+	inc csStep
+	lda csStep
+	cmp #4
+	jne cs_step
+	lda #0
+	sta COLOR0+4
+	sta HSCROL
+	sta VSCROL
+	jmp StopAll
+
+; the picture of step csStep: "3", "2", "1" (wide letters) or "START"
+DrawBig	lda #<UNBUF		; clear 48 x 44 bytes (9 pages)
+	sta ptr
+	lda #>UNBUF
+	sta ptr+1
+	ldx #9
+	lda #0
+	tay
+@	sta (ptr),y
+	iny
+	bne @-
+	inc ptr+1
+	dex
+	bne @-
+	ldx csStep
+	lda bigText,x		; first glyph in bigSeq, glyph count, byte
+	sta dbGlyph		; width of a font pixel, first byte (centred)
+	lda bigCount,x
+	sta dbCount
+	lda bigWide,x
+	sta dbWide
+	lda bigLeft,x
+	sta dbX
+db_char	lda #0			; font rows 0..6, 6 lines each
+	sta dbRow
+db_row	ldx dbGlyph		; row bits (5 columns, bit 4 = left) to the top
+	lda bigSeq,x
+	sta tmp
+	asl @
+	asl @
+	asl @
+	sec
+	sbc tmp			; glyph x 7
+	clc
+	adc dbRow
+	tax
+	lda bigFont,x
+	asl @
+	asl @
+	asl @
+	sta dbBits
+	ldx dbRow		; colour of the row: shaded top to bottom
+	lda bigShade,x
+	sta dbCol
+	lda dbX
+	sta dbPos
+	lda #5
+	sta dbColN
+db_col	asl dbBits		; C = pixel of this column
+	bcc @+
+	jsr BigBlock		; fill dbWide bytes x 6 lines
+@	lda dbPos
+	clc
+	adc dbWide
+	sta dbPos
+	dec dbColN
+	bne db_col
+	inc dbRow
+	lda dbRow
+	cmp #7
+	bne db_row
+	lda dbX			; next letter: 6 columns further
+	ldx #6
+@	clc
+	adc dbWide
+	dex
+	bne @-
+	sta dbX
+	inc dbGlyph
+	dec dbCount
+	bne db_char
+	rts
+
+; fill dbWide bytes at byte dbPos, lines dbRow*6+1 .. +6, with dbCol
+BigBlock
+	lda dbRow		; line = row * 6 + 1
+	asl @
+	adc dbRow
+	asl @
+	adc #1
+	sta dbLine
+	lda #6
+	sta dbN
+bb_line	lda dbLine		; ptr = UNBUF + line * 48
+	sta ptr
+	lda #0
+	sta ptr+1
+	asl ptr
+	rol ptr+1
+	asl ptr
+	rol ptr+1
+	asl ptr
+	rol ptr+1
+	asl ptr
+	rol ptr+1		; x 16
+	lda ptr
+	ldx ptr+1
+	asl ptr
+	rol ptr+1		; x 32
+	clc
+	adc ptr
+	sta ptr
+	txa
+	adc ptr+1
+	sta ptr+1		; x 48
+	clc
+	lda ptr
+	adc #<UNBUF
+	sta ptr
+	lda ptr+1
+	adc #>UNBUF
+	sta ptr+1
+	ldy dbPos
+	ldx dbWide
+	lda dbCol
+@	sta (ptr),y
+	iny
+	dex
+	bne @-
+	inc dbLine
+	dec dbN
+	bne bb_line
+	rts
+
+; glyphs 5 x 7: 3, 2, 1, S, T, A, R
+bigFont	dta %11110,%00001,%00001,%01110,%00001,%00001,%11110	; 3
+	dta %01110,%10001,%00001,%00010,%00100,%01000,%11111	; 2
+	dta %00100,%01100,%00100,%00100,%00100,%00100,%01110	; 1
+	dta %01111,%10000,%10000,%01110,%00001,%00001,%11110	; S
+	dta %11111,%00100,%00100,%00100,%00100,%00100,%00100	; T
+	dta %01110,%10001,%10001,%11111,%10001,%10001,%10001	; A
+	dta %11110,%10001,%10001,%11110,%10100,%10010,%10001	; R
+bigShade dta $55,$55,$AA,$AA,$FF,$FF,$FF	; colours 1, 2, 3 down the letters
+bigSeq	dta 0, 1, 2, 3,4,5,6,4		; "3" "2" "1" "START"
+;		3  2  1  START
+bigText	dta 0, 1, 2, 3		; first entry in bigSeq
+bigCount dta 1, 1, 1, 5
+bigWide	dta 3, 3, 3, 1		; bytes per font pixel
+bigLeft	dta 16,16,16,9		; first byte: (48 - width) / 2
+
+; ----------------------------------------------------------------------
 ; Sound effects on channel 4, written after the music player each frame
 
 SFX_BEEP = 0
@@ -1384,6 +1764,7 @@ SFX_WALL = 2
 SFX_BUMP = 3
 SFX_BACK = 4
 SFX_OIL	= 5
+SFX_BOOST = 6
 
 ; start effect A (a new one replaces the old one)
 SfxStart
@@ -1419,12 +1800,12 @@ SfxTick	lda sfxT
 	dec sfxVol
 @	rts
 
-;		beep  GO    wall  bump  back  oil
-sfxF0	dta $50,  $28,  $30,  $A0,  $90,  $04
-sfxDF0	dta 0,    0,    4,    6,    <-5,  0
-sfxDist0 dta $A0, $A0,  $80,  $A0,  $A0,  $80
-sfxVol0	dta 10,   12,   15,   10,   10,   7
-sfxLen0	dta 10,   30,   20,   10,   24,   16
+;		beep  GO    wall  bump  back  oil   boost
+sfxF0	dta $50,  $28,  $30,  $A0,  $90,  $04,  $40
+sfxDF0	dta 0,    0,    4,    6,    <-5,  0,    <-2
+sfxDist0 dta $A0, $A0,  $80,  $A0,  $A0,  $80,  $80
+sfxVol0	dta 10,   12,   15,   10,   10,   7,    10
+sfxLen0	dta 10,   30,   20,   10,   24,   16,   20
 
 ; ----------------------------------------------------------------------
 ; Tracks: unpack track 'track' to UNBUF, copy its checkpoint tables to
@@ -1691,6 +2072,494 @@ up_match
 	jmp Unpack
 
 ; ----------------------------------------------------------------------
+; Minimap in the status bar (instead of the SpeedMaza logo): the track in
+; grey, the stretch ahead of the followed car in yellow, the cars as dots
+; of their players (moved there by DliGame). Pixel = x / 96 + tdMiniX,
+; line = y / 96 + tdMiniY (x in colour clocks, y in scan lines: one scale
+; keeps the shape, as a mode E pixel is about as wide as 1.6 lines).
+
+STATUS_LINES = 29
+BAR_LINE = 19			; booster bars: lines 19-25
+AHEAD	= 10			; checkpoints drawn yellow ahead of the car
+
+; clear the bar, draw the whole track in colour 1
+MiniDraw
+	lda #<statusBuf
+	sta ptr
+	lda #>statusBuf
+	sta ptr+1
+	ldx #>(STATUS_LINES*40+255)
+	lda #0
+	tay
+@	sta (ptr),y
+	iny
+	bne @-
+	inc ptr+1
+	dex
+	bne @-
+	lda #$06		; colours of the bar: grey track, yellow stretch
+	sta COLOR0
+	lda #$1C
+	sta COLOR0+1
+	lda #$0E
+	sta COLOR0+2
+	ldx track
+	lda tdMiniX,x
+	sta miniX
+	lda tdMiniY,x
+	sta miniY
+	lda #$FF
+	sta hiIdx
+	lda optMap		; MAP off: no map
+	bne @+
+	rts
+@	lda #$55			; colour 1
+	sta miniCol
+	lda #0
+	sta miniK
+@	lda miniK
+	jsr MiniCp
+	inc miniK
+	lda miniK
+	cmp cpCount
+	bne @-
+	rts
+
+; the stretch ahead of the followed car: when its checkpoint changes, the
+; old stretch goes back to grey and the new one is drawn yellow
+MiniAhead
+	lda optMap
+	beq ma_x
+	ldx target
+	lda cIdx,x
+	cmp hiIdx
+	beq ma_x
+	pha
+	lda hiIdx
+	bmi @+
+	ldx #$55
+	jsr MiniRange
+@	pla
+	sta hiIdx
+	ldx #$AA		; colour 2
+	jmp MiniRange
+ma_x	rts
+
+; AHEAD checkpoints from A in colour pattern X
+MiniRange
+	stx miniCol
+	sta miniK
+	lda #AHEAD
+	sta miniN
+@	lda miniK
+	jsr MiniCp
+	inc miniK
+	lda miniK
+	cmp cpCount
+	bcc *+7
+	lda #0
+	sta miniK
+	dec miniN
+	bne @-
+	rts
+
+; plot checkpoint A and the point halfway to the next one
+MiniCp	tax
+	lda cpXLo,x
+	sta tmp
+	lda cpXHi,x
+	sta tmp+1
+	lda cpYLo,x
+	sta ptr2
+	lda cpYHi,x
+	sta ptr2+1
+	txa
+	pha
+	jsr MiniXY		; A = pixel, Y = line
+	jsr Plot
+	pla
+	tax
+	inx
+	cpx cpCount
+	bcc *+4
+	ldx #0
+	clc			; halfway: (a + b) / 2, i.e. the sum / 128 and / 256
+	lda cpXLo,x
+	adc tmp
+	sta tmp
+	lda cpXHi,x
+	adc tmp+1
+	sta tmp+1
+	clc			; (y sum / 2) / 96 = (y sum / 64) / 3
+	lda cpYLo,x
+	adc ptr2
+	sta ptr2
+	lda cpYHi,x
+	adc ptr2+1
+	sta ptr2+1
+	jsr Div192
+	clc
+	adc miniY
+	tay
+	lda tmp			; (x sum / 64) / 3
+	sta ptr2
+	lda tmp+1
+	sta ptr2+1
+	jsr Div192
+	clc
+	adc miniX
+	jmp Plot
+
+; A = (ptr2 / 64) / 3  (ptr2 < 16384)
+Div192	lda ptr2+1
+	sta tmp3
+	lda ptr2
+	asl @
+	rol tmp3
+	asl @
+	rol tmp3
+	ldx tmp3
+	lda div3,x
+	rts
+
+; tmp = x, ptr2 = y (16 bit) -> A = x / 96 + miniX, Y = y / 96 + miniY
+; (tmp kept)
+MiniXY	jsr Div96
+	clc
+	adc miniY
+	tay
+	lda tmp
+	sta tmp3
+	lda tmp+1
+	sta tmp3+1
+	lda ptr2		; keep y, divide x the same way
+	pha
+	lda ptr2+1
+	pha
+	lda tmp3
+	sta ptr2
+	lda tmp3+1
+	sta ptr2+1
+	jsr Div96
+	sta tmp3
+	pla
+	sta ptr2+1
+	pla
+	sta ptr2
+	lda tmp3
+	clc
+	adc miniX
+	rts
+
+; A = (ptr2 / 32) / 3  (ptr2 < 8192)
+Div96	lda ptr2+1
+	sta tmp3
+	lda ptr2
+	asl @
+	rol tmp3
+	asl @
+	rol tmp3
+	asl @
+	rol tmp3
+	ldx tmp3
+	lda div3,x
+	rts
+
+div3	:128 dta #/3		; (x / 32 and y / 32 stay below 128)
+
+; pixel A of line Y in the status bar = miniCol (mode E)
+Plot	cpy #STATUS_LINES
+	bcs pl_x
+	sta tmp2
+	lda #0			; ptr = statusBuf + Y * 40
+	sta ptr+1
+	tya
+	asl @
+	asl @
+	asl @			; Y * 8 (< 256)
+	sta ptr
+	asl @
+	rol ptr+1
+	asl @
+	rol ptr+1		; Y * 32
+	clc
+	adc ptr
+	sta ptr
+	lda ptr+1
+	adc #0
+	sta ptr+1
+	clc
+	lda ptr
+	adc #<statusBuf
+	sta ptr
+	lda ptr+1
+	adc #>statusBuf
+	sta ptr+1
+	lda tmp2
+	and #3
+	tax
+	lda tmp2
+	lsr @
+	lsr @
+	tay
+	lda pixMask,x
+	eor #$FF
+	and (ptr),y
+	sta tmp2
+	lda pixMask,x
+	and miniCol
+	ora tmp2
+	sta (ptr),y
+pl_x	rts
+
+; booster of the human players in the status bar: "P1 BOOST" top left,
+; "P2 BOOST" top right, under it a bar of 9 segments (full ones in colour
+; 3, which the DLI shades, empty ones grey) and the charge as a number
+
+BoostLabels
+	lda #$FF		; bars: draw at the first BoostShow
+	sta bdLast
+	sta bdLast+1
+	lda optBoost
+	beq bl_x
+	ldx #0
+	jsr BoostLabel
+	lda carHuman+1
+	beq bl_x
+	ldx #1
+BoostLabel
+	lda #$AA		; colour 2 (yellow)
+	sta miniCol
+	lda boostPx,x
+	sta dcPx
+	txa			; text: 8 glyphs from boostText + player * 8
+	asl @
+	asl @
+	asl @
+	sta dcK
+	lda #8
+	sta dcN
+@	ldx dcK
+	lda boostText,x
+	ldy #3			; lines 3-16 (each font row twice)
+	ldx #2
+	jsr DrawChar
+	lda dcPx
+	clc
+	adc #6
+	sta dcPx
+	inc dcK
+	dec dcN
+	bne @-
+bl_x	rts
+
+BoostShow
+	lda optBoost
+	beq bs_x
+	ldx #0
+	jsr BoostOne
+	lda carHuman+1
+	beq bs_x
+	ldx #1
+	jmp BoostOne
+bs_x	rts
+
+; bar and number of player X, when the charge has changed
+BoostOne
+	lda cBoost,x
+	cmp bdLast,x
+	bne @+
+	rts
+@	sta bdLast,x
+	sta bdVal
+	stx bdP
+	lda #<(statusBuf+BAR_LINE*40)
+	sta ptr2
+	lda #>(statusBuf+BAR_LINE*40)
+	sta ptr2+1
+	lda #7			; 7 lines
+	sta dcN
+bo_line	ldx bdP
+	ldy boostByte,x		; 9 segments
+	lda #0
+	sta dcK
+@	lda #$54		; empty: 3 grey pixels
+	ldx dcK
+	cpx bdVal
+	bcs *+4
+	lda #$FC		; full: 3 pixels in colour 3
+	sta (ptr2),y
+	iny
+	inc dcK
+	lda dcK
+	cmp #BOOST_MAX
+	bne @-
+	lda #0			; clear where the number goes
+	iny
+	sta (ptr2),y
+	iny
+	sta (ptr2),y
+	clc
+	lda ptr2
+	adc #40
+	sta ptr2
+	bcc *+4
+	inc ptr2+1
+	dec dcN
+	bne bo_line
+	lda #$AA		; the number
+	sta miniCol
+	ldx bdP
+	lda boostDigit,x
+	sta dcPx
+	lda bdVal
+	ldy #BAR_LINE
+	ldx #1
+	jmp DrawChar
+
+; glyph A of tinyFont at pixel dcPx, line Y; X = lines per font row (1, 2)
+DrawChar
+	sta dcG
+	sty dcLine
+	stx dcScale
+	lda #0
+	sta dcRow
+tc_row	lda dcG			; row bits (bit 4 = left) to the top
+	asl @
+	asl @
+	asl @
+	sec
+	sbc dcG			; x 7
+	clc
+	adc dcRow
+	tax
+	lda tinyFont,x
+	asl @
+	asl @
+	asl @
+	sta dcBits
+	lda #0
+	sta dcCol
+tc_col	asl dcBits
+	bcc tc_nx
+	lda dcScale		; 1 or 2 lines
+	sta dcRep
+	ldy dcLine
+@	lda dcPx
+	clc
+	adc dcCol
+	sty dcY
+	jsr Plot
+	ldy dcY
+	iny
+	dec dcRep
+	bne @-
+tc_nx	inc dcCol
+	lda dcCol
+	cmp #5
+	bne tc_col
+	lda dcLine
+	clc
+	adc dcScale
+	sta dcLine
+	inc dcRow
+	lda dcRow
+	cmp #7
+	bne tc_row
+	rts
+
+;		player 1  player 2
+boostPx	dta 4,       112	; label: first pixel
+boostByte dta 1,     28		; bar: first byte (pixels 4 / 112)
+boostDigit dta 41,   153	; number: first pixel (bytes 10-11 after the bar)
+boostText dta 10,1,15,11,12,12,13,14	; "P1 BOOST"
+	dta 10,2,15,11,12,12,13,14	; "P2 BOOST"
+; 5 x 7 font: 0-9, P, B, O, S, T, space (bit 4 = left column)
+tinyFont dta %01110,%10001,%10011,%10101,%11001,%10001,%01110	; 0
+	dta %00100,%01100,%00100,%00100,%00100,%00100,%01110	; 1
+	dta %01110,%10001,%00001,%00010,%00100,%01000,%11111	; 2
+	dta %11110,%00001,%00001,%01110,%00001,%00001,%11110	; 3
+	dta %00010,%00110,%01010,%10010,%11111,%00010,%00010	; 4
+	dta %11111,%10000,%11110,%00001,%00001,%10001,%01110	; 5
+	dta %00110,%01000,%10000,%11110,%10001,%10001,%01110	; 6
+	dta %11111,%00001,%00010,%00100,%01000,%01000,%01000	; 7
+	dta %01110,%10001,%10001,%01110,%10001,%10001,%01110	; 8
+	dta %01110,%10001,%10001,%01111,%00001,%00010,%01100	; 9
+	dta %11110,%10001,%10001,%11110,%10000,%10000,%10000	; P
+	dta %11110,%10001,%10001,%11110,%10001,%10001,%11110	; B
+	dta %01110,%10001,%10001,%10001,%10001,%10001,%01110	; O
+	dta %01111,%10000,%10000,%01110,%00001,%00001,%11110	; S
+	dta %11111,%00100,%00100,%00100,%00100,%00100,%00100	; T
+	dta 0,0,0,0,0,0,0					; space
+
+; each car's dot: one player byte at line y / 128 (PM line (8 + line) / 2)
+MiniDots
+	lda optMap		; MAP off: no dots
+	bne md_on
+	sta miniHpos
+	sta miniHpos+1
+	sta miniHpos+2
+	rts
+md_on	ldx #NCARS-1
+md_car	stx car
+	lda cDot,x		; clear the old dot
+	beq @+
+	jsr DotPtr
+	lda #0
+	tay
+	sta (ptr),y
+	ldx car
+@	lda #0
+	sta cDot,x
+	sta mdHpos		; stored once at md_next, as in DrawCars
+	lda cFin,x
+	bne md_next
+	lda cPosXL,x
+	sta tmp
+	lda cPosXH,x
+	sta tmp+1
+	lda cPosYL,x
+	sta ptr2
+	lda cPosYH,x
+	sta ptr2+1
+	jsr MiniXY
+	ldx car
+	clc
+	adc #$30		; one colour clock per pixel
+	sta mdHpos
+	tya
+	clc
+	adc #8
+	lsr @
+	sta cDot,x
+	jsr DotPtr
+	lda #$C0
+	ldy #0
+	sta (ptr),y
+md_next	ldx car
+	lda mdHpos
+	sta miniHpos,x
+	dex
+	bpl md_car
+	rts
+
+; ptr = player X memory at line cDot
+DotPtr	lda cDot,x
+	sta tmp
+	txa
+	lsr @
+	ror @
+	and #$80
+	ora tmp
+	sta ptr
+	txa
+	lsr @
+	clc
+	adc #>PL0
+	sta ptr+1
+	rts
+
+; ----------------------------------------------------------------------
 ; Display: two display lists with the SpeedMaza status line, 23 lines of
 ; mode 8 with LMS (+HSCROL+VSCROL) into the map ring, 2 text lines
 
@@ -1711,10 +2580,10 @@ bd_one	ldy #0
 	lda #0
 	sta (ptr),y
 	ldy #1
-	lda #<TITLE
+	lda #<statusBuf
 	sta (ptr),y
 	iny
-	lda #>TITLE
+	lda #>statusBuf
 	sta (ptr),y
 	ldy #32
 	ldx #TRACK_LINES-1
@@ -2036,8 +2905,8 @@ dc_new	ldx car
 	jsr ShownPos
 	lda #$FF
 	sta cRow,x
-	lda #0
-	sta HPOSP0,x
+	lda #0			; horizontal position: stored once at dc_next
+	sta dcHpos		; (DliGame copies carHpos at any moment)
 	lda cFin,x
 	bne dc_next
 	jsr ScreenPos		; tmp = x - camX, tmp2 = y - camY (16 bit)
@@ -2047,7 +2916,7 @@ dc_new	ldx car
 	lda tmp			; hpos = x - camX + $2F - 4
 	clc
 	adc #$2B
-	sta HPOSP0,x
+	sta dcHpos
 	lda tmp2		; top PM line = (y - camY + 38) / 2 - 5
 	clc
 	adc #38
@@ -2099,6 +2968,8 @@ dc_col	sta PCOLR0,x
 dc_skip	dey
 	bpl @-
 dc_next	ldx car
+	lda dcHpos
+	sta carHpos,x
 	dex
 	jpl dc_car
 	rts
@@ -2260,11 +3131,33 @@ BaseSpeed
 
 ; steering and throttle: joystick for people, AutoSteer for the computer
 Control	ldx car
-	.if AUTOPILOT
-	jmp AutoSteer
-	.endif
+	lda cSpin,x		; spinning on oil: no control
+	beq ct_drive
+	lda #0
+	sta cBoostOn,x
+	lda heading
+	clc
+	adc cSpinD,x
+	sta heading
+	dec cSpin,x
+	bne @+
+	lda RANDOM		; out of the spin: a little off the old direction
+	and #31
+	sec
+	sbc #16
+	clc
+	adc heading
+	sta heading
+@	rts
+ct_drive
 	lda carHuman,x
 	beq ct_ai
+	.if AUTOPILOT = 2	; test: the human car never steers (hits walls)
+	rts
+	.elseif AUTOPILOT	; test: the human car drives itself
+	jmp AutoSteer
+	.endif
+	jsr HumanBoost
 	cpx #0			; car 0 = joystick 1, car 1 = joystick 2
 	beq @+
 	lda STICK0+1
@@ -2317,7 +3210,121 @@ ct_zero	lda cThr,x
 	sta cThr,x
 ct_x	rts
 ct_ai	jsr AiThrottle
+	jsr AiBoost
 	jmp AutoSteer
+
+; booster of a human car: on while fire is held and there is charge
+HumanBoost
+	lda #0
+	ldy optBoost
+	beq hb_set
+	ldy cBoost,x
+	beq hb_set
+	lda STRIG0,x		; car 0: trigger 1, car 1: trigger 2
+	eor #1			; pressed = 1
+hb_set	cmp cBoostOn,x
+	beq @+
+	sta cBoostOn,x
+	cmp #1
+	bne @+
+	lda #SFX_BOOST		; starting to boost
+	jsr SfxStart
+	ldx car
+@	rts
+
+; booster of a computer car: switched on once there is enough charge and
+; the road ahead is straight enough (the harder, the sooner and the more
+; bent), off again at a sharper bend. Behind a human and off the screen it
+; boosts to catch up: with its charge, or free when there is none
+; (cBoostOn = 2)
+AiBoost	ldx car
+	lda optBoost
+	beq ab_off
+	jsr ScreenPos		; behind a human and off the screen: catch up,
+	bcs @+			; and keep going CATCH_ON frames after it is
+	lda cCatch,x		; back on the screen
+	beq ab_norm
+	dec cCatch,x
+	jmp ab_cmp
+@	lda #CATCH_ON
+	sta cCatch,x
+ab_cmp	jsr BestHuman		; tmp = best human progress (C = 0: none)
+	bcc ab_norm1
+	ldx car
+	jsr Progress		; ptr2 = this car's progress
+	lda ptr2
+	cmp tmp
+	lda ptr2+1
+	sbc tmp+1
+	bcs ab_ahead		; not behind
+	ldx car
+	lda #1			; own charge first ...
+	ldy cBoost,x
+	bne @+
+	lda #2			; ... else a free boost (does not drain)
+@	sta cBoostOn,x
+	rts
+ab_ahead
+	ldx car
+	lda #0
+	sta cCatch,x
+	beq ab_norm
+ab_norm1
+	ldx car
+ab_norm	lda cBoostOn,x		; a free boost ends here
+	cmp #2
+	bne @+
+	lda #0
+	sta cBoostOn,x
+@	ldy cIdx,x		; too sharp a bend ahead (how sharp is too
+	lda cpCurve,y		; sharp depends on the difficulty)
+	ldy optDiff
+	cmp aiBoostBend,y
+	bcs ab_off
+	lda cBoostOn,x
+	bne ab_x		; keep going while charge lasts
+	ldy optDiff
+	lda cBoost,x
+	cmp aiBoostMin,y
+	bcc ab_x
+	lda #1
+	sta cBoostOn,x
+ab_x	rts
+ab_off	lda #0
+	sta cBoostOn,x
+	rts
+
+aiBoostMin dta 9,6,2	; easy, normal, hard: charge before a computer car boosts
+aiBoostBend dta 20,28,34	; ... and bends it still boosts through (S-bends: ~24-32)
+
+; charge / use the booster of the current car, once a frame
+BoostTick
+	ldx car
+	lda optBoost
+	beq bt_x
+	inc cBoostT,x
+	lda cBoostOn,x
+	cmp #1			; only a normal boost uses the charge
+	bne bt_fill
+	lda cBoostT,x
+	cmp #BOOST_USE
+	bcc bt_x
+	lda #0
+	sta cBoostT,x
+	dec cBoost,x
+	bne bt_x
+	sta cBoostOn,x		; empty
+bt_x	rts
+bt_fill	lda cBoostT,x
+	cmp #BOOST_FILL
+	bcc bt_x
+	lda #0
+	sta cBoostT,x
+	lda cBoost,x
+	cmp #BOOST_MAX
+	bcs bt_x
+	inc cBoost,x
+	rts
 
 ; computer throttle = level + car - braking before bends + catching up
 ; (rubber band: faster when behind the best human, slower when ahead),
@@ -2494,7 +3501,36 @@ ph_stun	ldx car
 	dec cStun,x
 	lsr speed+2
 	ror speed+1
-@	ldx heading		; target x = speed * cos / 128
+@	lda cBoostOn,x		; booster: speed + 50 % (catching up: + 75 %)
+	beq ph_nb
+	lda speed+2		; tmp = speed / 2
+	lsr @
+	sta tmp+1
+	lda speed+1
+	ror @
+	sta tmp
+	lda cBoostOn,x
+	cmp #2
+	bne @+
+	lda tmp+1		; + speed / 4
+	lsr @
+	sta tmp2+1
+	lda tmp
+	ror @
+	clc
+	adc tmp
+	sta tmp
+	lda tmp2+1
+	adc tmp+1
+	sta tmp+1
+@	clc
+	lda tmp
+	adc speed+1
+	sta speed+1
+	lda tmp+1
+	adc speed+2
+	sta speed+2
+ph_nb	ldx heading		; target x = speed * cos / 128
 	lda cosTab,x
 	jsr MulSpeed
 	lda prod
@@ -3074,14 +4110,10 @@ rp_next	ldx car
 ; bounce, slow down, -25 points. Two cars: they swap speeds and are pushed
 ; apart.
 Collisions
-	ldx #NCARS-1
-@	lda P0PF,x
-	sta hitPF,x
-	lda P0PL,x
-	sta hitPL,x
-	dex
-	bpl @-
-	sta HITCLR
+@	lda hitNew		; wait for DliGame to save this frame's registers
+	beq @-
+	lda #0
+	sta hitNew
 	lda started
 	bne @+
 	rts
@@ -3096,10 +4128,19 @@ co_wall	lda cFin,x
 	beq co_wl
 	lda cOil,x
 	bne @+
-	lda #SFX_OIL
+	lda #SFX_OIL		; new oil: spin round once
 	stx car
 	jsr SfxStart
 	ldx car
+	lda #SPIN_TIME
+	sta cSpin,x
+	sta cStun,x		; half speed while spinning
+	lda RANDOM
+	and #16
+	eor #8			; +8 or -8 ($F8) a frame
+	bne *+4
+	lda #<-8
+	sta cSpinD,x
 @	lda #OIL_TIME
 	sta cOil,x
 co_wl	lda cVisPrev,x		; not on screen then: DriveOff checks walls
@@ -3735,6 +4776,18 @@ cf_0	lda #$14
 	sta dliColPF2
 	rts
 
+; ---- tables (loaded with the program)
+	icl 'gen/tables.asm'
+	icl 'gen/speedmaza_data.asm'
+tracksHigh			; packed tracks that did not fit at LOW_AREA
+	ins 'data/tracks_high.bin'
+TablesEnd
+; status bar picture: 29 x 40 bytes, mode E, one LMS: must not cross 4K
+statusBuf .ds 5*256		; (cleared in whole pages)
+	.if (statusBuf^(statusBuf+29*40-1))&$F000
+	.error "status bar crosses a 4K boundary"
+	.endif
+
 ; ---- variables (cleared at start)
 TIME	= 0
 BEST	= 5
@@ -3762,11 +4815,51 @@ hitPF	.ds NCARS
 hitPL	.ds NCARS
 carHuman .ds NCARS
 optSel	.ds 1
+optPage	.ds 1			; 0 main, 1 more options
+dmLine	.ds 1
+dmItem	.ds 1
 colL	.ds 1
 colV	.ds 1
 raceNo	.ds 1
 track	.ds 1
-tmp3	.ds 1
+tmp3	.ds 2
+dcHpos	.ds 1			; DrawCars / MiniDots: position being worked out
+mdHpos	.ds 1
+csStep	.ds 1			; 3-2-1-START screens
+csN	.ds 1
+csT	.ds 1
+dbGlyph	.ds 1			; DrawBig
+dbCount	.ds 1
+dbWide	.ds 1
+dbX	.ds 1
+dbRow	.ds 1
+dbBits	.ds 1
+dbCol	.ds 1
+dbPos	.ds 1
+dbColN	.ds 1
+dbLine	.ds 1
+dbN	.ds 1
+hitNew	.ds 1			; DliGame saved new collision registers
+miniX	.ds 1			; minimap offsets of the track
+miniY	.ds 1
+miniCol	.ds 1
+miniK	.ds 1
+miniN	.ds 1
+hiIdx	.ds 1			; start of the yellow stretch ($FF = none)
+bdLast	.ds 2			; booster charge last drawn, per player
+bdP	.ds 1
+bdVal	.ds 1			; charge being drawn
+dcPx	.ds 1			; DrawChar / labels
+dcG	.ds 1
+dcLine	.ds 1
+dcScale	.ds 1
+dcRow	.ds 1
+dcBits	.ds 1
+dcCol	.ds 1
+dcRep	.ds 1
+dcY	.ds 1
+dcK	.ds 1
+dcN	.ds 1
 fxTick	.ds 2
 ctHuman	.ds 1
 cdStep	.ds 1
@@ -3821,6 +4914,12 @@ cStun	.ds NCARS
 cInv	.ds NCARS
 cFlash	.ds NCARS
 cOil	.ds NCARS		; frames left sliding on oil
+cSpin	.ds NCARS		; frames left spinning
+cSpinD	.ds NCARS		; ... heading change a frame
+cBoost	.ds NCARS		; booster charge 0..9
+cBoostT	.ds NCARS		; frames towards the next charge step
+cBoostOn .ds NCARS		; boosting (2: free, catching up)
+cCatch	.ds NCARS		; frames of catching up left once on the screen
 cScLo	.ds NCARS		; points of this race, BCD
 cScHi	.ds NCARS
 cSafeXL	.ds NCARS		; last place without a wall hit
@@ -3828,6 +4927,9 @@ cSafeXH	.ds NCARS
 cSafeYL	.ds NCARS
 cSafeYH	.ds NCARS
 cRow	.ds NCARS		; PM line of the car picture ($FF = none)
+cDot	.ds NCARS		; PM line of the minimap dot (0 = none)
+carHpos	.ds NCARS		; horizontal positions: on the track ...
+miniHpos .ds NCARS		; ... and on the minimap (set by DliGame)
 cVis	.ds NCARS		; drawn in this frame
 cVisPrev .ds NCARS		; drawn in the frame before
 cHist	.ds NCARS
@@ -3842,33 +4944,32 @@ cPrXL	.ds NCARS
 cPrXH	.ds NCARS
 cPrYL	.ds NCARS
 cPrYH	.ds NCARS
-hX	.ds NCARS*16
-hY	.ds NCARS*16
-hHead	.ds NCARS*16
-slotRow	.ds RING_ROWS*2
-	.align $400		; screen text: ANTIC lines must not cross 4K
-TextBufs
-textLine .ds 40
-menuText .ds (OPTS+1)*20
-textHi	.ds 40
-textRes	.ds 80
-TextEnd
-	.if (TextBufs^(TextEnd-1))&$F000
-	.error "text buffers cross a 4K boundary"
-	.endif
+VarsEnd2
 dliColPF0 = $03E8		; same shadows as SpeedMaza
 dliColPF1 = $03E9
 dliColPF2 = $03EA
 dliColBK  = $03EB
 
 ; ======================================================================
-	icl 'gen/tables.asm'
-	icl 'gen/speedmaza_data.asm'
-tracksHigh			; packed tracks that did not fit at LOW_AREA
-	ins 'data/tracks_high.bin'
-TablesEnd
-	.if TablesEnd > $BC00
+	.if VarsEnd2 > $BC00
 	.error "program too big"
+	.endif
+
+; ---- buffers in the OS text screen memory ($BC00-$BFFF, unused once the
+; game runs; nothing is loaded here)
+	org $BC00
+TextBufs
+textLine .ds 40
+menuText .ds MENU_LINES*20
+textHi	.ds 40
+textRes	.ds 80
+TextEnd
+hX	.ds NCARS*16
+hY	.ds NCARS*16
+hHead	.ds NCARS*16
+slotRow	.ds RING_ROWS*2
+	.if * > $C000
+	.error "buffers above $C000"
 	.endif
 
 	org $48DF

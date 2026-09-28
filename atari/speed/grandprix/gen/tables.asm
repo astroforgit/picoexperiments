@@ -35,6 +35,11 @@ tdCamYHi
 	dta $0A,$0A,$09,$09
 tdBytes
 	dta $9C,$71,$69,$71
+; minimap: pixel = x / 32 / 3 + tdMiniX, line = y / 32 / 3 + tdMiniY
+tdMiniX
+	dta $41,$45,$46,$45
+tdMiniY
+	dta $00,$FF,$01,$01
 tdCp
 	dta $83,$78,$71,$76
 ; starting grid per track (index track*3+car)
