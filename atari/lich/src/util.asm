@@ -204,15 +204,31 @@ abs8    cmp #$80
 ab_d    and #$7f
         rts
 
-; squares 0..127
-sq_lo
-        .rept 128
-        dta <(#*#)
-        .endr
-sq_hi
-        .rept 128
-        dta >(#*#)
-        .endr
+; squares 0..127 (sq_lo/sq_hi in RAM, see make_squares)
+make_squares
+        lda #0
+        sta m_r
+        sta m_r+1
+        tax
+msq_l   lda m_r
+        sta sq_lo,x
+        lda m_r+1
+        sta sq_hi,x
+        ; (x+1)^2 = x^2 + 2x + 1
+        txa
+        asl
+        php
+        sec
+        adc m_r
+        sta m_r
+        lda m_r+1
+        adc #0
+        plp
+        adc #0
+        sta m_r+1
+        inx
+        bpl msq_l
+        rts
 
 ; m_r = distance^2 between (A, X) and (Y, tmp): tile coordinates
 dist2_pts

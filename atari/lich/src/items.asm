@@ -47,10 +47,10 @@ mi_a    ldx #NEWIT
         lda #1
         sta it_idf,x
         lda pl_depth
-        cmp #3
+        cmp #P_IDENT_UPTO+1
         bcc mi_id1
-        lda #$33
-        ldx #$33
+        lda #>P_IDENT_CHANCE
+        ldx #<P_IDENT_CHANCE
         jsr chance
         lda #0
         rol
@@ -59,22 +59,22 @@ mi_a    ldx #NEWIT
 mi_id1  ; trait
         lda mi_tr
         bne mi_tr1
-        lda #$19            ; chance 0.1
-        ldx #$9a
+        lda #>P_BLESS_CHANCE
+        ldx #<P_BLESS_CHANCE
         jsr chance
         bcc mi_c1
         lda pl_depth
-        cmp #4
+        cmp #P_BLESS_FROM
         bcc mi_c1
         lda #3
         sta mi_tr
         jmp mi_tr1
-mi_c1   lda #$66            ; chance 0.4
-        ldx #$66
+mi_c1   lda #>P_CURSE_CHANCE
+        ldx #<P_CURSE_CHANCE
         jsr chance
         bcc mi_tr1
         lda pl_depth
-        cmp #2
+        cmp #P_CURSE_FROM
         bcc mi_tr1
         lda #2
         sta mi_tr
@@ -89,18 +89,18 @@ mi_cu   cmp #2
         jsr curse_item
 mi_en   ; enchanted weapons below floor 3
         lda pl_depth
-        cmp #4
+        cmp #P_ENCHANT_FROM
         bcc mi_r
         lda it_type+NEWIT
         cmp #1
         bne mi_r
-        lda #$19            ; 0.1
-        ldx #$9a
+        lda #>P_ENCHANT_OTHER
+        ldx #<P_ENCHANT_OTHER
         ldy mi_tr
         cpy #2
         bne mi_e1
-        lda #$4c            ; 0.3
-        ldx #$cd
+        lda #>P_ENCHANT_CURSED
+        ldx #<P_ENCHANT_CURSED
 mi_e1   jsr chance
         bcc mi_r
         ldx #NEWIT
@@ -632,6 +632,8 @@ os_turn dta 0
 ; get_depth_item(list at (sp), count A) -> A = item id, 0 = none
 get_depth_item
         sta gd_n
+        cmp #0
+        beq gdi_none
         ldx #0
         ldy #0
 gdi_l   lda (sp),y
@@ -659,10 +661,7 @@ gdi_none
         rts
 gd_n    dta 0
 gd_y    dta 0
-gd_pool :8 dta 0
-list_weapons dta 8,9,10,11,12,13,14,15
-list_drinks  dta 6,7
-list_food    dta 1,2,3,4,5
+gd_pool :32 dta 0
 
 ; interact(hero, a0 = tx, a1 = ty): C=1 when the turn is spent
 interact
@@ -829,8 +828,7 @@ in_w3   ; "^<name> is no longer cursed!"
         lda #10
         sta sleep
         ldx in_e
-        lda #21
-        sta e_fbase,x
+        dec e_fbase,x       ; the used well
         lda e_fl,x
         ora #F_USED
         sta e_fl,x
@@ -917,7 +915,7 @@ in_chest
         lda #49
         sta in_snd
         mwa #list_weapons sp
-        lda #8
+        lda #list_weapons_n
         jsr get_depth_item
         jmp in_got
 in_shelf
@@ -927,7 +925,7 @@ in_shelf
         and #F_ITEM
         beq in_got
         mwa #list_drinks sp
-        lda #2
+        lda #list_drinks_n
         jsr get_depth_item
         jmp in_got
 in_pot  ldy #50
@@ -939,19 +937,19 @@ in_p1   sty in_snd
         and #F_ITEM
         beq in_p2
         mwa #list_food sp
-        lda #5
+        lda #list_food_n
         jsr get_depth_item
         jmp in_got
-in_p2   lda #$19            ; chance 0.1: a rat jumps out
-        ldx #$9a
+in_p2   lda #>P_POT_MOB_CHANCE  ; a monster jumps out
+        ldx #<P_POT_MOB_CHANCE
         jsr chance
         bcc in_p3
-        lda #$b3            ; chance 0.7: rat, else toxic rat
-        ldx #$33
+        lda #>P_POT_MOB_A_CHANCE
+        ldx #<P_POT_MOB_A_CHANCE
         jsr chance
-        lda #ID_RAT
+        lda #P_POT_MOB_A
         bcs in_p4
-        lda #ID_TOXIC
+        lda #P_POT_MOB_B
 in_p4   jsr make_mob
         bcs in_p3
         jsr addhash

@@ -255,6 +255,7 @@ level_init
         sta pl_lvl
         lda #0
         sta pl_win
+        sta pl_blind
         sta inv_n
         sta sleep
         sta pl_xp
@@ -266,16 +267,19 @@ li_inv  sta it_on,x
         lda #$ff
         sta pl_wpn
         mwa #s_none hit_name
-        lda #8              ; a stick
+        ; starting items (a stick and an apple)
+        ldy #0
+li_si   lda start_items,y
+        beq li_sd
+        sty li_y
         ldx #0
         jsr make_item
         lda #1
         jsr give_item
-        lda #1              ; an apple
-        ldx #0
-        jsr make_item
-        lda #1
-        jsr give_item
+        ldy li_y
+        iny
+        bne li_si
+li_sd
         ; hud = add_window(0,115,{" "},128)
         lda #0
         ldx #115
@@ -305,22 +309,8 @@ li_inv  sta it_on,x
         jsr add_modal
 li_r    rts
 
-make_new_level
-        lda #0
-        sta phase
-        sta floater_delay
-        jsr free_entities
-        jsr occ_clear
-        ldx #MAXPART-1
-        lda #0
-mnl_p   sta pa_life,x
-        dex
-        bpl mnl_p
-        ldx #MAXFLT-1
-mnl_f   sta fl_on,x
-        dex
-        bpl mnl_f
-        ; fog = 2 everywhere
+; fog = 2 everywhere
+fog_reset
         lda #2
         ldx #0
 mnl_fog sta FOG,x
@@ -341,11 +331,35 @@ mnl_fog sta FOG,x
         sta FOG+$f00,x
         inx
         bne mnl_fog
-        lda pl_depth
-        asl
-        clc
-        adc #2
-        sta num_rooms
+        rts
+
+make_new_level
+        lda #0
+        sta phase
+        sta floater_delay
+        jsr free_entities
+        jsr occ_clear
+        ldx #MAXPART-1
+        lda #0
+mnl_p   sta pa_life,x
+        dex
+        bpl mnl_p
+        ldx #MAXFLT-1
+mnl_f   sta fl_on,x
+        dex
+        bpl mnl_f
+        jsr fog_reset
+        ; rooms = base + per_floor * depth
+        lda #P_ROOMS_BASE
+        ldx pl_depth
+mnl_r1  clc
+        adc #P_ROOMS_PER_FLOOR
+        dex
+        bne mnl_r1
+        cmp #MAXROOM-6
+        bcc mnl_r2
+        lda #MAXROOM-6
+mnl_r2  sta num_rooms
         jsr clear_map
         jsr generate_level
         ldx pl
@@ -704,6 +718,7 @@ wg_l    stx wg_n
         lda #2
         jmp add_modal
 wg_n    dta 0
+li_y    dta 0
 
 ; ---------------------------------------------------------- level draw
 level_draw
@@ -908,8 +923,30 @@ draw_entity
         jsr fog_get
         cmp #2
         jeq de_r
+        sta de_fog
         ldx de_e
-        ; palette: dark in fog, flash when hit
+        ; invisible monsters show only next to the hero
+        ldy e_id,x
+        lda m_abil3,y
+        and #AB3_INVIS
+        beq de_vis
+        ldy pl
+        lda e_tx,x
+        sec
+        sbc e_tx,y
+        clc
+        adc #1
+        cmp #3
+        jcs de_r
+        lda e_ty,x
+        sec
+        sbc e_ty,y
+        clc
+        adc #1
+        cmp #3
+        jcs de_r
+de_vis  ; palette: dark in fog, flash when hit
+        lda de_fog
         ldy #0
         cmp #1
         bne de_1
@@ -949,16 +986,20 @@ de_3    ; frame sprite
         cmp #8
         bcc de_f8
         clc
-        adc #232-7
+        adc #P_DEATH_SPRITE-7
         jmp de_fs
-de_f8   lda #232
+de_f8   lda #P_DEATH_SPRITE
         jmp de_fs
-de_fl   lda #252
+de_fl   lda #P_BOSS_DEAD_SPRITE
         jmp de_fs
-de_fn   lda e_fbase,x
+de_fn   lda e_pg,x
+        sta spr_page
+        lda e_fbase,x
         clc
         adc e_frame,x
 de_fs   jsr spr_draw
+        lda #0
+        sta spr_page
         ldx de_e
         lda e_hp,x
         jeq de_r
@@ -1020,6 +1061,7 @@ de_i2   clc
 de_r    ldx de_e
         rts
 de_e    dta 0
+de_fog  dta 0
 de_x    dta a(0)
 de_y    dta a(0)
 

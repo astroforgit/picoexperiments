@@ -15,8 +15,6 @@ RT_SHRINE = 7
 RT_SMITHY = 8
 RT_POOL = 9
 
-floor_weights dta 0,0,0,1,2,2,3,3,3
-room_dirs dta 1,2,2,2,3,4
 ; dirx/diry for directions 1..8 (index 0 unused)
 dirx    dta 0,-1,1,0,0,-1,1,1,-1
 diry    dta 0,0,0,-1,1,1,-1,1,-1
@@ -28,11 +26,9 @@ generate_level
         sta dropped
         sta removed
         sta mobs_placed
-        ; mobs_to_place = xp_req(depth+1) - xp_req(depth)
+        ; mobs_to_place = the floor's monster budget
         ldx pl_depth
-        lda xpreq_lo+1,x
-        sec
-        sbc xpreq_lo,x
+        lda fl_budget,x
         sta mobs_to_place
         ; mobs_per_room = flr(0.5 + to_place/size) - 1 = (2a+b) div 2b - 1
         lda mobs_to_place
@@ -71,16 +67,23 @@ gl_clr  sta TMAP,y
         sta TMAP+$f00,y
         iny
         bne gl_clr
-        ; entry room
-        lda #3
+        ; a hand-made floor replaces the generator
+        ldx pl_depth
+        lda floor_plan,x
+        cmp #$ff
+        beq gl_gen
+        jsr load_floor
+        jmp gl_post
+gl_gen  ; entry room
+        lda #P_ENTRY_RND
         jsr intrnd
         clc
-        adc #5
+        adc #P_ENTRY_MIN
         sta u0
-        lda #3
+        lda #P_ENTRY_RND
         jsr intrnd
         clc
-        adc #5
+        adc #P_ENTRY_MIN
         sta u1
         lda #RT_ENTRY
         jsr make_room
@@ -96,8 +99,8 @@ gl_clr  sta TMAP,y
 gl_more lda lp
         cmp num_rooms
         bcs gl_rd
-        lda #$19            ; chance 0.1
-        ldx #$9a
+        lda #>P_STORAGE_CHANCE
+        ldx #<P_STORAGE_CHANCE
         jsr chance
         lda #RT_NA
         bcc gl_na
@@ -108,12 +111,12 @@ gl_na   jsr make_room
 gl_rd   ; room pool
         lda #RT_EXIT
         ldx pl_depth
-        cpx #8
+        cpx #P_LAST_FLOOR
         bcc gl_ex
         lda #RT_BOSS
 gl_ex   jsr pool_add
-        lda pl_depth
-        lsr
+        ldx pl_depth
+        lda fl_treasure,x
         sta lp
 gl_tr   lda lp
         beq gl_tr_d
@@ -122,15 +125,18 @@ gl_tr   lda lp
         dec lp
         jmp gl_tr
 gl_tr_d lda pl_depth
-        cmp #3
+        cmp #P_SHRINE_FROM
         bcc gl_sh
         lda #RT_SHRINE
         jsr pool_add
 gl_sh   lda pl_depth
-        cmp #4
-        bcc gl_place
+        cmp #P_SMITHY_FROM
+        bcc gl_sm
         lda #RT_SMITHY
         jsr pool_add
+gl_sm   lda pl_depth
+        cmp #P_POOL_FROM
+        bcc gl_place
         lda #RT_POOL
         jsr pool_add
         ; place rooms until both lists are empty
@@ -162,13 +168,13 @@ gl_iter lda lp
         ; rnd_elem({1,2,2,2,3,4})
         jsr rnd16
         ldy #1
-        cmp #43
+        cmp #P_MOVE_T1
         bcc gl_dir
         iny
-        cmp #171
+        cmp #P_MOVE_T2
         bcc gl_dir
         iny
-        cmp #213
+        cmp #P_MOVE_T3
         bcc gl_dir
         iny
 gl_dir
@@ -201,11 +207,10 @@ gl_mob1 lda mobs_to_place
         jmp gl_mob1
 gl_mob1d
         ; mimics: mobs_to_place = mobs_placed + depth - 3
+        ldx pl_depth
         lda mobs_placed
         clc
-        adc pl_depth
-        sec
-        sbc #3
+        adc fl_mimic,x
         sta mobs_to_place
 gl_mob2 lda mobs_to_place
         cmp mobs_placed
@@ -215,12 +220,14 @@ gl_mob2 lda mobs_to_place
         tay
         lda #32
         jsr intrnd
-        tax
-        lda #212
+        sta tmp+7
+        ldx #P_MIMIC_ID
+        lda m_code,x
+        ldx tmp+7
         jsr place_mob
         jmp gl_mob2
 gl_mob2d
-        jsr auto_tile
+gl_post jsr auto_tile
         jsr make_entities
         jmp wall_fix
 
@@ -264,21 +271,21 @@ make_room
         lda #12
         sta rm_x,x
         sta rm_y,x
-        lda #7
+        lda #P_ROOM_W_RND
         jsr intrnd
         clc
-        adc #5
+        adc #P_ROOM_W_MIN
         sta rm_w,x
-        lda #5
+        lda #P_ROOM_H_RND
         jsr intrnd
         clc
-        adc #5
+        adc #P_ROOM_H_MIN
         sta rm_h,x
         lda #0
         sta rm_oob,x
         lda tmp+7
         sta rm_typ,x
-        lda #9
+        lda #P_NFLOORW
         jsr intrnd
         tay
         lda floor_weights,y
@@ -286,9 +293,9 @@ make_room
         lda tmp+7
         cmp #RT_BOSS
         bne mr_1
-        lda #11
+        lda #P_BOSS_W
         sta rm_w,x
-        lda #8
+        lda #P_BOSS_H
         sta rm_h,x
 mr_1    inc n_rooms
         rts
@@ -344,11 +351,11 @@ pm_l    lda m_prop,y
         cmp pl_depth
         beq pm_a
         bcs pm_n
-pm_a    lda m_anim,y
+pm_a    lda m_code,y
         sta pm_list,x
         inx
 pm_n    iny
-        cpy #26
+        cpy #NENT+1
         bne pm_l
         lda pm_id
         bne pm_go
@@ -367,7 +374,7 @@ pm_d    rts
 pm_id   dta 0
 pm_x    dta 0
 pm_y    dta 0
-pm_list :24 dta 0
+pm_list :40 dta 0
 
 ; x, y = get_rnd_pos(room u7) -> Y, X
 get_rnd_pos
@@ -534,8 +541,8 @@ pr_set  ldy u4
         cmp u5
         bne pr_dy
         ; decorations: chance 0.4 -> rnd(w/2) pots/boxes
-        lda #$66
-        ldx #$66
+        lda #>P_DECO_CHANCE
+        ldx #<P_DECO_CHANCE
         jsr chance
         bcc pr_nodec
         lda u2
@@ -547,16 +554,14 @@ pr_dec  lda lp2
         jsr get_rnd_pos
         sty tmp+5
         stx tmp+6
-        lda #2
-        jsr intrnd
-        asl
-        adc #27
+        jsr pot_code
         sta tmp+4
-        lda #$19            ; chance 0.1
-        ldx #$9a
+        lda #>P_BODY_CHANCE
+        ldx #<P_BODY_CHANCE
         jsr chance
         bcc pr_d1
-        lda #11
+        ldx #21             ; body
+        lda m_code,x
         sta tmp+4
 pr_d1   ldy tmp+5
         ldx tmp+6
@@ -567,10 +572,10 @@ pr_d1   ldy tmp+5
 pr_nodec
         ; spikes from depth 3: chance 0.2 -> 1+rnd(w/2)
         lda pl_depth
-        cmp #3
+        cmp #P_SPIKES_FROM
         bcc pr_nosp
-        lda #$33
-        ldx #$33
+        lda #>P_SPIKES_CHANCE
+        ldx #<P_SPIKES_CHANCE
         jsr chance
         bcc pr_nosp
         lda u2
@@ -580,7 +585,7 @@ pr_nodec
         adc #1
         sta lp2
 pr_sp   jsr get_rnd_pos
-        lda #47
+        lda m_code+13       ; spikes
         jsr mset_flr
         dec lp2
         bne pr_sp
@@ -600,7 +605,7 @@ pr_nosp
         lda rm_typ,x
         cmp #RT_ENTRY
         bne pr_t1
-        lda #17
+        lda #P_TILE_START
         jsr rset
         ldy rcx
         dey
@@ -631,37 +636,37 @@ pr_t1   cmp #RT_BOSS
         tax
         lda #0
         jsr place_piece
-        lda #248
+        lda m_code+P_BOSS_ID
         jsr rset
         jmp pr_mobs
 pr_t2   cmp #RT_EXIT
         bne pr_t3
-        lda #16
+        lda #P_TILE_EXIT
         jsr rset
         jmp pr_mobs
 pr_t3   cmp #RT_POOL
         bne pr_t4
-        lda #22
+        lda m_code+25       ; well
         jsr rset
         jmp pr_mobs
 pr_t4   cmp #RT_SMITHY
         bne pr_t5
-        lda #24
+        lda m_code+20       ; anvil
         jsr rset
         ldy rcx
         dey
         ldx rcy
-        lda #23
+        lda #P_TILE_ANVIL_DECO
         jsr mset
         jmp pr_mobs
 pr_t5   cmp #RT_SHRINE
         bne pr_t6
-        lda #25
+        lda m_code+9        ; altar
         jsr rset
         ldy rcx
         iny
         ldx rcy
-        lda #71
+        lda #P_TILE_ALTAR_DECO
         jsr mset
         jmp pr_mobs
 pr_t6   cmp #RT_STORAGE
@@ -674,10 +679,7 @@ pr_st1  lda lp2
         jsr get_rnd_pos
         sty tmp+5
         stx tmp+6
-        lda #2
-        jsr intrnd
-        asl
-        adc #27
+        jsr pot_code
         ldy tmp+5
         ldx tmp+6
         jsr mset
@@ -690,17 +692,18 @@ pr_st3  lda u2
         sbc #2
         cmp lp2
         jcc pr_mobs
-        lda #$80
-        ldx #0
+        lda #>P_SHELF_CHANCE
+        ldx #<P_SHELF_CHANCE
         jsr chance
         bcc pr_st4
         lda u0
         clc
         adc lp2
         tay
+        ldx #6              ; shelves
+        lda m_code,x
         ldx u1
         inx
-        lda #15
         jsr mset
 pr_st4  inc lp2
         jmp pr_st3
@@ -712,11 +715,11 @@ pr_t7   cmp #RT_TREASURE
         adc #1
         sta lp2
 pr_tr   jsr get_rnd_pos
-        lda #47
+        lda m_code+13       ; spikes
         jsr mset
         dec lp2
         bne pr_tr
-        lda #13
+        lda m_code+5        ; chest
         jsr rset
         jmp pr_mobs
 pr_t8   ; ordinary room: furniture pieces when at least 6x6
@@ -741,17 +744,19 @@ pr_am_d stx lp2             ; amnt
 pr_pc   lda tmp+3
         cmp lp2
         bcs pr_mobs
-        ; piece 2*depth-2+intrnd(14) at rx+1+intrnd(2)+ix*4, ry+2+intrnd(h-7)
-        lda #14
+        ; piece step*(depth-1)+intrnd(n) at rx+1+intrnd(2)+ix*4, ry+2+intrnd(h-7)
+        lda #P_PIECE_RND
         jsr intrnd
-        sta tmp+4
-        lda pl_depth
-        asl
-        sec
-        sbc #2
+        ldx pl_depth
+pr_ps   dex
+        beq pr_ps2
         clc
-        adc tmp+4
-        sta tmp+4
+        adc #P_PIECE_STEP
+        jmp pr_ps
+pr_ps2  cmp #P_NPIECES
+        bcc pr_ps3
+        lda #P_NPIECES-1
+pr_ps3  sta tmp+4
         lda #2
         jsr intrnd
         sta tmp+5
@@ -897,6 +902,17 @@ pr_ux   ldx lp2
 pr_done sec
         rts
 
+; A = map code of a pot: the two pot kinds alternate (rnd)
+pot_code
+        lda #2
+        jsr intrnd
+        tax
+        lda m_code+18
+        cpx #0
+        beq pc_r
+        lda m_code+4
+pc_r    rts
+
 ; rset(A): mset(rcx, rcy, A)
 rset    ldy rcx
         ldx rcy
@@ -905,8 +921,8 @@ rset    ldy rcx
 ; get_floor(A = offset): 20% plain floor, else offset+0..2
 get_floor
         sta tmp+6
-        lda #$33
-        ldx #$33
+        lda #>P_FLOOR_PLAIN_CHANCE
+        ldx #<P_FLOOR_PLAIN_CHANCE
         jsr chance
         bcc gf_1
         lda #T_FLOOR
@@ -1007,7 +1023,7 @@ door_side
         cmp a2
         bne ds_h
         ; vertical wall: neighbours left/right, door tile T_DOORV
-        lda #T_DOORV
+        lda m_code+8        ; vertical door
         sta door_tile
 ds_vl   ldy a0
         iny
@@ -1032,7 +1048,7 @@ ds_vn   lda a1
         beq ds_done
         inc a1
         jmp ds_vl
-ds_h    lda #T_DOORH
+ds_h    lda m_code+7    ; horizontal door
         sta door_tile
 ds_hl   ldy a0
         ldx a1
@@ -1070,8 +1086,8 @@ ds_done lda dc
         pha
         lda door_y,x
         pha
-        lda #$b3            ; chance 0.7
-        ldx #$33
+        lda #>P_DOOR_CHANCE
+        ldx #<P_DOOR_CHANCE
         jsr chance
         lda door_tile
         bcs ds_t
@@ -1159,7 +1175,6 @@ at_n    iny
         jne at_y
         rts
 at_nt   dta 0
-at_zero :128 dta 0
 ; C=1 when tile A has flag 7 (keeps X, Y)
 at_flag stx af_x
         tax
@@ -1210,3 +1225,75 @@ wf_n    iny
         cpx #31
         bne wf_y
         rts
+
+; ---------------------------------------------------------- hand-made floors
+; load_floor(A = floor map): RLE ($fe count value) from VRAM $3e000 into
+; TMAP through the MEMAC window, then back to the blitter list bank.
+load_floor
+        tax
+        lda floor_lo,x
+        sta ptr2
+        lda floor_hi,x
+        lsr
+        lsr
+        lsr
+        lsr
+        clc
+        adc #$3e
+        sta lf_bank
+        lda floor_hi,x
+        and #$0f
+        ora #>MEMW
+        sta ptr2+1
+        lda lf_bank
+        jsr set_bank
+        mwa #TMAP sp2
+lf_loop jsr lf_byte
+        cmp #$fe
+        bne lf_one
+        jsr lf_byte
+        sta lf_n
+        jsr lf_byte
+        ldx lf_n
+lf_run  jsr lf_put
+        bcs lf_done
+        dex
+        bne lf_run
+        beq lf_loop
+lf_one  jsr lf_put
+        bcc lf_loop
+lf_done lda bcb_bank
+        jmp set_bank
+; next byte of the stream -> A (keeps X)
+lf_byte ldy #0
+        lda (ptr2),y
+        inc ptr2
+        bne lfb_r
+        inc ptr2+1
+        pha
+        lda ptr2+1
+        cmp #>(MEMW+$1000)
+        bne lfb_p
+        lda #>MEMW
+        sta ptr2+1
+        inc lf_bank
+        lda lf_bank
+        stx lf_x
+        jsr set_bank
+        ldx lf_x
+lfb_p   pla
+lfb_r   rts
+; store A in the map; C=1 when the map is full (keeps X)
+lf_put  ldy #0
+        sta (sp2),y
+        inc sp2
+        bne lfp_c
+        inc sp2+1
+lfp_c   pha
+        lda sp2+1
+        cmp #>(TMAP+$1000)
+        pla                 ; (keeps C)
+        rts
+lf_bank dta 0
+lf_n    dta 0
+lf_x    dta 0

@@ -82,6 +82,92 @@ stg_done rts
 stg_v   dta 0
 stg_map dta 0
 up_bank dta 0
+up_end  dta $c0
+
+; second sprite page (4K at $a000): raw, dark and flash copies at VRAM
+; $38000, $3a000, $3c000 (the lit palette only matters for map tiles)
+stage_gfx2
+        jsr detect_vbxe
+        bcc sg2_d
+        jsr memac_on
+        lda #$b0
+        sta up_end
+        ldx #0
+sg2_l   stx stg_v
+        mwa #$a000 ptr
+        lda sg2_bank,x
+        sta up_bank
+        lda sg2_map,x
+        sta stg_map
+        jsr unpack4
+        ldx stg_v
+        inx
+        cpx #3
+        bne sg2_l
+        lda #$c0
+        sta up_end
+        jsr memac_off
+sg2_d   rts
+sg2_bank dta $38,$3a,$3c
+sg2_map  dta $00,$20,$30
+
+; sound effects to the RAM under the OS ROM ($c900, $fd00): the ROM is
+; switched off for the copy
+stage_sfx
+        sei
+        lda NMIEN
+        pha
+        lda #0
+        sta NMIEN
+        lda PORTB
+        pha
+        and #$fe
+        sta PORTB
+        ldx #0
+ss_1    lda $a000,x
+        sta $c900,x
+        lda $a100,x
+        sta $ca00,x
+        lda $a200,x
+        sta $cb00,x
+        lda $a300,x
+        sta $cc00,x
+        lda $a400,x
+        sta $cd00,x
+        lda $a500,x
+        sta $ce00,x
+        lda $a600,x
+        sta $cf00,x
+        lda $a000+SFX_LEN1,x
+        sta $fd00,x
+        lda $a100+SFX_LEN1,x
+        sta $fe00,x
+        inx
+        bne ss_1
+        ldx #$f7            ; $ff00..$fff7 (below the vectors)
+ss_2    lda $a200+SFX_LEN1,x
+        sta $ff00,x
+        dex
+        cpx #$ff
+        bne ss_2
+        pla
+        sta PORTB
+        pla
+        sta NMIEN
+        cli
+        rts
+
+; hand-made floors (8K) to VRAM $3e000
+stage_floors
+        jsr detect_vbxe
+        bcc sf_d
+        jsr memac_on
+        mwa #$a000 ptr
+        lda #$3e
+        ldx #32
+        jsr upload_pages
+        jsr memac_off
+sf_d    rts
 
 ; unpack 8K packed bytes from (ptr) to VRAM bank up_bank:$000 through
 ; the colour map sheet_maps+stg_map
@@ -125,7 +211,7 @@ up_loop ldy #0
         lda up_bank
         jsr set_bank
 up_l1   lda ptr+1
-        cmp #$c0
+        cmp up_end
         bne up_loop
         rts
 

@@ -142,6 +142,9 @@ nmi_a   = $ea
 TMAP    = $0800
 FOG     = $d800
 OCC     = $e800
+at_zero = $fa00               ; 128 zero bytes (a map row outside the map)
+sq_lo   = $fb00               ; squares 0..127
+sq_hi   = $fc00
 
 ; particles
 pa_xf   = $0400
@@ -224,7 +227,9 @@ e_gx    = e_logic+MAXENT
 e_gy    = e_gx+MAXENT
 e_next  = e_gy+MAXENT         ; next entity on the same tile ($ff = none)
 e_nfr   = e_next+MAXENT       ; number of animation frames
-ent_list = e_nfr+MAXENT       ; draw/update order
+e_pg    = e_nfr+MAXENT        ; sprite page of the frames (0 / 1)
+e_chg   = e_pg+MAXENT         ; ability state: 1 used, 2 moved, $30 summon wait
+ent_list = e_chg+MAXENT       ; draw/update order
 e_end   = ent_list+MAXENT
         .if e_end > $c000
         .error "entity arrays overflow"
@@ -368,6 +373,7 @@ pot_rest = G+68     ; 2 bytes
 wpn_slot_tmp = G+70
 pl_hitc_seen = G+71
 prev_bank = G+72
+pl_blind = G+73     ; turns the hero stays blind
 ; sound state (4 channels)
 ch_on   = G+80
 ch_note = G+84
@@ -397,6 +403,8 @@ pat_done = G+150
 rtclok  = G+151
 fx_dirty = G+152
 VARS_END = G+160
+
+        icl 'gen/params.asm'
 
         opt h+
         org $2000
@@ -471,6 +479,7 @@ is_ntsc lda #60
         sta snd_add
 hz_done
         jsr sound_init
+        jsr make_squares
         jsr vbxe_setup
         lda #1
         sta prev_bank           ; framebuffer 1 is shown, 0 is drawn next
@@ -533,7 +542,7 @@ cr_h    sta $a000,y
         iny
         bne cr_h
         inx
-        cpx #$d0
+        cpx #$c9            ; $c900-$cfff: sound effects (loaded)
         bne cr_hi
         ldx #$d8
 cr_os   stx cr_o+2
@@ -541,7 +550,7 @@ cr_o    sta $d800,y
         iny
         bne cr_o
         inx
-        cpx #$ff
+        cpx #$fd            ; $fd00-$fff9: sound effects (loaded)
         bne cr_os
         rts
 
@@ -726,8 +735,6 @@ nv_len  = *-nv_text
 strings_begin
         icl 'gen/strings.asm'
 strings_end
-sfx_data
-        ins 'data/sfx.bin'
 code_end
         .if code_end > $9000
         .error "main segment overlaps the MEMAC window"
@@ -741,6 +748,15 @@ code_end
         ins 'data/gfx.bin'
         ini stage_gfx
         org $a000
+        ins 'data/gfx2.bin'
+        ini stage_gfx2
+        org $a000
+        ins 'data/floors.bin'
+        ini stage_floors
+        org $a000
         ins 'data/stage.bin'
         ini stage_misc
+        org $a000
+        ins 'data/sfx.bin'
+        ini stage_sfx
         run main

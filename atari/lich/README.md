@@ -18,6 +18,56 @@ It needs an Atari XL/XE (64K) with a VBXE FX core at `$D600` or `$D700`.
 ./run.sh                      # build, then start in the persistent Altirra VBXE profile
 ```
 
+## Editor
+
+`editor/index.html` is a web editor for the game data. Open it in a browser; it works offline
+from the file system. It edits a game description (`game.json`):
+
+- **Rules:** every generator and game parameter (room counts and sizes, room types per floor,
+  trap, pot, door, curse, bless and enchant chances, level-up gains, the boss floor...), the
+  monster budget, mimics and treasure rooms per floor, and the experience table.
+- **Monsters:** all entity types, with animated previews and editable stats, sprites and
+  abilities. Below them are the monsters of other games (Porklike, BulbaRogue, Crocolike,
+  The Demon Within, or any `.p8` loaded with "Load a .p8 cart"), with their stats and
+  animations. "Add to game" copies a monster's 4 frames to the second sprite page and adds it
+  as a new monster; its special mechanics become abilities.
+- **Items:** names, sprites, attack, healing, the floor they appear from, and where they are
+  found. Items can be added.
+- **Floors & maps:** hand-made 128×32 maps (paint ground, walls, the start, stairs, props and
+  monsters) and which floors use them instead of the generator. Maps of other games can be
+  selected on their own map and converted, tile by tile (walls by sprite flag, single tiles
+  overridable: stairs, start, spikes, doors...).
+- **Sprites, Furniture, Texts:** both sprite pages with a pixel editor and the sprite flags, the
+  3×3 furniture pieces of the rooms, and every text of the game (checked against the font).
+- **Export:** checks the data and downloads `game.json`.
+
+Put the exported file into `data/game.json` and run `./build.sh`. Without changes it builds the
+original game: `tools/regress.py` compares the generated floors 1-8 (map, fog and every entity)
+with another build, and they are identical.
+
+### Monster abilities
+
+| Ability | Effect | From |
+| --- | --- | --- |
+| poison, paralyze, bolt, blink, boss | as in the cartridge (toxic rat, ghost, eyeball, imp, Raq'zul) | Lich King |
+| flee | runs away from the hero | Lich King (box), Crocolike (scared) |
+| treasure | drops blessed food when killed | Lich King (box) |
+| stun | the first hit stuns the hero instead of hurting | Crocolike, BulbaRogue |
+| curse | the first hit makes the hero forget the explored map | Crocolike |
+| vampire | heals itself by its attack (30%) | Crocolike (vamp) |
+| steal_item | the first hit steals a backpack item | Crocolike (stealitm) |
+| steal_weapon | the first hit steals the weapon in hand | Crocolike (stealeqp) |
+| slow | moves every other turn | Crocolike, BulbaRogue |
+| still | never moves, hits what is next to it | Porklike (weed) |
+| pounce | leaps along a free row or column to the hero | Porklike (kong) |
+| summon | summons a monster every 3rd turn and keeps away | Porklike (queen) |
+| hunter | always knows where the hero is | Porklike (reaper) |
+| blind | the hero sees only 1 tile for 5 turns | Porklike |
+| invisible | only seen when next to the hero | Porklike |
+
+Their numbers (turns, chances, the summoned monster) are parameters in the Rules tab.
+`tools/test_abilities.py ability...` builds a test room per ability and reports what happens.
+
 ## Controls
 
 | PICO-8 button | Joystick | Keyboard |
@@ -45,20 +95,31 @@ and writes:
 - `pico/lich_gfx.png` and `pico/lich_gfx_x4.png`: the sprite sheet.
 - `pico/lich_map.png`: the cartridge map, which holds the title background.
 
-`tools/make_data.py` turns `cart.bin` and the Lua source into:
+`tools/lichdata.py` builds the game description from the cartridge (the default
+`data/game.json`, written when missing). `tools/make_data.py` turns `data/game.json` into:
 
-- `data/gfx.bin`: the sprite sheet (4 bpp).
+- `data/gfx.bin` and `data/gfx2.bin`: the two sprite pages (4 bpp).
+- `data/floors.bin`: the hand-made floors, run-length encoded (at most 8K).
 - `data/stage.bin`: the font masks and the three XDLs.
 - `data/sfx.bin`: the sound effects.
-- `gen/tables.asm`: the monster and item tables, the map pieces, sprite flags, palettes,
-  the fade table and the glyph widths.
+- `gen/params.asm`: the rules, as `P_...` constants.
+- `gen/tables.asm`: the monster, ability and item tables, loot lists, per-floor tables, the
+  map pieces, sprite flags, palettes, the fade table and the glyph widths.
 - `gen/strings.asm`: every text of the game, encoded as glyph numbers of the cart's own
   proportional font.
+
+`tools/make_editor_assets.py` writes `editor/assets.js` (the default game and the bundled
+library carts).
 
 ## How it works
 
 - **Memory.** Once loaded, the program switches the OS ROM off and runs its own NMI
-  handler. The tile map, fog and the per-tile entity lists live in the RAM under the ROM.
+  handler. The tile map, fog, the per-tile entity lists and the sound effects live in the
+  RAM under the ROM.
+- **Data-driven rules.** The generator, items and monster behaviour read the constants and
+  tables generated from `data/game.json`. Monsters can use a second sprite page (VRAM
+  `$38000`: raw, dark and flash copies) and hand-made floors are unpacked from VRAM `$3E000`
+  into the map instead of generating it.
 - **Display.** VBXE low-resolution overlay at narrow width shows the 128×128 PICO-8
   screen. Even rows are shown on two lines and odd rows on one, so the screen looks
   square. Three framebuffers (`$00000`, `$04000` and `$30000`) let the CPU draw the next
@@ -104,7 +165,8 @@ and writes:
 `src/sound.asm` is the POKEY player from the Celeste port. It plays the cart's sound
 effects on channels 3 and 2, with PICO-8's timing and its pitch, volume, noise, slide,
 fade and arpeggio effects. Only the sound effects (6 and 32 to 63) are kept in
-`data/sfx.bin`. `music()` does nothing, and `SOUND = 0` in `lich.asm` silences
+`data/sfx.bin`; they are copied into the RAM under the OS ROM ($C900, $FD00) while the
+program loads. `music()` does nothing, and `SOUND = 0` in `lich.asm` silences
 everything.
 
 A second joystick button on POT 0 can be enabled with `USE_POT = 1`. It is off because

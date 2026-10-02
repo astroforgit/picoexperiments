@@ -382,6 +382,9 @@ spr_tw  dta 1
 spr_th  dta 1
 spr_flip dta 0
 spr_var dta 0
+spr_page dta 0          ; 1 = second sprite page (sprites 256..383)
+; second page, 128x64 per palette: raw $38000, dark $3a000, flash $3c000
+pg2_hi  dta $80,$80,$a0,$c0
 spr_draw
         sta tmp
         and #15
@@ -397,6 +400,8 @@ spr_draw
         sta bsrc+1          ; row * 8 * 128 = row * 1024 -> high byte row*4
         asl bsrc+1
         asl bsrc+1
+        lda spr_page
+        bne sd_pg2
         lda spr_var
         asl
         asl
@@ -408,7 +413,14 @@ spr_draw
         sta bsrc+1
         lda #1
         sta bsrc+2          ; VR_SHEET = $10000
-        lda spr_tw
+        bne sd_size
+sd_pg2  ldx spr_var
+        lda pg2_hi,x
+        ora bsrc+1
+        sta bsrc+1
+        lda #3
+        sta bsrc+2
+sd_size lda spr_tw
         asl
         asl
         asl

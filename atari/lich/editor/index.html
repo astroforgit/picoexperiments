@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lich King Editor</title>
+<link rel="stylesheet" href="editor.css">
+</head>
+<body>
+<header>
+  <h1>Lich King Editor <span class="sub">Atari VBXE port data</span></h1>
+  <div class="actions">
+    <span id="gamename"></span>
+    <label class="btn">Open game.json<input type="file" id="openfile" accept=".json" hidden></label>
+    <button id="btn-export" class="primary">Export game.json</button>
+    <button id="btn-reset">Reset to original</button>
+  </div>
+</header>
+<nav id="tabs"></nav>
+<main id="main"></main>
+<div id="status"></div>
+<script src="assets.js"></script>
+<script src="editor.js"></script>
+</body>
+</html>

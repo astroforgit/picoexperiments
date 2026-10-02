@@ -9,12 +9,28 @@ ID_DOORH = 7
 ID_DOORV = 8
 ID_ALTAR = 9
 ID_SPIKES = 13
-ID_EYE  = 14
-ID_IMP  = 15
-ID_BOX  = 16
-ID_TOXIC = 22
-ID_GHOST = 23
-ID_LICH = 24
+; monster abilities (m_abil bits, editable)
+AB_POISON = 1
+AB_PARA = 2
+AB_BOLT = 4
+AB_BLINK = 8
+AB_FLEE = 16
+AB_BOSS = 32
+AB_TREASURE = 64
+AB_STUN = 128
+AB2_CURSE = 1           ; m_abil2
+AB2_VAMP = 2
+AB2_STEALI = 4
+AB2_STEALW = 8
+AB2_SLOW = 16
+AB2_STILL = 32
+AB2_POUNCE = 64
+AB2_SUMMON = 128
+AB3_HUNTER = 1          ; m_abil3
+AB3_BLIND = 2
+AB3_INVIS = 4
+CH_USED = 1             ; e_chg: the once-only special was used
+CH_MOVED = 2            ; slow: moved last turn
 ID_ANVIL = 20
 ID_WELL = 25
 
@@ -66,7 +82,10 @@ me_ok   ldy me_id
         sta e_atk,x
         lda m_anim,y
         sta e_fbase,x
+        lda m_page,y
+        sta e_pg,x
         lda #0
+        sta e_chg,x
         sta e_oxl,x
         sta e_oxh,x
         sta e_oyl,x
@@ -607,7 +626,10 @@ update_fog
         sta uf_py
         ldy e_id,x
         lda m_sight,y
-        sta uf_s
+        ldy pl_blind
+        beq uf_nb
+        lda #P_BLIND_SIGHT
+uf_nb   sta uf_s
         clc
         adc #1
         sta uf_r
@@ -994,7 +1016,12 @@ fl_ty   dta 0
 fl_bd   dta 0,0
 
 chase_logic
-        stx cs_e
+        ldy e_id,x
+        lda m_abil2,y
+        and #AB2_SUMMON
+        beq cl_go
+        jmp summon_logic
+cl_go   stx cs_e
         lda e_fl,x
         and #$ff^F_ATKD
         sta e_fl,x
@@ -1010,7 +1037,18 @@ chase_logic
         sta e_gy,x
         inc cs_see
 cs_1    ldx cs_e
-        jsr dist_to_pl
+        ldy e_id,x
+        lda m_abil3,y
+        and #AB3_HUNTER
+        beq cs_1b
+        ldy pl
+        lda e_tx,y
+        sta e_gx,x
+        lda e_ty,y
+        sta e_gy,x
+        lda #1
+        sta cs_see
+cs_1b   jsr dist_to_pl
         lda m_r
         sta cs_d2
         lda m_r+1
@@ -1036,27 +1074,98 @@ cs_np   ; dist <= range and perp and cansee
         lda cs_see
         jeq cs_move
         ; ---- attack
-        lda e_id,x
-        cmp #ID_LICH
-        bne cs_a1
+        ldy e_id,x
+        lda m_abil,y
+        and #AB_BOSS
+        beq cs_a1
         lda cs_d2+1
         bne cs_far
         lda cs_d2
         cmp #1
         bne cs_far
-        lda #5
+        lda #P_BOSS_NEAR_ATK
         sta e_atk,x
         stx chp_de
         stx chp_se
-        lda #2
+        lda #P_BOSS_HEAL
         jsr change_hp
         jmp cs_a1
-cs_far  lda #1
+cs_far  lda #P_BOSS_FAR_ATK
         ldx cs_e
         sta e_atk,x
-cs_a1   ldx cs_e
+cs_a1   ; once-only specials replace the hit
+        ldx cs_e
+        ldy e_id,x
+        lda e_chg,x
+        and #CH_USED
+        bne cs_hit
+        lda m_abil,y
+        and #AB_STUN
+        beq cs_s2
+        ldy pl
+        lda #P_STUN_TURNS
+        cmp e_para,y
+        bcc cs_s1
+        sta e_para,y
+cs_s1   mwa #s_stun sp
+        jmp cs_sdone
+cs_s2   lda m_abil2,y
+        and #AB2_CURSE
+        beq cs_s3
+        jsr forget_map
+        mwa #s_curse sp
+        jmp cs_sdone
+cs_s3   lda m_abil2,y
+        and #AB2_STEALI
+        beq cs_s4
+        jsr steal_item
+        mwa #s_steal sp
+        jmp cs_sdone
+cs_s4   lda m_abil2,y
+        and #AB2_STEALW
+        beq cs_hit
+        lda pl_wpn
+        bmi cs_hit
+        jsr steal_weapon
+        mwa #s_steal sp
+cs_sdone
+        ldx cs_e
+        lda e_chg,x
+        ora #CH_USED
+        sta e_chg,x
+        lda #42
+        jsr sfx
+        lda #11
+        ldy #$ff
+        ldx pl
+        jsr add_floater
+        jmp cs_after
+cs_hit  ldx cs_e
         ldy pl
         jsr attack_entity
+        ; vampire: heals itself by its attack
+        ldx cs_e
+        ldy e_id,x
+        lda m_abil2,y
+        and #AB2_VAMP
+        beq cs_h2
+        lda #>P_VAMPIRE_CHANCE
+        ldx #<P_VAMPIRE_CHANCE
+        jsr chance
+        bcc cs_h2
+        ldx cs_e
+        stx chp_de
+        stx chp_se
+        lda e_atk,x
+        jsr change_hp
+cs_h2   ldx cs_e
+        ldy e_id,x
+        lda m_abil3,y
+        and #AB3_BLIND
+        beq cs_after
+        lda #P_BLIND_TURNS
+        sta pl_blind
+cs_after
         ldx cs_e
         lda e_fl,x
         ora #F_ATKD
@@ -1077,34 +1186,37 @@ cs_a1   ldx cs_e
         lda #4
         sta a6
         jsr move_anim
-        lda e_id,x
-        cmp #ID_TOXIC
-        bne cs_a2
+        ldy e_id,x
+        lda m_abil,y
+        and #AB_POISON
+        beq cs_a2
         ldy pl
         lda e_pois,y
         clc
-        adc #3
+        adc #P_POISON_TURNS
         sta e_pois,y
-        jmp cs_a3
-cs_a2   cmp #ID_GHOST
-        bne cs_a3
-        lda #$80
-        ldx #0
+cs_a2   ldy e_id,x
+        lda m_abil,y
+        and #AB_PARA
+        beq cs_a3
+        lda #>P_PARALYZE_CHANCE
+        ldx #<P_PARALYZE_CHANCE
         jsr chance
         ldx cs_e
         bcc cs_a3
         ldy pl
-        lda #2
+        lda #P_PARALYZE_TURNS
         sta e_para,y
 cs_a3   ldy e_id,x
         lda m_range,y
         cmp #2
         jcc cs_r
-        lda e_id,x
-        cmp #ID_EYE
+        lda m_abil,y
+        and #AB_BOLT
+        jeq cs_r
+        lda m_abil,y        ; the boss bolts only from a distance
+        and #AB_BOSS
         beq cs_bolt
-        cmp #ID_LICH
-        jne cs_r
         lda cs_d2+1
         bne cs_bolt
         lda cs_d2
@@ -1114,7 +1226,7 @@ cs_bolt ; confusion bolt
         ldy pl
         lda e_conf,y
         clc
-        adc #2
+        adc #P_CONFUSE_TURNS
         sta e_conf,y
         lda #55
         jsr sfx
@@ -1180,7 +1292,28 @@ cs_py   clc
         sta sleep
 cs_r    rts
         ; ---- move towards the goal
-cs_move lda #$ff            ; bdist = 999 (dist^2: $ffff)
+cs_move ldx cs_e
+        ldy e_id,x
+        lda m_abil2,y
+        and #AB2_STILL
+        jne cs_mr           ; never moves
+        lda m_abil2,y
+        and #AB2_SLOW
+        beq cs_mv1
+        lda e_chg,x         ; rests every other turn
+        eor #CH_MOVED
+        sta e_chg,x
+        and #CH_MOVED
+        jeq cs_mr
+cs_mv1  lda m_abil2,y
+        and #AB2_POUNCE
+        beq cs_mv2
+        lda cs_see
+        beq cs_mv2
+        jsr try_pounce
+        bcc cs_mv2
+        rts
+cs_mv2  lda #$ff            ; bdist = 999 (dist^2: $ffff)
         sta cs_bd
         sta cs_bd+1
         lda #4
@@ -1244,6 +1377,10 @@ cs_mn   ldy cs_k
         bne cs_mr
         lda e_ty,x
         cmp e_gy,x
+        bne cs_mr
+        ldy e_id,x          ; a hunter never gives up
+        lda m_abil3,y
+        and #AB3_HUNTER
         bne cs_mr
         lda #56
         jsr sfx
@@ -1316,7 +1453,19 @@ is_d    tya
 
 wait_logic
         stx wl_e
-        jsr dist_to_pl
+        ldy e_id,x
+        lda m_abil3,y
+        and #AB3_HUNTER
+        beq wl_0
+        ldy pl
+        lda e_tx,y
+        sta e_gx,x
+        lda e_ty,y
+        sta e_gy,x
+        lda #L_CHASE
+        sta e_logic,x
+        rts
+wl_0    jsr dist_to_pl
         ldy e_id,x
         lda m_sight,y
         jsr dist_gt
@@ -1337,10 +1486,13 @@ wait_logic
         sta e_gx,x
         lda e_ty,y
         sta e_gy,x
-        lda #L_CHASE
         ldy e_id,x
-        cpy #ID_BOX
-        bne wl_1
+        lda m_abil,y
+        and #AB_FLEE
+        php
+        lda #L_CHASE
+        plp
+        beq wl_1
         lda #L_FLEE
 wl_1    sta e_logic,x
 wl_r    ldx wl_e
@@ -1453,7 +1605,12 @@ us_1    lda e_para,x
 us_2    lda e_conf,x
         beq us_3
         dec e_conf,x
-us_3    rts
+us_3    cpx pl
+        bne us_4
+        lda pl_blind
+        beq us_4
+        dec pl_blind
+us_4    rts
 
 ; ---------------------------------------------------------- combat
 ; damage of entity X -> A
@@ -1486,25 +1643,29 @@ attack_entity
         lda #1
         jsr give_xp
         ldy ae_d
-        lda e_id,y
-        cmp #ID_BOX
-        bne ae_k1
-        lda #5
+        ldx e_id,y
+        lda m_abil,x
+        and #AB_TREASURE
+        beq ae_k1
+        lda #list_food_n    ; blessed food from the food list
         jsr intrnd
-        clc
-        adc #1
+        tax
+        lda list_food,x
         ldx #3
         jsr make_item
         lda #1
         sta it_idf,x
         jsr give_item
         jmp ae_k
-ae_k1   cmp #ID_LICH
-        bne ae_k
+ae_k1   lda m_abil,x
+        and #AB_BOSS
+        beq ae_k
         lda #1
         sta pl_win
         ldy ae_d
-        lda #252
+        lda #0
+        sta e_pg,y
+        lda #<P_BOSS_DEAD_SPRITE
         sta e_fbase,y
         lda #2
         sta e_fmode,y
@@ -1542,9 +1703,10 @@ ae_s3   sta ae_st
         lda ae_st
         cmp #3
         bne ae_s4
-        lda e_id,x
-        cmp #ID_LICH
-        beq ae_s4
+        ldy e_id,x
+        lda m_abil,y
+        and #AB_BOSS
+        bne ae_s4
         lda e_conf,x
         clc
         adc #5
@@ -1560,9 +1722,10 @@ ae_s4   lda #$4c            ; chance 0.3
         lda ae_st
         cmp #4
         bne ae_s5
-        lda e_id,x
-        cmp #ID_LICH
-        beq ae_s5
+        ldy e_id,x
+        lda m_abil,y
+        and #AB_BOSS
+        bne ae_s5
         lda e_para,x
         clc
         adc #2
@@ -1873,10 +2036,13 @@ level_up
         jsr sfx
         inc pl_lvl
         ldx pl
-        inc e_atk,x
+        lda e_atk,x
+        clc
+        adc #P_LVL_ATK
+        sta e_atk,x
         lda e_hpmax,x
         clc
-        adc #3
+        adc #P_LVL_HP
         sta e_hpmax,x
         sta e_hp,x
         lda floater_delay
@@ -2020,12 +2186,11 @@ ue_aa   ; after_attack (imp, lich): blink
         lda e_fl,x
         and #F_ATKD
         beq ue_an
-        lda e_id,x
-        cmp #ID_IMP
-        beq ue_bl
-        cmp #ID_LICH
-        bne ue_an
-ue_bl   stx ue_e
+        ldy e_id,x
+        lda m_abil,y
+        and #AB_BLINK
+        beq ue_an
+        stx ue_e
         jsr blink
         ldx ue_e
         lda e_fl,x
@@ -2454,4 +2619,213 @@ ufl_go  ; oy -= dy; dy *= 0.8; life--
         sta fl_on,x
 ufl_n   dex
         bpl ufl_l
+        rts
+
+; ---------------------------------------------------------- abilities
+; summon: keeps away from the hero and summons a monster every few turns
+summon_logic
+        stx sm_e
+        jsr los_to_pl
+        bcs sm_see
+        ldx sm_e
+        lda #L_WAIT
+        sta e_logic,x
+        mwa #s_quest sp
+        lda #10
+        ldy #$ff
+        jmp add_floater
+sm_see  ldx sm_e
+        lda e_chg,x
+        and #$30
+        beq sm_spawn
+        lda e_chg,x
+        sec
+        sbc #$10
+        sta e_chg,x
+        jsr flee_logic
+        ldx sm_e
+        lda #L_CHASE
+        sta e_logic,x
+        rts
+sm_spawn
+        ldy #1
+sm_d    sty sm_k
+        lda e_tx,x
+        clc
+        adc dirx,y
+        sta a0
+        lda e_ty,x
+        clc
+        adc diry,y
+        sta a1
+        ldy a0
+        ldx a1
+        jsr walk_move
+        bcs sm_put
+        ldx sm_e
+        ldy sm_k
+        iny
+        cpy #5
+        bne sm_d
+        rts
+sm_put  lda #P_SUMMON_ID
+        jsr make_mob
+        bcs sm_full
+        jsr addhash
+        lda #57
+        jsr sfx
+sm_full ldx sm_e
+        lda e_chg,x
+        and #$cf
+        ora #P_SUMMON_WAIT*16
+        sta e_chg,x
+        rts
+sm_e    dta 0
+sm_k    dta 0
+
+; pounce: leap along a free row/column to the tile next to the hero.
+; C=1 when it leapt
+try_pounce
+        stx tp_e
+        ldy pl
+        lda #0
+        sta tp_dx
+        sta tp_dy
+        lda e_tx,x
+        cmp e_tx,y
+        bne tp_row
+        lda e_ty,y
+        sec
+        sbc e_ty,x
+        jsr ssgn
+        sta tp_dy
+        jmp tp_go
+tp_row  lda e_ty,x
+        cmp e_ty,y
+        bne tp_no
+        lda e_tx,y
+        sec
+        sbc e_tx,x
+        jsr ssgn
+        sta tp_dx
+tp_go   lda e_tx,x
+        sta tp_x
+        lda e_ty,x
+        sta tp_y
+        lda #0
+        sta tp_n
+tp_l    lda tp_x
+        clc
+        adc tp_dx
+        sta tp_nx
+        lda tp_y
+        clc
+        adc tp_dy
+        sta tp_ny
+        ldy pl
+        lda tp_nx
+        cmp e_tx,y
+        bne tp_c
+        lda tp_ny
+        cmp e_ty,y
+        beq tp_end
+tp_c    ldy tp_nx
+        ldx tp_ny
+        jsr walk_move
+        bcc tp_no
+        lda tp_nx
+        sta tp_x
+        lda tp_ny
+        sta tp_y
+        inc tp_n
+        lda tp_n
+        cmp #9
+        bcc tp_l
+tp_no   ldx tp_e
+        clc
+        rts
+tp_end  lda tp_n
+        cmp #2
+        bcc tp_no           ; a single step is no leap
+        ldx tp_e
+        jsr delhash
+        lda tp_x
+        sta e_tx,x
+        lda tp_y
+        sta e_ty,x
+        jsr addhash
+        lda tp_dx
+        sta a4
+        lda tp_dy
+        sta a5
+        lda tp_n
+        asl
+        asl
+        asl
+        eor #$ff
+        clc
+        adc #1
+        sta a6              ; -(steps * 8)
+        jsr move_anim
+        lda #0
+        sta e_fc,x
+        sta e_frame,x
+        lda #63
+        jsr sfx
+        ldx tp_e
+        sec
+        rts
+tp_e    dta 0
+tp_dx   dta 0
+tp_dy   dta 0
+tp_x    dta 0
+tp_y    dta 0
+tp_nx   dta 0
+tp_ny   dta 0
+tp_n    dta 0
+
+; curse: the hero forgets the explored map
+forget_map
+        jsr fog_reset
+        jsr clear_map
+        jmp update_fog
+
+; steal a random backpack item (not the weapon in hand)
+steal_item
+        ldx #0
+        ldy #0
+si_f    lda it_on,y
+        beq si_n
+        lda it_eq,y
+        bne si_n
+        tya
+        sta gd_pool,x
+        inx
+si_n    iny
+        cpy #8
+        bne si_f
+        txa
+        beq si_r
+        jsr intrnd
+        tax
+        ldy gd_pool,x
+        lda #0
+        sta it_on,y
+        dec inv_n
+si_r    rts
+
+; steal the weapon in hand (even a cursed one)
+steal_weapon
+        ldx pl_wpn
+        ldy pl
+        lda e_hpmax,y
+        sec
+        sbc it_hpmax,x
+        sta e_hpmax,y
+        lda #0
+        sta it_eq,x
+        sta it_on,x
+        dec inv_n
+        lda #$ff
+        sta pl_wpn
         rts
