@@ -3601,6 +3601,14 @@ Web link: N/A
 Description: No description available in repository manuals.
 
 ========================================================================
+Game: celeste
+Category: [Platform]
+P8 file: [Platform]/celeste.p8
+Original PNG: [Platform]/celeste.p8.png
+Web link: N/A
+Description: No description available in repository manuals.
+
+========================================================================
 Game: Across The River
 Category: Puzzle
 P8 file: [Puzzle]/Across The River.p8
