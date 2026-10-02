@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+# Run the original SpeedMaza (2014, Jakub Husak) in Altirra.
+set -eu
+cd "$(dirname "$0")"
+exec ../../atari-vbxe-toolkit/scripts/run-xex.sh "SPEEDmaza (2014)(Husak, Jakub)(PL)(en)[a].xex"

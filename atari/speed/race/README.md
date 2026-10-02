@@ -6,7 +6,10 @@ The track is track 1 of the PICO-8 "1k racing" game
 straights turned into S-bends.
 
 - **Taken from SpeedMaza** (ported from [`../decompiled`](../decompiled)):
-  - the title screen, the HI SCORE line and the digit font;
+  - the title screen, the HI SCORE line and the digit font. The logo says
+    "HARD MAZA" (the big word is redrawn by `make_data.py`), and a
+    "TINY MODIFICATIONS: ASTROFOR" credit, in the letters of the SpeedMaza
+    credits and on three lines to fit, sits under them;
   - the DLI colour bars and the status line;
   - the SPEED and DISTANCE bars;
   - the chunky ANTIC mode 8 scrolling view with two colours: black road,

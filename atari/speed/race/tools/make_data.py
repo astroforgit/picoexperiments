@@ -84,6 +84,83 @@ def track_points(txt):
     return line, cps
 
 
+LOGO_WORD = "HARD"   # replaces the big "SPEED" of the title logo
+LOGO_FONT = "/usr/share/fonts/opentype/urw-base35/NimbusSans-Bold.otf"
+LOGO_BOX = (2, 2, 90, 29)   # x0, y0, x1, y1 in mode E pixels (old "SPEED")
+# credit lines, in the letters of the SpeedMaza credits (one line would not fit)
+CREDIT = ["TINY", "MODIFICATIONS:", "ASTROFOR"]
+# SpeedMaza credit lines: first picture line and text (spaces left out)
+FONT_LINES = {29: "GAME:HUSAK", 37: "CODE:HUSAK", 45: "GFX:HUSAK",
+              61: "HISCORE:HUSAK", 69: "PRESSBUTTON"}
+# no Y in SpeedMaza: the top of its X on a stem
+GLYPH_Y = ["2331.1332", ".3331332.", "..33333..", "...333...",
+           "...333...", "...333...", "...333...", "...333..."]
+LETTER_GAP = 2
+WORD_GAP = 9
+
+
+def mode_e_pack(pix):
+    """2-bit pixel rows (numpy, width 160) -> mode E bytes."""
+    p = pix.reshape(pix.shape[0], 40, 4).astype(np.uint8)
+    return (p[..., 0] << 6 | p[..., 1] << 4 | p[..., 2] << 2 | p[..., 3]).tobytes()
+
+
+def mode_e_unpack(data, rows):
+    b = np.frombuffer(data, np.uint8)[:rows * 40].reshape(rows, 40)
+    return np.stack([(b >> s) & 3 for s in (6, 4, 2, 0)], 2).reshape(rows, 160)
+
+
+def title_logo(pic):
+    """Draw LOGO_WORD over the big "SPEED" of the title picture.
+
+    The word is rendered from a bold sans font and shaded with colours 1-2
+    at the edges, like the original lettering.
+    """
+    from PIL import ImageDraw, ImageFont
+    x0, y0, x1, y1 = LOGO_BOX
+    k = 8                                                  # supersampling
+    font = ImageFont.truetype(LOGO_FONT, 200)
+    l, t, r, b = font.getbbox(LOGO_WORD)
+    img = Image.new("L", (r - l, b - t), 0)
+    ImageDraw.Draw(img).text((-l, -t), LOGO_WORD, 255, font=font)
+    img = img.resize(((x1 - x0) * k, (y1 - y0) * k), Image.LANCZOS)
+    cov = np.asarray(img.resize((x1 - x0, y1 - y0), Image.BOX)) / 255
+    rows = y1                                              # logo lines 0..28
+    pix = mode_e_unpack(pic, rows).copy()
+    pix[:, :x1 + 2] = 0                                    # clear "SPEED"
+    pix[y0:y1, x0:x1] = np.digitize(cov, [0.2, 0.45, 0.75])
+    return mode_e_pack(pix) + pic[rows * 40:]
+
+
+def credit_line(pic):
+    """CREDIT lines, centred, 8 mode E lines each, in the SpeedMaza letters."""
+    pix = mode_e_unpack(pic, 85)
+    font = {"Y": np.array([[int(c) if c != "." else 0 for c in r] for r in GLYPH_Y])}
+    for r, text in FONT_LINES.items():
+        rows = pix[r:r + 8]
+        on = np.flatnonzero(rows.any(0))
+        cuts = np.flatnonzero(np.diff(on) > 1)
+        segs = list(zip(np.r_[on[0], on[cuts + 1]], np.r_[on[cuts], on[-1]] + 1))
+        assert len(segs) == len(text), text
+        for ch, (x0, x1) in zip(text, segs):
+            font.setdefault(ch, rows[:, x0:x1])
+    out = b""
+    for line in CREDIT:
+        glyphs = []
+        for word in line.split():
+            if glyphs:
+                glyphs.append(np.zeros((8, WORD_GAP - LETTER_GAP), np.uint8))
+            for ch in word:
+                glyphs += [font[ch], np.zeros((8, LETTER_GAP), np.uint8)]
+        img = np.hstack(glyphs[:-1])
+        w = img.shape[1]
+        assert w <= 160, (line, w)
+        rows = np.zeros((8, 160), np.uint8)
+        rows[:, (160 - w) // 2:(160 - w) // 2 + w] = img
+        out += mode_e_pack(rows)
+    return out
+
+
 def main():
     pico_txt, image, out = sys.argv[1:4]
     mem = open(image, "rb").read()
@@ -240,7 +317,8 @@ def main():
     for old in ("track.bin",):
         if os.path.exists(os.path.join(out, "data", old)):
             os.remove(os.path.join(out, "data", old))
-    blob("title_pic.bin", 0x1000, 0x1FFF)
+    open(os.path.join(out, "data", "title_pic.bin"), "wb").write(title_logo(mem[0x1000:0x2000]))
+    open(os.path.join(out, "data", "credit_pic.bin"), "wb").write(credit_line(mem[0x1000:0x2000]))
     blob("crash_pic.bin", 0x2000, 0x283F)
     blob("rmt_player.bin", 0x48DF, 0x4FFF)
     blob("music.bin", 0x5000, 0x5BA6)

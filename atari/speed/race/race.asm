@@ -555,21 +555,9 @@ TitleScreen
 	lda #$C0
 	sta NMIEN
 	jsr HidePM
-	lda #<(dlTitleSrc)
-	sta ptr
-	lda #>(dlTitleSrc)
-	sta ptr+1
-	lda #$6D
-	jsr CopyDL
-	lda #<(TITLE)
-	sta DLBUF+5
-	lda #>(TITLE)
-	sta DLBUF+6
-	lda #<(DLBUF)
-	sta DLBUF+$6B
+	lda #<(dlTitle)
 	sta SDLSTL
-	lda #>(DLBUF)
-	sta DLBUF+$6C
+	lda #>(dlTitle)
 	sta SDLSTL+1
 	lda #<(TITLE+$099F)	; best time, in the HI SCORE line
 	sta dst
@@ -1740,6 +1728,34 @@ dliColPF0 = $03E8		; same shadows as SpeedMaza
 dliColPF1 = $03E9
 dliColPF2 = $03EA
 dliColBK  = $03EB
+
+; ---- title screen: SpeedMaza's layout with smaller gaps and three credit
+; lines under the MSX line (TITLE lines 0-28 logo, 29-60 GAME/CODE/GFX/MSX,
+; 61-68 HI SCORE, 69-76 PRESS BUTTON, 77-84 HUSAK)
+	.align $400
+dlTitle
+	dta $10,$50,$70,$70
+	dta $CE,a(TITLE)
+	:28 dta $0E
+	dta $70
+	dta $4E,a(TITLE+29*40)
+	:7 dta $0E
+	:3 dta $70,$4E,a(TITLE+(37+#*8)*40),$0E,$0E,$0E,$0E,$0E,$0E,$0E
+	dta $70,$4E,a(creditPic)
+	:7 dta $0E
+	dta $10
+	:8 dta $0E
+	dta $10
+	:8 dta $0E
+	dta $70,$4E,a(TITLE+61*40)
+	:7 dta $0E
+	dta $70
+	:8 dta $0E
+	dta $70,$10
+	:8 dta $0E
+	dta $41,a(dlTitle)
+creditPic			; "TINY" "MODIFICATIONS:" "ASTROFOR", 3x8 mode E lines
+	ins 'data/credit_pic.bin'
 CodeEnd
 	.if CodeEnd > $48DF
 	.error "code overlaps the RMT player"
