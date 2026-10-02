@@ -1,0 +1,882 @@
+<title>Zorro Editor</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@1,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a workbench. Room list on the left, the room at 2x on a dark
+   stage in the middle, an inspector for the current tool on the right. */
+:root {
+  --ink: #0f1117;        /* page: night, Zorro's cape */
+  --panel: #171a23;      /* side panels */
+  --well: #0a0c11;       /* the stage behind the room */
+  --line: #2a2f3d;       /* hairlines */
+  --text: #e4e1d8;       /* parchment text */
+  --muted: #8d8a82;      /* secondary text */
+  --brass: #c9a24a;      /* accent: the brass of a sword guard */
+  --brass-dim: #6b5a30;
+  --danger: #e0685a;
+  --ok: #7fbf8a;
+  --display: "Bodoni Moda", "Didot", Georgia, serif;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  color-scheme: dark;
+}
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--ink); color: var(--text); font: 14px/1.45 var(--sans); }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+
+.app { display: grid; grid-template-rows: auto 1fr auto; min-height: 100%; }
+header.bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px;
+  padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--panel);
+}
+.logo { font: italic 700 26px/1 var(--display); color: var(--brass); letter-spacing: .01em; }
+.logo small { font: 500 11px/1 var(--sans); color: var(--muted); letter-spacing: .12em; text-transform: uppercase; margin-left: 8px; }
+.chip { font: 12px var(--mono); padding: 3px 8px; border: 1px solid var(--line); border-radius: 3px; color: var(--muted); white-space: nowrap; }
+.chip.edited { color: var(--brass); border-color: var(--brass-dim); }
+.spacer { flex: 1; }
+.btn {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; cursor: pointer;
+  background: transparent; border: 1px solid var(--line); border-radius: 3px; color: var(--text);
+}
+.btn:hover:not(:disabled) { border-color: var(--brass-dim); }
+.btn:disabled { opacity: .4; cursor: default; }
+.btn.primary { background: var(--brass); border-color: var(--brass); color: var(--ink); font-weight: 600; }
+.btn.primary:hover:not(:disabled) { filter: brightness(1.08); }
+.btn input[type=file] { display: none; }
+
+main.work { display: grid; grid-template-columns: 196px minmax(0, 1fr) 320px; min-height: 0; }
+@media (max-width: 1100px) { main.work { grid-template-columns: 150px minmax(0, 1fr); } aside.inspector { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--line); } }
+@media (max-width: 700px) { main.work { grid-template-columns: minmax(0, 1fr); } aside.rooms { border-right: 0; border-bottom: 1px solid var(--line); } .roomlist { grid-auto-flow: column; grid-auto-columns: 120px; overflow-x: auto; } }
+
+aside.rooms { border-right: 1px solid var(--line); background: var(--panel); padding: 12px; min-width: 0; overflow: auto; }
+.label { font: 600 11px/1 var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+.roomlist { display: grid; gap: 8px; }
+.roomlist button { padding: 0; border: 1px solid var(--line); background: var(--well); border-radius: 2px; cursor: pointer; text-align: left; }
+.roomlist button[aria-current="true"] { border-color: var(--brass); }
+.roomlist canvas { display: block; width: 100%; image-rendering: pixelated; }
+.roomlist span { display: block; font: 11px var(--mono); padding: 3px 6px; color: var(--muted); }
+.roomlist button[aria-current="true"] span { color: var(--brass); }
+
+section.stage { padding: 14px 16px; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.stagehead { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; }
+.stagehead h1 { margin: 0; font: italic 700 22px/1.1 var(--display); text-wrap: balance; }
+.stagehead .where { color: var(--muted); font-size: 13px; }
+.tabs { display: flex; flex-wrap: wrap; gap: 2px; border-bottom: 1px solid var(--line); }
+.tabs button { background: none; border: 0; border-bottom: 2px solid transparent; padding: 6px 12px; cursor: pointer; color: var(--muted); }
+.tabs button[aria-selected="true"] { color: var(--text); border-bottom-color: var(--brass); }
+.layers { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; color: var(--muted); }
+.layers label { display: inline-flex; gap: 5px; align-items: center; cursor: pointer; }
+.canvaswrap { background: var(--well); border: 1px solid var(--line); padding: 10px; overflow: auto; }
+#roomCanvas { display: block; width: 100%; max-width: 960px; aspect-ratio: 320 / 176; image-rendering: pixelated; cursor: crosshair; touch-action: none; }
+.meter { display: flex; align-items: center; gap: 10px; font: 12px var(--mono); color: var(--muted); }
+.meter .track { flex: 0 1 220px; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.meter .fill { height: 100%; background: var(--brass); }
+.meter.full .fill { background: var(--danger); }
+.hint { color: var(--muted); font-size: 13px; max-width: 70ch; margin: 0; }
+
+aside.inspector { border-left: 1px solid var(--line); background: var(--panel); padding: 14px; min-width: 0; overflow: auto; display: flex; flex-direction: column; gap: 16px; }
+.group { display: flex; flex-direction: column; gap: 8px; }
+.swatches { display: flex; gap: 6px; }
+.swatch { width: 44px; height: 32px; border: 2px solid var(--line); border-radius: 2px; cursor: pointer; position: relative; padding: 0; }
+.swatch[aria-pressed="true"] { border-color: var(--brass); }
+.swatch b { position: absolute; left: 2px; bottom: 1px; font: 10px var(--mono); color: #fff; text-shadow: 0 0 2px #000, 0 0 2px #000; }
+.atari { display: grid; grid-template-columns: repeat(8, 1fr); gap: 1px; }
+.atari button { aspect-ratio: 1.6; border: 0; padding: 0; cursor: pointer; }
+.atari button[aria-pressed="true"] { outline: 2px solid var(--text); outline-offset: -2px; }
+.tilegrid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; }
+.tilegrid button { padding: 0; border: 1px solid transparent; background: var(--well); cursor: pointer; line-height: 0; }
+.tilegrid button[aria-pressed="true"] { border-color: var(--brass); }
+.tilegrid canvas { width: 100%; image-rendering: pixelated; }
+.pixeled { display: block; width: 100%; image-rendering: pixelated; background: var(--well); border: 1px solid var(--line); cursor: crosshair; touch-action: none; }
+.fields { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; align-items: center; }
+.fields label { color: var(--muted); font-size: 13px; }
+.fields input, .fields select { background: var(--well); border: 1px solid var(--line); border-radius: 2px; padding: 4px 6px; font-family: var(--mono); font-variant-numeric: tabular-nums; width: 100%; box-sizing: border-box; }
+.warn { color: var(--brass); font-size: 12.5px; margin: 0; }
+.note { color: var(--muted); font-size: 12.5px; margin: 0; }
+table.list { width: 100%; border-collapse: collapse; font: 12px var(--mono); font-variant-numeric: tabular-nums; }
+table.list th { text-align: left; color: var(--muted); font-weight: 500; padding: 3px 4px; border-bottom: 1px solid var(--line); }
+table.list td { padding: 2px 3px; }
+table.list input::-webkit-inner-spin-button, table.list input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+table.list input { width: 100%; min-width: 2.6em; box-sizing: border-box; -moz-appearance: textfield; appearance: textfield; background: var(--well); border: 1px solid var(--line); border-radius: 2px; padding: 2px 4px; font: inherit; }
+table.list tr.sel td { background: rgba(201, 162, 74, .12); }
+.spritelist { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 4px; }
+.spritelist button { padding: 3px; background: var(--well); border: 1px solid var(--line); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.spritelist button[aria-pressed="true"] { border-color: var(--brass); }
+.spritelist canvas { max-width: 100%; image-rendering: pixelated; }
+.spritelist span { font: 9.5px var(--mono); color: var(--muted); }
+
+footer.status { padding: 6px 16px; border-top: 1px solid var(--line); font: 12.5px var(--mono); color: var(--muted); background: var(--panel); min-height: 20px; }
+footer.status.error { color: var(--danger); }
+footer.status.ok { color: var(--ok); }
+
+.empty { grid-column: 1 / -1; display: grid; place-items: center; padding: 64px 16px; }
+.dropzone { max-width: 520px; text-align: center; border: 1px dashed var(--brass-dim); padding: 40px 28px; border-radius: 4px; display: flex; flex-direction: column; gap: 14px; align-items: center; }
+.dropzone.over { border-color: var(--brass); background: rgba(201, 162, 74, .06); }
+.dropzone h2 { margin: 0; font: italic 700 34px/1.1 var(--display); color: var(--brass); }
+.dropzone p { margin: 0; color: var(--muted); }
+.dropzone code { font: 12.5px var(--mono); color: var(--text); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="app">
+  <header class="bar">
+    <div class="logo">Zorro<small>Room editor</small></div>
+    <span class="chip" id="fileChip">no file</span>
+    <span class="spacer"></span>
+    <label class="btn" for="fileInput">Open XEX<input type="file" id="fileInput" accept=".xex,.XEX,.com,.obx"></label>
+    <button class="btn" id="undoBtn" disabled title="Ctrl+Z">Undo</button>
+    <button class="btn" id="redoBtn" disabled title="Ctrl+Y">Redo</button>
+    <button class="btn" id="saveBtn" disabled>Save XEX</button>
+    <button class="btn primary" id="runBtn" disabled hidden>Run in Altirra</button>
+  </header>
+
+  <div class="empty" id="emptyState">
+    <div class="dropzone" id="dropzone">
+      <h2>Zorro</h2>
+      <p>Open <code>Zorro (1985)(Datasoft)(US).xex</code> to edit its rooms, tiles, colours, sprites, objects, collision and exits.</p>
+      <label class="btn primary" for="fileInput2">Open XEX<input type="file" id="fileInput2" accept=".xex,.XEX,.com,.obx"></label>
+      <p>Or drop the file here. Run <code>python3 serve.py</code> in <code>atari/zorro/editor</code> to load it automatically and play your changes in Altirra.</p>
+    </div>
+  </div>
+
+  <main class="work" id="work" hidden>
+    <aside class="rooms">
+      <p class="label">Rooms</p>
+      <div class="roomlist" id="roomList"></div>
+    </aside>
+
+    <section class="stage">
+      <div class="stagehead">
+        <h1 id="roomTitle">Room</h1>
+        <span class="where" id="roomWhere"></span>
+      </div>
+      <div class="tabs" role="tablist" id="tabs">
+        <button role="tab" data-mode="tiles" aria-selected="true">Tiles</button>
+        <button role="tab" data-mode="objects" aria-selected="false">Objects</button>
+        <button role="tab" data-mode="collision" aria-selected="false">Collision</button>
+        <button role="tab" data-mode="exits" aria-selected="false">Exits</button>
+        <button role="tab" data-mode="sprites" aria-selected="false">Sprites</button>
+      </div>
+      <div class="layers" id="layers">
+        <label><input type="checkbox" id="layerObjects" checked> Objects</label>
+        <label><input type="checkbox" id="layerCollision"> Collision</label>
+        <label><input type="checkbox" id="layerExits" checked> Exits</label>
+        <label><input type="checkbox" id="layerGrid"> Tile grid</label>
+      </div>
+      <div class="canvaswrap" id="roomWrap"><canvas id="roomCanvas" width="640" height="352"></canvas></div>
+      <div class="canvaswrap" id="spriteWrap" hidden><canvas id="spriteCanvas" class="pixeled" width="16" height="16"></canvas></div>
+      <div class="meter" id="meter"><span id="meterText"></span><div class="track"><div class="fill" id="meterFill"></div></div></div>
+      <p class="hint" id="hint"></p>
+    </section>
+
+    <aside class="inspector" id="inspector"></aside>
+  </main>
+
+  <footer class="status" id="status" role="status"></footer>
+</div>
+
+<script>
+'use strict';
+// ------------------------------------------------------------ game layout
+// Addresses come from the disassembly (atari/zorro/decompiled/zorro.asm).
+const N = 0x3A;                       // objects
+const ROOMS = 21;                     // 0-12 town, 13-19 catacombs, 20 title
+const A = {
+  objInit: 0x0574,                    // obj_on, obj_x, obj_y, obj_room (N each)
+  sprLo: 0x26E3, sprHi: 0x271D,       // current sprite of each object
+  setupObj: 0x0F51, setupLo: 0x0F67, setupHi: 0x0F7D,   // NewGame sets these 22 sprites
+  zorroLo: 0x175C, zorroHi: 0x1796,   // Zorro's frames
+  roomPal: 0x1614, palettes: 0x1629,
+  tilesLo: 0x163E, tilesHi: 0x1653, mapLo: 0x1668, mapHi: 0x167D,
+  rectMap: 0x1639, rectN: 0x2E54, rects: 0x3425,
+  tilesN: 0x3505, mapN: 0x351A,
+  exitN: 0x5BE8, exitLo: 0x5D7E, exitHi: 0x5D92,
+};
+const SPRITES = [0x68BB,0x690B,0x6955,0x699F,0x69E9,0x6A33,0x6A7D,0x6AC1,0x6B05,0x6B49,0x6BA3,0x6BD5,0x6C1F,0x6C66,0x6CAD,0x6CF4,0x6D69,0x6F6D,0x6F70,0x6F94,0x6FA6,0x6FD8,0x7008,0x703A,0x706C,0x70B3,0x70DF,0x7109,0x7123,0x717F,0x71DE,0x7225,0x726C,0x72B3,0x732A,0x736C,0x737A,0x738E,0x740C,0x741A,0x7422,0x7488,0x74EE,0x75AC,0x75ED,0x7643,0x7684,0x76DA,0x7740,0x77A8,0x77C2,0x77F2,0x7803,0x782D,0x7877,0x78C1,0x7913,0x7945,0x7987,0x79A3,0x79E5,0x7A27,0x7A56,0x7AC1,0x7AD5,0x7AEF,0x7B03,0x7B1D,0x7B31,0x7B4B,0x7B5F,0x7B8B,0x7BF3,0x7C07,0x7C55,0x7C65,0x7C6F,0x7C79,0x7CB3,0x7CE1,0x7CFB,0x7D21,0x7D35,0x7DA0,0x8058,0x8096,0x8153,0x8197,0x81DB,0x81E6,0x8210,0x823C,0x8268,0x8294,0x82DE,0x82FE,0x831F,0x8340,0x8381,0x83C2,0x83C9,0x83D0,0x83D7,0x8418,0x8424,0x843A,0x8450];
+const OBJ_NAMES = ['Zorro', "Zorro's sword", 'Bell', 'Bell', 'Tower ladder', 'Soldier', "Soldier's sword", 'Key',
+  'Platform', 'Platform', 'Platform', 'Platform', 'Platform', 'Platform', 'Platform', 'Object 15', 'Money bag',
+  'Bottle', 'Lift', 'Chandelier', 'Chain', 'Sergeant', 'Horseshoe', 'Bull', 'Bull body', 'Big key', 'Object 26',
+  'Object 27', 'Boot', 'Goblet', 'Horn', 'Object 31', 'Object 32', 'Drop', 'Drop', 'Drop', 'Stone', 'Stone', 'Stone',
+  'Object 39', 'Plant', 'See-saw', 'See-saw', 'Ball', 'Lift', 'Rope ladder', 'Pole', 'Señorita', 'Object 48',
+  'Flower', 'Prisoner', 'Prisoner', 'Prisoner', 'Prisoner', 'Prisoner', 'Prisoner', 'Object 56', 'Trapdoor'];
+const RECT_COLORS = ['#ff6b6b', '#ffb347', '#7fdc6a', '#5ec8ff', '#c08cff', '#ff7fd1', '#f3f36b', '#9df0e1'];
+const RECT_FIELDS = ['type', 'x1', 'y1', 'x2', 'y2'];
+const S = 2;                          // canvas pixels per screen pixel (320x176 room)
+
+// ------------------------------------------------------------ state
+let file = null, ram = null, off = null, source = 'file';
+let room = 5, mode = 'tiles';
+let tile = 0, color = 3, selObj = -1, selRect = -1, selExit = -1, selSprite = SPRITES[0];
+let undoStack = [], redoStack = [];
+let serverMode = false, fileName = 'zorro_edited.xex';
+const $ = id => document.getElementById(id);
+
+// ------------------------------------------------------------ XEX loading
+function segments(d) {
+  const segs = []; let i = 0;
+  while (i < d.length) {
+    if (d[i] === 0xFF && d[i + 1] === 0xFF) i += 2;
+    if (i + 4 > d.length) throw new Error('the file ends in the middle of a segment header');
+    const s = d[i] | d[i + 1] << 8, e = d[i + 2] | d[i + 3] << 8;
+    i += 4;
+    if (e < s || i + e - s + 1 > d.length) throw new Error('a segment runs past the end of the file');
+    segs.push({ start: s, len: e - s + 1, at: i }); i += e - s + 1;
+  }
+  return segs;
+}
+
+// Rebuild the RAM the game starts with, and remember for every address
+// which byte of the file it came from (off[a], -1 = not from the file).
+function loadXex(bytes) {
+  const segs = segments(bytes);
+  if (!segs.length || segs[0].start !== 0x8000 || !segs.some(s => s.start === 0x1480 && s.len === 0x3900) ||
+      !segs.some(s => s.start === 0x5BE8))
+    throw new Error('this is not the Datasoft Zorro XEX (the segment layout does not match)');
+  const r = new Uint8Array(0x10000), o = new Int32Array(0x10000).fill(-1);
+  const cc = segs[0].at;              // chunk copier tables: dst, end, src pages
+  let chunk = 0, run = -1;
+  for (const s of segs) {
+    if (s.start === 0x02E2) {
+      const dst = bytes[cc + chunk] << 8, n = (bytes[cc + 6 + chunk] - bytes[cc + 12 + chunk]) << 8;
+      const src = bytes[cc + 12 + chunk] << 8;
+      for (let k = 0; k < n; k++) { r[dst + k] = r[src + k]; o[dst + k] = o[src + k]; }
+      chunk++;
+    } else if (s.start === 0x02E0) {
+      run = bytes[s.at] | bytes[s.at + 1] << 8;
+    } else {
+      for (let k = 0; k < s.len; k++) { r[s.start + k] = bytes[s.at + k]; o[s.start + k] = s.at + k; }
+    }
+  }
+  if (run !== 0x5000 || chunk !== 6) throw new Error('this is not the Datasoft Zorro XEX (unexpected start address)');
+  for (let a = 0x0480; a < 0x3D80; a++) { r[a] = r[a + 0x1000]; o[a] = o[a + 0x1000]; }   // the RUN stub
+  file = bytes; ram = r; off = o;
+}
+
+function poke(a, v) {
+  ram[a] = v & 0xFF;
+  if (off[a] >= 0) file[off[a]] = v & 0xFF;
+}
+const w = (lo, hi, i) => ram[lo + i] | ram[hi + i] << 8;
+
+// ------------------------------------------------------------ rooms
+function roomTiles(r) { return { addr: w(A.tilesLo, A.tilesHi, r), count: ram[A.tilesN + r] * 16 }; }
+function roomMapAddr(r) { return w(A.mapLo, A.mapHi, r); }
+function roomColors(r) { const p = A.palettes + ram[A.roomPal + r]; return [0, 1, 2, 3].map(k => ram[p + k]); }
+function roomName(r) { return r === 20 ? 'Title screen' : r >= 13 ? 'Catacombs' : r === 11 ? 'La Cárcel' : r === 8 ? 'Cave' : 'Town'; }
+function sharedWith(r, fn) { const v = fn(r), out = []; for (let k = 0; k < ROOMS; k++) if (k !== r && fn(k) === v) out.push(k); return out; }
+
+function decodeMap(a) {
+  const cells = [];
+  for (let guard = 0; guard < 4096; guard++) {
+    const b = ram[a++];
+    if (b < 0x80) { cells.push(b); continue; }
+    const n = b & 0x7F;
+    if (!n) return { cells, packed: null };
+    const v = ram[a++]; for (let k = 0; k < n; k++) cells.push(v);
+  }
+  throw new Error('room map has no end marker');
+}
+function packedLength(a) { const s = a; decodeMapEnd: for (;;) { const b = ram[a++]; if (b < 0x80) continue; if (!(b & 0x7F)) break decodeMapEnd; a++; } return a - s; }
+function encodeMap(cells) {
+  const out = [];
+  for (let i = 0; i < cells.length;) {
+    let n = 1; while (i + n < cells.length && cells[i + n] === cells[i] && n < 127) n++;
+    if (n >= 3) { out.push(0x80 | n, cells[i]); i += n; } else { out.push(cells[i]); i++; }
+  }
+  out.push(0x80);
+  return out;
+}
+// Bytes available for a room's packed map: what LoadRoom copies (map size in
+// 128-byte blocks), but never into the next room data or past what the file loads.
+function mapCapacity(r) {
+  const a = roomMapAddr(r);
+  let cap = ram[A.mapN + r] * 128;
+  for (let k = 0; k < ROOMS; k++) for (const s of [roomMapAddr(k), roomTiles(k).addr]) if (s > a) cap = Math.min(cap, s - a);
+  let e = a; while (e < 0x10000 && off[e] >= 0 && e - a < cap) e++;
+  return Math.min(cap, e - a);
+}
+function writeMap(r, cells) {
+  const bytes = encodeMap(cells), cap = mapCapacity(r);
+  if (bytes.length > cap) return { ok: false, need: bytes.length, cap };
+  const a = roomMapAddr(r);
+  bytes.forEach((b, k) => poke(a + k, b));
+  return { ok: true, need: bytes.length, cap };
+}
+
+// Collision rectangles: five tables per room, count per room.
+function rectSet(r) { return r < 15 ? r : r < 20 ? ram[A.rectMap + r - 15] : -1; }
+function rectPtrs(r) { const k = rectSet(r); if (k < 0) return null; return RECT_FIELDS.map((_, f) => ram[A.rects + 10 * k + 2 * f] | ram[A.rects + 10 * k + 2 * f + 1] << 8); }
+function rectCount(r) { return r < 20 ? ram[A.rectN + r] : 0; }
+function rects(r) {
+  const p = rectPtrs(r); if (!p) return [];
+  const out = []; for (let i = 0; i < rectCount(r); i++) out.push(RECT_FIELDS.map((_, f) => ram[p[f] + i]));
+  return out;
+}
+// Which other rooms read the same byte of a rectangle field.
+function rectSharing(r, i) {
+  const mine = rectPtrs(r).map(p => p + i), out = new Set();
+  for (let k = 0; k < 20; k++) {
+    if (k === r) continue; const p = rectPtrs(k); if (!p) continue;
+    for (let f = 0; f < 5; f++) for (let j = 0; j < rectCount(k); j++) if (mine.includes(p[f] + j)) out.add(k);
+  }
+  return [...out];
+}
+function exits(r) {
+  if (r >= 20) return [];
+  const p = w(A.exitLo, A.exitHi, r), out = [];
+  for (let i = 0; i < ram[A.exitN + r]; i++) out.push({ addr: p + 5 * i, v: [0, 1, 2, 3, 4].map(k => ram[p + 5 * i + k]) });
+  return out;
+}
+
+// ------------------------------------------------------------ objects
+function objInfo(i) {
+  const g = k => ram[A.objInit + k * N + i];
+  let spr = w(A.sprLo, A.sprHi, i);
+  for (let k = 0; k < 22; k++) if (ram[A.setupObj + k] === i) spr = w(A.setupLo, A.setupHi, k);
+  return { i, on: g(0), x: g(1), y: g(2), room: g(3), spr };
+}
+function objInRoom(o, r) { return o.room === r || o.room === 0xFF || (o.room === 0x80 && r >= 13 && r < 20); }
+function validSprite(p) { return p >= 0x6420 && p < 0x8470 && ram[p] >= 1 && ram[p] <= 12 && ram[p + 1] >= 1 && ram[p + 1] <= 100; }
+// Screen position of an object (DrawObject: byte column = x/2 - 5, line = y - 24)
+const objPx = x => ((x >> 1) - 5) * 8, objPy = y => y - 24;
+const rectPx = x => x * 4 - 40, rectPy = y => y - 24;
+
+// ------------------------------------------------------------ colours
+// Approximate NTSC colours: hue in the high nibble, luminance in the low.
+const rgbCache = new Map();
+function atariRGB(c) {
+  if (rgbCache.has(c)) return rgbCache.get(c);
+  const hue = c >> 4, lum = (c & 0x0E) / 14;
+  const Y = 0.06 + lum * 0.88; let I = 0, Q = 0;
+  if (hue) { const ang = -0.35 + (hue - 1) * (2 * Math.PI / 15); I = 0.24 * Math.cos(ang); Q = 0.24 * Math.sin(ang); }
+  const cl = v => Math.max(0, Math.min(255, Math.round(v * 255)));
+  const rgb = [cl(Y + 0.956 * I + 0.621 * Q), cl(Y - 0.272 * I - 0.647 * Q), cl(Y - 1.106 * I + 1.703 * Q)];
+  rgbCache.set(c, rgb); return rgb;
+}
+const css = c => { const [r, g, b] = atariRGB(c); return `rgb(${r},${g},${b})`; };
+
+// ------------------------------------------------------------ drawing
+function roomImage(r) {
+  const img = new ImageData(320, 176), d = img.data;
+  const cols = roomColors(r).map(atariRGB), t = roomTiles(r), { cells } = decodeMap(roomMapAddr(r));
+  for (let p = 0; p < 320 * 176; p++) { d[p * 4] = cols[0][0]; d[p * 4 + 1] = cols[0][1]; d[p * 4 + 2] = cols[0][2]; d[p * 4 + 3] = 255; }
+  cells.forEach((v, i) => {
+    const cx = i % 40, cy = (i / 40) | 0; if (cy >= 22) return;
+    for (let row = 0; row < 8; row++) {
+      const b = ram[t.addr + v * 8 + row];
+      for (let k = 0; k < 4; k++) {
+        const c = cols[(b >> (6 - 2 * k)) & 3];
+        for (let h = 0; h < 2; h++) { const q = ((cy * 8 + row) * 320 + cx * 8 + k * 2 + h) * 4; d[q] = c[0]; d[q + 1] = c[1]; d[q + 2] = c[2]; }
+      }
+    }
+  });
+  return img;
+}
+function spriteImage(p, cols, transparent) {
+  const wB = ram[p], h = ram[p + 1], img = new ImageData(wB * 8, h), d = img.data;
+  for (let y = 0; y < h; y++) for (let x = 0; x < wB; x++) {
+    const b = ram[p + 2 + y * wB + x];
+    for (let k = 0; k < 4; k++) {
+      const v = (b >> (6 - 2 * k)) & 3, c = cols[v];
+      for (let hh = 0; hh < 2; hh++) {
+        const q = (y * wB * 8 + x * 8 + k * 2 + hh) * 4;
+        d[q] = c[0]; d[q + 1] = c[1]; d[q + 2] = c[2]; d[q + 3] = v === 0 && transparent ? 0 : 255;
+      }
+    }
+  }
+  return img;
+}
+const scratch = document.createElement('canvas');
+function blit(ctx, img, x, y, scale) {
+  scratch.width = img.width; scratch.height = img.height;
+  scratch.getContext('2d').putImageData(img, 0, 0);
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(scratch, x, y, img.width * scale, img.height * scale);
+}
+
+function drawRoom() {
+  const cv = $('roomCanvas'), ctx = cv.getContext('2d');
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  blit(ctx, roomImage(room), 0, 0, S);
+  const cols = roomColors(room).map(atariRGB);
+  if ($('layerGrid').checked || mode === 'tiles' && $('layerGrid').checked) {
+    ctx.strokeStyle = 'rgba(255,255,255,.12)'; ctx.lineWidth = 1;
+    for (let x = 0; x <= 40; x++) { ctx.beginPath(); ctx.moveTo(x * 16 + .5, 0); ctx.lineTo(x * 16 + .5, 352); ctx.stroke(); }
+    for (let y = 0; y <= 22; y++) { ctx.beginPath(); ctx.moveTo(0, y * 16 + .5); ctx.lineTo(640, y * 16 + .5); ctx.stroke(); }
+  }
+  if ($('layerCollision').checked || mode === 'collision') {
+    rects(room).forEach((rc, i) => {
+      const [t, x1, y1, x2, y2] = rc;
+      const x = rectPx(x1) * S, y = rectPy(y1) * S, ww = Math.max(2, (x2 - x1) * 4 * S), hh = Math.max(2, (y2 - y1) * S);
+      ctx.strokeStyle = RECT_COLORS[t & 7]; ctx.lineWidth = i === selRect && mode === 'collision' ? 3 : 1.5;
+      ctx.fillStyle = RECT_COLORS[t & 7] + (i === selRect && mode === 'collision' ? '40' : '18');
+      ctx.fillRect(x, y, ww, hh); ctx.strokeRect(x + .5, y + .5, ww, hh);
+      if (i === selRect && mode === 'collision') { ctx.fillStyle = RECT_COLORS[t & 7]; ctx.fillRect(x + ww - 5, y + hh - 5, 10, 10); }
+    });
+  }
+  if ($('layerObjects').checked || mode === 'objects') {
+    for (let i = N - 1; i >= 0; i--) {
+      const o = objInfo(i); if (!objInRoom(o, room)) continue;
+      const x = objPx(o.x) * S, y = objPy(o.y) * S;
+      if (validSprite(o.spr)) {
+        ctx.globalAlpha = o.on ? 1 : .45;
+        blit(ctx, spriteImage(o.spr, cols, true), x, y, S);
+        ctx.globalAlpha = 1;
+      }
+      if (mode === 'objects') {
+        const [ww, hh] = validSprite(o.spr) ? [ram[o.spr] * 16, ram[o.spr + 1] * S] : [16, 16];
+        ctx.setLineDash(validSprite(o.spr) ? [] : [4, 3]);
+        ctx.strokeStyle = i === selObj ? '#c9a24a' : 'rgba(255,255,255,.35)'; ctx.lineWidth = i === selObj ? 2 : 1;
+        ctx.strokeRect(x + .5, y + .5, ww, hh); ctx.setLineDash([]);
+      }
+    }
+  }
+  if ($('layerExits').checked || mode === 'exits') {
+    exits(room).forEach((e, i) => {
+      const [x, y, , , to] = e.v, px = objPx(x) * S, py = objPy(y) * S;
+      ctx.strokeStyle = i === selExit && mode === 'exits' ? '#c9a24a' : '#f2efe6'; ctx.lineWidth = 2; ctx.setLineDash([5, 3]);
+      ctx.strokeRect(px + .5, py - 16 + .5, 16, 48); ctx.setLineDash([]);
+      ctx.font = '600 13px IBM Plex Mono, monospace'; ctx.fillStyle = '#0f1117';
+      const label = '→' + to; const tw = ctx.measureText(label).width + 8;
+      ctx.fillRect(px, py - 34, tw, 17); ctx.fillStyle = i === selExit && mode === 'exits' ? '#c9a24a' : '#f2efe6';
+      ctx.fillText(label, px + 4, py - 21);
+    });
+  }
+  updateMeter();
+}
+
+const thumbs = [];
+function buildRoomList() {
+  const list = $('roomList'); list.textContent = '';
+  for (let r = 0; r < ROOMS; r++) {
+    const b = document.createElement('button'), c = document.createElement('canvas'), s = document.createElement('span');
+    c.width = 160; c.height = 88; s.textContent = `${r} · ${roomName(r)}`;
+    b.append(c, s); b.addEventListener('click', () => setRoom(r)); b.title = `Room ${r}`;
+    list.append(b); thumbs[r] = { b, c };
+    drawThumb(r);
+  }
+}
+function drawThumb(r) {
+  const ctx = thumbs[r].c.getContext('2d');
+  scratch.width = 320; scratch.height = 176; scratch.getContext('2d').putImageData(roomImage(r), 0, 0);
+  ctx.imageSmoothingEnabled = true; ctx.drawImage(scratch, 0, 0, 160, 88);
+}
+let thumbTimer = 0;
+function refreshThumbs() {
+  clearTimeout(thumbTimer);
+  thumbTimer = setTimeout(() => { for (let r = 0; r < ROOMS; r++) drawThumb(r); }, 250);
+}
+
+function updateMeter() {
+  const used = packedLength(roomMapAddr(room)), cap = mapCapacity(room);
+  $('meterText').textContent = `Packed map ${used} of ${cap} bytes`;
+  $('meterFill').style.width = Math.min(100, used / cap * 100) + '%';
+  $('meter').classList.toggle('full', used > cap - 8);
+  $('meter').hidden = mode === 'sprites';
+}
+
+// ------------------------------------------------------------ undo
+function checkpoint() {
+  undoStack.push({ file: file.slice(), ram: ram.slice() });
+  if (undoStack.length > 200) undoStack.shift();
+  redoStack = []; updateButtons();
+}
+function restore(from, to) {
+  if (!from.length) return;
+  to.push({ file: file.slice(), ram: ram.slice() });
+  const s = from.pop(); file = s.file; ram = s.ram;
+  refreshAll(); updateButtons();
+}
+function updateButtons() {
+  $('undoBtn').disabled = !undoStack.length; $('redoBtn').disabled = !redoStack.length;
+  const edited = undoStack.length > 0 || source === 'edited';
+  $('fileChip').textContent = edited ? 'edited' : source === 'original' ? 'original file' : fileName;
+  $('fileChip').classList.toggle('edited', edited);
+}
+
+// ------------------------------------------------------------ status
+function say(text, kind) { const s = $('status'); s.textContent = text; s.className = 'status' + (kind ? ' ' + kind : ''); }
+
+// ------------------------------------------------------------ room canvas input
+function canvasPos(e) {
+  const r = $('roomCanvas').getBoundingClientRect();
+  return { x: (e.clientX - r.left) / r.width * 320, y: (e.clientY - r.top) / r.height * 176 };
+}
+let drag = null;
+$('roomCanvas').addEventListener('contextmenu', e => e.preventDefault());
+$('roomCanvas').addEventListener('pointerdown', e => {
+  if (!file) return;
+  const p = canvasPos(e);
+  $('roomCanvas').setPointerCapture(e.pointerId);
+  if (mode === 'tiles') {
+    const cell = ((p.y / 8) | 0) * 40 + ((p.x / 8) | 0);
+    const { cells } = decodeMap(roomMapAddr(room));
+    if (e.button === 2 || e.altKey) { if (cell < cells.length) { tile = cells[cell]; renderInspector(); say(`Picked tile ${tile}.`); } return; }
+    checkpoint(); drag = { kind: 'paint', last: -1, changed: false }; paintAt(p);
+  } else if (mode === 'objects') {
+    const hit = objectAt(p);
+    selObj = hit; renderInspector(); drawRoom();
+    if (hit >= 0) { checkpoint(); const o = objInfo(hit); drag = { kind: 'obj', i: hit, sx: p.x, sy: p.y, ox: o.x, oy: o.y }; }
+  } else if (mode === 'collision') {
+    const rs = rects(room);
+    let hit = -1, corner = false;
+    if (selRect >= 0 && rs[selRect]) { const [, , , x2, y2] = rs[selRect]; if (Math.abs(p.x - rectPx(x2)) < 5 && Math.abs(p.y - rectPy(y2)) < 5) { hit = selRect; corner = true; } }
+    if (hit < 0) for (let i = rs.length - 1; i >= 0; i--) {
+      const [, x1, y1, x2, y2] = rs[i];
+      if (p.x >= rectPx(x1) - 2 && p.x <= rectPx(x2) + 2 && p.y >= rectPy(y1) - 2 && p.y <= rectPy(y2) + 2) { hit = i; break; }
+    }
+    selRect = hit; renderInspector(); drawRoom();
+    if (hit >= 0) { checkpoint(); drag = { kind: corner ? 'rectsize' : 'rect', i: hit, sx: p.x, sy: p.y, v: rs[hit].slice() }; }
+  } else if (mode === 'exits') {
+    const ex = exits(room); let hit = -1;
+    ex.forEach((e2, i) => { const [x, y] = e2.v; if (p.x >= objPx(x) - 2 && p.x <= objPx(x) + 10 && p.y >= objPy(y) - 10 && p.y <= objPy(y) + 18) hit = i; });
+    selExit = hit; renderInspector(); drawRoom();
+    if (hit >= 0) { checkpoint(); drag = { kind: 'exit', i: hit, sx: p.x, sy: p.y, v: ex[hit].v.slice(), addr: ex[hit].addr }; }
+  }
+});
+$('roomCanvas').addEventListener('pointermove', e => {
+  if (!file) return;
+  const p = canvasPos(e);
+  if (!drag) { hover(p); return; }
+  const clamp = v => Math.max(0, Math.min(255, Math.round(v)));
+  if (drag.kind === 'paint') paintAt(p);
+  else if (drag.kind === 'obj') {
+    poke(A.objInit + N + drag.i, clamp(drag.ox + (p.x - drag.sx) / 4));
+    poke(A.objInit + 2 * N + drag.i, clamp(drag.oy + (p.y - drag.sy)));
+    drawRoom(); renderInspector();
+  } else if (drag.kind === 'rect' || drag.kind === 'rectsize') {
+    const dx = Math.round((p.x - drag.sx) / 4), dy = Math.round(p.y - drag.sy), v = drag.v.slice();
+    if (drag.kind === 'rect') { v[1] += dx; v[3] += dx; v[2] += dy; v[4] += dy; } else { v[3] = Math.max(v[1], v[3] + dx); v[4] = Math.max(v[2], v[4] + dy); }
+    setRect(drag.i, v.map(clamp)); drawRoom(); renderInspector();
+  } else if (drag.kind === 'exit') {
+    poke(drag.addr, clamp(drag.v[0] + (p.x - drag.sx) / 4)); poke(drag.addr + 1, clamp(drag.v[1] + (p.y - drag.sy)));
+    drawRoom(); renderInspector();
+  }
+});
+const endDrag = () => {
+  if (drag && drag.kind === 'paint' && !drag.changed) undoStack.pop();
+  if (drag) { refreshThumbs(); updateButtons(); }
+  drag = null;
+};
+$('roomCanvas').addEventListener('pointerup', endDrag);
+$('roomCanvas').addEventListener('pointercancel', endDrag);
+
+function hover(p) {
+  const cx = (p.x / 8) | 0, cy = (p.y / 8) | 0;
+  if (cx < 0 || cy < 0 || cx >= 40 || cy >= 22) return;
+  const { cells } = decodeMap(roomMapAddr(room)), t = cells[cy * 40 + cx];
+  $('hint').textContent = mode === 'tiles'
+    ? `Cell ${cx},${cy} holds tile ${t}. Click or drag to paint tile ${tile}; right-click or Alt+click to pick a tile.`
+    : `Game position x ${Math.round((p.x + 40) / 4)}, y ${Math.round(p.y + 24)}`;
+}
+function paintAt(p) {
+  const cx = (p.x / 8) | 0, cy = (p.y / 8) | 0;
+  if (cx < 0 || cy < 0 || cx >= 40 || cy >= 22) return;
+  const cell = cy * 40 + cx; if (cell === drag.last) return; drag.last = cell;
+  const { cells } = decodeMap(roomMapAddr(room));
+  if (cell >= cells.length || cells[cell] === tile) return;
+  const before = cells[cell]; cells[cell] = tile;
+  const res = writeMap(room, cells);
+  if (!res.ok) { cells[cell] = before; say(`This room's map is full: it would pack into ${res.need} bytes, and only ${res.cap} fit in the file. Use longer runs of the same tile.`, 'error'); return; }
+  drag.changed = true;
+  const sh = sharedWith(room, roomMapAddr);
+  say(sh.length ? `Painted. Rooms ${sh.join(', ')} use the same map and change too.` : 'Painted.');
+  drawRoom();
+}
+function objectAt(p) {
+  for (let i = 0; i < N; i++) {
+    const o = objInfo(i); if (!objInRoom(o, room)) continue;
+    const [ww, hh] = validSprite(o.spr) ? [ram[o.spr] * 8, ram[o.spr + 1]] : [8, 8];
+    if (p.x >= objPx(o.x) && p.x < objPx(o.x) + ww && p.y >= objPy(o.y) && p.y < objPy(o.y) + hh) return i;
+  }
+  return -1;
+}
+function setRect(i, v) { const p = rectPtrs(room); v.forEach((x, f) => poke(p[f] + i, x)); }
+
+// ------------------------------------------------------------ inspector
+function el(tag, attrs = {}, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) { if (k === 'class') e.className = v; else if (k.startsWith('on')) e.addEventListener(k.slice(2), v); else if (v !== false && v != null) e.setAttribute(k, v === true ? '' : v); }
+  for (const k of kids) if (k != null) e.append(k);
+  return e;
+}
+function numField(id, label, value, onSet, min = 0, max = 255) {
+  const inp = el('input', { id, type: 'number', min, max, value });
+  inp.addEventListener('change', () => { const v = Math.max(min, Math.min(max, parseInt(inp.value, 10) || 0)); checkpoint(); onSet(v); refreshAll(); });
+  return [el('label', { for: id }, label), inp];
+}
+
+function paletteGroup() {
+  const g = el('div', { class: 'group' }), cols = roomColors(room);
+  const palIdx = ram[A.roomPal + room], shared = sharedWith(room, k => ram[A.roomPal + k]);
+  g.append(el('p', { class: 'label' }, 'Colours'));
+  const names = ['Background', 'Colour 1', 'Colour 2', 'Colour 3'];
+  const sw = el('div', { class: 'swatches' });
+  cols.forEach((c, v) => {
+    const b = el('button', { class: 'swatch', 'aria-pressed': String(v === color), title: `${names[v]} ($${c.toString(16).toUpperCase().padStart(2, '0')})`, onclick: () => { color = v; renderInspector(); } }, el('b', {}, String(v)));
+    b.style.background = css(c); sw.append(b);
+  });
+  g.append(sw);
+  const grid = el('div', { class: 'atari', 'aria-label': 'Atari colours' });
+  for (let hue = 0; hue < 16; hue++) for (let lum = 0; lum < 16; lum += 2) {
+    const c = hue << 4 | lum;
+    const b = el('button', { 'aria-pressed': String(c === cols[color]), title: `$${c.toString(16).toUpperCase().padStart(2, '0')}`, onclick: () => { checkpoint(); poke(A.palettes + palIdx + color, c); refreshAll(); refreshThumbs(); } });
+    b.style.background = css(c); grid.append(b);
+  }
+  g.append(grid);
+  g.append(el('p', { class: 'note' }, `Pick a swatch, then a colour for it. Colours are approximate NTSC. ${shared.length ? 'Rooms ' + shared.join(', ') + ' share this palette.' : ''}`));
+  return g;
+}
+
+function tileGroup() {
+  const g = el('div', { class: 'group' }), t = roomTiles(room), cols = roomColors(room).map(atariRGB);
+  const shared = sharedWith(room, k => roomTiles(k).addr);
+  g.append(el('p', { class: 'label' }, `Tile ${tile} of ${t.count}`));
+  // pixel editor for the selected tile: 4 x 8 pixels, each 2 screen pixels wide
+  const cv = el('canvas', { class: 'pixeled', width: 160, height: 160, 'aria-label': 'Tile pixels' });
+  cv.style.maxWidth = '180px';
+  const drawTile = () => { const ctx = cv.getContext('2d'); for (let row = 0; row < 8; row++) { const b = ram[t.addr + tile * 8 + row]; for (let k = 0; k < 4; k++) { const c = cols[(b >> (6 - 2 * k)) & 3]; ctx.fillStyle = `rgb(${c})`; ctx.fillRect(k * 40, row * 20, 40, 20); } } ctx.strokeStyle = 'rgba(0,0,0,.35)'; for (let k = 1; k < 4; k++) { ctx.beginPath(); ctx.moveTo(k * 40 + .5, 0); ctx.lineTo(k * 40 + .5, 160); ctx.stroke(); } for (let r = 1; r < 8; r++) { ctx.beginPath(); ctx.moveTo(0, r * 20 + .5); ctx.lineTo(160, r * 20 + .5); ctx.stroke(); } };
+  drawTile();
+  let painting = false;
+  const put = e => { const r = cv.getBoundingClientRect(), k = Math.min(3, ((e.clientX - r.left) / r.width * 4) | 0), row = Math.min(7, ((e.clientY - r.top) / r.height * 8) | 0), a = t.addr + tile * 8 + row; const sh = 6 - 2 * k; const nv = (ram[a] & ~(3 << sh)) | color << sh; if (nv !== ram[a]) { poke(a, nv); drawTile(); drawRoom(); } };
+  cv.addEventListener('pointerdown', e => { checkpoint(); painting = true; cv.setPointerCapture(e.pointerId); put(e); });
+  cv.addEventListener('pointermove', e => { if (painting) put(e); });
+  cv.addEventListener('pointerup', () => { painting = false; refreshThumbs(); renderTileGrid(); });
+  g.append(cv);
+  if (shared.length) g.append(el('p', { class: 'warn' }, `This tile set is also used by rooms ${shared.join(', ')}.`));
+  const grid = el('div', { class: 'tilegrid', id: 'tileGrid' });
+  g.append(el('p', { class: 'label' }, 'Tile set'), grid);
+  setTimeout(renderTileGrid);
+  return g;
+}
+function renderTileGrid() {
+  const grid = $('tileGrid'); if (!grid) return;
+  grid.textContent = '';
+  const t = roomTiles(room), cols = roomColors(room).map(atariRGB);
+  for (let i = 0; i < t.count; i++) {
+    const c = el('canvas', { width: 8, height: 8 }), ctx = c.getContext('2d'), img = ctx.createImageData(8, 8);
+    for (let row = 0; row < 8; row++) { const b = ram[t.addr + i * 8 + row]; for (let k = 0; k < 4; k++) { const cc = cols[(b >> (6 - 2 * k)) & 3]; for (let h = 0; h < 2; h++) { const q = (row * 8 + k * 2 + h) * 4; img.data[q] = cc[0]; img.data[q + 1] = cc[1]; img.data[q + 2] = cc[2]; img.data[q + 3] = 255; } } }
+    ctx.putImageData(img, 0, 0);
+    grid.append(el('button', { 'aria-pressed': String(i === tile), title: `Tile ${i}`, onclick: () => { tile = i; renderInspector(); } }, c));
+  }
+}
+
+function objectGroup() {
+  const g = el('div', { class: 'group' });
+  const list = [...Array(N).keys()].map(objInfo).filter(o => objInRoom(o, room));
+  g.append(el('p', { class: 'label' }, 'Objects in this room'));
+  const tbl = el('table', { class: 'list' }, el('tr', {}, el('th', {}, '#'), el('th', {}, 'Object'), el('th', {}, 'x'), el('th', {}, 'y')));
+  for (const o of list) {
+    const tr = el('tr', { class: o.i === selObj ? 'sel' : '' }, el('td', {}, String(o.i)), el('td', {}, el('button', { class: 'btn', style: 'padding:1px 6px', onclick: () => { selObj = o.i; refreshAll(); } }, OBJ_NAMES[o.i])), el('td', {}, String(o.x)), el('td', {}, String(o.y)));
+    tbl.append(tr);
+  }
+  g.append(tbl);
+  if (selObj >= 0) {
+    const o = objInfo(selObj), f = el('div', { class: 'fields' });
+    f.append(...numField('objX', 'x', o.x, v => poke(A.objInit + N + selObj, v)), ...numField('objY', 'y', o.y, v => poke(A.objInit + 2 * N + selObj, v)));
+    const sel = el('select', { id: 'objRoom' });
+    const opts = [[0xFF, 'every room'], [0x80, 'every catacomb room'], ...[...Array(20).keys()].map(r => [r, 'room ' + r])];
+    for (const [v, t] of opts) sel.append(el('option', { value: v, selected: v === o.room }, t));
+    sel.addEventListener('change', () => { checkpoint(); poke(A.objInit + 3 * N + selObj, +sel.value); refreshAll(); });
+    const on = el('input', { id: 'objOn', type: 'checkbox', checked: !!o.on });
+    on.addEventListener('change', () => { checkpoint(); poke(A.objInit + selObj, on.checked ? 1 : 0); refreshAll(); });
+    f.append(el('label', { for: 'objRoom' }, 'Room'), sel, el('label', { for: 'objOn' }, 'Active'), on);
+    g.append(el('p', { class: 'label' }, `${selObj} · ${OBJ_NAMES[selObj]}`), f,
+      el('p', { class: 'note' }, 'These are start positions for a new game. The game itself places some objects when a room loads (platforms, the soldier, money bags), so moving those has no effect.'));
+  }
+  return g;
+}
+
+function collisionGroup() {
+  const g = el('div', { class: 'group' }), rs = rects(room);
+  if (!rs.length) { g.append(el('p', { class: 'note' }, 'This room has no collision rectangles.')); return g; }
+  g.append(el('p', { class: 'label' }, `${rs.length} rectangles`));
+  const tbl = el('table', { class: 'list' }, el('tr', {}, el('th', {}, '#'), ...RECT_FIELDS.map(f => el('th', {}, f))));
+  rs.forEach((rc, i) => {
+    const tr = el('tr', { class: i === selRect ? 'sel' : '' }, el('td', {}, el('button', { class: 'btn', style: `padding:0 6px;border-color:${RECT_COLORS[rc[0] & 7]}`, onclick: () => { selRect = i; refreshAll(); } }, String(i))));
+    rc.forEach((v, f) => {
+      const inp = el('input', { type: 'number', min: 0, max: f ? 255 : 7, value: v, id: `rect${i}_${f}`, 'aria-label': `rectangle ${i} ${RECT_FIELDS[f]}` });
+      inp.addEventListener('change', () => { checkpoint(); const nv = rects(room)[i]; nv[f] = Math.max(0, Math.min(f ? 255 : 7, parseInt(inp.value, 10) || 0)); setRect(i, nv); selRect = i; refreshAll(); });
+      tr.append(el('td', {}, inp));
+    });
+    tbl.append(tr);
+  });
+  g.append(el('div', { style: 'overflow-x:auto' }, tbl));
+  if (selRect >= 0) { const sh = rectSharing(room, selRect); if (sh.length) g.append(el('p', { class: 'warn' }, `Rectangle ${selRect} shares bytes with rooms ${sh.join(', ')}; editing it changes them too.`)); }
+  g.append(el('p', { class: 'note' }, 'Drag a rectangle to move it; drag its corner square to resize. The game tests objects against these: the type says how (wall, floor, ladder and so on; the exact meaning of each type is not fully worked out). x is in game units of 2 pixels.'));
+  return g;
+}
+
+function exitGroup() {
+  const g = el('div', { class: 'group' }), ex = exits(room);
+  if (!ex.length) { g.append(el('p', { class: 'note' }, 'This room has no exits.')); return g; }
+  g.append(el('p', { class: 'label' }, 'Exits'));
+  const heads = ['x', 'y', 'to x', 'to y', 'room'];
+  const tbl = el('table', { class: 'list' }, el('tr', {}, el('th', {}, '#'), ...heads.map(h => el('th', {}, h)), el('th', {}, '')));
+  ex.forEach((e, i) => {
+    const tr = el('tr', { class: i === selExit ? 'sel' : '' }, el('td', {}, String(i)));
+    e.v.forEach((v, k) => {
+      const inp = el('input', { type: 'number', min: 0, max: k === 4 ? 19 : 255, value: v, id: `exit${i}_${k}`, 'aria-label': `exit ${i} ${heads[k]}` });
+      inp.addEventListener('change', () => { checkpoint(); poke(e.addr + k, Math.max(0, Math.min(k === 4 ? 19 : 255, parseInt(inp.value, 10) || 0))); selExit = i; refreshAll(); });
+      tr.append(el('td', {}, inp));
+    });
+    tr.append(el('td', {}, el('button', { class: 'btn', style: 'padding:1px 6px', onclick: () => setRoom(e.v[4]) }, 'Go')));
+    tbl.append(tr);
+  });
+  g.append(el('div', { style: 'overflow-x:auto' }, tbl));
+  g.append(el('p', { class: 'note' }, 'When Zorro stands at x (exactly) and y (or up to 8 lines above it), the game moves him to the other room at "to x, to y". Drag a marker to move an exit.'));
+  return g;
+}
+
+function spriteGroup() {
+  const g = el('div', { class: 'group' }), cols = roomColors(room).map(atariRGB);
+  g.append(el('p', { class: 'label' }, `${SPRITES.length} sprites`));
+  const list = el('div', { class: 'spritelist' });
+  for (const p of SPRITES) {
+    if (!validSprite(p)) continue;
+    const c = el('canvas', { width: ram[p] * 8, height: ram[p + 1] });
+    c.getContext('2d').putImageData(spriteImage(p, cols, false), 0, 0);
+    c.style.width = Math.min(48, ram[p] * 8) + 'px';
+    list.append(el('button', { 'aria-pressed': String(p === selSprite), title: `$${p.toString(16).toUpperCase()}`, onclick: () => { selSprite = p; refreshAll(); } }, c, el('span', {}, p.toString(16).toUpperCase())));
+  }
+  g.append(list, el('p', { class: 'note' }, "Shown in the current room's colours. Colour 0 is transparent in the game. A sprite keeps its size."));
+  return g;
+}
+
+function renderInspector() {
+  const ins = $('inspector'); ins.textContent = '';
+  if (!file) return;
+  if (mode === 'tiles') ins.append(tileGroup(), paletteGroup());
+  else if (mode === 'objects') ins.append(objectGroup());
+  else if (mode === 'collision') ins.append(collisionGroup());
+  else if (mode === 'exits') ins.append(exitGroup());
+  else if (mode === 'sprites') ins.append(paletteGroup(), spriteGroup());
+}
+
+// ------------------------------------------------------------ sprite editor
+function drawSpriteEditor() {
+  const cv = $('spriteCanvas'), p = selSprite, wB = ram[p], h = ram[p + 1], cols = roomColors(room).map(atariRGB);
+  const cell = Math.max(6, Math.min(28, Math.floor(560 / Math.max(wB * 4, h))));
+  cv.width = wB * 4 * cell * 2; cv.height = h * cell;
+  cv.style.maxWidth = cv.width + 'px';
+  const ctx = cv.getContext('2d');
+  for (let y = 0; y < h; y++) for (let x = 0; x < wB * 4; x++) {
+    const b = ram[p + 2 + y * wB + (x >> 2)], v = (b >> (6 - 2 * (x & 3))) & 3;
+    if (v === 0) { ctx.fillStyle = ((x + y) & 1) ? '#5a5f6b' : '#4b505c'; } else ctx.fillStyle = `rgb(${cols[v]})`;
+    ctx.fillRect(x * cell * 2, y * cell, cell * 2, cell);
+  }
+  ctx.strokeStyle = 'rgba(255,255,255,.06)';
+  for (let x = 1; x < wB * 4; x++) { ctx.beginPath(); ctx.moveTo(x * cell * 2 + .5, 0); ctx.lineTo(x * cell * 2 + .5, cv.height); ctx.stroke(); }
+  $('hint').textContent = `Sprite $${p.toString(16).toUpperCase()}: ${wB * 4} × ${h} pixels. Paint with the selected colour; colour 0 is transparent.`;
+}
+let spritePainting = false;
+function spritePut(e) {
+  const cv = $('spriteCanvas'), r = cv.getBoundingClientRect(), p = selSprite, wB = ram[p], h = ram[p + 1];
+  const x = Math.floor((e.clientX - r.left) / r.width * wB * 4), y = Math.floor((e.clientY - r.top) / r.height * h);
+  if (x < 0 || y < 0 || x >= wB * 4 || y >= h) return;
+  const a = p + 2 + y * wB + (x >> 2), sh = 6 - 2 * (x & 3), nv = (ram[a] & ~(3 << sh)) | color << sh;
+  if (nv !== ram[a]) { poke(a, nv); drawSpriteEditor(); }
+}
+$('spriteCanvas').addEventListener('pointerdown', e => { if (!file) return; checkpoint(); spritePainting = true; $('spriteCanvas').setPointerCapture(e.pointerId); spritePut(e); });
+$('spriteCanvas').addEventListener('pointermove', e => { if (spritePainting) spritePut(e); });
+$('spriteCanvas').addEventListener('pointerup', () => { if (spritePainting) { spritePainting = false; renderInspector(); } });
+
+// ------------------------------------------------------------ navigation
+function setRoom(r) {
+  room = r; selObj = selRect = selExit = -1;
+  const t = roomTiles(r); if (tile >= t.count) tile = 0;
+  refreshAll();
+  thumbs[r]?.b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+}
+function setMode(m) {
+  mode = m;
+  for (const b of $('tabs').querySelectorAll('button')) b.setAttribute('aria-selected', String(b.dataset.mode === m));
+  refreshAll();
+}
+function refreshAll() {
+  if (!file) return;
+  for (let r = 0; r < ROOMS; r++) thumbs[r]?.b.setAttribute('aria-current', String(r === room));
+  $('roomTitle').textContent = room === 20 ? 'Title screen' : `Room ${room}`;
+  const mapSh = sharedWith(room, roomMapAddr);
+  $('roomWhere').textContent = `${roomName(room)} · map $${roomMapAddr(room).toString(16).toUpperCase()}` + (mapSh.length ? ` · same map as rooms ${mapSh.join(', ')}` : '');
+  const sprites = mode === 'sprites';
+  $('roomWrap').hidden = sprites; $('spriteWrap').hidden = !sprites; $('layers').hidden = sprites;
+  if (sprites) drawSpriteEditor(); else { drawRoom(); setHint(); }
+  renderInspector(); updateMeter();
+}
+function setHint() {
+  $('hint').textContent = {
+    tiles: 'Click or drag to paint the selected tile. Right-click or Alt+click picks the tile under the cursor.',
+    objects: 'Click an object to select it, drag to move its start position.',
+    collision: 'Click a rectangle to select it, drag to move, drag the corner square to resize.',
+    exits: 'Dashed markers are exits; the number is the room they lead to. Drag a marker to move it.',
+  }[mode] || '';
+}
+
+// ------------------------------------------------------------ file handling
+async function openBytes(bytes, name, src) {
+  try {
+    loadXex(new Uint8Array(bytes));
+    fileName = name; source = src; undoStack = []; redoStack = [];
+    $('emptyState').hidden = true; $('work').hidden = false;
+    $('saveBtn').disabled = false; $('runBtn').disabled = !serverMode;
+    buildRoomList();
+    const tab = location.hash.slice(1);
+    if (['tiles', 'objects', 'collision', 'exits', 'sprites'].includes(tab)) setMode(tab);
+    setRoom(room); updateButtons();
+    say(src === 'edited' ? 'Loaded your last saved edit (zorro_edited.xex).' : `Loaded ${name}.`, 'ok');
+  } catch (err) { say(err.message, 'error'); }
+}
+for (const id of ['fileInput', 'fileInput2']) $(id).addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  await openBytes(await f.arrayBuffer(), f.name, 'file'); e.target.value = '';
+});
+const dz = $('dropzone');
+document.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+document.addEventListener('dragleave', () => dz.classList.remove('over'));
+document.addEventListener('drop', async e => {
+  e.preventDefault(); dz.classList.remove('over');
+  const f = e.dataTransfer.files[0]; if (f) await openBytes(await f.arrayBuffer(), f.name, 'file');
+});
+$('saveBtn').addEventListener('click', async () => {
+  if (serverMode) {
+    const r = await fetch('/api/save', { method: 'POST', body: file });
+    say(r.ok ? 'Saved atari/zorro/editor/zorro_edited.xex.' : 'Saving failed: ' + await r.text(), r.ok ? 'ok' : 'error');
+    if (r.ok) { source = 'edited'; undoStack = []; redoStack = []; updateButtons(); }
+    return;
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([file], { type: 'application/octet-stream' }));
+  a.download = 'zorro_edited.xex'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  say('Downloaded zorro_edited.xex.', 'ok');
+});
+$('runBtn').addEventListener('click', async () => {
+  const r = await fetch('/api/run', { method: 'POST', body: file });
+  say(r.ok ? 'Saved zorro_edited.xex and started Altirra.' : 'Could not start the game: ' + await r.text(), r.ok ? 'ok' : 'error');
+  if (r.ok) { source = 'edited'; undoStack = []; redoStack = []; updateButtons(); }
+});
+$('undoBtn').addEventListener('click', () => restore(undoStack, redoStack));
+$('redoBtn').addEventListener('click', () => restore(redoStack, undoStack));
+document.addEventListener('keydown', e => {
+  if (!(e.ctrlKey || e.metaKey) || e.target.tagName === 'INPUT') return;
+  if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); restore(undoStack, redoStack); }
+  else if (e.key === 'y' || (e.key === 'z' && e.shiftKey)) { e.preventDefault(); restore(redoStack, undoStack); }
+});
+$('tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setMode(b.dataset.mode); });
+for (const id of ['layerObjects', 'layerCollision', 'layerExits', 'layerGrid']) $(id).addEventListener('change', drawRoom);
+
+// With serve.py the game loads by itself and can be played in Altirra.
+(async () => {
+  try {
+    const info = await fetch('/api/info', { cache: 'no-store' });
+    if (!info.ok) throw 0;
+    serverMode = true; $('runBtn').hidden = false;
+    const r = await fetch('/game.xex', { cache: 'no-store' });
+    if (r.ok) await openBytes(await r.arrayBuffer(), 'Zorro (1985)(Datasoft)(US).xex', r.headers.get('X-Zorro-Source') || 'original');
+  } catch (_) { /* opened as a plain file: wait for the user to open the XEX */ }
+})();
+</script>
