@@ -1,0 +1,39 @@
+Converted background and 106 sprites: 327680 bytes, 80 VBXE banks
+Writing listing file...
+Writing object file...
+3814 lines of source assembled in 4 pass
+344602 bytes written to the object file
+PASS $D600 50Hz: uploads, clock, controls, moods/progress, whistle, enemies, lives, water, score/bonus, endings, 500 stress steps, depth/buffers; render 18025 CPU cycles excluding DMA
+PASS $D600 60Hz: uploads, clock, controls, moods/progress, whistle, enemies, lives, water, score/bonus, endings, 500 stress steps, depth/buffers; render 18025 CPU cycles excluding DMA
+PASS $D700 50Hz: uploads, clock, controls, moods/progress, whistle, enemies, lives, water, score/bonus, endings, 500 stress steps, depth/buffers; render 18025 CPU cycles excluding DMA
+PASS $D700 60Hz: uploads, clock, controls, moods/progress, whistle, enemies, lives, water, score/bonus, endings, 500 stress steps, depth/buffers; render 18025 CPU cycles excluding DMA
+PASS no VBXE: requirement message, no blits
+PASS 50Hz sheep: wandering, dry bounds, approach/facing, four love directions, whistle hearts/expiry, pause and restart
+PASS 60Hz sheep: wandering, dry bounds, approach/facing, four love directions, whistle hearts/expiry, pause and restart
+PASS interaction feedback: all four locked directions, slower progress, no duplicate Sven, dog interrupts rest, fast pursuit and stable diagonal heading
+PASS double-fire 50Hz joystick: single, double, held, expiry, restart and pause
+PASS double-fire 50Hz Space: single, double, held, expiry, restart and pause
+PASS double-fire 60Hz joystick: single, double, held, expiry, restart and pause
+PASS double-fire 60Hz Space: single, double, held, expiry, restart and pause
+PASS 50Hz moods: four stages, devil recovery, refusal/whistle boundary, shock stun/points/enemy vulnerability, mushrooms/speed, bounds, pause and restart
+PASS 60Hz moods: four stages, devil recovery, refusal/whistle boundary, shock stun/points/enemy vulnerability, mushrooms/speed, bounds, pause and restart
+50Hz 1.62s: sheep=1, lives=3, timer=91
+50Hz 9.40s: sheep=2, lives=3, timer=85
+50Hz 15.78s: sheep=2, lives=2, timer=79
+50Hz 25.18s: sheep=2, lives=1, timer=69
+50Hz 27.12s: sheep=3, lives=1, timer=69
+50Hz 33.98s: sheep=4, lives=1, timer=64
+50Hz 43.28s: sheep=5, lives=1, timer=57
+50Hz 44.48s: sheep=6, lives=1, timer=58
+50Hz 47.46s: sheep=7, lives=1, timer=57
+50Hz 61.42s: sheep=8, lives=1, timer=45
+PASS 50Hz: complete input-only playthrough with enemies, moods and water enabled
+60Hz 1.62s: sheep=1, lives=3, timer=91
+60Hz 14.53s: sheep=2, lives=3, timer=80
+60Hz 21.52s: sheep=3, lives=3, timer=75
+60Hz 23.98s: sheep=4, lives=3, timer=74
+60Hz 26.48s: sheep=5, lives=3, timer=74
+60Hz 29.25s: sheep=6, lives=3, timer=73
+60Hz 40.32s: sheep=7, lives=3, timer=64
+60Hz 60.15s: sheep=8, lives=3, timer=46
+PASS 60Hz: complete input-only playthrough with enemies, moods and water enabled

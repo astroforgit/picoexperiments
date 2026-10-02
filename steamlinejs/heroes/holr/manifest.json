@@ -1,0 +1,128 @@
+{
+  "archive_sha256": {
+    "game.arci0": "09eb32b52636bbee16f35057bda68f422b6a8cba31442b257794659f18a3259f",
+    "game.arcd0": "15840a7f631d0d77c02ab58e57095dd31ab8f380caa06dde601e0a896f62f0e0",
+    "game.arcd1": "2bed8e90da511cbe8763b01c05cc9b4ec710caf6b86b26b7141150620a226bd3"
+  },
+  "scripts": [
+    {
+      "resource_index": 1,
+      "original_path": "intro/intro.script",
+      "export_path": "intro/intro.script.lua",
+      "bytes": 1105,
+      "sha256": "ead6bc95d8a70660cb2f5415d57ad92ee81fc8f5709d04f8ce7da044e46e34f8"
+    },
+    {
+      "resource_index": 9,
+      "original_path": "battle_selector/battle_selector.gui_script",
+      "export_path": "battle_selector/battle_selector.gui_script.lua",
+      "bytes": 3114,
+      "sha256": "0701c6f20cc75d5715fa7937cff21d2b7d3d3723daa25d24ebd06bbed92f47e9"
+    },
+    {
+      "resource_index": 15,
+      "original_path": "builtins/render/default.render_script",
+      "export_path": "builtins/render/default.render_script.lua",
+      "bytes": 4489,
+      "sha256": "84ee6343d348780440b6d08b6f9e7b6279f9473db6b608421c2ecfdb9a7153bb"
+    },
+    {
+      "resource_index": 32,
+      "original_path": "controller/controller.script",
+      "export_path": "controller/controller.script.lua",
+      "bytes": 3935,
+      "sha256": "217b279a8e1e6856a98c978194a5c0a70ea449f534002fd3bfce8353668bb832"
+    },
+    {
+      "resource_index": 46,
+      "original_path": "win/win.script",
+      "export_path": "win/win.script.lua",
+      "bytes": 2925,
+      "sha256": "d89f4d81fe4d6aed3fe172c04a50517526eaa91da35e723984349a6309ca3566"
+    },
+    {
+      "resource_index": 54,
+      "original_path": "battle/battle.script",
+      "export_path": "battle/battle.script.lua",
+      "bytes": 5906,
+      "sha256": "dee849e19a4b3c6e05faac205bd58bbd0d0d2bd230cb7c2bb056a52685dd3137"
+    },
+    {
+      "resource_index": 66,
+      "original_path": "title/title.script",
+      "export_path": "title/title.script.lua",
+      "bytes": 1881,
+      "sha256": "a1e65f7c38ce1642b0e324325fe76ae1d297c9af8c5e610befe7d0da13583b2c"
+    },
+    {
+      "resource_index": 77,
+      "original_path": "battle/final.script",
+      "export_path": "battle/final.script.lua",
+      "bytes": 1700,
+      "sha256": "84b2b5c11f6ca22a40f1efa0089a2d13d1392b39a802760d9c4af3ad77a5d403"
+    },
+    {
+      "resource_index": 81,
+      "original_path": "lua_modules/tactic.lua",
+      "export_path": "lua_modules/tactic.lua",
+      "bytes": 7750,
+      "sha256": "d700060dc3565fc9e06e4781f541a63ea99d9f99deff61e872dafed43824a308"
+    },
+    {
+      "resource_index": 82,
+      "original_path": "battle/hex.script",
+      "export_path": "battle/hex.script.lua",
+      "bytes": 1804,
+      "sha256": "017df9129fc8db8b29e836cebcf43b726f259f32e21eaf86ee758f3d796cef18"
+    },
+    {
+      "resource_index": 85,
+      "original_path": "lua_modules/globals.lua",
+      "export_path": "lua_modules/globals.lua",
+      "bytes": 4680,
+      "sha256": "6f80be3b76e93e61d6e411169901a4105fa934332d1a51da993590f5c815100c"
+    },
+    {
+      "resource_index": 90,
+      "original_path": "battle/battle_gui.gui_script",
+      "export_path": "battle/battle_gui.gui_script.lua",
+      "bytes": 2362,
+      "sha256": "b32b82a48d0acf2c665238870d0c0241e6ae4232cba241e4f01540670ed514ac"
+    },
+    {
+      "resource_index": 96,
+      "original_path": "battle/unit.script",
+      "export_path": "battle/unit.script.lua",
+      "bytes": 5252,
+      "sha256": "346ee94a71f7bbf116ea4b8aa76d30166724b8919cebd3319d9400fb633b12e7"
+    },
+    {
+      "resource_index": 97,
+      "original_path": "battle/tree.script",
+      "export_path": "battle/tree.script.lua",
+      "bytes": 1247,
+      "sha256": "3ecc4a114b18bf3ab23690ebeb8068483df191c79643fb4a75f3e4e9e46e822f"
+    },
+    {
+      "resource_index": 109,
+      "original_path": "upgrade/upgrade.gui_script",
+      "export_path": "upgrade/upgrade.gui_script.lua",
+      "bytes": 2484,
+      "sha256": "4fc45d646401c6cd50ea698f40ad7cb7fa3b7b32e54ef200a96031b8e9d45904"
+    },
+    {
+      "resource_index": 120,
+      "original_path": "town/town.gui_script",
+      "export_path": "town/town.gui_script.lua",
+      "bytes": 4692,
+      "sha256": "d0b7768982fb0aafe834021c4298809f810f3202584140289a10f191ebc6d94e"
+    },
+    {
+      "resource_index": 130,
+      "original_path": "builder/builder.gui_script",
+      "export_path": "builder/builder.gui_script.lua",
+      "bytes": 1881,
+      "sha256": "04502e93bcb5b7678f84a27c8968f8f8b4b2b5a40fe10648aab034a57c304277"
+    }
+  ]
+}

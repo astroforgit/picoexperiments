@@ -1,0 +1,30 @@
+Converted background and 69 sprites: 188416 bytes, 46 VBXE banks
+Writing listing file...
+Writing object file...
+2830 lines of source assembled in 4 pass
+202221 bytes written to the object file
+PASS $D600 50Hz: uploads, clock, controls, moods/progress, whistle, enemies, lives, water, score/bonus, endings, 500 stress steps, depth/buffers; render 14521 CPU cycles excluding DMA
+PASS $D600 60Hz: uploads, clock, controls, moods/progress, whistle, enemies, lives, water, score/bonus, endings, 500 stress steps, depth/buffers; render 14521 CPU cycles excluding DMA
+PASS $D700 50Hz: uploads, clock, controls, moods/progress, whistle, enemies, lives, water, score/bonus, endings, 500 stress steps, depth/buffers; render 14521 CPU cycles excluding DMA
+PASS $D700 60Hz: uploads, clock, controls, moods/progress, whistle, enemies, lives, water, score/bonus, endings, 500 stress steps, depth/buffers; render 14521 CPU cycles excluding DMA
+PASS no VBXE: requirement message, no blits
+50Hz 1.14s: sheep=1, lives=3, timer=91
+50Hz 2.62s: sheep=2, lives=3, timer=92
+50Hz 4.48s: sheep=3, lives=3, timer=92
+50Hz 6.00s: sheep=4, lives=3, timer=92
+50Hz 7.62s: sheep=4, lives=2, timer=91
+50Hz 9.44s: sheep=5, lives=2, timer=91
+50Hz 10.84s: sheep=6, lives=2, timer=92
+50Hz 13.92s: sheep=7, lives=2, timer=91
+50Hz 15.86s: sheep=8, lives=2, timer=91
+PASS 50Hz: complete input-only playthrough with enemies, moods and water enabled
+60Hz 1.13s: sheep=1, lives=3, timer=91
+60Hz 2.62s: sheep=2, lives=3, timer=92
+60Hz 4.48s: sheep=3, lives=3, timer=92
+60Hz 6.00s: sheep=4, lives=3, timer=92
+60Hz 7.63s: sheep=4, lives=2, timer=91
+60Hz 9.45s: sheep=5, lives=2, timer=91
+60Hz 10.85s: sheep=6, lives=2, timer=92
+60Hz 13.93s: sheep=7, lives=2, timer=91
+60Hz 15.88s: sheep=8, lives=2, timer=91
+PASS 60Hz: complete input-only playthrough with enemies, moods and water enabled

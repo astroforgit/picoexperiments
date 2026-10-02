@@ -1,0 +1,7 @@
+$9000-$90E3: 1 segment(s)
+$907B-$907B: 97 segment(s)
+$8000-$8FFF: 97 segment(s)
+$02E2-$02E3: 98 segment(s)
+$3000-$7E70: 1 segment(s)
+$02E0-$02E1: 1 segment(s)
+PASS: payload >= $3000; no stack/zero-page load; 97 uploads followed by runtime preparation.

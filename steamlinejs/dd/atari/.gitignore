@@ -1,0 +1,7 @@
+__pycache__/
+.venv/
+generated/*.lst
+generated/*.lab
+generated/*audit.png
+generated/*poses.png
+generated/*banks.png

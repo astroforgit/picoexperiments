@@ -1,0 +1,27 @@
+Grab/throw: input, vulnerable target selection, hold timing, damage, recoil bounds, interruption and lethal release: PASS
+Timed guards, earned/escapable counters, one reaction per swing, longer missed-swing recovery: PASS
+Jump-kick knockdown: all species, recoil edges, protected prone/get-up, AI resumes, lethal hit/wave reset: PASS
+Distinct startup/recovery; Williams/Linda 2 damage, Abobo 5; single impact: PASS
+Committed attacks miss when Billy leaves the lane or moves behind the attacker: PASS
+Jump launch/landing are vulnerable; held jump kick cannot skip landing recovery: PASS
+Frontal guard blocks punches, takes kick chip damage, and loses to jump kicks/rear hits: PASS
+Visible windup reactions, Linda sidestep, and depth-lane flanking: PASS
+Heavy damage saturates at zero; respawn and game over cannot underflow health: PASS
+XEX segments, all VRAM uploads, title/start, movement, pause/resume, bounded double buffering: PASS
+Pixel-exact panorama scrolling across 256-pixel boundaries, encounter camera locks, font padding preservation: PASS
+Grounded directional attacks turn without stepping through enemies; jumping attacks retain movement: PASS
+Directional/depth hit boxes, kick damage, hit stun, jump evasion, death and respawn: PASS
+No music or music interrupt; combat effects stop and mute correctly: PASS
+D600/D700 detection, absent-VBXE fallback, PAL/NTSC 30 Hz simulation: PASS
+Grab/throw: input, vulnerable target selection, hold timing, damage, recoil bounds, interruption and lethal release: PASS
+Timed guards, earned/escapable counters, one reaction per swing, longer missed-swing recovery: PASS
+Jump-kick knockdown: all species, recoil edges, protected prone/get-up, AI resumes, lethal hit/wave reset: PASS
+Distinct startup/recovery; Williams/Linda 2 damage, Abobo 5; single impact: PASS
+Committed attacks miss when Billy leaves the lane or moves behind the attacker: PASS
+Jump launch/landing are vulnerable; held jump kick cannot skip landing recovery: PASS
+Frontal guard blocks punches, takes kick chip damage, and loses to jump kicks/rear hits: PASS
+Visible windup reactions, Linda sidestep, and depth-lane flanking: PASS
+Heavy damage saturates at zero; respawn and game over cannot underflow health: PASS
+Old input-only jump-kick exploit defeated after 8 enemies, 1253 ticks: PASS
+Explicit combat fixtures: 36 defeats, 12 waves, all 4 scrolling stages/exits, caches and victory: PASS
+Victory/game-over restart: PASS

@@ -1,0 +1,34 @@
+Converted background and 94 sprites: 233472 bytes, 57 VBXE banks
+Writing listing file...
+Writing object file...
+3255 lines of source assembled in 5 pass
+248061 bytes written to the object file
+PASS $D600 50Hz: uploads, clock, controls, moods/progress, whistle, enemies, lives, water, score/bonus, endings, 500 stress steps, depth/buffers; render 15375 CPU cycles excluding DMA
+PASS $D600 60Hz: uploads, clock, controls, moods/progress, whistle, enemies, lives, water, score/bonus, endings, 500 stress steps, depth/buffers; render 15375 CPU cycles excluding DMA
+PASS $D700 50Hz: uploads, clock, controls, moods/progress, whistle, enemies, lives, water, score/bonus, endings, 500 stress steps, depth/buffers; render 15375 CPU cycles excluding DMA
+PASS $D700 60Hz: uploads, clock, controls, moods/progress, whistle, enemies, lives, water, score/bonus, endings, 500 stress steps, depth/buffers; render 15375 CPU cycles excluding DMA
+PASS no VBXE: requirement message, no blits
+50Hz 1.14s: sheep=1, lives=3, timer=91
+50Hz 2.66s: sheep=2, lives=3, timer=92
+50Hz 4.52s: sheep=3, lives=3, timer=92
+50Hz 6.06s: sheep=4, lives=3, timer=92
+50Hz 7.80s: sheep=5, lives=3, timer=93
+50Hz 9.26s: sheep=6, lives=3, timer=93
+50Hz 12.24s: sheep=7, lives=3, timer=92
+50Hz 12.56s: sheep=7, lives=2, timer=92
+50Hz 15.38s: sheep=7, lives=1, timer=89
+50Hz 16.94s: sheep=8, lives=1, timer=89
+PASS 50Hz: complete input-only playthrough with enemies, moods and water enabled
+60Hz 1.13s: sheep=1, lives=3, timer=91
+60Hz 2.65s: sheep=2, lives=3, timer=92
+60Hz 4.52s: sheep=3, lives=3, timer=92
+60Hz 6.05s: sheep=4, lives=3, timer=92
+60Hz 7.80s: sheep=5, lives=3, timer=93
+60Hz 9.25s: sheep=6, lives=3, timer=93
+60Hz 12.23s: sheep=7, lives=3, timer=92
+60Hz 12.55s: sheep=7, lives=2, timer=92
+60Hz 15.48s: sheep=7, lives=1, timer=89
+60Hz 16.72s: sheep=8, lives=1, timer=90
+PASS 60Hz: complete input-only playthrough with enemies, moods and water enabled
+PASS 50Hz sheep: wandering, dry bounds, approach/facing, four love directions, whistle hearts/expiry, pause and restart
+PASS 60Hz sheep: wandering, dry bounds, approach/facing, four love directions, whistle hearts/expiry, pause and restart

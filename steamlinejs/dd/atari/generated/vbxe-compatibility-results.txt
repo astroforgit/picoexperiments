@@ -1,0 +1,11 @@
+XEX audit: no stack/zero-page payload or code below $3000; INIT uploader at $9000: PASS
+Read-only detection: D600/D700, FX 1.2x, RAMBO bit masked; GTIA/old/unknown cores rejected; incompatible D600 skipped: PASS
+Boot/upload/start/move/render at $D600, FX $20, 50 Hz, BASIC/stale windows/loader scratch: PASS
+Boot/upload/start/move/render at $D600, FX $24, 60 Hz, BASIC/stale windows/loader scratch: PASS
+Boot/upload/start/move/render at $D600, FX $26, 50 Hz, BASIC/stale windows/loader scratch: PASS
+Boot/upload/start/move/render at $D600, FX $A6, 60 Hz, BASIC/stale windows/loader scratch: PASS
+Boot/upload/start/move/render at $D700, FX $20, 50 Hz, BASIC/stale windows/loader scratch: PASS
+Boot/upload/start/move/render at $D700, FX $24, 60 Hz, BASIC/stale windows/loader scratch: PASS
+Boot/upload/start/move/render at $D700, FX $26, 50 Hz, BASIC/stale windows/loader scratch: PASS
+Boot/upload/start/move/render at $D700, FX $A6, 60 Hz, BASIC/stale windows/loader scratch: PASS
+Unsupported cores reach the native error screen without VRAM writes or blitter use: PASS

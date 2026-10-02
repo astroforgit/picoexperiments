@@ -1,0 +1,9 @@
+# Medieval hero preview atlas
+
+Generated with the built-in imagegen tool. Player preview artwork; not yet integrated into the Atari binary. Five base appearances are shared across the fifteen player tiers. Original enemy artwork remains in use.
+
+Columns 1–4: walk only. Columns 5–6: attack preparation and release. Rows: Militia, Spearman, Swordsman, Archer, Wizard. Rendering crops the actual output atlas in the browser and preserves alpha.
+
+## Generation prompt
+
+Create a production sprite atlas for a medieval fantasy strategy unit editor. Style: detailed small full-body 1990s Heroes of Might and Magic II inspired pixel art, realistic slender proportions, rich heraldic blue crimson gold, silver armor, dark outlines, careful pixel clusters, no chibi, no big heads. Transparent background. Exact regular grid 6 columns by 5 rows, canvas 1536x1280, each cell 256x256. No text, no labels, no lines. Each row is ONE consistent foot soldier facing right in three-quarter side view. Row1 militia with brown gambeson and short sword. Row2 blue silver armored spearman with upright spear and small shield. Row3 crimson gold armored swordsman with sword and large shield. Row4 green hooded archer with bow. Row5 blue violet gold robed wizard carrying staff. In every cell entire body and entire weapon visible, boots at same baseline y=232 relative cell, body centered x=128, consistent scale approximately 180px tall. Columns1-4 are WALK ONLY poses: left step, passing stance, right step, passing stance. During ALL first four frames weapons remain carried upright at rest, bow undrawn, NO thrust NO slash NO attack NO spell effect. Only legs and subtle free arm swing change. Column5 attack preparation, column6 attack release: sword slash / spear thrust / bow drawn and released / staff extended. Maintain exact six equal columns and five equal rows. This is a single game-ready animation sheet; generous transparent padding prevents cell overlap.

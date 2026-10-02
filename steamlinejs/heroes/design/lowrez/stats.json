@@ -1,0 +1,128 @@
+{
+  "source": "Heroes of Lowrez 1.1 local web bundle, lua_modules/globals.lua KINDS; archive entry 85",
+  "verified_against": "lua_modules/tactic.lua, upgrade/upgrade.gui_script, town/town.gui_script",
+  "archive_sha256": {
+    "game.arci0": "09eb32b52636bbee16f35057bda68f422b6a8cba31442b257794659f18a3259f",
+    "game.arcd0": "15840a7f631d0d77c02ab58e57095dd31ab8f380caa06dde601e0a896f62f0e0",
+    "game.arcd1": "2bed8e90da511cbe8763b01c05cc9b4ec710caf6b86b26b7141150620a226bd3"
+  },
+  "units": [
+    {
+      "id": "spearman",
+      "side": "player",
+      "ap": 2,
+      "hp": 3,
+      "dmg": 2,
+      "dist": 1
+    },
+    {
+      "id": "archer",
+      "side": "player",
+      "ap": 1,
+      "hp": 3,
+      "dmg": 1,
+      "dist": 4
+    },
+    {
+      "id": "swordsman",
+      "side": "player",
+      "ap": 2,
+      "hp": 4,
+      "dmg": 3,
+      "dist": 1
+    },
+    {
+      "id": "beast",
+      "side": "enemy",
+      "ap": 3,
+      "hp": 3,
+      "dmg": 2,
+      "dist": 1
+    },
+    {
+      "id": "ogre",
+      "side": "enemy",
+      "ap": 2,
+      "hp": 5,
+      "dmg": 4,
+      "dist": 1
+    },
+    {
+      "id": "skeleton",
+      "side": "enemy",
+      "ap": 1,
+      "hp": 3,
+      "dmg": 1,
+      "dist": 4
+    },
+    {
+      "id": "dark",
+      "side": "enemy",
+      "ap": 2,
+      "hp": 4,
+      "dmg": 3,
+      "dist": 1
+    },
+    {
+      "id": "demon",
+      "side": "enemy",
+      "ap": 2,
+      "hp": 2,
+      "dmg": 2,
+      "dist": 1
+    },
+    {
+      "id": "sniper",
+      "side": "enemy",
+      "ap": 2,
+      "hp": 3,
+      "dmg": 1,
+      "dist": 5
+    },
+    {
+      "id": "warlock",
+      "side": "enemy",
+      "ap": 1,
+      "hp": 7,
+      "dmg": 1,
+      "dist": 3,
+      "summon": "demon",
+      "direct_attack": false
+    },
+    {
+      "id": "minibeast",
+      "side": "enemy",
+      "ap": 3,
+      "hp": 3,
+      "dmg": 1,
+      "dist": 1
+    }
+  ],
+  "recruitment": {
+    "spearman": 25,
+    "archer": {
+      "from": "spearman",
+      "upgrade_cost": 40,
+      "required_building": "workshop",
+      "building_cost": 110
+    },
+    "swordsman": {
+      "from": "spearman",
+      "upgrade_cost": 50,
+      "required_building": "blacksmith",
+      "building_cost": 130
+    }
+  },
+  "capacity": {
+    "initial": 3,
+    "with_tower": 5,
+    "tower_cost": 100
+  },
+  "normal_start": {
+    "gold": 100,
+    "units": [
+      "spearman",
+      "spearman"
+    ]
+  }
+}

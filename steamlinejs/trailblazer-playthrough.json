@@ -1,0 +1,358 @@
+{
+  "name": "Grapple Trailblazer",
+  "ticks": 907,
+  "seconds": 18.14,
+  "deaths": 0,
+  "checkpoints": 19,
+  "actions": [
+    [
+      4,
+      25
+    ],
+    [
+      4,
+      10
+    ],
+    [
+      4,
+      3
+    ],
+    [
+      4,
+      3
+    ],
+    [
+      3,
+      5
+    ],
+    [
+      2,
+      8
+    ],
+    [
+      1,
+      18
+    ],
+    [
+      4,
+      25
+    ],
+    [
+      4,
+      10
+    ],
+    [
+      3,
+      15
+    ],
+    [
+      4,
+      23
+    ],
+    [
+      4,
+      25
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      0,
+      20
+    ],
+    [
+      3,
+      3
+    ],
+    [
+      4,
+      25
+    ],
+    [
+      4,
+      25
+    ],
+    [
+      4,
+      10
+    ],
+    [
+      1,
+      8
+    ],
+    [
+      2,
+      16
+    ],
+    [
+      4,
+      10
+    ],
+    [
+      3,
+      8
+    ],
+    [
+      2,
+      30
+    ],
+    [
+      4,
+      10
+    ],
+    [
+      1,
+      20
+    ],
+    [
+      2,
+      30
+    ],
+    [
+      4,
+      10
+    ],
+    [
+      4,
+      3
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      2,
+      16
+    ],
+    [
+      2,
+      8
+    ],
+    [
+      3,
+      18
+    ],
+    [
+      4,
+      25
+    ],
+    [
+      4,
+      25
+    ],
+    [
+      4,
+      8
+    ],
+    [
+      4,
+      25
+    ],
+    [
+      4,
+      25
+    ],
+    [
+      3,
+      3
+    ],
+    [
+      0,
+      22
+    ],
+    [
+      1,
+      30
+    ],
+    [
+      4,
+      10
+    ],
+    [
+      4,
+      3
+    ],
+    [
+      4,
+      3
+    ],
+    [
+      1,
+      7
+    ],
+    [
+      2,
+      30
+    ],
+    [
+      2,
+      8
+    ],
+    [
+      1,
+      17
+    ],
+    [
+      4,
+      25
+    ],
+    [
+      4,
+      3
+    ],
+    [
+      3,
+      17
+    ],
+    [
+      4,
+      25
+    ],
+    [
+      4,
+      3
+    ],
+    [
+      4,
+      3
+    ],
+    [
+      1,
+      19
+    ],
+    [
+      4,
+      25
+    ],
+    [
+      4,
+      3
+    ],
+    [
+      3,
+      17
+    ],
+    [
+      4,
+      25
+    ],
+    [
+      4,
+      3
+    ],
+    [
+      1,
+      7
+    ],
+    [
+      4,
+      25
+    ],
+    [
+      2,
+      17
+    ]
+  ],
+  "sections": [
+    {
+      "checkpoint": 338,
+      "ticks": 46,
+      "actions": "--x25 --x10 --x3 --x3 LEFTx5"
+    },
+    {
+      "checkpoint": 369,
+      "ticks": 26,
+      "actions": "DOWNx8 RIGHTx18"
+    },
+    {
+      "checkpoint": 509,
+      "ticks": 50,
+      "actions": "--x25 --x10 LEFTx15"
+    },
+    {
+      "checkpoint": 628,
+      "ticks": 23,
+      "actions": "--x23"
+    },
+    {
+      "checkpoint": 737,
+      "ticks": 51,
+      "actions": "--x25 RIGHTx3 RIGHTx3 UPx20"
+    },
+    {
+      "checkpoint": 906,
+      "ticks": 71,
+      "actions": "LEFTx3 --x25 --x25 --x10 RIGHTx8"
+    },
+    {
+      "checkpoint": 963,
+      "ticks": 34,
+      "actions": "DOWNx16 --x10 LEFTx8"
+    },
+    {
+      "checkpoint": 1064,
+      "ticks": 60,
+      "actions": "DOWNx30 --x10 RIGHTx20"
+    },
+    {
+      "checkpoint": 1160,
+      "ticks": 46,
+      "actions": "DOWNx30 --x10 --x3 RIGHTx3"
+    },
+    {
+      "checkpoint": 1204,
+      "ticks": 42,
+      "actions": "DOWNx16 DOWNx8 LEFTx18"
+    },
+    {
+      "checkpoint": 1466,
+      "ticks": 58,
+      "actions": "--x25 --x25 --x8"
+    },
+    {
+      "checkpoint": 1742,
+      "ticks": 75,
+      "actions": "--x25 --x25 LEFTx3 UPx22"
+    },
+    {
+      "checkpoint": 1959,
+      "ticks": 53,
+      "actions": "RIGHTx30 --x10 --x3 --x3 RIGHTx7"
+    },
+    {
+      "checkpoint": 2108,
+      "ticks": 55,
+      "actions": "DOWNx30 DOWNx8 RIGHTx17"
+    },
+    {
+      "checkpoint": 2247,
+      "ticks": 45,
+      "actions": "--x25 --x3 LEFTx17"
+    },
+    {
+      "checkpoint": 2396,
+      "ticks": 50,
+      "actions": "--x25 --x3 --x3 RIGHTx19"
+    },
+    {
+      "checkpoint": 2535,
+      "ticks": 45,
+      "actions": "--x25 --x3 LEFTx17"
+    },
+    {
+      "checkpoint": 2667,
+      "ticks": 35,
+      "actions": "--x25 --x3 RIGHTx7"
+    },
+    {
+      "checkpoint": 2780,
+      "ticks": 42,
+      "actions": "--x25 DOWNx17"
+    }
+  ]
+}

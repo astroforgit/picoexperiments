@@ -1,0 +1,6 @@
+.....
+----------------------------------------------------------------------
+Ran 5 tests in 3.277s
+
+OK
+Compared 3624 native instruction cases across all 151 official opcodes.

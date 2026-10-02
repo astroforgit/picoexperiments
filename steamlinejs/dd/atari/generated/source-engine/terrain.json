@@ -1,0 +1,272 @@
+{
+  "status": "native component; not connected to the playable XEX",
+  "source_bank": 5,
+  "source_start": 45056,
+  "source_end": 47201,
+  "load_address": 16384,
+  "bytes": 2145,
+  "entry_points": {
+    "bounds": 16384,
+    "support": 17388,
+    "wall": 18173
+  },
+  "bank_sha256": "b120dd1b42348979382f0ddd420f42ff392fe90ce1f70ae46f0f7af811d61f39",
+  "sha256": "af2ff351ee2ab5319205c09d44b31c9fbc9209b8fd5dac13b514fb3f475fc0cc",
+  "relocations": [
+    {
+      "at": 45080,
+      "target": 45300,
+      "kind": "instruction"
+    },
+    {
+      "at": 45085,
+      "target": 45301,
+      "kind": "instruction"
+    },
+    {
+      "at": 45138,
+      "target": 45247,
+      "kind": "instruction"
+    },
+    {
+      "at": 45147,
+      "target": 45247,
+      "kind": "instruction"
+    },
+    {
+      "at": 45166,
+      "target": 45218,
+      "kind": "instruction"
+    },
+    {
+      "at": 45190,
+      "target": 45196,
+      "kind": "instruction"
+    },
+    {
+      "at": 45200,
+      "target": 45218,
+      "kind": "instruction"
+    },
+    {
+      "at": 45300,
+      "target": 45320,
+      "kind": "boundary root"
+    },
+    {
+      "at": 45302,
+      "target": 45320,
+      "kind": "boundary root"
+    },
+    {
+      "at": 45304,
+      "target": 45328,
+      "kind": "boundary root"
+    },
+    {
+      "at": 45306,
+      "target": 45328,
+      "kind": "boundary root"
+    },
+    {
+      "at": 45308,
+      "target": 45332,
+      "kind": "boundary root"
+    },
+    {
+      "at": 45310,
+      "target": 45332,
+      "kind": "boundary root"
+    },
+    {
+      "at": 45312,
+      "target": 45348,
+      "kind": "boundary root"
+    },
+    {
+      "at": 45314,
+      "target": 45360,
+      "kind": "boundary root"
+    },
+    {
+      "at": 45320,
+      "target": 45376,
+      "kind": "boundary records"
+    },
+    {
+      "at": 45324,
+      "target": 45484,
+      "kind": "boundary records"
+    },
+    {
+      "at": 45328,
+      "target": 45532,
+      "kind": "boundary records"
+    },
+    {
+      "at": 45332,
+      "target": 45616,
+      "kind": "boundary records"
+    },
+    {
+      "at": 45348,
+      "target": 45700,
+      "kind": "boundary records"
+    },
+    {
+      "at": 45356,
+      "target": 45844,
+      "kind": "boundary records"
+    },
+    {
+      "at": 45360,
+      "target": 45928,
+      "kind": "boundary records"
+    },
+    {
+      "at": 45372,
+      "target": 46012,
+      "kind": "boundary records"
+    },
+    {
+      "at": 46070,
+      "target": 46222,
+      "kind": "instruction"
+    },
+    {
+      "at": 46075,
+      "target": 46223,
+      "kind": "instruction"
+    },
+    {
+      "at": 46082,
+      "target": 46215,
+      "kind": "instruction"
+    },
+    {
+      "at": 46176,
+      "target": 46136,
+      "kind": "instruction"
+    },
+    {
+      "at": 46222,
+      "target": 46232,
+      "kind": "support root"
+    },
+    {
+      "at": 46224,
+      "target": 46242,
+      "kind": "support root"
+    },
+    {
+      "at": 46226,
+      "target": 46247,
+      "kind": "support root"
+    },
+    {
+      "at": 46228,
+      "target": 46267,
+      "kind": "support root"
+    },
+    {
+      "at": 46233,
+      "target": 46282,
+      "kind": "support records"
+    },
+    {
+      "at": 46235,
+      "target": 46305,
+      "kind": "support records"
+    },
+    {
+      "at": 46243,
+      "target": 46286,
+      "kind": "support records"
+    },
+    {
+      "at": 46245,
+      "target": 46325,
+      "kind": "support records"
+    },
+    {
+      "at": 46253,
+      "target": 46290,
+      "kind": "support records"
+    },
+    {
+      "at": 46255,
+      "target": 46385,
+      "kind": "support records"
+    },
+    {
+      "at": 46258,
+      "target": 46295,
+      "kind": "support records"
+    },
+    {
+      "at": 46260,
+      "target": 46445,
+      "kind": "support records"
+    },
+    {
+      "at": 46263,
+      "target": 46300,
+      "kind": "support records"
+    },
+    {
+      "at": 46265,
+      "target": 46545,
+      "kind": "support records"
+    },
+    {
+      "at": 46273,
+      "target": 46302,
+      "kind": "support records"
+    },
+    {
+      "at": 46275,
+      "target": 46665,
+      "kind": "support records"
+    },
+    {
+      "at": 46855,
+      "target": 46990,
+      "kind": "instruction"
+    },
+    {
+      "at": 46860,
+      "target": 46991,
+      "kind": "instruction"
+    },
+    {
+      "at": 46928,
+      "target": 46894,
+      "kind": "instruction"
+    },
+    {
+      "at": 46990,
+      "target": 47000,
+      "kind": "wall root"
+    },
+    {
+      "at": 46994,
+      "target": 47006,
+      "kind": "wall root"
+    },
+    {
+      "at": 47001,
+      "target": 47018,
+      "kind": "wall records"
+    },
+    {
+      "at": 47010,
+      "target": 47040,
+      "kind": "wall records"
+    },
+    {
+      "at": 47013,
+      "target": 47098,
+      "kind": "wall records"
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#11141d">
+  <title>Sójka VBXE Map Editor</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+      <div>
+        <p class="eyebrow">ATARI XL/XE · VBXE</p>
+        <h1>Sójka Map Editor</h1>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button id="import-button" class="button ghost">Import</button>
+      <button id="export-json" class="button ghost">Export JSON</button>
+      <button id="export-asm" class="button primary">Export for MADS</button>
+      <input id="file-input" type="file" accept=".asm,.json,text/plain,application/json" hidden>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="level-panel panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">ROOM SET</p>
+          <h2>Original 24</h2>
+        </div>
+        <span id="save-state" class="save-state">Saved locally</span>
+      </div>
+      <nav id="level-list" class="level-list" aria-label="Level selection"></nav>
+      <button id="reset-all" class="text-button danger">Restore all original maps</button>
+    </aside>
+
+    <section class="editor-column">
+      <div class="toolbar panel">
+        <div>
+          <p id="level-kicker" class="eyebrow">LEVEL 01 / 24</p>
+          <div class="level-title-row">
+            <h2 id="level-title">rTuto1</h2>
+            <span id="level-note" class="level-note"></span>
+          </div>
+        </div>
+        <div class="tool-actions">
+          <button id="undo" class="icon-button" title="Undo (Ctrl/Cmd+Z)" aria-label="Undo">↶</button>
+          <button id="redo" class="icon-button" title="Redo (Ctrl/Cmd+Shift+Z)" aria-label="Redo">↷</button>
+          <button id="reset-level" class="button ghost compact">Reset level</button>
+        </div>
+      </div>
+
+      <div class="canvas-shell panel">
+        <div class="ruler top-ruler" aria-hidden="true"></div>
+        <div class="ruler left-ruler" aria-hidden="true"></div>
+        <canvas id="map" width="720" height="420" aria-label="Editable 24 by 14 Sójka level map"></canvas>
+        <div class="canvas-footer">
+          <span id="cursor-position">COL — · ROW —</span>
+          <span>24 × 14 CELLS · 10 PX PER VBXE TILE</span>
+        </div>
+      </div>
+
+      <div id="palette" class="palette panel" role="toolbar" aria-label="Tile palette"></div>
+    </section>
+
+    <aside class="inspector panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">INSPECTOR</p>
+          <h2 id="selected-tool-name">Wall</h2>
+        </div>
+        <kbd id="selected-tool-char">#</kbd>
+      </div>
+
+      <section class="inspector-section">
+        <h3>How to paint</h3>
+        <p>Click or drag with the primary button. Right-click erases. Use <kbd>[</kbd> and <kbd>]</kbd> to move between rooms.</p>
+      </section>
+
+      <section id="fly-editor" class="inspector-section" hidden>
+        <div class="section-title-row">
+          <h3>Fly-spike paths</h3>
+          <span class="tag">MAX 2</span>
+        </div>
+        <p class="section-help">Endpoints use local VBXE pixels. Paths appear over the map.</p>
+        <div id="fly-fields"></div>
+      </section>
+
+      <section class="inspector-section validation-section">
+        <div class="section-title-row">
+          <h3>VBXE checks</h3>
+          <span id="validation-badge" class="tag good">READY</span>
+        </div>
+        <ul id="validation-list" class="validation-list"></ul>
+      </section>
+
+      <section class="inspector-section integration">
+        <h3>Build handoff</h3>
+        <p>Save the MADS export as <code>sulka-levels.asm</code> in the Sójka directory, then run:</p>
+        <code>./run-emulator.sh</code>
+        <p class="section-help">One command validates and applies the maps, updates this browser editor, builds the XEX, and starts Altirra. Refresh afterward.</p>
+      </section>
+    </aside>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="levels.js"></script>
+  <script src="format.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

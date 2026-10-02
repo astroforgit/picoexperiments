@@ -1,0 +1,30 @@
+Reassembled all eight PRG banks; 33 explicit hardware services.
+Relocated three source terrain queries: 2145 bytes, 51 typed relocations.
+Writing object file...
+144 lines of source assembled in 2 pass
+2145 bytes written to the object file
+All 32 CHR sets: 131072 -> 110106 bytes, lossless.
+Writing object file...
+101 lines of source assembled in 3 pass
+146 bytes written to the object file
+Writing object file...
+65 lines of source assembled in 3 pass
+94 bytes written to the object file
+.......
+----------------------------------------------------------------------
+Ran 7 tests in 0.569s
+
+OK
+......
+----------------------------------------------------------------------
+Ran 6 tests in 22.425s
+
+OK
+Compared 23520 boundary queries (14585 collisions).
+Compared 11000 support queries (18 contacts), plus exact edge fixtures.
+Compared 792 wall rectangle edge queries, plus exact street fixtures.
+....
+----------------------------------------------------------------------
+Ran 4 tests in 19.458s
+
+OK

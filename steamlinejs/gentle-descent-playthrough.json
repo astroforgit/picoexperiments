@@ -1,0 +1,248 @@
+{
+  "name": "Grapple Gentle Descent",
+  "ticks": 633,
+  "seconds": 12.66,
+  "deaths": 0,
+  "checkpoints": 13,
+  "actions": [
+    [
+      4,
+      25
+    ],
+    [
+      4,
+      10
+    ],
+    [
+      4,
+      3
+    ],
+    [
+      4,
+      3
+    ],
+    [
+      3,
+      5
+    ],
+    [
+      2,
+      8
+    ],
+    [
+      1,
+      18
+    ],
+    [
+      4,
+      25
+    ],
+    [
+      4,
+      10
+    ],
+    [
+      3,
+      15
+    ],
+    [
+      4,
+      23
+    ],
+    [
+      4,
+      25
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      0,
+      20
+    ],
+    [
+      3,
+      3
+    ],
+    [
+      4,
+      25
+    ],
+    [
+      4,
+      25
+    ],
+    [
+      4,
+      10
+    ],
+    [
+      1,
+      8
+    ],
+    [
+      2,
+      16
+    ],
+    [
+      4,
+      10
+    ],
+    [
+      3,
+      8
+    ],
+    [
+      2,
+      30
+    ],
+    [
+      4,
+      10
+    ],
+    [
+      1,
+      20
+    ],
+    [
+      2,
+      30
+    ],
+    [
+      4,
+      10
+    ],
+    [
+      4,
+      3
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      2,
+      16
+    ],
+    [
+      2,
+      8
+    ],
+    [
+      3,
+      18
+    ],
+    [
+      4,
+      25
+    ],
+    [
+      4,
+      25
+    ],
+    [
+      4,
+      6
+    ],
+    [
+      4,
+      25
+    ],
+    [
+      4,
+      25
+    ],
+    [
+      3,
+      3
+    ],
+    [
+      0,
+      22
+    ],
+    [
+      1,
+      30
+    ],
+    [
+      2,
+      16
+    ],
+    [
+      1,
+      7
+    ]
+  ],
+  "sections": [
+    {
+      "checkpoint": 338,
+      "ticks": 46,
+      "actions": "--x25 --x10 --x3 --x3 LEFTx5"
+    },
+    {
+      "checkpoint": 369,
+      "ticks": 26,
+      "actions": "DOWNx8 RIGHTx18"
+    },
+    {
+      "checkpoint": 509,
+      "ticks": 50,
+      "actions": "--x25 --x10 LEFTx15"
+    },
+    {
+      "checkpoint": 628,
+      "ticks": 23,
+      "actions": "--x23"
+    },
+    {
+      "checkpoint": 737,
+      "ticks": 51,
+      "actions": "--x25 RIGHTx3 RIGHTx3 UPx20"
+    },
+    {
+      "checkpoint": 906,
+      "ticks": 71,
+      "actions": "LEFTx3 --x25 --x25 --x10 RIGHTx8"
+    },
+    {
+      "checkpoint": 963,
+      "ticks": 34,
+      "actions": "DOWNx16 --x10 LEFTx8"
+    },
+    {
+      "checkpoint": 1064,
+      "ticks": 60,
+      "actions": "DOWNx30 --x10 RIGHTx20"
+    },
+    {
+      "checkpoint": 1160,
+      "ticks": 46,
+      "actions": "DOWNx30 --x10 --x3 RIGHTx3"
+    },
+    {
+      "checkpoint": 1204,
+      "ticks": 42,
+      "actions": "DOWNx16 DOWNx8 LEFTx18"
+    },
+    {
+      "checkpoint": 1454,
+      "ticks": 56,
+      "actions": "--x25 --x25 --x6"
+    },
+    {
+      "checkpoint": 1730,
+      "ticks": 75,
+      "actions": "--x25 --x25 LEFTx3 UPx22"
+    },
+    {
+      "checkpoint": 1935,
+      "ticks": 53,
+      "actions": "RIGHTx30 DOWNx16 RIGHTx7"
+    }
+  ]
+}

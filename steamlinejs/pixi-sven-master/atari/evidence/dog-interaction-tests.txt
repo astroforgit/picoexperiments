@@ -1,0 +1,34 @@
+Converted background and 94 sprites: 233472 bytes, 57 VBXE banks
+Writing listing file...
+Writing object file...
+3293 lines of source assembled in 5 pass
+248134 bytes written to the object file
+PASS $D600 50Hz: uploads, clock, controls, moods/progress, whistle, enemies, lives, water, score/bonus, endings, 500 stress steps, depth/buffers; render 14987 CPU cycles excluding DMA
+PASS $D600 60Hz: uploads, clock, controls, moods/progress, whistle, enemies, lives, water, score/bonus, endings, 500 stress steps, depth/buffers; render 14987 CPU cycles excluding DMA
+PASS $D700 50Hz: uploads, clock, controls, moods/progress, whistle, enemies, lives, water, score/bonus, endings, 500 stress steps, depth/buffers; render 14987 CPU cycles excluding DMA
+PASS $D700 60Hz: uploads, clock, controls, moods/progress, whistle, enemies, lives, water, score/bonus, endings, 500 stress steps, depth/buffers; render 14987 CPU cycles excluding DMA
+PASS no VBXE: requirement message, no blits
+PASS 50Hz sheep: wandering, dry bounds, approach/facing, four love directions, whistle hearts/expiry, pause and restart
+PASS 60Hz sheep: wandering, dry bounds, approach/facing, four love directions, whistle hearts/expiry, pause and restart
+PASS interaction feedback: all four locked directions, slower progress, no duplicate Sven, dog interrupts rest, fast pursuit and stable diagonal heading
+50Hz 1.62s: sheep=1, lives=3, timer=91
+50Hz 16.00s: sheep=2, lives=3, timer=78
+50Hz 29.68s: sheep=3, lives=3, timer=67
+50Hz 31.00s: sheep=3, lives=2, timer=65
+50Hz 35.38s: sheep=4, lives=2, timer=63
+50Hz 37.88s: sheep=5, lives=2, timer=63
+50Hz 45.70s: sheep=6, lives=2, timer=57
+50Hz 49.24s: sheep=7, lives=2, timer=55
+50Hz 53.76s: sheep=8, lives=2, timer=53
+PASS 50Hz: complete input-only playthrough with enemies, moods and water enabled
+60Hz 1.62s: sheep=1, lives=3, timer=91
+60Hz 16.08s: sheep=2, lives=3, timer=78
+60Hz 24.48s: sheep=2, lives=2, timer=70
+60Hz 25.82s: sheep=3, lives=2, timer=71
+60Hz 27.13s: sheep=4, lives=2, timer=71
+60Hz 35.62s: sheep=5, lives=2, timer=65
+60Hz 41.75s: sheep=6, lives=2, timer=61
+60Hz 51.48s: sheep=6, lives=1, timer=51
+60Hz 53.90s: sheep=7, lives=1, timer=51
+60Hz 55.48s: sheep=8, lives=1, timer=51
+PASS 60Hz: complete input-only playthrough with enemies, moods and water enabled

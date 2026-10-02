@@ -1,0 +1,9 @@
+Use case: stylized-concept. Create a finished title-screen bitmap for the Atari VBXE game Porter, landscape 8:5 composition, intended to downsample to 320x200. Reference is the user screenshot: black background, white handwritten Porter logo, small ivory pixel character with two squared ears, one black square eye, projecting square snout facing right, rectangular body and two legs. Preserve this extremely simple blocky character silhouette, no clothing or human face. Large expressive handwritten white text exactly "Porter" across upper center. Character stands at lower center on a crumbling stone platform in a vast dark mysterious cavern with subtle charcoal and muted blue-gray rock silhouettes, sparse drifting dust and tiny pale specks, a faint distant warm checkpoint glow. Moody, lonely, restrained, beautiful indie pixel-art game atmosphere. Crisp deliberately pixelated shapes, mostly near-black negative space, ivory highlights, only a few subdued colors. Character prominent and readable, about 55 of 200 pixels high. Logo about 120 of 320 pixels wide. Keep bottom 18 pixels dark and uncluttered for a game prompt. No other text, no border, no rounded corners, no mockup.
+
+Generated with the built-in image_gen tool.
+
+Credit edit (built-in image_gen): Preserve the artwork, logo, character,
+palette and composition. Add two centered lines in muted warm ivory pixel
+lettering at the bottom, readable at 320x200:
+Original PICO-8 game by Blue Makes Games
+Atari version: astrofor
