@@ -15,6 +15,12 @@ that file to start again from the original. You can also open
 `index.html` directly in a browser, open the XEX with **Open XEX** and use
 **Save XEX** to download the result.
 
+On [GitHub Pages](https://astroforgit.github.io/picoexperiments/atari/zorro/editor/),
+the original XEX loads automatically. **Save XEX** downloads your edited game.
+To continue later, use **Open XEX** on the downloaded file. Pages cannot save
+edits on the server or start Altirra, so **Run in Altirra** is available only
+with `serve.py` locally.
+
 ## What you can edit
 
 | Tab | What it changes |

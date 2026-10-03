@@ -869,14 +869,21 @@ document.addEventListener('keydown', e => {
 $('tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setMode(b.dataset.mode); });
 for (const id of ['layerObjects', 'layerCollision', 'layerExits', 'layerGrid']) $(id).addEventListener('change', drawRoom);
 
-// With serve.py the game loads by itself and can be played in Altirra.
+// The local server can save and run the game. Static hosts can load the
+// original XEX and download edits without a server.
 (async () => {
   try {
-    const info = await fetch('/api/info', { cache: 'no-store' });
-    if (!info.ok) throw 0;
+    const info = await fetch('./api/info', { cache: 'no-store' });
+    if (!info.ok || !(await info.json()).server) throw 0;
     serverMode = true; $('runBtn').hidden = false;
-    const r = await fetch('/game.xex', { cache: 'no-store' });
+    const r = await fetch('./game.xex', { cache: 'no-store' });
     if (r.ok) await openBytes(await r.arrayBuffer(), 'Zorro (1985)(Datasoft)(US).xex', r.headers.get('X-Zorro-Source') || 'original');
-  } catch (_) { /* opened as a plain file: wait for the user to open the XEX */ }
+  } catch (_) {
+    if (location.protocol === 'file:') return;
+    try {
+      const r = await fetch('../Zorro (1985)(Datasoft)(US).xex');
+      if (r.ok) await openBytes(await r.arrayBuffer(), 'Zorro (1985)(Datasoft)(US).xex', 'original');
+    } catch (_) { /* Open XEX remains available if the static file is absent. */ }
+  }
 })();
 </script>

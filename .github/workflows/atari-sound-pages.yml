@@ -6,6 +6,8 @@ on:
     paths:
       - '.github/workflows/atari-sound-pages.yml'
       - 'atari-sound/**'
+      - 'atari/zorro/editor/index.html'
+      - 'atari/zorro/Zorro (1985)(Datasoft)(US).xex'
   workflow_dispatch:
 
 permissions:

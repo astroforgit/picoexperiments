@@ -43,6 +43,10 @@ def main():
         target = output / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, target)
+    zorro = output / 'atari' / 'zorro'
+    (zorro / 'editor').mkdir(parents=True)
+    shutil.copy2(ROOT / 'atari' / 'zorro' / 'editor' / 'index.html', zorro / 'editor' / 'index.html')
+    shutil.copy2(ROOT / 'atari' / 'zorro' / 'Zorro (1985)(Datasoft)(US).xex', zorro)
     (output / 'index.html').write_text('<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=atari-sound/web/"><title>Atari Sound</title><a href="atari-sound/web/">Open Atari Sound</a>\n')
     (output / '.nojekyll').touch()
     print(f'Built Pages site with {len(paths)} audio and metadata files at {output}')
