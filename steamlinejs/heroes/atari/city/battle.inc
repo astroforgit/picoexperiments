@@ -1004,11 +1004,16 @@ enemy_busy dta 0
         bcs ?first
         jsr skip_hero
         jmp ?redraw
-?first  stx selected_unit
-        stx click_unit
+?first  cpx selected_unit
+        beq ?arm
+        stx selected_unit
+        mva #1 dirty
+?arm    stx click_unit
         mva RTCLOK+2 click_time
         mva RTCLOK+1 click_time+1
-        jmp ?redraw
+        ; Arming the selected soldier changes no pixels. A blocking repaint
+        ; here can swallow the release/second Fire on real VBXE hardware.
+        rts
 ?action mva #255 click_unit
         jsr confirm_cell
 ?redraw mva #1 dirty

@@ -91,3 +91,14 @@ Both launch atari/heroes-vbxe3.xex through the shared Atari VBXE toolkit and
 reuse the persistent Altirra profile. Enable VBXE in that profile beforehand.
 The runner works independently of the current directory. Use --check in the
 shell runner, or -Check in PowerShell, to check paths without starting Altirra.
+
+Double-Fire input fix (2026-10-18)
+The first Fire on the already selected soldier now only arms the second press;
+it does not trigger a blocking battlefield redraw. This keeps input polling
+active to capture the release and rapid second Fire. Selecting another soldier
+still redraws, held Fire still cannot skip, and the second press still requires
+a release within the existing double-Fire interval. The last soldier's skip
+runs the enemy phase and starts the next player round.
+Regression: python3 atari/city/tools/test-double-fire-turn.py
+The previous v3 executable/source are preserved in
+backups/before-double-fire-fix-2026-10-18/.
