@@ -91,7 +91,7 @@ clear_bcb
         dta 0,0,0, 0,0, 0, <V_FB1,>V_FB1,^V_FB1, <FBW,>FBW, 1, <(FBW-1),>(FBW-1), FBH-1, 0,0, 0,0,0, 8
         dta 0,0,0, 0,0, 0, <V_CL,>V_CL,^V_CL, <320,>320, 1, <319,>319, 199, 0,0, 0,0,0, 8
         dta 0,0,0, 0,0, 0, <V_COLSH,>V_COLSH,^V_COLSH, 200,0, 1, 199,0, 4, 0,$FF, 0,0,0, 0
-upd_bcb dta 0,0,0, 8,0, 1, 0,0,0, <320,>320, 1, 7,0, 7, $FF,0, 0,0,0, 8
+upd_bcb dta 0,0,0, 8,0, 1, 0,0,0, <320,>320, 1, 7,0, 0, 0,0, 0,0,0, 9   ; (unused: no writes)
 spr_bcb dta 0,0,0, 24,0, 1, 0,0,0, <FBW,>FBW, 1, 23,0, 20, $FF,0, 0,0,0, 9
 V_SCR   = V_XDL+$100
 nop_bcb dta <V_SCR,>V_SCR,^V_SCR, 0,0, 0, <V_SCR,>V_SCR,^V_SCR, 0,0, 0, 0,0, 0, $FF,0, 0,0,0, 8

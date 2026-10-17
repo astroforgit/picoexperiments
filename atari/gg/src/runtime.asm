@@ -38,6 +38,7 @@ shift_on  .ds 1
 last_key  .ds 1
 kq        .ds 1         ; GETIN queue (one key)
 col_dirty .ds 1         ; colour RAM written
+col_run   .ds 1         ; a colour pass is running
 cs_dirty  .ds 1         ; a charset was rewritten by the game
 anim_dirty .ds 1        ; bits 0/1: chars $FA/$FB, $FC/$FD swapped
 gs_x      .ds 1         ; stub scratch
@@ -56,6 +57,10 @@ ex_left   .ds 1         ; tile expansions left for this idle step
 c64_nmi   .ds 2         ; where the game's stores to its NMI vector go
 spr_ptag  .ds 8         ; pointer held by sprite cache slots 192-199
 sc_flush  .ds 1         ; the sprite blit cache is stale
+co_state  .ds 1         ; 1: the renderer is suspended (its NMI frame at co_sp)
+co_sp     .ds 1
+co_gsp    .ds 1         ; the game's stack pointer in co_run
+co_pre    .ds 1         ; the renderer may be suspended (the game's frame wait)
         icl 'vars-rows.asm'
         .print 'vars DC: ', *
         ert * > $DD00
@@ -63,6 +68,7 @@ sc_flush  .ds 1         ; the sprite blit cache is stale
         org $DD10
         icl 'vars-render.asm'
         icl 'vars-rec.asm'
+row_dmd   .ds 25        ; (renderer row state, with row_dcs in code A)
         .print 'vars DD: ', *
         ert * > $DE00
 
@@ -82,11 +88,18 @@ log_ri    .ds 1         ; newest complete log
 log_new   .ds 1
 log_busy  .ds 1         ; log the main context reads ($FF none)
 zp_save   .ds 26
+row_anim  .ds 25
+row_edge  .ds 25        ; 1: columns 38-39 came in from the right, 2: 0-1 from the left
+sq_on     .ds 1         ; a scroll of the game waits for the renderer's step
+sq_x      .ds 1         ; (its map pointer)
+sq_y      .ds 1
         .print 'vars DE: ', *
         ert * > $DF00
 
         org $DF20
         icl 'vars-split.asm'
+row_force .ds 25
+row_prio  .ds 25
         .print 'vars DF: ', *
         ert * > $E000
 
@@ -280,13 +293,15 @@ nmi     pha
         jsr vbx_memb_a
         jsr vbi_work
         jsr raster_sync
+        dec nmi_busy
+        jsr co_check            ; (does not return when it suspends)
+nmi_tail
         pla
         sta rv
         pla
         jsr mema_set
         pla
         jsr vbx_memb_a
-        dec nmi_busy
 nmi_out pla
         tay
         pla
@@ -295,9 +310,20 @@ nmi_out pla
         rti
 
 vbi_work
+        ; first, while the beam is in the vertical blank: show the finished
+        ; picture and start the next list. The XDL address takes effect at the
+        ; next frame and the list draws into the framebuffer this frame showed:
+        ; done later, the rest of this frame would show it being drawn
+        jsr nmi_display
+        lda #0                  ; (the XDL went through the MEMAC-B window:
+        jsr vbx_memb_a          ; the game's handlers run under it)
         inc vframe
-        bne vw_1
+        bne vw_0
         inc vframe+1
+vw_0    lda vframe              ; a colour pass every 32 frames (writes the
+        and #31                 ; stubs do not see)
+        bne vw_1
+        dec col_dirty
 vw_1    jsr t_read_input
         lda ntsc
         beq vw_tick
@@ -317,7 +343,6 @@ vw_tick lda nmi_p
 vw_sei
 vw_notick
         jsr t_snd_frame         ; sound effects (the music comes later)
-        jsr nmi_display
         ; no frame wait of the game did renderer work: do some here
         lda idle_ran
         beq vw_idle
@@ -325,6 +350,7 @@ vw_notick
         sta idle_ran
         rts
 vw_idle lda in_idle
+        ora co_state            ; (not while the renderer is suspended)
         bne vw_ix
         ldx #15
 vw_s    lda ZP,x
@@ -438,26 +464,89 @@ k_exit  pla
 ; Wait for the next frame ($3AB4), doing renderer work meanwhile
 ; ------------------------------------------------------------------
 idle_wait
+        php
         stx iw_x
         sty iw_y
         lda $0700
         sta iw_v
-iw_l    lda #16
-        sta ex_left
+iw_l    lda #1
+        sta co_pre
+        jsr co_run
+        lda #0
+        sta co_pre
+        lda $0700
+        cmp iw_v
+        beq iw_l
+        ldx iw_x
+        ldy iw_y
+        plp
+        lda iw_v
+        cmp $0700
+        rts
+
+; The renderer runs as a coroutine on its own stack (CO_TOP down), so that
+; the game gets the CPU as soon as its frame begins: when the game's frame
+; counter changes while a renderer step runs from the frame wait, the NMI
+; leaves its own stack frame on the renderer's stack (co_check) and returns
+; to the game; the next co_run resumes it with the NMI's exit code.
+CO_TOP  = $A8
+co_run  tsx
+        stx co_gsp
+        lda co_state
+        bne cr_res
+        ldx #CO_TOP
+        txs
+        lda #6                  ; (tile expansions per step: a row with
+        sta ex_left             ; more new tiles goes on in the next one)
         lda #1
         sta idle_ran
         sta in_idle
         jsr t_idle_step
         lda #0
         sta in_idle
+        lda sq_on               ; a scroll during the step
+        beq cr_x
+        lda #0
+        sta sq_on
+        lda #BK_SPLIT
+        jsr mema_set
+        ldx sq_x
+        ldy sq_y
+        jsr scroll_notify
+cr_x    ldx co_gsp
+        txs
+        rts
+cr_res  lda #0
+        sta co_state
+        lda #1
+        sta in_idle
+        sta idle_ran
+        ldx co_sp
+        txs
+        jmp nmi_tail
+
+; NMI end: suspend the renderer when the game's frame has begun
+co_check
+        lda co_pre
+        and in_idle
+        beq cc_x
         lda $0700
         cmp iw_v
-        beq iw_l
-        ldx iw_x
-        ldy iw_y
-        lda iw_v
-        cmp $0700
-        rts
+        beq cc_x
+        pla                     ; (co_check's return address)
+        pla
+        tsx
+        stx co_sp
+        lda #1
+        sta co_state
+        lsr
+        sta in_idle
+        jsr vbx_memb_a          ; MEMAC-B off for the game
+        ldx co_gsp
+        txs
+        rts                     ; from co_run
+cc_x    rts
+
 
 ; playfield draw ($3855 jumps here instead of $00D0)
 hook_scroll
@@ -470,7 +559,13 @@ hook_scroll
         tay
         pla
         tax                     ; X/Y = map pointer of this draw
-        lda #BK_IDLE
+        lda co_state            ; the renderer is suspended (maybe composing a
+        beq hs_now              ; picture): its step ends with the scroll
+        stx sq_x                ; state it began with (co_run applies it)
+        sty sq_y
+        sta sq_on
+        rts
+hs_now  lda #BK_SPLIT
         jsr mema_set
         jmp scroll_notify
 
@@ -481,14 +576,30 @@ hook_swap
         ldx $5BC9
         jmp $5BCF
 
+; row fill ($3341: LDA $xxxx,X / STA ($FB),Y; the game sets the LDA operand
+; at $3328/$332E): its stores to colour RAM mark it
+hook_colfill
+hc_op   lda $FD78,x
+        sta ($FB),y
+        pha
+        lda $FC
+        and #$FC
+        cmp #$D8
+        bne hc_1
+        sta col_dirty
+hc_1    pla
+        jmp $3346
+
 ; KERNAL calls of the menu (bank SPLIT; A, X, Y, P pass through)
 k_chrout
+        jsr t_co_abort
         pha
         lda #BK_SPLIT
         jsr mema_set
         pla
         jmp kb_chrout
-k_plot  pha
+k_plot  jsr t_co_abort
+        pha
         php
         lda #BK_SPLIT
         jsr mema_set
@@ -530,6 +641,15 @@ t_idle_step
         lda #BK_IDLE
         jsr mema_set
         jmp idle_step
+t_co_abort                      ; (A, X, Y, P kept)
+        php
+        pha
+        lda #BK_SPLIT
+        jsr mema_set
+        pla
+        jsr co_abort
+        plp
+        rts
 t_render_loaded
         lda #BK_IDLE
         jsr mema_set
@@ -604,10 +724,9 @@ nd_b1   lda VBX+VB_BLIT
         jsr show_fb
         lda #0
         sta pending
-nd_1    lda ready
-        bmi nd_x
-        cmp shown
-        beq nd_x                ; its framebuffer is still on screen
+nd_1    lda ready               ; (nothing draws now. Its framebuffer can be
+        bmi nd_x                ; the one on screen only after a race with
+                                ; list_get: then it draws there, once)
 nd_b2   lda VBX+VB_BLIT
         bne nd_x
         sta run                 ; (A = 0 here: overwritten below)
@@ -625,11 +744,6 @@ nd_x    rts
 
 ; per char row, renderer state shared by the banks (RAM)
 row_dcs   .ds 25                ; what the char layer row was drawn with
-row_dmd   .ds 25
-row_force .ds 25
-row_prio  .ds 25
-row_anim  .ds 25
-row_edge .ds 25         ; 1: columns 38-39 came in from the right, 2: 0-1 from the left
 
 vbx_reloc                       ; the build appends the operand table here:
                                 ; (address, MEMAC-A bank or 0) per operand

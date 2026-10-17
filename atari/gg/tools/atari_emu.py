@@ -10,10 +10,13 @@ AND/XOR masks, signed steps) with a busy-time model.
 No OS ROM image is used: XEX segments are written straight to memory and
 INIT routines must not call the OS (the boot code never does).
 """
+import os
 from pathlib import Path
 import numpy as np
 from py65.devices.mpu6502 import MPU
 
+# blitter VRAM accesses per CPU cycle (GNG_BLIT_RATE; real VBXE: fewer, the display shares VRAM)
+BLIT_RATE = float(os.environ.get('GNG_BLIT_RATE', '8'))
 PAL_FRAME = 312 * 114 - 312 * 9      # ANTIC DMA off: only refresh cycles stolen
 NTSC_FRAME = 262 * 114 - 262 * 9
 
@@ -209,7 +212,7 @@ class Atari:
         if self.cpu.processorCycles < self.blit_busy_until:
             raise AssertionError('blitter started while busy')
         accesses = self.blit_list()
-        self.blit_busy_until = self.cpu.processorCycles + accesses // 8
+        self.blit_busy_until = self.cpu.processorCycles + int(accesses / BLIT_RATE)
 
     def blit_list(self):
         accesses = 0

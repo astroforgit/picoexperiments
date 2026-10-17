@@ -103,15 +103,10 @@ wl_ok   ldx wl_x
         ldy wl_y
         lda wl_n
         rts
-wl_idle lda #16
-        sta ex_left
-        lda #1
-        sta idle_ran
-        sta in_idle
-        jsr t_idle_step
-        lda #0
-        sta in_idle
-        rts
+wl_idle lda nmi_busy              ; (in the IRQ chain: no renderer work)
+        bne wl_ix
+        jmp co_run              ; a whole step (co_pre 0: not suspended)
+wl_ix   rts
 wl_n    dta 0
 wl_x    dta 0
 wl_y    dta 0
@@ -138,35 +133,15 @@ rsy_2   cmp #8
 rsy_3   cmp rs_avail
         beq rsy_same
         sta rs_avail
-        ; k = 312 * 256 / avail (16-bit quotient)
-        lda #<(312*256)
-        sta rs_n
-        lda #>(312*256)
-        sta rs_n+1
-        lda #^(312*256)
-        sta rs_n+2
-        lda #0
+        ; k = 312 * 256 / avail: table in bank SPLIT (the NMI restores
+        ; the bank it interrupted)
+        lda #BK_SPLIT
+        jsr mema_set
+        ldx rs_avail
+        lda rsk_lo-8,x
         sta rs_k
+        lda rsk_hi-8,x
         sta rs_k+1
-        sta gr_t
-        ldx #24
-rsy_d   asl rs_n
-        rol rs_n+1
-        rol rs_n+2
-        rol gr_t
-        lda gr_t
-        cmp rs_avail
-        bcc rsy_n
-        sbc rs_avail
-        sta gr_t
-        sec
-        bcs rsy_c
-rsy_n   clc
-rsy_c   rol rs_k
-        rol rs_k+1
-        dex
-        bne rsy_d
-        lda rs_k+1
         clc
         adc #1
         sta rs_step

@@ -361,3 +361,104 @@ xw_d    sta WIN,y
 xw_l    dta 0
 xw_k    dta 0
 xw_n    dta 0
+
+; raster_sync: 312 * 256 / avail for avail 8-156
+rsk_lo  :149 dta <(79872/(#+8))
+rsk_hi  :149 dta >(79872/(#+8))
+
+; the game needs the renderer's zero page (loader, KERNAL calls): forget a
+; suspended step and redraw everything
+co_abort
+        pha
+        lda co_state
+        beq ca_x
+        lda #0
+        sta co_state
+        sta in_idle
+        lda #$FF
+        sta bl
+        sta log_busy
+        lda sq_on               ; a scroll waiting for the step: everything is
+        beq coa_1               ; redrawn anyway
+        lda #0
+        sta sq_on
+        lda sq_x
+        sta map_lo
+        lda sq_y
+        sta map_hi
+coa_1
+        txa
+        pha
+        tya
+        pha
+        jsr t_render_loaded     ; (bank IDLE)
+        pla
+        tay
+        pla
+        tax
+ca_x    pla
+        rts
+
+; the game's playfield draw ($3855) moved the map by a column: the char layer
+; rows 0-18 turn their rings (called from code A: hook_scroll, co_run)
+scroll_notify
+        txa
+        sec
+        sbc map_lo
+        sta sn_d
+        tya
+        sbc map_hi
+        sta sn_d+1
+        stx map_lo
+        sty map_hi
+        lda sn_d+1
+        bne sn_neg
+        lda sn_d
+        cmp #1
+        bne sn_x
+        ; one column left
+        lda #2
+        sta reg_dirty
+        ldx #18
+sn_l    lda row_off,x
+        clc
+        adc #1
+        cmp #40
+        bcc sn_l1
+        lda #0
+sn_l1   sta row_off,x
+        lda #1
+        sta row_edge,x
+        sta edge_any
+        dex
+        bpl sn_l
+        rts
+sn_neg  cmp #$FF
+        bne sn_x
+        lda sn_d
+        cmp #$FF
+        bne sn_x
+        lda #2
+        sta reg_dirty
+        ldx #18
+snr_l    lda row_off,x
+        sec
+        sbc #1
+        bcs snr_1
+        lda #39
+snr_1   sta row_off,x
+        lda #2
+        sta row_edge,x
+        sta edge_any
+        dex
+        bpl snr_l
+        rts
+sn_x    ldx #18
+        lda #1
+snp_l    sta row_prio,x
+        sta fp_any
+        dex
+        bpl snp_l
+        rts
+sn_d    dta 0,0
+

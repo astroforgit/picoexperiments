@@ -20,3 +20,5 @@ seg_n     .ds 2
 seg_ln    .ds 2*NR      ; lines of segment k of list l at [l*NR+k]
 seg_pl    .ds 2*NR      ; its palette (1-3)
 pslot     .ds 3*6       ; colour set held by palettes 1-3 ($FF = none)
+fp_any    .ds 1         ; some row may be forced/priority (idle_step)
+edge_any  .ds 1         ; some row may have scroll edges

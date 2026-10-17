@@ -54,7 +54,7 @@ def load_snap(path):
 
 
 if __name__ == '__main__':
-    a = Atari(os.path.join(HERE, 'gng.xex'))
+    a = Atari(os.path.join(HERE, 'gng.xex'), pal=os.environ.get('GNG_NTSC') != '1')   # GNG_NTSC=1: NTSC machine
     a.boot()
     t = time.time()
     a.run_frames(int(sys.argv[2]), inputs=parse_inputs(sys.argv[4] if len(sys.argv) > 4 else ''))

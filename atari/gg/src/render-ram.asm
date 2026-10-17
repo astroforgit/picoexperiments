@@ -30,8 +30,8 @@ bw_0    lda VBX+VB_BLIT
 
 ; A/X = window address of a list: constant fields of the update slots
 ; (8x8 tile copies) and the sprite slots (24-wide transparent copies)
-lst_ub_lo dta <(WIN+(V_LIST0&$3FFF)+(NUPD-1)*21), <(WIN+(V_LIST1&$3FFF)+(NUPD-1)*21)
-lst_ub_hi dta >(WIN+(V_LIST0&$3FFF)+(NUPD-1)*21), >(WIN+(V_LIST1&$3FFF)+(NUPD-1)*21)
+lst_ub_lo dta <(WIN+(V_LIST0&$3FFF)), <(WIN+(V_LIST1&$3FFF))   ; update slot 0
+lst_ub_hi dta >(WIN+(V_LIST0&$3FFF)), >(WIN+(V_LIST1&$3FFF))
 lst_w_lo  dta <(WIN+(V_LIST0&$3FFF)), <(WIN+(V_LIST1&$3FFF))
 lst_w_hi  dta >(WIN+(V_LIST0&$3FFF)), >(WIN+(V_LIST1&$3FFF))
 lst_v_lo  dta <V_LIST0, <V_LIST1

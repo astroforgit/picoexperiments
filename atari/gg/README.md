@@ -86,11 +86,22 @@ the frame, and records the VIC registers and sprite pointers after each one
 (a log in VRAM). The sprite multiplexer and the HUD split are reproduced
 from that log.
 
+**The renderer gives way to the game.** The renderer works while the game
+waits for its next frame (`$3AB4`), as a coroutine on its own stack
+(`$01A8` down). When the game's frame counter changes, the NMI leaves the
+renderer suspended where it was and returns to the game, so the game's main
+loop runs every frame and the renderer gets the time that is left. Scrolls
+the game makes meanwhile are applied when the renderer's step ends; the
+loader and the menu's KERNAL calls cancel a suspended step and redraw
+everything.
+
 **Picture.** The C64 screen is kept as a 320×200 character layer in VRAM.
 Each character row is a ring buffer, so a coarse scroll only changes the
 row's offset and draws the column that came in. While the game waits for its
 next frame, the runtime compares screen RAM with a shadow copy and queues
-tile blits for the cells that changed. It also turns the newest interrupt log
+tile blits for the cells that changed (they run in the order they were
+queued). Colour RAM is compared the same way when a stub saw a write, and
+in full every 32 frames. It also turns the newest interrupt log
 into raster regions and sprite instances and builds the blitter list for the
 next picture: the character layer is copied into the framebuffer per region
 with its fine scroll, border and blank areas are filled, then the sprites are
@@ -108,8 +119,9 @@ The music voices (1 and 2) are not converted yet.
 python3 tools/atari_snap.py save 300 gen/snap/menu300.pkl
 bash tools/make_snaps.sh                     # attract mode and level 1 snapshots
 python3 tools/verify_render.py gen/snap/game1900.pkl 100 --every 4
-python3 tools/level_test.py /tmp/levels 1 2 3 4 5 6
-python3 tools/bench.py                       # pictures and game ticks per frame
+python3 tools/level_test.py --still /tmp/levels 1 2 3 4 5 6
+python3 tools/speed.py gen/snap/game1900.pkl # game frames, frame waits, pictures
+python3 tools/speed.py gen/snap/ntsc1900.pkl # the same on an NTSC machine
 ```
 
 - `tools/c64.py`, `tools/gng.py` and `tools/vic.py` are a headless C64 model
@@ -120,20 +132,27 @@ python3 tools/bench.py                       # pictures and game ticks per frame
   interrupt log with `tools/vic.py` over the same C64 memory and compares it
   with the VBXE framebuffer pixel by pixel. In the six levels the pictures
   match exactly or differ in a few HUD digits (one picture of delay).
+- `GNG_BLIT_RATE=4` makes the model's blitter half as fast (the real VBXE
+  shares VRAM with the display); `GNG_NTSC=1` makes `tools/atari_snap.py`
+  boot an NTSC machine.
 - `tools/level_test.py` starts each level through the trainer options,
   `tools/skip_test.py` skips through levels, `tools/gameover_test.py` plays
-  without trainers until the game is over.
+  without trainers until the game is over, `tools/hiscore_test.py` gets to
+  the name entry of the high score table.
 - `tools/nmi_phase.py`, `tools/compose_prof.py` and `tools/main_prof.py`
   profile the vertical blank, the composition of a picture and the time
   between frames.
 
 Checked in Altirra 4.40 (NTSC + VBXE): the menu, the title and attract mode,
-starting a game, walking, scrolling and the enemies of level 1.
+starting a game, walking, scrolling and the enemies of level 1; the game
+clock runs at real time.
 
 ## Known limitations
 
-- The picture is redrawn about every second frame in level 1 (25 per second
-  on PAL), less in busy scenes; the game itself always runs at full speed.
+- The game runs at full speed, but the picture is redrawn on about 45% of
+  the frames when the screen stands still and 25-30% while it scrolls (12-15
+  pictures per second): building a picture (sprites from the interrupt log,
+  the character layer, the regions) needs more CPU time than a frame leaves.
 - The music is silent (only sound effects play). SPACE on the title screen
   turns the sound effects off, as on the C64.
 - Disk accesses are fast but the decruncher takes a few seconds at the start

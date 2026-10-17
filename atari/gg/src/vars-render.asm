@@ -3,6 +3,7 @@ bl        .ds 1         ; list/framebuffer being built for the next picture
 run       .ds 1         ; list/framebuffer the blitter is drawing
 pending   .ds 1         ; run is to be shown when the blitter is done
 upd_cnt   .ds 2         ; per list: committed char-layer updates
+upd_hi    .ds 2         ; per list: update slots that may still hold blits
 spr_n     .ds 1         ; sprite blits this frame
 endslot   .ds 2         ; per list: tail slot that ends the list
 reg_used  .ds 2         ; per list: region slots written last time

@@ -53,6 +53,13 @@ HOOKS = [
     (0x3AB4, 0x4C, 'idle_wait', b'\xad\x00\x07'),
     (0x386A, 0x4C, 'hook_scroll', b'\x4c\xd0\x00'),
     (0x5BCA, 0x4C, 'hook_swap', b'\xa0\x00\xae'),     # block swap (charsets)
+    (0x3341, 0x4C, 'hook_colfill', b'\xbd\x78\xfd'),  # row fill: STA ($FB),Y can be colour RAM
+]
+# self-modifying stores whose target instruction moved into a hook: (address,
+# opcode, expected operand, new operand)
+SELFMOD = [
+    (0x3328, 0x8D, 0x3342, 'hc_op+1'),
+    (0x332E, 0x8D, 0x3343, 'hc_op+2'),
 ]
 # stores into charset memory: level set-up and the IRQ's animated characters
 CHARSET_STORES = {0x5C2B: 'cs_mark',
@@ -209,6 +216,9 @@ def main():
                 patches.append([a, [op] + word(lab)])
             for a, op, lab, orig in HOOKS:
                 assert bytes(mem[a:a + 3]) == orig, f'hook ${a:04X}: {mem[a:a + 3].hex()}'
+                patches.append([a, [op] + word(lab)])
+            for a, op, w, lab in SELFMOD:
+                assert mem[a] == op and mem[a + 1] | mem[a + 2] << 8 == w, f'selfmod ${a:04X}'
                 patches.append([a, [op] + word(lab)])
             for a, mark in CHARSET_STORES.items():
                 op = mem[a]

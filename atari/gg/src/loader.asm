@@ -9,6 +9,7 @@
         icl '../gen/files.asm'
 
 ldr_entry
+        jsr t_co_abort
         sei
         and #$7F                ; (the save of the high scores asks for $8C)
         sta ld_file

@@ -293,26 +293,51 @@ compose_list
         lda #MEMB_LST
         jsr vbx_memb_a
         jsr compose
-        ; the list starts at its first committed update slot
+cl_w    lda ready               ; the last list has not started yet: its
+        bpl cl_w                ; cell updates must run (rarely waits)
+        ; update slots this list used last time beyond this time's: no
+        ; writes (AND mask 0, transparent copy)
         ldx bl
-        lda #NUPD
-        sec
-        sbc upd_cnt,x
+        lda upd_cnt,x
+        sta cl_k
+        cmp upd_hi,x
+        bcs cl_s2
         jsr mul21               ; nt/nt+1 = slot * 21
         ldx bl
-        lda lst_v_lo,x
+        lda lst_w_lo,x
         clc
         adc nt
+        sta ZPN
+        lda lst_w_hi,x
+        adc nt+1
+        sta ZPN+1
+cl_s1   lda #0
+        ldy #15
+        sta (ZPN),y             ; AND mask 0: no writes
+        lda ZPN
+        clc
+        adc #21
+        sta ZPN
+        bcc cl_s3
+        inc ZPN+1
+cl_s3   inc cl_k
+        lda cl_k
+        cmp upd_hi,x
+        bcc cl_s1
+cl_s2   lda upd_cnt,x
+        sta upd_hi,x
+        ; the list starts at update slot 0
+        lda lst_v_lo,x
         sta rdy_lo
         lda lst_v_mid,x
-        adc nt+1
         sta rdy_mid
         lda lst_v_hi,x
-        adc #0
         sta rdy_hi
         stx ready               ; (last: the NMI may start it at once)
         lda #0
         jmp vbx_memb_a
+
+cl_k    dta 0
 
 ; A = slot: nt/nt+1 = A * 21
 mul21   sta nt

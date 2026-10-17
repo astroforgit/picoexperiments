@@ -121,7 +121,10 @@ is_1    lda anim_dirty
         beq is_2
         jmp do_anim
 is_2    lda col_dirty
+        ora col_run
         beq is_3
+        lda log_new             ; a new picture first: colours can wait
+        bne is_3
         jmp colour_pass
 is_3    jsr list_get            ; a list to put updates and the picture in
         bcc is_l
@@ -130,7 +133,7 @@ is_l    lda upd_cnt,x
         cmp #NUPD-40
         bcs is_comp             ; no room for another row
         lda is_rows
-        cmp #25
+        cmp #8
         bcs is_comp             ; enough rows since the last picture
         ; forced or priority rows first, then the new columns of a scroll
         ; (fp_any / edge_any: some row may be flagged; cleared before the
@@ -206,8 +209,6 @@ is_ey   pha
         jmp is_edge
 is_rows dta 0
 is_rrd  dta 0
-fp_any  dta 1
-edge_any dta 1
 
 ; the game rewrote charset memory: all tiles expanded from RAM charsets
 ; are stale
@@ -324,8 +325,14 @@ da_m    dta 0
 
 ; colour RAM changed: compare one row with the colour shadow; changed cells
 ; get their screen shadow invalidated so that the diff redraws them
+; (col_dirty is cleared when a pass starts: a change in a row the pass has
+; already compared starts another pass)
 colour_pass
         ldx col_row
+        bne cp_0
+        stx col_dirty
+        inc col_run
+cp_0
         lda #MEMB_ON|(V_COLSH>>14)
         jsr vbx_memb_a
         lda row40_lo,x
@@ -384,8 +391,7 @@ cp_n    dey
         cpx #25
         bcc cp_2
         ldx #0
-        lda #0
-        sta col_dirty
+        stx col_run
 cp_2    stx col_row
         rts
 cp_off  dta 0
@@ -434,12 +440,12 @@ dr_1    ; screen line: copy it when it is under the window (menu screen)
         sta dr_c+2
         lda #0                  ; the screen may be under the window
         jsr vbx_memb_a
-        ldy #39
-dr_cp
+        ldy dr_c1               ; (only the columns compared)
+dr_cp   dey
 dr_s    lda $FFFF,y
         sta dr_line,y
-        dey
-        bpl dr_cp
+        cpy dr_c0
+        bne dr_cp
         ; tile slots of this row's charset
         lda row_cs,x
         sta dr_cs
@@ -593,6 +599,61 @@ dr_kind dta 0
 dr_and  dta 0
 dr_line .ds 40
 
+; A list for the renderer (X, C clear), C set when none. A list's cell
+; updates go into the shared char layer, so a list made ready must run
+; (compose_list does not make another one ready while it waits). The list
+; whose framebuffer is not on screen comes first; the one on screen is taken
+; only while the other is drawing or waiting to start (else it could never
+; start). An NMI during the choice (it may show a picture) makes it choose
+; again; after the take it cannot show the list taken.
+list_get
+        lda bl
+        bpl lg_ok
+lg_r    lda vframe
+        sta lg_vf
+        lda shown
+        eor #1
+        tax
+        jsr lg_free
+        bcc lg_take
+        lda pending
+        bne lg_sh
+        lda ready
+        bmi lg_none
+lg_sh   ldx shown
+        jsr lg_free
+        bcc lg_take
+lg_none sec
+        rts
+lg_take stx bl
+        lda vframe
+        cmp lg_vf
+        beq lg_t1
+        lda #$FF
+        sta bl
+        bne lg_r
+lg_t1   lda #0
+        sta upd_cnt,x
+        lda lst_ub_lo,x
+        sta upd_ptr
+        lda lst_ub_hi,x
+        sta upd_ptr+1
+lg_ok   ldx bl
+        clc
+        rts
+lg_vf   dta 0
+; C clear when list X is not running or waiting to run
+lg_free cpx ready
+        beq lg_f1
+        lda pending
+        beq lg_f0
+        cpx run
+        beq lg_f1
+lg_f0   clc
+        rts
+lg_f1   sec
+        rts
+
 ; queue the tile of cell (dr_r, dr_ring) = char dr_ch, colour from RAM
 emit_cell
         jsr list_get
@@ -719,16 +780,20 @@ ec_na   ; BCB: src = tile slot + ch*64, dst = CL row + ring*8, AND mask
         adc #0
         iny
         sta (upd_ptr),y
+        lda #7
+        ldy #14
+        sta (upd_ptr),y         ; 8 lines (an unused slot has 1)
         lda dr_and
-        ldy #15
+        iny
         sta (upd_ptr),y
-        ; commit
+        ; commit: the updates run in the order they were queued (a cell
+        ; queued twice in a list ends with the later one)
         lda upd_ptr
-        sec
-        sbc #21
+        clc
+        adc #21
         sta upd_ptr
-        bcs ec_c
-        dec upd_ptr+1
+        bcc ec_c
+        inc upd_ptr+1
 ec_c    ldx bl
         inc upd_cnt,x
         clc
@@ -819,17 +884,17 @@ et_g    lda $FFFF,x
         ldx ec_sl
         lda ts_memb,x
         jsr vbx_memb_a
-        lda dr_ch
+        lda dr_ch               ; ZP+2/3: the tile (ZP+2 is free here)
         and #3
         lsr
         ror
         ror
-        sta et_d+1
+        sta ZP+2
         lda dr_ch
         lsr
         lsr
         ora #>WIN
-        sta et_d+2
+        sta ZP+3
         ; codes: off / on for hires and ECM
         lda dr_ch
         lsr
@@ -846,50 +911,59 @@ et_g    lda $FFFF,x
         bne et_1
         lda #$4F
         sta et_off
-et_1    ldx #0
-et_row  lda gl,x
+et_1    ldy #0
+        sty et_r
+et_row  ldx et_r
+        lda gl,x
         sta et_b
         lda dr_kind
         bne et_bits
-        ; multicolour
-        ldy #4
-et_mc   lda #0
-        asl et_b
-        rol
-        asl et_b
-        rol
-        stx et_x
-        tax
-        lda mc_tile,x
-        ldx et_x
-        jsr et_put
-        jsr et_put
-        dey
-        bne et_mc
+        ; multicolour: each half of the byte is two pixel pairs (mc2)
+        lda et_b
+        lsr
+        lsr
+        lsr
+        and #$1E
+        jsr et_m2
+        lda et_b
+        and #$0F
+        asl
+        jsr et_m2
         jmp et_nr
-et_bits ldy #8
+et_bits ldx #8
 et_hb   asl et_b
         lda et_off
         bcc et_h0
         lda #$8F
-et_h0   jsr et_put
-        dey
+et_h0   sta (ZP+2),y
+        iny
+        dex
         bne et_hb
-et_nr   inx
-        cpx #8
+et_nr   inc et_r
+        lda et_r
+        cmp #8
         bne et_row
         lda #MEMB_LST
         jmp vbx_memb_a
-et_put
-et_d    sta WIN
-        inc et_d+1
+; A = half byte * 2: its two pairs, each two pixels
+et_m2   tax
+        lda mc2,x
+        sta (ZP+2),y
+        iny
+        sta (ZP+2),y
+        iny
+        lda mc2+1,x
+        sta (ZP+2),y
+        iny
+        sta (ZP+2),y
+        iny
         rts
 et_t    dta 0
 et_a    dta 0,0
 et_b    dta 0
-et_x    dta 0
+et_r    dta 0
 et_off  dta 0
-mc_tile dta $4F,$5F,$6F,$7F
+mc2     :16 dta [$4F+[#>>2]*$10], [$4F+[#&3]*$10]
 ecm_bg  dta $AF,$BF,$CF,$DF
 
 ; idle time with nothing else to do: expand a wanted sprite, else the next
@@ -898,66 +972,6 @@ pre_expand
         rts
 
 ; the playfield draw ($3855) copied rows 0-18 from map position X/Y
-scroll_notify
-        txa
-        sec
-        sbc map_lo
-        sta sn_d
-        tya
-        sbc map_hi
-        sta sn_d+1
-        stx map_lo
-        sty map_hi
-        lda sn_d+1
-        bne sn_neg
-        lda sn_d
-        cmp #1
-        bne sn_x
-        ; one column left
-        lda #2
-        sta reg_dirty
-        ldx #18
-sn_l    lda row_off,x
-        clc
-        adc #1
-        cmp #40
-        bcc sn_l1
-        lda #0
-sn_l1   sta row_off,x
-        lda #1
-        sta row_edge,x
-        sta edge_any
-        dex
-        bpl sn_l
-        rts
-sn_neg  cmp #$FF
-        bne sn_x
-        lda sn_d
-        cmp #$FF
-        bne sn_x
-        lda #2
-        sta reg_dirty
-        ldx #18
-snr_l    lda row_off,x
-        sec
-        sbc #1
-        bcs snr_1
-        lda #39
-snr_1   sta row_off,x
-        lda #2
-        sta row_edge,x
-        sta edge_any
-        dex
-        bpl snr_l
-        rts
-sn_x    ldx #18
-        lda #1
-snp_l    sta row_prio,x
-        sta fp_any
-        dex
-        bpl snp_l
-        rts
-sn_d    dta 0,0
 
 
 ; ---- the IRQ chain log replayed (main context): regions and sprite instances
@@ -1663,35 +1677,3 @@ rv_ptr  .ds 8
         .ds LOGREC-58
 
 ; a list to build into: bl, or a free one (C clear), else C set
-list_get
-        lda bl
-        bpl lg_ok
-        ldx #0
-        jsr lg_free
-        bcc lg_take
-        ldx #1
-        jsr lg_free
-        bcs lg_x
-lg_take stx bl
-        lda #0
-        sta upd_cnt,x
-        lda lst_ub_lo,x
-        sta upd_ptr
-        lda lst_ub_hi,x
-        sta upd_ptr+1
-lg_ok   ldx bl
-        clc
-lg_x    rts
-; C clear when list X is not running or waiting to run (a list whose
-; framebuffer is on screen may be rebuilt: the NMI starts it only when the
-; other framebuffer is shown)
-lg_free cpx ready
-        beq lg_f1
-        lda pending
-        beq lg_f0
-        cpx run
-        beq lg_f1
-lg_f0   clc
-        rts
-lg_f1   sec
-        rts
