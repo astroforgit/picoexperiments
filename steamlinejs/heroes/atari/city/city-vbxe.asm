@@ -62,6 +62,7 @@ calc_out=$D3
         jsr fill_rect
 .endm
 
+        icl 'generated/asset-profile.inc'
         org $2000
 .proc loader_init
         cld
@@ -620,9 +621,33 @@ pip_offsets dta 0,6,12
         lda sprite_hi,x
         sta bl_src+1
         mva #3 bl_src+2
+        .if CROPPED_BUILDINGS
+        clc
+        lda calc_x
+        adc sprite_crop_x,x
+        sta calc_x
+        bcc ?crop_x
+        inc calc_x+1
+?crop_x clc
+        lda calc_y
+        adc sprite_crop_y,x
+        sta calc_y
+        lda sprite_width,x
+        sta bl_ssy
+        sec
+        sbc #1
+        sta bl_w
+        mva #0 bl_ssy+1
+        sta bl_w+1
+        lda sprite_height,x
+        sec
+        sbc #1
+        sta bl_h
+        .else
         mwa #SPRITE_W bl_ssy
         mwa #SPRITE_W-1 bl_w
         mva #SPRITE_H-1 bl_h
+        .endif
         jmp transparent_blit
 .endp
 

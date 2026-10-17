@@ -35,8 +35,9 @@ for(const b of c.buildings){
 }
 console.log(`PASS: ${data.length}-byte XEX, 95 graphics uploads, safe CPU regions, four recruit lines plus support Chapel, duplicate troops allowed.`);
 
+const artProfile=fs.existsSync('generated/asset-profile.json')?JSON.parse(fs.readFileSync('generated/asset-profile.json')):{profile:'classic',buildingBytes:53760};
 const regions=[
- [0x20000,64000,'city'],[0x30000,53760,'buildings'],[0x3d200,4608,'font'],
+ [0x20000,64000,'city'],[0x30000,artProfile.buildingBytes||53760,'buildings'],[0x3d200,4608,'font'],
  [0x3e400,3840,'hex masks'],[0x3f300,2688,'obstacles'],[0x40000,4480,'troops'],
  [0x44000,40960,'forest'],[0x50000,64000,'encounters'],
  [0x60000,40960,'catacombs'],[0x6a000,40960,'caves'],[0x74000,40960,'ruins']

@@ -25,8 +25,9 @@ def check(page,capture=False):
  m.put('selected_plot',0);m.call('purchase');m.mem.ram[r.LABELS['building_levels']]=2;m.call('recruit');m.mem.ram[r.LABELS['building_levels']]=3
  m.put('selected_plot',10);m.call('purchase');assert m.array('army_units')[4]==2 and m.array('army_paid_lo')[4]==65
  before=m.get('gold',2);m.call('dismiss_unit');assert m.get('gold',2)==before+32
- # All imported native numbers match the file (Chapel types are reserved, unavailable).
- d=json.loads((r.ROOT/'../../greenhaven-unit-balance.json').read_text())
+ # Check the compiled native input; editor-only balance drafts may deliberately differ.
+ content=json.loads((r.ROOT/'content.json').read_text())
+ d={'players':[dict(family=b['id'],**{key:b[key][t] for key in ['hp','damage','move','shootRange']}) for b in content['buildings'] for t in range(3)],'enemies':content['enemies']}
  for i,u in enumerate(d['players']):
   if u['family']=='chapel':continue
   for key,table in [('hp','type_hp'),('damage','type_damage'),('move','type_move'),('shootRange','type_shoot_range')]:assert m.mem.ram[r.LABELS['battle.'+table]+i]==u[key]
