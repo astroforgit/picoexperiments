@@ -1,0 +1,2 @@
+# test snapshots (remade by tools/make_snaps.sh after each build)
+gen/snap/
