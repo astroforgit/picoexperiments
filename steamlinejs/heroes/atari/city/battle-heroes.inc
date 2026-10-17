@@ -233,7 +233,8 @@ pose_packed dta 0
 .endp
 .proc projectile
         lda attack_frame
-        beq ?done
+        cmp #5
+        bcc ?done
         lda attack_ranged
         beq ?done
         mva projectile_x calc_x

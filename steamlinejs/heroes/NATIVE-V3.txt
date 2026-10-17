@@ -111,3 +111,13 @@ Practice is selectable only in Dark Forest after a Forest victory and with an
 army. Its unavailable state is informational; other regions omit it entirely.
 All popup entry, navigation and confirmation use the same availability checks.
 Regression: python3 atari/city/tools/test-encounter-popup.py
+
+Damage-scaled impact animation (2026-10-18)
+Attacks now use eight approach/contact/recovery frames. On contact, the target
+recoils up to five pixels away from the attacker and returns to its original
+position. A red point appears over its body for the impact frames: 1 HP lost
+uses 1x1 pixel, 2 HP 3x3, 3 HP 5x5, and 4+ HP 7x7. Size uses actual HP lost,
+including skeleton arrow resistance, the Ogre bonus and remaining HP on lethal
+hits. This is a visual offset, never a change to the occupied hex. Summons do
+not trigger damage effects. Ranged projectiles reach the target before impact.
+Regression: python3 atari/city/tools/test-hit-impact.py

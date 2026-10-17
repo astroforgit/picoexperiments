@@ -3,14 +3,13 @@ attack_damage dta 0
 attack_bonus dta 0
 actual_damage dta 0
 
-.proc attack_units
+.proc compute_damage
         ldx attacker_unit
         ldy unit_type,x
         lda type_damage,y
         clc
         adc attack_bonus
         sta attack_damage
-        mva #0 attack_bonus
         ; Only Archery Range fighters (types 3..5) fire physical arrows.
         tya
         cmp #3
@@ -26,7 +25,13 @@ actual_damage dta 0
         cmp #2
         bcc ?damage
         dec attack_damage
-?damage ldx defender_unit
+?damage rts
+.endp
+
+.proc attack_units
+        jsr compute_damage
+        mva #0 attack_bonus
+        ldx defender_unit
         lda unit_hp,x
         beq ?done
         cmp attack_damage

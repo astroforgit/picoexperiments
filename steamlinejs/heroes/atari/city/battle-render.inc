@@ -142,7 +142,9 @@ hex_hi dta >$E400,>$E700,>$EA00,>$ED00,>$F000
         lda foot_x
         sbc lunge-1,y
         sta foot_x
-?ground lda foot_x
+?ground jsr hit_recoil
+        ldx draw_id
+        lda foot_x
         sec
         sbc #10
         sta calc_x
@@ -163,11 +165,6 @@ hex_hi dta >$E400,>$E700,>$EA00,>$ED00,>$F000
         bne ?ellipse
         mva #2 fr_col
 ?ellipse jsr fill_rect
-        lda attack_flash
-        beq ?sprite
-        lda draw_id
-        cmp attack_flash_target
-        beq ?bar
 ?sprite lda foot_x
         sec
         sbc #16
@@ -180,6 +177,7 @@ hex_hi dta >$E400,>$E700,>$EA00,>$ED00,>$F000
         ldx draw_id
         lda unit_type,x
         jsr hero_sprite
+        jmp hit_dot
 ?bar    rts
 .endp
 foot_x dta 0
@@ -415,3 +413,73 @@ s_prepare dta c'OGRE PREPARES +2 STRIKE: MOVE AWAY',0
 s_hop dta c'IMP HOPS AWAY AFTER ATTACKING',0
 s_summoned dta c'WARLOCK SUMMONS A SKELETON',0
 s_windup dta c'WIND',0
+
+; Backward kick and recovery at contact, using the actual attack direction.
+.proc hit_recoil
+        lda impact_damage
+        beq ?done
+        lda attack_frame
+        beq ?done
+        ldx draw_id
+        cpx defender_unit
+        bne ?done
+        tay
+        lda recoil-1,y
+        sta recoil_offset
+        ldx attacker_unit
+        ldy unit_cell,x
+        lda foot_x
+        cmp cell_x_lo,y
+        bcc ?left
+        clc
+        adc recoil_offset
+        sta foot_x
+        rts
+?left   sec
+        sbc recoil_offset
+        sta foot_x
+?done   rts
+.endp
+recoil dta 0,1,3,5,0,0,0,0
+recoil_offset dta 0
+
+; Actual HP lost selects a native 1/3/5/7 pixel red impact point.
+.proc hit_dot
+        lda attack_frame
+        cmp #2
+        bcc ?done
+        cmp #5
+        bcs ?done
+        lda draw_id
+        cmp defender_unit
+        bne ?done
+        lda impact_damage
+        beq ?done
+        cmp #5
+        bcc ?size
+        lda #4
+?size   sec
+        sbc #1
+        sta impact_radius
+        asl
+        clc
+        adc #1
+        sta fr_w
+        sta fr_h
+        mva #0 fr_w+1
+        lda foot_x
+        sec
+        sbc impact_radius
+        sta calc_x
+        mva #0 calc_x+1
+        lda foot_y
+        sec
+        sbc #14
+        sec
+        sbc impact_radius
+        sta calc_y
+        mva #9 fr_col
+        jmp fill_rect
+?done   rts
+.endp
+impact_radius dta 0

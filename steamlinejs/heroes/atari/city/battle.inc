@@ -554,23 +554,34 @@ attack_frame     dta 0
 
 .proc animate_attack
         mva defender_unit attack_flash_target
+        jsr compute_damage
+        ldx defender_unit
+        lda unit_hp,x
+        cmp attack_damage
+        bcc ?amount
+        lda attack_damage
+?amount sta impact_damage
+        ldx attacker_unit
+        ldy unit_type,x
+        lda type_summon,y
+        cmp #255
+        beq ?prepare
+        mva #0 impact_damage
+?prepare
         jsr prepare_projectile
         mva #8 attack_frame
-?frame  mva #0 attack_flash
+?frame  jsr draw
         lda attack_frame
-        cmp #3
-        bcs ?draw
-        and #1
-        sta attack_flash
-?draw   jsr draw
+        cmp #5
+        bcc ?impact
         jsr advance_projectile
         jsr advance_projectile
-        dec attack_frame
-        dec attack_frame
+?impact dec attack_frame
         bne ?frame
-        mva #0 attack_flash
+        mva #0 impact_damage
         rts
 .endp
+impact_damage dta 0
 animation_step dta 0
         icl 'monster-abilities.inc'
 
