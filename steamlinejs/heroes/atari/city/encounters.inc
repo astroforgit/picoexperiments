@@ -20,16 +20,15 @@
 .proc map_confirm
         lda popup_open
         beq ?location
+        lda popup_choice
+        jsr map_choice_enabled
+        bcc ?done
         mva #0 battle.practice_mode
         lda popup_choice
         cmp #1
         beq ?close
         cmp #2
         bne ?fight
-        lda selected_location
-        bne ?done
-        lda region_wins
-        beq ?done
         mva #1 battle.practice_mode
 ?fight  jsr can_enter_battle
         bcc ?done
@@ -43,6 +42,9 @@
 ?scout  mva #1 popup_open
         sta dirty
         mva #0 popup_choice
+        jsr can_enter_battle
+        bcs ?done
+        mva #1 popup_choice
 ?done   rts
 .endp
 
@@ -51,6 +53,9 @@
         beq ?no
         ldx selected_location
         lda location_region,x
+        cmp #255
+        beq ?no
+        cmp #0
         beq ?yes
         tax
         dex
@@ -65,15 +70,50 @@
 region_wins dta 0,0,0,0
 location_region dta 0,1,2,255,3
 
+; A popup choice -> carry set only for an available action. Back is always valid.
+.proc map_choice_enabled
+        cmp #1
+        beq ?yes
+        cmp #2
+        beq ?practice
+        cmp #0
+        bne ?no
+        jmp can_enter_battle
+?practice
+        lda selected_location
+        bne ?no
+        lda region_wins
+        beq ?no
+        jmp can_enter_battle
+?yes    sec
+        rts
+?no     clc
+        rts
+.endp
+map_choice_step dta 1
+
 .proc map_navigate
         lda popup_open
         beq ?map
-        inc popup_choice
-        lda popup_choice
-        cmp #3
+        mva #1 map_choice_step
+        cpx #0
+        beq ?previous
+        cpx #2
+        bne ?next
+?previous
+        mva #255 map_choice_step
+?next   lda popup_choice
+        clc
+        adc map_choice_step
+        cmp #255
+        bne ?upper
+        lda #2
+?upper  cmp #3
         bcc ?choice
-        mva #0 popup_choice
-?choice
+        lda #0
+?choice sta popup_choice
+        jsr map_choice_enabled
+        bcc ?next
         mva #1 dirty
         rts
 ?map    lda map_direction_offsets,x
@@ -189,6 +229,8 @@ map_cursor_w dta 56,56,56,72,56
         adc #48
         sta one_char
         labeltext 68,105,one_char
+        ldx selected_location
+        ldy location_region,x
         lda battle.wins_required,y
         clc
         adc #48
@@ -205,9 +247,27 @@ map_cursor_w dta 56,56,56,72,56
         jmp ?buttons
 ?ready  labeltext 32,119,s_ready
 ?buttons
-        labeltext 32,151,s_practice
+        jsr can_enter_battle
+        bcc ?disabled
         rect 32,134,119,15,1
+        jmp ?back_button
+?disabled
+        ; Blend the disabled control into the panel; it cannot receive focus.
+        rect 32,134,119,15,7
+?back_button
         rect 170,134,119,15,1
+        lda selected_location
+        bne ?focus
+        lda #2
+        jsr map_choice_enabled
+        bcc ?practice_locked
+        labeltext 32,151,s_practice
+        jmp ?focus
+?practice_locked
+        labeltext 32,151,s_practice_locked
+?focus  lda popup_choice
+        jsr map_choice_enabled
+        bcc ?labels
         lda popup_choice
         cmp #2
         beq ?practice
@@ -230,7 +290,13 @@ map_cursor_w dta 56,56,56,72,56
         mva #15 fr_h
         mva #2 fr_col
         jsr outline
-?labels labeltext 74,138,s_fight
+?labels jsr can_enter_battle
+        bcc ?locked_label
+        labeltext 74,138,s_fight
+        jmp ?back_label
+?locked_label
+        labeltext 72,138,s_disabled
+?back_label
         labeltext 217,138,s_back
         rts
 .endp
@@ -264,4 +330,7 @@ s_city_desc dta c'RETURN HOME TO BUILD AND UPGRADE.',0
 s_ruins_desc dta c'GREEN SOUL FIRE SPLITS THE RUINS.',0
 s_ruins_detail dta c'UNDEAD AND IMPS SERVE THE WARLOCK.',0
 
-s_practice dta c'PRACTICE: FOREST WIN NEEDED / 20 GOLD',0
+s_practice dta c'PRACTICE: +20 GOLD / NO PROGRESS',0
+
+s_disabled dta c'LOCKED',0
+s_practice_locked dta c'PRACTICE LOCKED: WIN IN FOREST FIRST',0

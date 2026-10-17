@@ -102,3 +102,12 @@ runs the enemy phase and starts the next player round.
 Regression: python3 atari/city/tools/test-double-fire-turn.py
 The previous v3 executable/source are preserved in
 backups/before-double-fire-fix-2026-10-18/.
+
+Encounter popup availability fix (2026-10-18)
+Unavailable Fight controls now show LOCKED without a button background or active
+outline, and navigation skips them. Locked regions and empty armies default to
+Back. The report shows the reason (previous region required or recruit an army).
+Practice is selectable only in Dark Forest after a Forest victory and with an
+army. Its unavailable state is informational; other regions omit it entirely.
+All popup entry, navigation and confirmation use the same availability checks.
+Regression: python3 atari/city/tools/test-encounter-popup.py
