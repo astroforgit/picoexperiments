@@ -1,0 +1,107 @@
+Greenhaven editor balance v2 — 17 October 2026
+
+Open unit-editor.html directly or through the existing static server.
+The editor is self-contained, including animated artwork and encounter rules.
+The balanced defaults also live in greenhaven-unit-balance.json.
+
+The preset adjusts all 12 player tiers and 13 enemy types. It retains individual
+fighters, duplicate recruits, fixed damage and the current native turn rules.
+Casters have ordinary ranged attacks; no unimplemented spells are assumed.
+Start remains 50 gold, two Spearmen, level-2 Barracks and three army slots.
+Chapel costs are 40 / 50 / 30. Slot upgrades plus three extra Spearmen cost
+165 gold, matching all gold available before Forest stage 3 (50 + 50 + 65).
+The third Chapel upgrade discounts recruits by 10 gold, breaking even after
+three recruits receiving the full discount.
+
+Encounters: four regions, three stages per region, three weighted groups per
+stage except the single authored Warlock group. Each group has 1-5 enemies;
+weight 0 disables a group. Add/remove groups, edit all enemy selections, stage
+names, victory gold and region replay gold. Enemy identities are stable IDs.
+A seed deterministically selects a group within its region/stage. Replays use
+stage 3 and the smaller replay reward. Retry retains the seed in the intended
+game integration; this editor only previews the encounter, not a campaign.
+Terrain and initial deployment match the current native board.
+
+The economy summary updates while editing. Strength estimates are heuristics,
+not combat simulations or proven win rates. Warnings flag groups differing by
+more than 30% estimated strength. These are initial playtest values.
+
+JSON exports include encounterConfig version 1 alongside schemaVersion 2 unit
+data. CSV includes settings and encounter variants. Legacy unit-only imports
+receive the old fixed encounter tables and normalized derived range fields.
+The existing native importer applies unit/building data only. Random encounter
+pools are editor-only until integrated into the native generator/runtime.
+Native content.json, assembly and executable have not been changed.
+
+Progression update:
+Dark Forest -> Catacombs -> Monster Caves -> Necromancer Ruins.
+Three successful encounters clear a region by default. The next region stays
+locked until its predecessor is cleared. Victories needed are editable from
+3 to 9 per region and exported in encounterConfig.progression. Three internal
+difficulty stages are distributed across that region's required victories.
+The campaign preview enforces locks, counts test victories, grants each reward
+once, and preserves the same encounter after test defeat. Retreat gives no
+credit. Cleared-region replays give reduced gold and no extra victory credit.
+This is an explicit test-result preview, not playable tactical combat. It resets
+when the configuration changes. The separate authoring preview can inspect any
+region and stage, including locked ones.
+
+Active default groups have strictly increasing estimated strength bands:
+Dark Forest 12-25.5; Catacombs 26.5-37; Monster Caves 38-48.5;
+Necromancer Ruins 49-59.5. These are heuristics, not guaranteed combat difficulty.
+Later enemies and groups were revised to preserve this ordering. The editor
+warns if custom groups overlap a previous region's strength band.
+
+Recovered Lowrez reference: globals.lua defines named encounter prerequisites;
+battle_selector.gui_script.lua checks SNAPSHOT.battles_done[battle.req], filters
+by party strength and hides completed once-only missions. For example Crypt
+unlocks Graveyard, followed by Merry Men, Ogre Camp and Warlock. Its rosters are
+fixed; terrain and some AI targeting are random. The new editor adapts the
+prerequisite idea to consecutive region victory requirements and random pools.
+
+The previous balanced preset is additionally backed up in
+backups/before-progression-2026-10-17/.
+The new browser key is greenhaven-unit-balance-progression-v2. Both previous
+browser keys remain untouched and can be loaded through the toolbar.
+Run node tests/editor-progression.test.cjs for progression, sequential locks,
+defeat/retry, replay limits, custom thresholds and difficulty-band checks.
+
+Preservation:
+  backups/before-balance-2026-10-17/unit-editor.html
+  backups/before-balance-2026-10-17/greenhaven-unit-balance.json
+  backups/before-balance-2026-10-17/atari/city/content.json
+  backups/before-balance-2026-10-17/editor-defaults.json
+  backups/before-balance-2026-10-17/checksums.json
+These are exact pre-change copies. The original editor backup is standalone.
+Toolbar actions load/export the old configuration, load the previous browser
+draft where available, and undo preset changes. A new browser-storage key is
+used; previous browser keys are read without modification. The last
+valid draft before a switch is saved to the new key plus -before-switch.
+
+Verification:
+  node tests/editor-balance.test.cjs   (Node 18 or newer)
+Tests cover 12,000 seed/region/stage combinations, stable selection, weighted
+frequencies, disabled groups, deployment, boss restrictions, replay rewards,
+editor/default parity, backup hashes and unchanged native content.
+The encounter-rules script embedded in unit-editor.html must equal the source
+in editor-balance.js; the tests enforce this to keep standalone copies valid.
+Browser verification covers local save/reload, editing and validation, presets
+and undo, JSON/CSV exports, malformed imports, legacy import and offline load.
+Full tactical combat balance still needs native integration and playtesting.
+
+Stats-only simulation update:
+The editor now includes a simulation section with five shopping strategies,
+seed selection, detailed purchase/move/attack logs, batch comparison and JSON
+export. Source: simulation/campaign-sim.js, simulation/editor-simulation.js.
+Headless CLI: node simulation/run.cjs --seeds 200 --output simulation/results
+Single trace: node simulation/trace.cjs --strategy mixed --seed 2
+See simulation/README.txt for model assumptions and reproduction.
+
+Tested 12000 campaigns: 12 scenarios, five strategies, seeds1-200.
+Current preset completion: infantry100%, archers100%, mounted0%, casters100%,
+mixed51%. Candidate: already-won opening replay20 gold, DemonHP3, Cavalry
+damage3. Candidate completion100% for all five bots with native-style AI;
+mounted89.5% with enemy pathfinding (remaining losses in Cave stage3).
+These are fixed-bot frequencies, not human win rates. The candidate is separate
+and the active unit/economy/encounter preset and native content were preserved.
+Previous editor preserved in backups/before-simulation-2026-10-17/.

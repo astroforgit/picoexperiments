@@ -8,15 +8,15 @@
       "building": "Barracks",
       "family": "barracks",
       "tier": 1,
-      "hp": 2,
+      "hp": 3,
       "damage": 1,
       "move": 2,
       "range": 1,
       "recruit": 15,
-      "buildingCost": 50,
+      "buildingCost": 40,
       "shootRange": 0,
-      "basis": "Proposed",
-      "notes": "Lowrez-scale proposal; no exact original counterpart."
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Budget infantry."
     },
     {
       "id": "barracks-2",
@@ -24,15 +24,15 @@
       "building": "Barracks",
       "family": "barracks",
       "tier": 2,
-      "hp": 3,
+      "hp": 4,
       "damage": 2,
       "move": 2,
       "range": 1,
       "recruit": 25,
-      "buildingCost": 100,
+      "buildingCost": 70,
       "shootRange": 0,
-      "basis": "Lowrez: spearman",
-      "notes": "Exact original combat values."
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Durable starting infantry."
     },
     {
       "id": "barracks-3",
@@ -40,15 +40,15 @@
       "building": "Barracks",
       "family": "barracks",
       "tier": 3,
-      "hp": 4,
+      "hp": 6,
       "damage": 3,
       "move": 2,
       "range": 1,
-      "recruit": 75,
-      "buildingCost": 130,
+      "recruit": 60,
+      "buildingCost": 90,
       "shootRange": 0,
-      "basis": "Lowrez: swordsman",
-      "notes": "Exact original combat values."
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Heavy frontline damage."
     },
     {
       "id": "archery-1",
@@ -56,15 +56,15 @@
       "building": "Archery Range",
       "family": "archery",
       "tier": 1,
-      "hp": 2,
+      "hp": 3,
       "damage": 1,
       "move": 1,
-      "range": 3,
+      "range": 4,
       "recruit": 25,
-      "buildingCost": 60,
-      "shootRange": 3,
-      "basis": "Proposed",
-      "notes": "Lowrez-scale proposal; no exact original counterpart."
+      "buildingCost": 45,
+      "shootRange": 4,
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Long-range support; protect its low mobility."
     },
     {
       "id": "archery-2",
@@ -72,15 +72,15 @@
       "building": "Archery Range",
       "family": "archery",
       "tier": 2,
-      "hp": 3,
-      "damage": 1,
+      "hp": 4,
+      "damage": 2,
       "move": 1,
-      "range": 4,
-      "recruit": 65,
-      "buildingCost": 110,
+      "range": 5,
+      "recruit": 50,
+      "buildingCost": 75,
       "shootRange": 5,
-      "basis": "Lowrez: archer",
-      "notes": "Exact original combat values."
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Stronger ranged damage."
     },
     {
       "id": "archery-3",
@@ -88,15 +88,15 @@
       "building": "Archery Range",
       "family": "archery",
       "tier": 3,
-      "hp": 3,
-      "damage": 1,
+      "hp": 5,
+      "damage": 2,
       "move": 2,
-      "range": 5,
-      "recruit": 100,
-      "buildingCost": 160,
-      "shootRange": 7,
-      "basis": "Lowrez: sniper",
-      "notes": "Exact original combat values. Enemy Sniper adapted as player tier 3."
+      "range": 6,
+      "recruit": 80,
+      "buildingCost": 100,
+      "shootRange": 6,
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Mobile long-range support."
     },
     {
       "id": "lodge-1",
@@ -104,15 +104,16 @@
       "building": "Ranger Lodge",
       "family": "lodge",
       "tier": 1,
-      "hp": 2,
+      "hp": 3,
       "damage": 1,
-      "move": 3,
+      "move": 4,
       "range": 1,
       "recruit": 20,
-      "buildingCost": 70,
+      "buildingCost": 45,
       "shootRange": 0,
-      "basis": "Proposed",
-      "notes": "Lowrez-scale proposal; no exact original counterpart."
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Fast budget flanker.",
+      "mounted": true
     },
     {
       "id": "lodge-2",
@@ -120,79 +121,33 @@
       "building": "Ranger Lodge",
       "family": "lodge",
       "tier": 2,
-      "hp": 3,
+      "hp": 4,
       "damage": 2,
       "move": 4,
       "range": 1,
-      "recruit": 50,
-      "buildingCost": 120,
+      "recruit": 45,
+      "buildingCost": 75,
       "shootRange": 0,
-      "basis": "Proposed",
-      "notes": "Lowrez-scale proposal; no exact original counterpart."
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Mobile melee pressure.",
+      "mounted": true
     },
     {
       "id": "lodge-3",
-      "name": "Cavalery",
+      "name": "Cavalry",
       "building": "Ranger Lodge",
       "family": "lodge",
       "tier": 3,
-      "hp": 4,
+      "hp": 6,
       "damage": 2,
-      "move": 6,
+      "move": 5,
       "range": 1,
-      "recruit": 90,
-      "buildingCost": 180,
+      "recruit": 70,
+      "buildingCost": 100,
       "shootRange": 0,
-      "basis": "Proposed",
-      "notes": "Lowrez-scale proposal; no exact original counterpart."
-    },
-    {
-      "id": "chapel-1",
-      "name": "Acolyte",
-      "building": "Chapel",
-      "family": "chapel",
-      "tier": 1,
-      "hp": 2,
-      "damage": 1,
-      "move": 1,
-      "range": 1,
-      "recruit": 20,
-      "buildingCost": 80,
-      "shootRange": 0,
-      "basis": "Proposed",
-      "notes": "Lowrez-scale proposal; no exact original counterpart."
-    },
-    {
-      "id": "chapel-2",
-      "name": "Healer",
-      "building": "Chapel",
-      "family": "chapel",
-      "tier": 2,
-      "hp": 3,
-      "damage": 1,
-      "move": 2,
-      "range": 1,
-      "recruit": 45,
-      "buildingCost": 130,
-      "shootRange": 0,
-      "basis": "Proposed",
-      "notes": "Lowrez-scale proposal; no exact original counterpart."
-    },
-    {
-      "id": "chapel-3",
-      "name": "Priest",
-      "building": "Chapel",
-      "family": "chapel",
-      "tier": 3,
-      "hp": 4,
-      "damage": 2,
-      "move": 2,
-      "range": 1,
-      "recruit": 85,
-      "buildingCost": 190,
-      "shootRange": 0,
-      "basis": "Proposed",
-      "notes": "Lowrez-scale proposal; no exact original counterpart."
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Durable cavalry; trades sword damage for speed.",
+      "mounted": true
     },
     {
       "id": "tower-1",
@@ -200,15 +155,15 @@
       "building": "Wizard Tower",
       "family": "tower",
       "tier": 1,
-      "hp": 2,
-      "damage": 1,
+      "hp": 3,
+      "damage": 2,
       "move": 1,
       "range": 2,
-      "recruit": 30,
-      "buildingCost": 100,
+      "recruit": 25,
+      "buildingCost": 45,
       "shootRange": 2,
-      "basis": "Proposed",
-      "notes": "Lowrez-scale proposal; no exact original counterpart."
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Short-range damage; stronger hit than Hunter."
     },
     {
       "id": "tower-2",
@@ -216,15 +171,15 @@
       "building": "Wizard Tower",
       "family": "tower",
       "tier": 2,
-      "hp": 3,
+      "hp": 4,
       "damage": 2,
-      "move": 1,
+      "move": 2,
       "range": 3,
-      "recruit": 70,
-      "buildingCost": 150,
-      "shootRange": 2,
-      "basis": "Proposed",
-      "notes": "Lowrez-scale proposal; no exact original counterpart."
+      "recruit": 50,
+      "buildingCost": 75,
+      "shootRange": 3,
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Mobile medium-range caster."
     },
     {
       "id": "tower-3",
@@ -232,15 +187,15 @@
       "building": "Wizard Tower",
       "family": "tower",
       "tier": 3,
-      "hp": 4,
-      "damage": 2,
-      "move": 1,
+      "hp": 5,
+      "damage": 3,
+      "move": 2,
       "range": 4,
-      "recruit": 120,
-      "buildingCost": 220,
-      "shootRange": 3,
-      "basis": "Proposed",
-      "notes": "Lowrez-scale proposal; no exact original counterpart."
+      "recruit": 85,
+      "buildingCost": 100,
+      "shootRange": 4,
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "High damage at shorter range than Marksman."
     }
   ],
   "enemies": [
@@ -252,8 +207,8 @@
       "move": 3,
       "range": 1,
       "shootRange": 0,
-      "basis": "Lowrez: minibeast",
-      "notes": "Exact original combat values."
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Individual fighter; fixed damage, no armor or special abilities."
     },
     {
       "id": "wolf",
@@ -263,19 +218,19 @@
       "move": 3,
       "range": 1,
       "shootRange": 0,
-      "basis": "Proposed",
-      "notes": "Lowrez-scale proposal; not an original unit identifier."
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Individual fighter; fixed damage, no armor or special abilities."
     },
     {
       "id": "bat",
       "name": "Bat",
       "hp": 2,
       "damage": 1,
-      "move": 6,
+      "move": 5,
       "range": 1,
       "shootRange": 0,
-      "basis": "Proposed",
-      "notes": "Lowrez-scale proposal; not an original unit identifier."
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Individual fighter; fixed damage, no armor or special abilities."
     },
     {
       "id": "skeleton",
@@ -285,107 +240,572 @@
       "move": 1,
       "range": 4,
       "shootRange": 4,
-      "basis": "Lowrez: skeleton",
-      "notes": "Exact original combat values."
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Individual fighter; fixed damage, no armor or special abilities."
     },
     {
       "id": "zombie",
       "name": "Zombie",
-      "hp": 4,
+      "hp": 5,
       "damage": 2,
       "move": 1,
       "range": 1,
       "shootRange": 0,
-      "basis": "Proposed",
-      "notes": "Lowrez-scale proposal; not an original unit identifier."
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Individual fighter; fixed damage, no armor or special abilities."
     },
     {
       "id": "bone-archer",
       "name": "Bone Archer",
       "hp": 3,
-      "damage": 1,
+      "damage": 2,
       "move": 1,
       "range": 4,
-      "shootRange": 5,
-      "basis": "Proposed",
-      "notes": "Lowrez-scale proposal; not an original unit identifier."
+      "shootRange": 4,
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Individual fighter; fixed damage, no armor or special abilities."
     },
     {
       "id": "ogre",
       "name": "Ogre",
-      "hp": 5,
-      "damage": 4,
+      "hp": 7,
+      "damage": 3,
       "move": 2,
       "range": 1,
       "shootRange": 0,
-      "basis": "Lowrez: ogre",
-      "notes": "Exact original combat values."
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Individual fighter; fixed damage, no armor or special abilities."
     },
     {
       "id": "warlock",
       "name": "Warlock",
-      "hp": 7,
+      "hp": 9,
       "damage": 1,
       "move": 1,
       "range": 3,
       "shootRange": 0,
-      "basis": "Lowrez: warlock",
-      "notes": "Summons Demons within 3 hexes; does not shoot. Stored damage 1 is unused."
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Summons Demons within 3 hexes. Killing the Warlock wins."
     },
     {
       "id": "imp",
       "name": "Imp",
-      "hp": 3,
+      "hp": 4,
       "damage": 2,
-      "move": 6,
+      "move": 4,
       "range": 1,
       "shootRange": 0,
-      "basis": "Proposed",
-      "notes": "Lowrez-scale proposal; not an original unit identifier."
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Individual fighter; fixed damage, no armor or special abilities."
     },
     {
       "id": "beast",
       "name": "Beast",
-      "hp": 3,
+      "hp": 4,
       "damage": 2,
       "move": 3,
       "range": 1,
       "shootRange": 0,
-      "basis": "Lowrez: beast",
-      "notes": "Exact original combat values."
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Individual fighter; fixed damage, no armor or special abilities."
     },
     {
       "id": "dark",
       "name": "Dark",
+      "hp": 5,
+      "damage": 2,
+      "move": 2,
+      "range": 1,
+      "shootRange": 0,
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Individual fighter; fixed damage, no armor or special abilities."
+    },
+    {
+      "id": "demon",
+      "name": "Demon",
       "hp": 4,
       "damage": 3,
       "move": 2,
       "range": 1,
       "shootRange": 0,
-      "basis": "Lowrez: dark",
-      "notes": "Exact original combat values."
-    },
-    {
-      "id": "demon",
-      "name": "Demon",
-      "hp": 5,
-      "damage": 3,
-      "move": 2,
-      "range": 1,
-      "shootRange": 0,
-      "basis": "Lowrez: demon",
-      "notes": "Exact original combat values."
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Individual fighter; fixed damage, no armor or special abilities."
     },
     {
       "id": "sniper",
       "name": "Sniper",
       "hp": 3,
-      "damage": 1,
+      "damage": 2,
       "move": 2,
       "range": 5,
       "shootRange": 5,
-      "basis": "Lowrez: sniper",
-      "notes": "Exact original combat values."
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Individual fighter; fixed damage, no armor or special abilities."
     }
-  ]
+  ],
+  "chapel": {
+    "costs": [
+      40,
+      50,
+      30
+    ],
+    "baseCapacity": 3,
+    "capacityByLevel": [
+      3,
+      4,
+      5,
+      5
+    ],
+    "recruitDiscount": 10
+  },
+  "preset": "greenhaven-progression-v2",
+  "encounterConfig": {
+    "version": 1,
+    "selection": "weighted-seeded",
+    "terrain": "fixed",
+    "retrySameSeed": true,
+    "regions": [
+      {
+        "id": "forest",
+        "name": "Dark Forest",
+        "replayReward": 30,
+        "stages": [
+          {
+            "name": "Outskirts",
+            "reward": 50,
+            "variants": [
+              {
+                "name": "Dark Forest 1 - 1",
+                "weight": 1,
+                "enemies": [
+                  "minibeast",
+                  "minibeast"
+                ]
+              },
+              {
+                "name": "Dark Forest 1 - 2",
+                "weight": 1,
+                "enemies": [
+                  "minibeast",
+                  "bat"
+                ]
+              },
+              {
+                "name": "Dark Forest 1 - 3",
+                "weight": 1,
+                "enemies": [
+                  "bat",
+                  "bat"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Stronghold",
+            "reward": 65,
+            "variants": [
+              {
+                "name": "Dark Forest 2 - 1",
+                "weight": 1,
+                "enemies": [
+                  "wolf",
+                  "minibeast",
+                  "minibeast"
+                ]
+              },
+              {
+                "name": "Dark Forest 2 - 2",
+                "weight": 1,
+                "enemies": [
+                  "beast",
+                  "minibeast",
+                  "bat"
+                ]
+              },
+              {
+                "name": "Dark Forest 2 - 3",
+                "weight": 1,
+                "enemies": [
+                  "wolf",
+                  "wolf",
+                  "bat"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Region guard",
+            "reward": 85,
+            "variants": [
+              {
+                "name": "Dark Forest 3 - 1",
+                "weight": 1,
+                "enemies": [
+                  "beast",
+                  "wolf",
+                  "minibeast"
+                ]
+              },
+              {
+                "name": "Dark Forest 3 - 2",
+                "weight": 1,
+                "enemies": [
+                  "beast",
+                  "beast",
+                  "minibeast"
+                ]
+              },
+              {
+                "name": "Dark Forest 3 - 3",
+                "weight": 1,
+                "enemies": [
+                  "wolf",
+                  "wolf",
+                  "wolf"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "catacombs",
+        "name": "Catacombs",
+        "replayReward": 50,
+        "stages": [
+          {
+            "name": "Outskirts",
+            "reward": 90,
+            "variants": [
+              {
+                "name": "Catacombs 1 - 1",
+                "weight": 1,
+                "enemies": [
+                  "zombie",
+                  "skeleton",
+                  "zombie"
+                ]
+              },
+              {
+                "name": "Catacombs 1 - 2",
+                "weight": 1,
+                "enemies": [
+                  "zombie",
+                  "zombie",
+                  "zombie"
+                ]
+              },
+              {
+                "name": "Catacombs 1 - 3",
+                "weight": 1,
+                "enemies": [
+                  "dark",
+                  "skeleton",
+                  "zombie"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Stronghold",
+            "reward": 110,
+            "variants": [
+              {
+                "name": "Catacombs 2 - 1",
+                "weight": 1,
+                "enemies": [
+                  "dark",
+                  "zombie",
+                  "skeleton"
+                ]
+              },
+              {
+                "name": "Catacombs 2 - 2",
+                "weight": 1,
+                "enemies": [
+                  "zombie",
+                  "zombie",
+                  "skeleton",
+                  "skeleton"
+                ]
+              },
+              {
+                "name": "Catacombs 2 - 3",
+                "weight": 1,
+                "enemies": [
+                  "dark",
+                  "dark",
+                  "zombie"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Region guard",
+            "reward": 130,
+            "variants": [
+              {
+                "name": "Catacombs 3 - 1",
+                "weight": 1,
+                "enemies": [
+                  "dark",
+                  "dark",
+                  "skeleton",
+                  "zombie"
+                ]
+              },
+              {
+                "name": "Catacombs 3 - 2",
+                "weight": 1,
+                "enemies": [
+                  "dark",
+                  "bone-archer",
+                  "zombie",
+                  "skeleton"
+                ]
+              },
+              {
+                "name": "Catacombs 3 - 3",
+                "weight": 1,
+                "enemies": [
+                  "dark",
+                  "zombie",
+                  "zombie",
+                  "skeleton"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "caves",
+        "name": "Monster Caves",
+        "replayReward": 70,
+        "stages": [
+          {
+            "name": "Outskirts",
+            "reward": 130,
+            "variants": [
+              {
+                "name": "Monster Caves 1 - 1",
+                "weight": 1,
+                "enemies": [
+                  "ogre",
+                  "beast",
+                  "beast",
+                  "bat"
+                ]
+              },
+              {
+                "name": "Monster Caves 1 - 2",
+                "weight": 1,
+                "enemies": [
+                  "beast",
+                  "beast",
+                  "beast",
+                  "beast"
+                ]
+              },
+              {
+                "name": "Monster Caves 1 - 3",
+                "weight": 1,
+                "enemies": [
+                  "ogre",
+                  "beast",
+                  "beast",
+                  "beast"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Stronghold",
+            "reward": 150,
+            "variants": [
+              {
+                "name": "Monster Caves 2 - 1",
+                "weight": 1,
+                "enemies": [
+                  "ogre",
+                  "ogre",
+                  "beast",
+                  "bat"
+                ]
+              },
+              {
+                "name": "Monster Caves 2 - 2",
+                "weight": 1,
+                "enemies": [
+                  "ogre",
+                  "beast",
+                  "beast",
+                  "beast"
+                ]
+              },
+              {
+                "name": "Monster Caves 2 - 3",
+                "weight": 1,
+                "enemies": [
+                  "beast",
+                  "beast",
+                  "beast",
+                  "beast",
+                  "bat"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Region guard",
+            "reward": 180,
+            "variants": [
+              {
+                "name": "Monster Caves 3 - 1",
+                "weight": 1,
+                "enemies": [
+                  "ogre",
+                  "ogre",
+                  "beast",
+                  "beast"
+                ]
+              },
+              {
+                "name": "Monster Caves 3 - 2",
+                "weight": 1,
+                "enemies": [
+                  "ogre",
+                  "ogre",
+                  "beast",
+                  "bat"
+                ]
+              },
+              {
+                "name": "Monster Caves 3 - 3",
+                "weight": 1,
+                "enemies": [
+                  "ogre",
+                  "beast",
+                  "beast",
+                  "beast",
+                  "bat"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ruins",
+        "name": "Necromancer Ruins",
+        "replayReward": 90,
+        "stages": [
+          {
+            "name": "Outer ruins",
+            "reward": 180,
+            "variants": [
+              {
+                "name": "Necromancer Ruins 1 - 1",
+                "weight": 1,
+                "enemies": [
+                  "dark",
+                  "dark",
+                  "demon",
+                  "bone-archer",
+                  "imp"
+                ]
+              },
+              {
+                "name": "Necromancer Ruins 1 - 2",
+                "weight": 1,
+                "enemies": [
+                  "dark",
+                  "dark",
+                  "dark",
+                  "bone-archer",
+                  "bone-archer"
+                ]
+              },
+              {
+                "name": "Necromancer Ruins 1 - 3",
+                "weight": 1,
+                "enemies": [
+                  "demon",
+                  "demon",
+                  "sniper",
+                  "imp",
+                  "dark"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Inner ruins",
+            "reward": 220,
+            "variants": [
+              {
+                "name": "Necromancer Ruins 2 - 1",
+                "weight": 1,
+                "enemies": [
+                  "dark",
+                  "dark",
+                  "demon",
+                  "demon",
+                  "sniper"
+                ]
+              },
+              {
+                "name": "Necromancer Ruins 2 - 2",
+                "weight": 1,
+                "enemies": [
+                  "dark",
+                  "dark",
+                  "dark",
+                  "demon",
+                  "imp"
+                ]
+              },
+              {
+                "name": "Necromancer Ruins 2 - 3",
+                "weight": 1,
+                "enemies": [
+                  "demon",
+                  "demon",
+                  "demon",
+                  "sniper",
+                  "imp"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Warlock",
+            "reward": 400,
+            "variants": [
+              {
+                "name": "Necromancer Ruins 3 - 1",
+                "weight": 1,
+                "enemies": [
+                  "dark",
+                  "warlock",
+                  "demon",
+                  "dark",
+                  "demon"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "progression": {
+      "mode": "previous-region-wins",
+      "winsRequired": [
+        3,
+        3,
+        3,
+        3
+      ]
+    }
+  }
 }
