@@ -121,3 +121,8 @@ including skeleton arrow resistance, the Ogre bonus and remaining HP on lethal
 hits. This is a visual offset, never a change to the occupied hex. Summons do
 not trigger damage effects. Ranged projectiles reach the target before impact.
 Regression: python3 atari/city/tools/test-hit-impact.py
+
+Character bars removed (2026-10-18)
+Removed the flat colored bars beneath battlefield soldiers and monsters.
+Health remains in the numeric bottom panel; hit recoil and red impact points
+remain visible.

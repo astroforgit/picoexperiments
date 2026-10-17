@@ -58,8 +58,8 @@ completed region pays a smaller practice reward without advancing its counter.
 
 - Move the hex cursor with joystick, WASD or arrows. Fire on an unacted friendly
   fighter selects it; Fire on a cyan destination moves; Fire on a red-highlighted
-  enemy attacks. Gold outlines show the cursor; bases are blue for friends, red
-  for enemies, and gold for the active hero. Health is shown numerically in the bottom panel; no floating health bars.
+  enemy attacks. Gold outlines show the cursor. Health is shown numerically in the bottom panel;
+  colored bars beneath characters have been removed.
 - Retain the old prototype's turn rule: a Move-2 hero can move one hex and attack,
   or spend both movement points moving and finish. Attacking without moving is
   allowed. Heroes can be selected in any order; their spent actions persist.

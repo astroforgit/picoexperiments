@@ -143,28 +143,6 @@ hex_hi dta >$E400,>$E700,>$EA00,>$ED00,>$F000
         sbc lunge-1,y
         sta foot_x
 ?ground jsr hit_recoil
-        ldx draw_id
-        lda foot_x
-        sec
-        sbc #10
-        sta calc_x
-        mva #0 calc_x+1
-        lda foot_y
-        clc
-        adc #2
-        sta calc_y
-        mwa #20 fr_w
-        mva #3 fr_h
-        mva #8 fr_col
-        lda unit_team,x
-        beq ?friendly
-        mva #9 fr_col
-        jmp ?ellipse
-?friendly
-        cpx selected_unit
-        bne ?ellipse
-        mva #2 fr_col
-?ellipse jsr fill_rect
 ?sprite lda foot_x
         sec
         sbc #16
