@@ -5,7 +5,7 @@ function mount(getData,getErrors){
  const sim=root.GreenhavenSimulation,host=document.getElementById('campaign-simulator');
  if(!host)return;
  const make=(tag,text)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;return n;};
- const intro=make('p','Simulate buying, building upgrades, fighter upgrades, random encounters and tactical hex moves using a copy of the current editor values. Fighters recover fully after battle. Purchases follow fixed strategies; these are bot outcomes, not measured human win rates.');intro.className='note';host.append(intro);
+ const intro=make('p','Simulate buying, building upgrades, fighter upgrades, random encounters and tactical hex moves using a copy of the current editor values. Surviving fighters recover HP after battle. Killed or converted soldiers are permanently lost; replacements must be bought. Purchases follow fixed strategies; these are bot outcomes, not measured human win rates.');intro.className='note';host.append(intro);
  const bar=make('div');bar.className='encounter-bar';
  const strategy=make('select');strategy.setAttribute('aria-label','Simulation strategy');for(const [id,v] of Object.entries(sim.strategies)){const o=make('option',v.name);o.value=id;strategy.append(o);}strategy.value='mixed';
  const seed=make('input');seed.type='number';seed.min=0;seed.max=4294967295;seed.step=1;seed.value=1;seed.setAttribute('aria-label','Simulation starting seed');
@@ -25,12 +25,13 @@ function mount(getData,getErrors){
   result.replaceChildren();
   result.append(make('h3',`${sim.strategies[run.strategy].name} · seed ${run.seed} · ${run.completed?'Campaign completed':'Campaign stopped'}`),make('p',`${run.fights} fights, ${run.defeats} defeats, ${run.draws} round-limit draws, ${run.replays} practice/replay fights. Gold ${data.startingGold} start + ${run.earned} earned − ${run.spent} spent = ${run.gold} remaining.`));
   if(run.blockedReason)result.append(make('p',run.blockedReason));
-  result.append(make('p','Wins by region: '+run.wins.join(' / ')+'. Final army: '+run.army.map(id=>data.players.find(u=>u.id===id).name).join(', ')));
+  result.append(make('p','Wins by region: '+run.wins.join(' / ')+'. Final army: '+run.army.map(id=>id?data.players.find(u=>u.id===id).name:'Empty slot').join(', ')));
   for(const event of run.events){
-   if(event.type==='purchase'){result.append(make('p',`Before fight ${event.beforeFight}: ${event.label}, ${event.cost} gold (${event.goldBefore} → ${event.goldAfter}).`));continue;}
+   if(event.type==='purchase'){result.append(make('p',`Before fight ${event.beforeFight}: ${event.replacement?'Replacement: ':''}${event.label}, ${event.cost} gold (${event.goldBefore} → ${event.goldAfter}).`));continue;}
    const detail=make('details');detail.append(make('summary',`Fight ${event.fight}: ${event.regionName}, stage ${event.stage}${event.replay?' practice/replay':''} — ${event.outcome}; ${event.rounds} rounds; +${event.reward} gold; balance ${event.goldAfter}`));
-   detail.append(make('p',`Seed ${event.seed}. Enemies: ${event.enemies.join(', ')}. Army: ${event.army.map(id=>data.players.find(u=>u.id===id).name).join(', ')}.`));
-   detail.append(table(['Round','Fighter','Action','Detail'],event.trace.map(e=>[e.round,e.unit||'Warlock',e.action,e.action==='move'?`hex ${e.from} → ${e.to}`:e.action==='attack'?`${e.targetName}: ${e.hpBefore} → ${e.hpAfter} HP`:e.action==='summon'?`Undead at hex ${e.to}`:e.action==='heal'?`+${e.amount} HP`:e.action==='raise'?`Soldier ${e.target} becomes a 2 HP zombie`:e.action==='prepare'?`Heavy strike targets hex ${e.to}`:e.action==='hop'?`Retreat to hex ${e.to}`:e.reason||''])));
+   detail.append(make('p',`Seed ${event.seed}. Enemies: ${event.enemies.join(', ')}. Army: ${event.army.map(id=>id?data.players.find(u=>u.id===id).name:'Empty slot').join(', ')}.`));
+   if(event.casualties?.length)detail.append(make('p','Permanently lost: '+event.casualties.map(c=>`${data.players.find(u=>u.id===c.id).name} (slot ${c.slot+1})`).join(', ')+'.'));
+   detail.append(table(['Round','Fighter','Action','Detail'],event.trace.map(e=>[e.round,e.unit||`Unit ${e.actor+1}`,e.action,e.action==='move'?`hex ${e.from} → ${e.to}`:e.action==='attack'?`${e.targetName}: ${e.hpBefore} → ${e.hpAfter} HP`:e.action==='summon'?`Undead at hex ${e.to}`:e.action==='heal'?`+${e.amount} HP`:e.action==='raise'?`Soldier ${e.target} becomes a 2 HP zombie`:e.action==='prepare'?`Heavy strike targets hex ${e.to}`:e.action==='hop'?`Retreat to hex ${e.to}`:e.reason||''])));
    result.append(detail);
   }
  }

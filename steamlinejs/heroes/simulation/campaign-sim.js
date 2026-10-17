@@ -22,7 +22,7 @@ function simulateBattle(data,army,encounter,options={}){
  const normalTerrain=trees.size===2&&trees.has(10)&&trees.has(31);
  const visible=(a,b)=>normalTerrain?SHOT[a][b]:clear(a,b,trees);
  const emit=event=>{if(trace)trace.push({...event,round});};
- army.forEach((id,i)=>{const u=data.players.find(x=>x.id===id);if(!u)throw Error('Unknown player '+id);units.push({...copy(u),team:0,cell:(encounter.playerCells||[0,7,14,21,28])[i],slot:units.length});});
+ army.forEach((id,i)=>{if(!id)return;const u=data.players.find(x=>x.id===id);if(!u)throw Error('Unknown player '+id);units.push({...copy(u),team:0,armySlot:i,cell:(encounter.playerCells||[0,7,14,21,28])[i],slot:units.length});});
  for(const enemy of encounter.enemies)units.push({...copy(enemy),team:1,slot:units.length});
  if(units.length>12||army.length>5||new Set(units.map(u=>u.cell)).size!==units.length||units.some(u=>trees.has(u.cell)))throw Error('Illegal deployment');
  for(const u of units){u.maxHp=u.hp;u.spawned=0;u.raised=false;u.summoned=false;u.charge=null;}
@@ -99,7 +99,7 @@ function simulateBattle(data,army,encounter,options={}){
   for(let i=0;i<units.length;i++)if(units[i].team===1&&units[i].hp>0&&(!abilities||units[i].spawned!==round)){enemyAct(units[i]);if(check())break;}
   if(winner)break;
  }
- return {initialUnits:options.trace?initialUnits:undefined,finalUnits:options.trace?copy(units):undefined,outcome:winner||'draw',rounds:Math.min(round,limit),moves,attacks,summons,healing,conversions,preparations,hops,survivors:units.filter(u=>u.team===0&&u.hp>0).map(u=>({id:u.id,hp:u.hp})),enemiesRemaining:units.filter(u=>u.team===1&&u.hp>0).length,trace};
+ return {initialUnits:options.trace?initialUnits:undefined,finalUnits:options.trace?copy(units):undefined,outcome:winner||'draw',rounds:Math.min(round,limit),moves,attacks,summons,healing,conversions,preparations,hops,survivors:units.filter(u=>u.team===0&&u.hp>0).map(u=>({id:u.id,hp:u.hp,slot:u.armySlot})),enemiesRemaining:units.filter(u=>u.team===1&&u.hp>0).length,trace};
 }
 const STRATEGIES={
  infantry:{name:'Infantry',families:['barracks','barracks','barracks']},
@@ -131,7 +131,7 @@ function purchase(data,shop,action){
   cost=action.family==='chapel'?data.chapel.costs[action.level-1]:byId(action.family+'-'+action.level).buildingCost;label=`${action.family} building level ${action.level}`;
  }else if(action.kind==='recruit'){
   const unit=byId(action.id),capacity=data.chapel.capacityByLevel[next.levels.chapel||0];
-  if(!unit||next.army.length>=capacity||(next.levels[unit.family]||0)!==unit.tier)throw Error('Recruitment is locked or capacity is full');
+  if(!unit||next.army.filter(Boolean).length>=capacity||(next.levels[unit.family]||0)!==unit.tier)throw Error('Recruitment is locked or capacity is full');
   cost=Math.max(1,unit.recruit-((next.levels.chapel||0)===3?data.chapel.recruitDiscount:0));label=`Recruit ${unit.name}`;
  }else if(action.kind==='upgrade'){
   const old=byId(next.army[action.slot]),unit=byId(action.id);
@@ -142,7 +142,7 @@ function purchase(data,shop,action){
  if(next.gold<cost)return null;
  next.gold-=cost;
  if(action.kind==='build')next.levels[action.family]=action.level;
- else if(action.kind==='recruit')next.army.push(action.id);
+ else if(action.kind==='recruit'){const empty=next.army.findIndex(id=>!id),slot=action.slot??(empty<0?next.army.length:empty);if(slot<0||slot>=data.chapel.capacityByLevel[next.levels.chapel||0]||next.army[slot])throw Error('Recruit slot is unavailable');next.army[slot]=action.id;}
  else next.army[action.slot]=action.id;
  return {shop:next,event:{action:action.kind,label,cost,goldBefore:shop.gold,goldAfter:next.gold,army:next.army.slice()}};
 }
@@ -153,10 +153,17 @@ function simulateCampaign(data,options={}){
  const errors=rules.validate(data);if(errors.length)throw Error(errors[0]);
  let state=rules.createCampaign(data);state.seed=seed>>>0;
  let shop={gold:state.gold,army:['barracks-2','barracks-2'],levels:{barracks:2,chapel:0,archery:0,lodge:0,tower:0}},plan=shoppingPlan(strategy),planIndex=0;
- const ledger=[],battles=[],events=options.trace?[]:null;let farming=false,blockedReason=null;const failedArmies=new Set();
+ const ledger=[],battles=[],events=options.trace?[]:null,replacements=[];let farming=false,blockedReason=null;const failedArmies=new Set();
  const record=event=>{if(events)events.push(event);};
  for(let fight=0;fight<maxFights;fight++){
-  while(planIndex<plan.length){const bought=purchase(data,shop,plan[planIndex]);if(!bought)break;shop=bought.shop;ledger.push({...bought.event,beforeFight:fight+1});record({type:'purchase',...bought.event,beforeFight:fight+1});planIndex++;}
+  // Replace casualties in their original slots before continuing planned upgrades.
+  while(replacements.length){
+   const missing=replacements[0],tier=shop.levels[missing.family],id=missing.family+'-'+tier;
+   const bought=purchase(data,shop,{kind:'recruit',id,slot:missing.slot});if(!bought)break;
+   shop=bought.shop;replacements.shift();ledger.push({...bought.event,replacement:true,beforeFight:fight+1});record({type:'purchase',...bought.event,replacement:true,beforeFight:fight+1});
+  }
+  if(!shop.army.some(Boolean)){blockedReason='All soldiers are dead and there is not enough gold to recruit a replacement.';break;}
+  while(!replacements.length&&planIndex<plan.length){const action=plan[planIndex];if(action.kind==='upgrade'){const old=data.players.find(u=>u.id===shop.army[action.slot]),target=data.players.find(u=>u.id===action.id);if(old&&old.family===target.family&&old.tier>=target.tier){planIndex++;continue;}}const bought=purchase(data,shop,action);if(!bought)break;shop=bought.shop;ledger.push({...bought.event,beforeFight:fight+1});record({type:'purchase',...bought.event,beforeFight:fight+1});planIndex++;}
   state.gold=shop.gold;
   if(options.nativeSeedCycle)state.seed&=255;
   let region=state.wins.findIndex((w,r)=>w<rules.progression(data).winsRequired[r]);
@@ -173,6 +180,12 @@ function simulateCampaign(data,options={}){
   const encounter=copy(state.pending.encounter),before=copy(shop);
   const battle=simulateBattle(data,shop.army,encounter,{trace:options.trace,playerPolicy:options.playerPolicy,enemyPolicy:options.enemyPolicy,maxRounds:options.maxRounds});
   const entry={fight:fight+1,region:attemptedRegion,regionName:encounter.region,stage:encounter.stage,variant:encounter.variant,seed:encounter.seed,enemies:encounter.enemies.map(u=>u.id),replay:encounter.replay,army:before.army,goldBefore:before.gold,...battle};
+  if(data.permanentCasualties){
+   const living=new Set(battle.survivors.map(u=>u.slot));entry.casualties=[];
+   for(let slot=0;slot<shop.army.length;slot++)if(shop.army[slot]&&!living.has(slot)){
+    const id=shop.army[slot],unit=data.players.find(u=>u.id===id);entry.casualties.push({slot,id});replacements.push({slot,family:unit.family});shop.army[slot]=null;
+   }
+  }
   if(battle.outcome==='victory'){
    state=rules.recordResult(data,state,'victory');shop.gold=state.gold;entry.reward=encounter.reward;farming=false;
   }else{

@@ -77,8 +77,9 @@ completed region pays a smaller practice reward without advancing its counter.
 - Combat uses the editor balance plus Vampire lifesteal, zombie conversion, skeleton arrow resistance, prepared Ogre strikes, Imp retreat hops and capped delayed Warlock skeleton summons. The Vampire uses the existing Dark sprite set.
   Movement animates, attacked sprites flash, bottom HP, damage, remaining movement and shooting stats update.
 - Victory pays gold exactly once and advances the current contract. Completing
-  three contracts unlocks the next region; there are no extra region bonuses. Defeat or retreat pays nothing. All recruited
-  fighters recover after combat; campaign army slots are never removed by death.
+  three contracts unlocks the next region; there are no extra region bonuses. Defeat or retreat pays nothing. Killed or converted soldiers are permanently removed from the campaign army,
+  including after victory or retreat. Survivors recover HP. Empty slots require
+  paid replacements; deaths give no refund.
 - Fire or Escape on the result returns to the encounter map. The city return
   gate remains available. Held Fire cannot also trigger the next action.
 

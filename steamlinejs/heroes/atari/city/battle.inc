@@ -12,6 +12,7 @@ turn_number dta 1
 region dta 0
 contract dta 0
 hero_count dta 0
+hero_army_slot :5 dta 255
 init_index dta 0
 reward dta a(0)
 reward_committed dta 0
@@ -101,6 +102,9 @@ terrain :42 dta 0
         ldy deploy_cells,x
         ldx #0
         jsr add_unit
+        tax
+        lda init_index
+        sta hero_army_slot,x
 ?next   inc init_index
         lda init_index
         cmp army_capacity

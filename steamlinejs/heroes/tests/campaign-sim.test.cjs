@@ -26,14 +26,14 @@ for(const strategy of Object.keys(sim.strategies))for(let seed=1;seed<=12;seed++
  for(const b of r.battles){assert.equal(b.reward>0,b.outcome==='victory');if(b.replay)assert(b.region<3||r.wins[3]===3);const actions=new Map();const positions=new Map(b.initialUnits.map(u=>[u.slot,u.cell]));const hp=new Map(b.initialUnits.map(u=>[u.slot,u.hp]));const teams=new Map(b.initialUnits.map(u=>[u.slot,u.team]));
   for(const e of b.trace){
    if(e.action==='move'){assert(sim.neighbours[e.from].includes(e.to));assert.equal(positions.get(e.actor),e.from);assert(![...positions].some(([id,c])=>id!==e.actor&&hp.get(id)>0&&c===e.to));positions.set(e.actor,e.to);}
-   if(e.action==='attack'){hp.set(e.target,e.hpAfter);if(teams.get(e.actor)===0){const k=e.round+':'+e.actor;assert(!actions.has(k));actions.set(k,true);const moves=b.trace.filter(m=>m.action==='move'&&m.round===e.round&&m.actor===e.actor).length;assert(moves<data.players.find(u=>u.id===b.army[e.actor]).move);}}
+   if(e.action==='attack'){hp.set(e.target,e.hpAfter);if(teams.get(e.actor)===0){const k=e.round+':'+e.actor;assert(!actions.has(k));actions.set(k,true);const moves=b.trace.filter(m=>m.action==='move'&&m.round===e.round&&m.actor===e.actor).length;assert(moves<data.players.find(u=>u.id===b.initialUnits[e.actor].id).move);}}
    if(e.action==='raise'){hp.set(e.target,2);teams.set(e.target,1);}
    if(e.action==='heal')hp.set(e.actor,e.hpAfter);
    if(e.action==='summon'){teams.set(e.summoned,1);positions.set(e.summoned,e.to);hp.set(e.summoned,data.enemies.find(u=>u.id==='skeleton').hp);}
   }
  }
 }
-const mounted=sim.simulateCampaign(data,{strategy:'mounted',seed:1,earlyPractice:true,trace:true});assert(mounted.battles.some(b=>b.replay&&b.region===0));
+const legacy=clone(data);legacy.permanentCasualties=false;const mounted=sim.simulateCampaign(legacy,{strategy:'mounted',seed:1,earlyPractice:true,trace:true});assert(mounted.battles.some(b=>b.replay&&b.region===0));
 console.log('PASS: all 1764 native geometry/shot pairs, fixed damage, boss victory, delayed skeleton summoning, purchase legality, 60 deterministic campaigns, gold conservation, movement occupancy and attack/AP limits.');
 
 const page=fs.readFileSync(__dirname+'/../unit-editor.html','utf8');

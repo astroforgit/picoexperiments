@@ -969,5 +969,6 @@
     "earlyPractice": true,
     "practiceReward": 20,
     "nativeSeedCycle": true
-  }
+  },
+  "permanentCasualties": true
 }

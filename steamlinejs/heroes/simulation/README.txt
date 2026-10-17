@@ -1,5 +1,5 @@
 CURRENT VERSION: see ../NATIVE-V3.txt. The active editor/native preset now includes
-monster abilities and the former Cavalry/Demon/practice candidate. The notes below
+monster abilities, permanent casualties, paid replacements and the former Cavalry/Demon/practice candidate. The notes below
 describe the earlier v2 benchmark and are retained for historical comparisons.
 
 Greenhaven stats-only gameplay simulator

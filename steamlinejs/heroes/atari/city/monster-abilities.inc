@@ -46,6 +46,7 @@ actual_damage dta 0
         lda #0
 ?store  sta unit_hp,x
         bne ?effects
+        jsr lose_soldier
         ldy unit_type,x
         lda type_summon,y
         cmp #255
@@ -164,3 +165,25 @@ actual_damage dta 0
 hop_dir dta 0
 hop_cell dta 0
 hop_distance dta 0
+
+; X dead battlefield unit -> permanently clear its original campaign slot.
+; Keep X intact for boss/raise handling and never refund a dead soldier.
+.proc lose_soldier
+        cpx hero_count
+        bcs ?done
+        lda unit_team,x
+        bne ?done
+        ldy hero_army_slot,x
+        cpy #5
+        bcs ?done
+        lda army_units,y
+        cmp #255
+        beq ?done
+        lda #255
+        sta army_units,y
+        lda #0
+        sta army_paid_lo,y
+        sta army_paid_hi,y
+        dec army_count
+?done   rts
+.endp

@@ -1,28 +1,30 @@
 {
   "campaigns": 2560,
-  "model": "Stats-only fixed shopping bots; native-style greedy enemy AI; all 256 native starting seeds; full recovery after fights; not hardware execution or measured human win rates.",
+  "model": "Stats-only fixed shopping bots; native-style greedy enemy AI; all 256 native starting seeds; permanent casualties; surviving fighters recover HP; paid replacements; not hardware execution or measured human win rates.",
   "summaries": [
     {
       "abilities": false,
       "strategy": "infantry",
       "name": "Infantry",
       "runs": 256,
-      "completed": 256,
-      "completionRate": 1,
-      "meanFights": 12,
+      "completed": 235,
+      "completionRate": 0.91796875,
+      "meanFights": 11.5078125,
       "meanReplays": 0,
-      "meanDefeats": 0,
+      "meanDefeats": 0.08203125,
       "meanDraws": 0,
-      "meanRounds": 53.01953125,
-      "meanGold": 1410,
-      "meanSpent": 430,
+      "meanRounds": 52.1875,
+      "meanGold": 875.56640625,
+      "meanSpent": 850.41015625,
       "reached": [
         256,
         256,
-        256,
-        256
+        235,
+        235
       ],
-      "failures": {}
+      "failures": {
+        "All soldiers are dead and there is not enough gold to recruit a replacement.": 21
+      }
     },
     {
       "abilities": false,
@@ -35,9 +37,9 @@
       "meanReplays": 0,
       "meanDefeats": 0,
       "meanDraws": 0,
-      "meanRounds": 49.03125,
-      "meanGold": 1130,
-      "meanSpent": 710,
+      "meanRounds": 51.296875,
+      "meanGold": 953.046875,
+      "meanSpent": 886.953125,
       "reached": [
         256,
         256,
@@ -51,177 +53,193 @@
       "strategy": "mounted",
       "name": "Mounted",
       "runs": 256,
-      "completed": 256,
-      "completionRate": 1,
-      "meanFights": 16.6640625,
-      "meanReplays": 2.33203125,
-      "meanDefeats": 2.33203125,
+      "completed": 0,
+      "completionRate": 0,
+      "meanFights": 5.65625,
+      "meanReplays": 1.328125,
+      "meanDefeats": 2.328125,
       "meanDraws": 0,
-      "meanRounds": 69.09765625,
-      "meanGold": 1206.640625,
-      "meanSpent": 680,
+      "meanRounds": 21.63671875,
+      "meanGold": 13.28125,
+      "meanSpent": 178.28125,
       "reached": [
         256,
-        256,
-        256,
-        256
+        0,
+        0,
+        0
       ],
-      "failures": {}
+      "failures": {
+        "All soldiers are dead and there is not enough gold to recruit a replacement.": 256
+      }
     },
     {
       "abilities": false,
       "strategy": "casters",
       "name": "Casters",
       "runs": 256,
-      "completed": 256,
-      "completionRate": 1,
-      "meanFights": 12,
-      "meanReplays": 0,
-      "meanDefeats": 0,
+      "completed": 0,
+      "completionRate": 0,
+      "meanFights": 7.1015625,
+      "meanReplays": 0.55078125,
+      "meanDefeats": 1.55078125,
       "meanDraws": 0,
-      "meanRounds": 48.03125,
-      "meanGold": 1115,
-      "meanSpent": 725,
+      "meanRounds": 39.72265625,
+      "meanGold": 12.24609375,
+      "meanSpent": 448.76953125,
       "reached": [
         256,
         256,
-        256,
-        256
+        0,
+        0
       ],
-      "failures": {}
+      "failures": {
+        "All soldiers are dead and there is not enough gold to recruit a replacement.": 256
+      }
     },
     {
       "abilities": false,
       "strategy": "mixed",
       "name": "Mixed army",
       "runs": 256,
-      "completed": 256,
-      "completionRate": 1,
-      "meanFights": 16.6875,
-      "meanReplays": 2.34375,
-      "meanDefeats": 2.34375,
+      "completed": 0,
+      "completionRate": 0,
+      "meanFights": 5.6171875,
+      "meanReplays": 0.2265625,
+      "meanDefeats": 1.2265625,
       "meanDraws": 0,
-      "meanRounds": 84,
-      "meanGold": 741.875,
-      "meanSpent": 1145,
+      "meanRounds": 29.2734375,
+      "meanGold": 8.22265625,
+      "meanSpent": 360.37109375,
       "reached": [
         256,
-        256,
-        256,
-        256
+        179,
+        0,
+        0
       ],
-      "failures": {}
+      "failures": {
+        "All soldiers are dead and there is not enough gold to recruit a replacement.": 256
+      }
     },
     {
       "abilities": true,
       "strategy": "infantry",
       "name": "Infantry",
       "runs": 256,
-      "completed": 256,
-      "completionRate": 1,
-      "meanFights": 12.90625,
-      "meanReplays": 0.453125,
-      "meanDefeats": 0.453125,
+      "completed": 128,
+      "completionRate": 0.5,
+      "meanFights": 9.41796875,
+      "meanReplays": 0.46875,
+      "meanDefeats": 0.96875,
       "meanDraws": 0,
-      "meanRounds": 57.40625,
-      "meanGold": 1419.0625,
-      "meanSpent": 430,
+      "meanRounds": 43.55859375,
+      "meanGold": 554.375,
+      "meanSpent": 547.5390625,
       "reached": [
         256,
-        256,
-        256,
-        256
+        196,
+        128,
+        128
       ],
-      "failures": {}
+      "failures": {
+        "All soldiers are dead and there is not enough gold to recruit a replacement.": 128
+      }
     },
     {
       "abilities": true,
       "strategy": "ranged",
       "name": "Archers",
       "runs": 256,
-      "completed": 256,
-      "completionRate": 1,
-      "meanFights": 12,
-      "meanReplays": 0,
-      "meanDefeats": 0,
+      "completed": 129,
+      "completionRate": 0.50390625,
+      "meanFights": 8.9140625,
+      "meanReplays": 0.0859375,
+      "meanDefeats": 0.58203125,
       "meanDraws": 0,
-      "meanRounds": 51.03125,
-      "meanGold": 1130,
-      "meanSpent": 710,
+      "meanRounds": 43.5078125,
+      "meanGold": 477.71484375,
+      "meanSpent": 643.49609375,
       "reached": [
         256,
         256,
-        256,
-        256
+        129,
+        129
       ],
-      "failures": {}
+      "failures": {
+        "All soldiers are dead and there is not enough gold to recruit a replacement.": 127
+      }
     },
     {
       "abilities": true,
       "strategy": "mounted",
       "name": "Mounted",
       "runs": 256,
-      "completed": 256,
-      "completionRate": 1,
-      "meanFights": 16.6640625,
-      "meanReplays": 2.33203125,
-      "meanDefeats": 2.33203125,
+      "completed": 0,
+      "completionRate": 0,
+      "meanFights": 5.65625,
+      "meanReplays": 1.328125,
+      "meanDefeats": 2.328125,
       "meanDraws": 0,
-      "meanRounds": 70.5625,
-      "meanGold": 1206.640625,
-      "meanSpent": 680,
+      "meanRounds": 21.63671875,
+      "meanGold": 13.28125,
+      "meanSpent": 178.28125,
       "reached": [
         256,
-        256,
-        256,
-        256
+        0,
+        0,
+        0
       ],
-      "failures": {}
+      "failures": {
+        "All soldiers are dead and there is not enough gold to recruit a replacement.": 256
+      }
     },
     {
       "abilities": true,
       "strategy": "casters",
       "name": "Casters",
       "runs": 256,
-      "completed": 256,
-      "completionRate": 1,
-      "meanFights": 12,
-      "meanReplays": 0,
-      "meanDefeats": 0,
+      "completed": 47,
+      "completionRate": 0.18359375,
+      "meanFights": 7.30078125,
+      "meanReplays": 0.26953125,
+      "meanDefeats": 1.0859375,
       "meanDraws": 0,
-      "meanRounds": 48.01953125,
-      "meanGold": 1115,
-      "meanSpent": 725,
+      "meanRounds": 37.921875,
+      "meanGold": 175.9765625,
+      "meanSpent": 497.2265625,
       "reached": [
         256,
         256,
-        256,
-        256
+        47,
+        47
       ],
-      "failures": {}
+      "failures": {
+        "All soldiers are dead and there is not enough gold to recruit a replacement.": 209
+      }
     },
     {
       "abilities": true,
       "strategy": "mixed",
       "name": "Mixed army",
       "runs": 256,
-      "completed": 256,
-      "completionRate": 1,
-      "meanFights": 15.5,
-      "meanReplays": 1.75,
-      "meanDefeats": 1.75,
+      "completed": 0,
+      "completionRate": 0,
+      "meanFights": 4.65234375,
+      "meanReplays": 0,
+      "meanDefeats": 1,
       "meanDraws": 0,
-      "meanRounds": 81.13671875,
-      "meanGold": 730,
-      "meanSpent": 1145,
+      "meanRounds": 24.57421875,
+      "meanGold": 7.03125,
+      "meanSpent": 301.6796875,
       "reached": [
         256,
-        256,
-        256,
-        256
+        167,
+        0,
+        0
       ],
-      "failures": {}
+      "failures": {
+        "All soldiers are dead and there is not enough gold to recruit a replacement.": 256
+      }
     }
   ],
-  "configSHA256": "769a4abe215b0d350308ad646ca918187fe4dab65f693a9057c45cdfa1e79c8c"
+  "configSHA256": "7fd1a6e9936155dedaeca7e8edb09ec8856ebb9f8777229cc564b20ad3276900"
 }

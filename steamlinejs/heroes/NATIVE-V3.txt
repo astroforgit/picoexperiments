@@ -40,8 +40,8 @@ Monster abilities
 Vampire (existing dark ID/art): dealing damage heals 1 HP, capped at original HP.
 Zombie: killing a hero converts its battlefield slot to an enemy zombie with
 2 HP. It acts next round. At most two conversions per battle, and raised zombies
-cannot convert more soldiers. This affects the battle; the campaign army still
-recovers fully afterward, as in earlier versions.
+cannot convert more soldiers. The original soldier is permanently lost from the campaign army, including
+when the battle is won.
 Skeleton: Archery Range arrows deal one less damage, minimum 1. Magic/melee
 remain unchanged. Bone Archers do not gain this resistance.
 Ogre: instead of attacking immediately, prepares a +2 damage strike against the
@@ -58,7 +58,7 @@ D600 and D700. They cover all abilities, caps, delays, seeded groups, rewards,
 practice, army purchases and upgrades, animation, UI controls and memory bounds.
 This checks logic and pixels, not physical Atari raster/DMA timing or human
 play difficulty. No physical-hardware run has been performed.
-The editor simulator has the same special rules, with full healing, purchases,
+The editor simulator has the same special rules, with healing for survivors, purchases,
 upgrades and tactical logs. Its player uses fixed shopping plans and pathfinding;
 its default enemy follows the native greedy movement. Simulation is not native
 execution. Actual tactical choices can differ. Unlimited practice permits grind.
@@ -66,8 +66,9 @@ execution. Actual tactical choices can differ. Unlimited practice permits grind.
 Benchmark
 node simulation/abilities-benchmark.cjs PATH_TO_OUTPUT_DIRECTORY
 Runs 2,560 campaigns: five strategies x 256 starting seeds x abilities on/off.
-All five strategies completed with abilities on. Average fight counts differ;
-this verifies bot progression viability, not that difficulty is optimal.
+The current benchmark uses permanent casualties and paid replacements.
+Completion depends on strategy and starting seed; the earlier 100% result
+assumed free restoration and no longer applies. See the latest generated report.
 The generated HTML includes full purchase and tactical logs for five examples.
 The browser editor compares abilities on/off without changing the active draft.
 
@@ -126,3 +127,19 @@ Character bars removed (2026-10-18)
 Removed the flat colored bars beneath battlefield soldiers and monsters.
 Health remains in the numeric bottom panel; hit recoil and red impact points
 remain visible.
+
+Permanent casualties (2026-10-18)
+A soldier killed in any fight is removed immediately from its original campaign
+slot, even when the battle is won. The same applies to defeats and retreats.
+A Zombie conversion permanently removes the original soldier too. No gold is
+refunded; its recorded purchase/upgrade investment is cleared. Empty army slots
+remain empty until the player buys replacements. Surviving soldiers still heal
+between fights. An empty army cannot enter battle; insufficient replacement
+funds can leave the campaign lost. No automatic rescue units are granted.
+The simulator uses the same rule and purchases replacements at current building
+tiers and full normal recruitment prices (including any earned Chapel discount).
+Regression tests:
+  python3 atari/city/tools/test-permanent-casualties.py
+  node tests/permanent-casualties.test.cjs
+The previous preset, native config and executable are preserved in
+backups/before-permanent-casualties-2026-10-18/.

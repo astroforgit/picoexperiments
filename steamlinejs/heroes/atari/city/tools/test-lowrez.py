@@ -32,12 +32,14 @@ def check(page,capture=False):
  for region,location in enumerate([0,1,2,4]):
   m.put('selected_location',location)
   for stage in range(3):
-   if region>=2:m.mem.ram[r.LABELS['army_units']:r.LABELS['army_units']+5]=bytes([14]*5)
+   # Fresh test army per contract; actual casualty persistence has its own tests.
+   m.mem.ram[r.LABELS['army_units']:r.LABELS['army_units']+5]=bytes([14 if region>=2 else 8]*5);m.put('army_count',5)
    m.call('battle.start');idx=region*3+stage;assert m.get('battle.contract')==idx
    outcome=play_logic(m);assert outcome in (1,2),(page,idx)
    if outcome==2:
     # Imported user balance can defeat the greedy test player. Validate unlocks
     # and reward wiring with an explicit victory fixture, not inflated live stats.
+    m.mem.ram[r.LABELS['army_units']:r.LABELS['army_units']+5]=bytes([14]*5);m.put('army_count',5)
     m.call('battle.start')
     for unit in range(m.get('battle.hero_count'),m.get('battle.unit_count')):m.mem.ram[r.LABELS['battle.unit_hp']+unit]=0
     m.call('battle.check_result');assert m.get('battle.game_state')==1
