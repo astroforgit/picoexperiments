@@ -195,9 +195,9 @@ def check(page, capture=False):
             expected+=building['recruitCosts'][tier]//2
             assert m.array('army_units')==[255]*5 and m.get('army_count')==0
             assert m.get('gold',2)==expected
-    m.call('new_city');m.put('gold',130,2);m.put('selected_plot',0);m.call('purchase')
+    m.call('new_city');m.put('gold',content['buildings'][0]['costs'][2],2);m.put('selected_plot',0);m.call('purchase')
     assert m.array('building_levels')[0]==3 and m.get('gold',2)==0
-    m.put('gold',50,2);m.put('selected_plot',6);m.call('purchase')
+    m.put('gold',content['buildings'][0]['recruitCosts'][2]-content['buildings'][0]['recruitCosts'][1],2);m.put('selected_plot',6);m.call('purchase')
     assert m.array('army_units')==[2,1,255,255,255] and m.get('gold',2)==0
     # Insufficient funds is non-mutating.
     m.put('selected_plot',0);m.call('recruit');assert m.get('notice')==1

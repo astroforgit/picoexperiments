@@ -7,7 +7,8 @@ def check(page,capture=False):
  assert m.array('army_paid_lo')==[25,25,0,0,0]
  m.put('selected_plot',0);m.call('recruit');assert m.array('army_units')==[1,1,1,255,255]
  m.put('gold',2000,2);m.call('recruit');assert m.get('notice')==4 and m.get('gold',2)==2000
- for level,cost in [(1,80),(2,130),(3,190)]:
+ content=json.loads((r.ROOT/'content.json').read_text())
+ for level,cost in enumerate(content['buildings'][3]['costs'],1):
   m.put('selected_plot',3);before=m.get('gold',2);m.call('purchase')
   assert m.array('building_levels')[3]==level and m.get('gold',2)==before-cost
   assert m.get('army_capacity')==min(3+level,5)
@@ -23,8 +24,8 @@ def check(page,capture=False):
  m.put('selected_plot',10);before=m.get('gold',2);m.call('dismiss_unit');assert m.get('gold',2)==before+7
  # Discounted recruit + upgrade retains its true investment for dismissal.
  m.put('selected_plot',0);m.call('purchase');m.mem.ram[r.LABELS['building_levels']]=2;m.call('recruit');m.mem.ram[r.LABELS['building_levels']]=3
- m.put('selected_plot',10);m.call('purchase');assert m.array('army_units')[4]==2 and m.array('army_paid_lo')[4]==65
- before=m.get('gold',2);m.call('dismiss_unit');assert m.get('gold',2)==before+32
+ m.put('selected_plot',10);m.call('purchase');assert m.array('army_units')[4]==2 and m.array('army_paid_lo')[4]==50
+ before=m.get('gold',2);m.call('dismiss_unit');assert m.get('gold',2)==before+25
  # Check the compiled native input; editor-only balance drafts may deliberately differ.
  content=json.loads((r.ROOT/'content.json').read_text())
  d={'players':[dict(family=b['id'],**{key:b[key][t] for key in ['hp','damage','move','shootRange']}) for b in content['buildings'] for t in range(3)],'enemies':content['enemies']}

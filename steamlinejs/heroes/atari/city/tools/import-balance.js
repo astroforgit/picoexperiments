@@ -12,5 +12,7 @@ for(const b of c.buildings){
  b.range=rows.map(u=>Math.max(1,u.shootRange));b.recruitCosts=rows.map(u=>u.recruit);b.costs=rows.map(u=>u.buildingCost);
 }
 for(const e of c.enemies){const u=d.enemies.find(u=>u.id===e.id);if(!u)throw Error('Missing enemy '+e.id);Object.assign(e,u);e.range=e.id==='warlock'?3:Math.max(1,e.shootRange);}
+c.encounters=d.encounterConfig.regions.flatMap(r=>r.stages.map(s=>({name:s.name.toUpperCase(),reward:s.reward,enemies:s.variants.find(v=>v.weight>0).enemies})));
+c.encounterConfig=d.encounterConfig;c.monsterAbilitiesVersion=d.monsterAbilitiesVersion||0;c.simulationSettings=d.simulationSettings||{};
 c.startingGold=d.startingGold;c.baseArmyCapacity=3;c.buildings[3].support=true;c.buildings[3].effects=['UNLOCK ARMY SLOT 4','UNLOCK ARMY SLOT 5','RECRUITS COST 10 LESS'];
 fs.writeFileSync(path.join(root,'content.json'),JSON.stringify(c,null,2)+'\n');console.log('Imported balance; Chapel now unlocks slots and discounts recruitment.');

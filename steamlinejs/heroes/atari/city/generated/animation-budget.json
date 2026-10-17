@@ -1,0 +1,90 @@
+{
+  "bytes": 30044,
+  "available": 47758,
+  "perSet": [
+    {
+      "name": "militia",
+      "bytes": 1107
+    },
+    {
+      "name": "spearman",
+      "bytes": 1199
+    },
+    {
+      "name": "swordsman",
+      "bytes": 1264
+    },
+    {
+      "name": "archer",
+      "bytes": 1470
+    },
+    {
+      "name": "wizard",
+      "bytes": 1286
+    },
+    {
+      "name": "minibeast",
+      "bytes": 1081
+    },
+    {
+      "name": "wolf",
+      "bytes": 1363
+    },
+    {
+      "name": "bat",
+      "bytes": 1390
+    },
+    {
+      "name": "skeleton",
+      "bytes": 1276
+    },
+    {
+      "name": "zombie",
+      "bytes": 1412
+    },
+    {
+      "name": "bone-archer",
+      "bytes": 1590
+    },
+    {
+      "name": "ogre",
+      "bytes": 1708
+    },
+    {
+      "name": "warlock",
+      "bytes": 1402
+    },
+    {
+      "name": "imp",
+      "bytes": 1210
+    },
+    {
+      "name": "beast",
+      "bytes": 1524
+    },
+    {
+      "name": "dark",
+      "bytes": 1600
+    },
+    {
+      "name": "demon",
+      "bytes": 1945
+    },
+    {
+      "name": "sniper",
+      "bytes": 1581
+    },
+    {
+      "name": "mounted-scout",
+      "bytes": 1593
+    },
+    {
+      "name": "mounted-ranger",
+      "bytes": 1474
+    },
+    {
+      "name": "mounted-cavalry",
+      "bytes": 1569
+    }
+  ]
+}

@@ -139,14 +139,14 @@
       "family": "lodge",
       "tier": 3,
       "hp": 6,
-      "damage": 2,
+      "damage": 3,
       "move": 5,
       "range": 1,
       "recruit": 70,
       "buildingCost": 100,
       "shootRange": 0,
       "basis": "Balance v1 - playtest candidate",
-      "notes": "Durable cavalry; trades sword damage for speed.",
+      "notes": "Fast cavalry; 3 damage makes a mounted army viable.",
       "mounted": true
     },
     {
@@ -241,7 +241,7 @@
       "range": 4,
       "shootRange": 4,
       "basis": "Balance v1 - playtest candidate",
-      "notes": "Individual fighter; fixed damage, no armor or special abilities."
+      "notes": "Arrows deal 1 less damage, minimum 1. Magic and melee deal full damage."
     },
     {
       "id": "zombie",
@@ -252,7 +252,7 @@
       "range": 1,
       "shootRange": 0,
       "basis": "Balance v1 - playtest candidate",
-      "notes": "Individual fighter; fixed damage, no armor or special abilities."
+      "notes": "Kills raise a 2 HP zombie next round; at most 2 per battle. Raised zombies cannot raise others."
     },
     {
       "id": "bone-archer",
@@ -274,7 +274,7 @@
       "range": 1,
       "shootRange": 0,
       "basis": "Balance v1 - playtest candidate",
-      "notes": "Individual fighter; fixed damage, no armor or special abilities."
+      "notes": "Prepares a heavy strike for one turn, then attacks for +2 damage without moving. Move away to avoid it."
     },
     {
       "id": "warlock",
@@ -285,7 +285,7 @@
       "range": 3,
       "shootRange": 0,
       "basis": "Balance v1 - playtest candidate",
-      "notes": "Summons Demons within 3 hexes. Killing the Warlock wins."
+      "notes": "Summons skeletons from round 2; at most 2 living summons. Killing the Warlock wins."
     },
     {
       "id": "imp",
@@ -296,7 +296,7 @@
       "range": 1,
       "shootRange": 0,
       "basis": "Balance v1 - playtest candidate",
-      "notes": "Individual fighter; fixed damage, no armor or special abilities."
+      "notes": "After attacking, hops one open adjacent hex away from its target."
     },
     {
       "id": "beast",
@@ -311,19 +311,19 @@
     },
     {
       "id": "dark",
-      "name": "Dark",
+      "name": "Vampire",
       "hp": 5,
       "damage": 2,
       "move": 2,
       "range": 1,
       "shootRange": 0,
       "basis": "Balance v1 - playtest candidate",
-      "notes": "Individual fighter; fixed damage, no armor or special abilities."
+      "notes": "Melee damage heals 1 HP, capped at starting health."
     },
     {
       "id": "demon",
       "name": "Demon",
-      "hp": 4,
+      "hp": 3,
       "damage": 3,
       "move": 2,
       "range": 1,
@@ -807,5 +807,11 @@
         3
       ]
     }
+  },
+  "monsterAbilitiesVersion": 1,
+  "simulationSettings": {
+    "earlyPractice": true,
+    "practiceReward": 20,
+    "nativeSeedCycle": true
   }
 }

@@ -1,0 +1,227 @@
+{
+  "campaigns": 2560,
+  "model": "Stats-only fixed shopping bots; native-style greedy enemy AI; all 256 native starting seeds; full recovery after fights; not hardware execution or measured human win rates.",
+  "summaries": [
+    {
+      "abilities": false,
+      "strategy": "infantry",
+      "name": "Infantry",
+      "runs": 256,
+      "completed": 256,
+      "completionRate": 1,
+      "meanFights": 12,
+      "meanReplays": 0,
+      "meanDefeats": 0,
+      "meanDraws": 0,
+      "meanRounds": 53.01953125,
+      "meanGold": 1410,
+      "meanSpent": 430,
+      "reached": [
+        256,
+        256,
+        256,
+        256
+      ],
+      "failures": {}
+    },
+    {
+      "abilities": false,
+      "strategy": "ranged",
+      "name": "Archers",
+      "runs": 256,
+      "completed": 256,
+      "completionRate": 1,
+      "meanFights": 12,
+      "meanReplays": 0,
+      "meanDefeats": 0,
+      "meanDraws": 0,
+      "meanRounds": 49.03125,
+      "meanGold": 1130,
+      "meanSpent": 710,
+      "reached": [
+        256,
+        256,
+        256,
+        256
+      ],
+      "failures": {}
+    },
+    {
+      "abilities": false,
+      "strategy": "mounted",
+      "name": "Mounted",
+      "runs": 256,
+      "completed": 256,
+      "completionRate": 1,
+      "meanFights": 16.6640625,
+      "meanReplays": 2.33203125,
+      "meanDefeats": 2.33203125,
+      "meanDraws": 0,
+      "meanRounds": 69.09765625,
+      "meanGold": 1206.640625,
+      "meanSpent": 680,
+      "reached": [
+        256,
+        256,
+        256,
+        256
+      ],
+      "failures": {}
+    },
+    {
+      "abilities": false,
+      "strategy": "casters",
+      "name": "Casters",
+      "runs": 256,
+      "completed": 256,
+      "completionRate": 1,
+      "meanFights": 12,
+      "meanReplays": 0,
+      "meanDefeats": 0,
+      "meanDraws": 0,
+      "meanRounds": 48.03125,
+      "meanGold": 1115,
+      "meanSpent": 725,
+      "reached": [
+        256,
+        256,
+        256,
+        256
+      ],
+      "failures": {}
+    },
+    {
+      "abilities": false,
+      "strategy": "mixed",
+      "name": "Mixed army",
+      "runs": 256,
+      "completed": 256,
+      "completionRate": 1,
+      "meanFights": 16.6875,
+      "meanReplays": 2.34375,
+      "meanDefeats": 2.34375,
+      "meanDraws": 0,
+      "meanRounds": 84,
+      "meanGold": 741.875,
+      "meanSpent": 1145,
+      "reached": [
+        256,
+        256,
+        256,
+        256
+      ],
+      "failures": {}
+    },
+    {
+      "abilities": true,
+      "strategy": "infantry",
+      "name": "Infantry",
+      "runs": 256,
+      "completed": 256,
+      "completionRate": 1,
+      "meanFights": 12.90625,
+      "meanReplays": 0.453125,
+      "meanDefeats": 0.453125,
+      "meanDraws": 0,
+      "meanRounds": 57.40625,
+      "meanGold": 1419.0625,
+      "meanSpent": 430,
+      "reached": [
+        256,
+        256,
+        256,
+        256
+      ],
+      "failures": {}
+    },
+    {
+      "abilities": true,
+      "strategy": "ranged",
+      "name": "Archers",
+      "runs": 256,
+      "completed": 256,
+      "completionRate": 1,
+      "meanFights": 12,
+      "meanReplays": 0,
+      "meanDefeats": 0,
+      "meanDraws": 0,
+      "meanRounds": 51.03125,
+      "meanGold": 1130,
+      "meanSpent": 710,
+      "reached": [
+        256,
+        256,
+        256,
+        256
+      ],
+      "failures": {}
+    },
+    {
+      "abilities": true,
+      "strategy": "mounted",
+      "name": "Mounted",
+      "runs": 256,
+      "completed": 256,
+      "completionRate": 1,
+      "meanFights": 16.6640625,
+      "meanReplays": 2.33203125,
+      "meanDefeats": 2.33203125,
+      "meanDraws": 0,
+      "meanRounds": 70.5625,
+      "meanGold": 1206.640625,
+      "meanSpent": 680,
+      "reached": [
+        256,
+        256,
+        256,
+        256
+      ],
+      "failures": {}
+    },
+    {
+      "abilities": true,
+      "strategy": "casters",
+      "name": "Casters",
+      "runs": 256,
+      "completed": 256,
+      "completionRate": 1,
+      "meanFights": 12,
+      "meanReplays": 0,
+      "meanDefeats": 0,
+      "meanDraws": 0,
+      "meanRounds": 48.01953125,
+      "meanGold": 1115,
+      "meanSpent": 725,
+      "reached": [
+        256,
+        256,
+        256,
+        256
+      ],
+      "failures": {}
+    },
+    {
+      "abilities": true,
+      "strategy": "mixed",
+      "name": "Mixed army",
+      "runs": 256,
+      "completed": 256,
+      "completionRate": 1,
+      "meanFights": 15.5,
+      "meanReplays": 1.75,
+      "meanDefeats": 1.75,
+      "meanDraws": 0,
+      "meanRounds": 81.13671875,
+      "meanGold": 730,
+      "meanSpent": 1145,
+      "reached": [
+        256,
+        256,
+        256,
+        256
+      ],
+      "failures": {}
+    }
+  ],
+  "configSHA256": "769a4abe215b0d350308ad646ca918187fe4dab65f693a9057c45cdfa1e79c8c"
+}

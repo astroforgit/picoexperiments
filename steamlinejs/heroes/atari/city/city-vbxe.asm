@@ -150,6 +150,10 @@ main_loop
         sta building_levels,x
         dex
         bpl ?copy
+        lda $D20A
+        eor RTCLOK+2
+        sta battle.encounter_seed
+        mva #0 battle.practice_mode
         mva #0 selected_plot
         sta screen_mode
         sta selected_location
@@ -856,6 +860,12 @@ code_end
         ert code_end>$6000
         ini loader_init
         icl 'generated/uploads.inc'
+        .local battle
+        org $6000
+        icl 'generated/battle-content.inc'
+battle_data_end equ *
+        ert battle_data_end>$8000
+        .endl
         org $8000
 text_screen
         :1024 dta 0

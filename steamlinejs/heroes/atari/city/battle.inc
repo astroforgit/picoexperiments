@@ -4,12 +4,6 @@ COLS=7
 MAX_UNITS=12
 TEAM_HERO=0
 TEAM_ENEMY=1
-battle_data_resume equ *
-        org $7000
-        icl 'generated/battle-content.inc'
-battle_data_end equ *
-        ert battle_data_end>$8000
-        org battle_data_resume
 game_state dta 0
 selected_unit dta 0
 cursor_cell dta 0
@@ -28,6 +22,15 @@ unit_hp :12 dta 0
 unit_acted :12 dta 0
 unit_moved :12 dta 0
 unit_move_left :12 dta 0
+unit_charge :12 dta 0
+unit_mark :12 dta 0
+unit_raised :12 dta 0
+unit_summoned :12 dta 0
+unit_spawned :12 dta 0
+conversions dta 0
+ability_event dta 0
+encounter_seed dta 1
+practice_mode dta 0
 terrain :42 dta 0
 
 .proc start
@@ -43,6 +46,8 @@ terrain :42 dta 0
         sta attack_flash
         sta attack_frame
         sta enemy_busy
+        sta conversions
+        sta ability_event
         mva #255 click_unit
         mwa #0 reward
         mva #0 idle_next
@@ -56,9 +61,20 @@ terrain :42 dta 0
         sta region
         tax
         lda region_wins,x
-        cmp #3
-        bcc ?stage
-        lda #2
+        sta init_index
+        txa
+        asl
+        asl
+        clc
+        adc region
+        asl
+        clc
+        adc init_index
+        tay
+        lda stage_for_win,y
+        ldx practice_mode
+        beq ?stage
+        lda #0
 ?stage  sta contract
         lda region
         asl
@@ -91,6 +107,13 @@ terrain :42 dta 0
         bne ?hero
         mva unit_count hero_count
         ldx contract
+        lda seed_ptr_lo,x
+        sta data_ptr
+        lda seed_ptr_hi,x
+        sta data_ptr+1
+        ldy encounter_seed
+        lda (data_ptr),y
+        tax
         lda enemy_ptr_lo,x
         sta data_ptr
         lda enemy_ptr_hi,x
@@ -127,10 +150,23 @@ add_cell dta 0
         sta add_type
         stx add_team
         sty add_cell
+        mva #0 add_reused
         ldx unit_count
         cpx #MAX_UNITS
-        bcs ?full
-        lda add_type
+        bcc ?slot
+        ldx #0
+?reuse  lda unit_hp,x
+        bne ?rn
+        lda unit_team,x
+        beq ?rn
+        mva #1 add_reused
+        jmp ?slot
+?rn     inx
+        cpx #MAX_UNITS
+        bcc ?reuse
+        clc
+        rts
+?slot   lda add_type
         sta unit_type,x
         tay
         lda add_team
@@ -144,14 +180,21 @@ add_cell dta 0
         lda #0
         sta unit_acted,x
         sta unit_moved,x
+        sta unit_charge,x
+        sta unit_raised,x
+        sta unit_summoned,x
+        sta unit_spawned,x
+        lda add_reused
+        bne ?added
         inc unit_count
-        txa
+?added  txa
         sec
         rts
 ?full   clc
         rts
 .endp
 add_team dta 0
+add_reused dta 0
 
 ;==============================================================================
 ; Hex and occupancy helpers
@@ -529,37 +572,20 @@ attack_frame     dta 0
         rts
 .endp
 animation_step dta 0
-.proc attack_units
-        ldx attacker_unit
-        ldy unit_type,x
-        lda type_damage,y
-        sta attack_damage
-        ldx defender_unit
-        lda unit_hp,x
-        sec
-        sbc attack_damage
-        bcs ?alive
-        lda #0
-?alive  sta unit_hp,x
-        bne ?done
-        ldy unit_type,x
-        lda type_summon,y
-        cmp #255
-        beq ?done
-        mva #1 game_state
-        jsr award
-?done   rts
-.endp
-attack_damage dta 0
+        icl 'monster-abilities.inc'
 
 .proc enemy_phase
         mva #1 enemy_busy
-        lda hero_count
-        sta enemy_id
+        mva #0 enemy_id
 ?enemy ldx enemy_id
         cpx unit_count
         bcs ?new_turn
         lda unit_hp,x
+        beq ?next
+        lda unit_team,x
+        beq ?next
+        lda unit_spawned,x
+        cmp turn_number
         beq ?next
         mva #0 enemy_attacked
         ldy unit_type,x
@@ -624,6 +650,10 @@ enemy_best_dist dta 0
         beq ?normal
         jmp summon_enemy
 ?normal
+        lda unit_charge,x
+        beq ?find
+        jmp release_ogre
+?find
         ; Find closest living hero.
         lda #$FF
         sta enemy_target
@@ -634,6 +664,8 @@ enemy_best_dist dta 0
         bcs ?have
         lda unit_hp,x
         beq ?next
+        lda unit_team,x
+        bne ?next
         stx scan_id
         ldx enemy_id
         lda unit_cell,x
@@ -674,7 +706,18 @@ enemy_best_dist dta 0
         lda enemy_target
         sta defender_unit
         mva #1 enemy_attacked
-        jsr animate_attack
+        mva #0 attack_bonus
+        ldx enemy_id
+        ldy unit_type,x
+        lda type_ability,y
+        cmp #4
+        bne ?strike
+        mva #1 unit_charge,x
+        ldy enemy_target
+        mva unit_cell,y unit_mark,x
+        mva #3 ability_event
+        rts
+?strike jsr animate_attack
         jmp attack_units
 
 ?move   lda #$FF
@@ -723,6 +766,22 @@ enemy_best_dist dta 0
 .proc summon_enemy
         sta summon_kind
         mva #1 enemy_attacked
+        lda turn_number
+        cmp #2
+        bcc ?done
+        ldx #0
+        ldy #0
+?count  cpx unit_count
+        bcs ?limit
+        lda unit_summoned,x
+        beq ?cn
+        lda unit_hp,x
+        beq ?cn
+        iny
+?cn     inx
+        bne ?count
+?limit  cpy #2
+        bcs ?done
         mva #0 summon_cell
 ?scan   lda summon_cell
         jsr is_open
@@ -743,6 +802,10 @@ enemy_best_dist dta 0
         jsr add_unit
         bcc ?done
         sta defender_unit
+        tax
+        mva #1 unit_summoned,x
+        mva turn_number unit_spawned,x
+        mva #6 ability_event
         mva enemy_id attacker_unit
         jsr animate_attack
         rts
@@ -800,9 +863,15 @@ enemy_busy dta 0
         lda reward_committed
         bne ?done
         mva #1 reward_committed
+        inc encounter_seed
+        lda practice_mode
+        beq ?progress
+        mwa #20 reward
+        jmp ?pay
+?progress
         ldx region
         lda region_wins,x
-        cmp #3
+        cmp wins_required,x
         bcs ?repeat
         ldy contract
         lda reward_lo,y
@@ -810,20 +879,11 @@ enemy_busy dta 0
         lda reward_hi,y
         sta reward+1
         inc region_wins,x
-        lda region_wins,x
-        cmp #3
-        bne ?pay
-        clc
-        lda reward
-        adc bonus_lo,x
-        sta reward
-        lda reward+1
-        adc bonus_hi,x
-        sta reward+1
         jmp ?pay
-?repeat lda practice,x
+?repeat lda practice_lo,x
         sta reward
-        mva #0 reward+1
+        lda practice_hi,x
+        sta reward+1
 ?pay    clc
         lda gold
         adc reward

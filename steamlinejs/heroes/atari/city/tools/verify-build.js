@@ -10,7 +10,8 @@ while(i<data.length){
   const start=data.readUInt16LE(i);i+=2;if(start===65535)continue;
   const end=data.readUInt16LE(i);i+=2;const n=end-start+1;
   assert(n>0&&i+n<=data.length,"Malformed XEX segment");
-  if(start===0x6000){assert.equal(n,4096);uploads++;}
+  if(start===0x6000&&n===labels['battle.battle_data_end']-0x6000){assert(end<0x8000);assert.equal(uploads,95,'Battle tables must load after graphics staging');}
+  else if(start===0x6000){assert.equal(n,4096);uploads++;}
   else if(start===0x2e2){assert.equal(n,2);init++;}
   else if(start===0x2e0){assert.equal(n,2);run=data.readUInt16LE(i);}
   else assert((start>=0x2000&&end<0x6000)||(start===0x7000&&end<0x8000)||(start===0x8000&&end===0x83ff),"Unexpected CPU memory region");

@@ -1,0 +1,85 @@
+GREENHAVEN VBXE V3 — BALANCE, ENCOUNTERS AND MONSTER RULES
+
+Build and play
+  cd atari/city
+  node tools/import-balance.js ../../greenhaven-unit-balance.json
+  sh build.sh
+Open atari/city/city-vbxe.xex with VBXE enabled. Build defaults to the improved
+vbxe-v2 artwork. HEROES_ART_PROFILE=classic sh build.sh uses the original art
+with the current gameplay. Node 22, ImageMagick and MADS are required.
+
+Preservation
+The exact pre-integration native executable, native config, editor and editor
+config are in backups/before-native-abilities-2026-10-17/. Older backups remain.
+The 150 original art inputs remain unchanged. The old art comparison and its
+included executables are historical art-review builds, before v3 gameplay.
+
+Integrated balance
+Starts with 50 gold and two 4-HP Spearmen. The editor's current recruitment,
+individual upgrade and building prices are imported. Chapel costs 40/50/30,
+unlocking the fourth/fifth slots and then a 10-gold recruitment discount.
+Cavalry deals 3 damage; Demon has 3 HP, from the earlier simulation candidate.
+
+Random encounters and unlocks
+34 weighted enemy groups across four regions and three difficulty stages each.
+Dark Forest -> Catacombs -> Monster Caves -> Necromancer Ruins. Each region
+requires three victories before the next opens. Configurable 3..9 thresholds
+are compiled from the editor. Normal replays use the last stage and smaller
+region-specific rewards. No progress is awarded for replays.
+The map report also offers PRACTICE, available only in Dark Forest after one
+Forest victory. It uses the first stage, pays 20 gold and gives no progress.
+This provides a recovery route when the current army cannot win the next stage.
+
+Native randomness uses an 8-bit seed initialized from Atari RANDOM and clock.
+Every successful battle advances it, wrapping after 255. Defeat and retreat
+preserve it. All 256 native seeds use the exact editor's weighted 32-bit hash
+and groups, via compiled tables. Editor previews also accept larger seeds;
+use 0..255 for direct native comparisons. Simulation uses the native seed cycle.
+
+Monster abilities
+Vampire (existing dark ID/art): dealing damage heals 1 HP, capped at original HP.
+Zombie: killing a hero converts its battlefield slot to an enemy zombie with
+2 HP. It acts next round. At most two conversions per battle, and raised zombies
+cannot convert more soldiers. This affects the battle; the campaign army still
+recovers fully afterward, as in earlier versions.
+Skeleton: Archery Range arrows deal one less damage, minimum 1. Magic/melee
+remain unchanged. Bone Archers do not gain this resistance.
+Ogre: instead of attacking immediately, prepares a +2 damage strike against the
+victim's hex. Next enemy phase it stands still and attacks that hex if a hero
+remains adjacent. Moving away avoids the hit. WIND status identifies preparation.
+Imp: after hitting, hops to the first open adjacent hex farther from its victim.
+Warlock: summons skeletons from round 2, at most two living summons. New summons
+act next round. Dead enemy slots are recycled if the twelve allocated slots fill.
+Killing the Warlock wins immediately. Ability messages appear above the board.
+
+Verification and limitations
+Tests execute the assembled 6502 code with a functional VBXE blitter at both
+D600 and D700. They cover all abilities, caps, delays, seeded groups, rewards,
+practice, army purchases and upgrades, animation, UI controls and memory bounds.
+This checks logic and pixels, not physical Atari raster/DMA timing or human
+play difficulty. No physical-hardware run has been performed.
+The editor simulator has the same special rules, with full healing, purchases,
+upgrades and tactical logs. Its player uses fixed shopping plans and pathfinding;
+its default enemy follows the native greedy movement. Simulation is not native
+execution. Actual tactical choices can differ. Unlimited practice permits grind.
+
+Benchmark
+node simulation/abilities-benchmark.cjs PATH_TO_OUTPUT_DIRECTORY
+Runs 2,560 campaigns: five strategies x 256 starting seeds x abilities on/off.
+All five strategies completed with abilities on. Average fight counts differ;
+this verifies bot progression viability, not that difficulty is optimal.
+The generated HTML includes full purchase and tactical logs for five examples.
+The browser editor compares abilities on/off without changing the active draft.
+
+Tests
+node tests/editor-balance.test.cjs
+node tests/editor-progression.test.cjs
+node tests/campaign-sim.test.cjs
+node tests/monster-abilities.test.cjs
+python3 atari/city/tools/test-monster-abilities.py
+python3 atari/city/tools/test-runtime.py
+python3 atari/city/tools/test-lowrez.py
+python3 atari/city/tools/test-chapel.py
+python3 atari/city/tools/test-hero-animation.py
+python3 atari/city/tools/test-battle-speed.py
+python3 atari/city/tools/test-battle-controls.py

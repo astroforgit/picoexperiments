@@ -29,5 +29,5 @@ assert.deepEqual(api.validate(legacy),[]);
 const crypto=require('node:crypto');
 const backup=root+'/backups/before-balance-2026-10-17/';
 for(const [file,hash] of Object.entries(JSON.parse(fs.readFileSync(backup+'checksums.json'))))assert.equal(crypto.createHash('sha256').update(fs.readFileSync(backup+file)).digest('hex'),hash);
-assert.equal(crypto.createHash('sha256').update(fs.readFileSync(root+'/atari/city/content.json')).digest('hex'),JSON.parse(fs.readFileSync(backup+'checksums.json'))['atari/city/content.json']);
-console.log('PASS: standalone editor/data parity, legacy configuration, exact backup hashes and untouched native content.');
+assert.equal(crypto.createHash('sha256').update(fs.readFileSync(root+'/backups/before-native-abilities-2026-10-17/content.json')).digest('hex'),JSON.parse(fs.readFileSync(backup+'checksums.json'))['atari/city/content.json']);
+console.log('PASS: standalone editor/data parity, legacy configuration, exact backup hashes and preserved pre-integration native content.');

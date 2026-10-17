@@ -1,0 +1,3 @@
+# Generated native buffers are byte streams, including buffers without NUL bytes.
+atari/city/generated/*.bin binary
+*.xex binary

@@ -3,8 +3,7 @@
 A playable native city, encounter map and tactical battle game. The Lowrez-based
 preset starts with **50 gold, level-2 Barracks and two Spearmen**. Other buildings
 start empty. Each building has three appearances. Four buildings unlock stronger recruits;
-building upgrades do not alter troops already recruited. Chapel is a support building: level 1 unlocks slot 4, level 2 unlocks slot 5, and level 3 reduces every recruit price by 10 gold. Starting capacity is 3. See
-[LOWREZ-UPDATE.md](LOWREZ-UPDATE.md) for current prices, encounters and limitations.
+building upgrades do not alter troops already recruited. Chapel is a support building: level 1 unlocks slot 4, level 2 unlocks slot 5, and level 3 reduces every recruit price by 10 gold. Starting capacity is 3. See [NATIVE-V3.txt](../../NATIVE-V3.txt) for current balance, abilities, build instructions and validation. [LOWREZ-UPDATE.md](LOWREZ-UPDATE.md) describes the earlier fixed-encounter version.
 
 The city connects to a dark fantasy encounter map and an integrated native VBXE
 battle view. Recruit any combination of up to five individual fighters after Chapel upgrades: **five Militia
@@ -45,10 +44,10 @@ On the map, joystick or W/A/S/D moves between five fixed landmarks:
 - **Necromancer Ruins:** shattered spires, undead and spectral fire.
 - **Back to Greenhaven:** the larger lower-left stone arch, with a peaceful green landscape and warm sunlight inside; Fire returns to the city.
 
-Selecting a hostile location opens its report. Choose **Fight** or **Back**.
+Selecting a hostile location opens its report. Choose **Fight**, **Back**, or **Practice**. Practice is available in Dark Forest after one Forest victory, pays 20 gold and gives no unlock progress.
 An empty army cannot enter combat. Dark Forest is available first; three victories
 on its successive contracts unlock Catacombs, then Monster Caves, then Necromancer
-Ruins. Each region has three authored contracts, for twelve total. Replaying a
+Ruins. Each region has three difficulty stages; 34 weighted enemy groups provide variation across them. Retries preserve the group until a victory advances the native seed. Replaying a
 completed region pays a smaller practice reward without advancing its counter.
 
 ![Encounter map](generated/encounters-map.png)
@@ -75,7 +74,7 @@ completed region pays a smaller practice reward without advancing its counter.
 - Trees, pillars and rocks occupy the same two central cells in this first set
   of layouts. They block movement and shots. Precomputed symmetric sight tests
   use the same terrain as the movement grid. Bodies block movement, not shots.
-- Combat uses fixed damage and the recovered low-HP Lowrez values and labeled additional-unit proposals.
+- Combat uses the editor balance plus Vampire lifesteal, zombie conversion, skeleton arrow resistance, prepared Ogre strikes, Imp retreat hops and capped delayed Warlock skeleton summons. The Vampire uses the existing Dark sprite set.
   Movement animates, attacked sprites flash, bottom HP, damage, remaining movement and shooting stats update.
 - Victory pays gold exactly once and advances the current contract. Completing
   three contracts unlocks the next region; there are no extra region bonuses. Defeat or retreat pays nothing. All recruited

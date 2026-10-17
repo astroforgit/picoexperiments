@@ -27,7 +27,14 @@
         jsr format_number
         labeltext 256,4,number_text+2
         rect 0,15,320,1,2
-        labeltext 8,18,s_hint
+        ldx ability_event
+        lda ability_lo,x
+        sta text_src
+        lda ability_hi,x
+        sta text_src+1
+        mwa #8 text_x
+        mva #18 text_y
+        jsr draw_text
         mva #0 draw_cell
 ?grid   mva #0 hex_kind
         lda game_state
@@ -286,6 +293,9 @@ s_shoot_label dta c'SHOOT',0
 ?ready  mwa #s_ready_unit text_src
         jmp ?status
 ?enemy  mwa #s_enemy text_src
+        lda unit_charge,x
+        beq ?status
+        mwa #s_windup text_src
 ?status mwa #264 text_x
         mva info_y text_y
         jmp draw_text
@@ -396,3 +406,12 @@ obstacle_hi dta >$F300,>$F680,>$FA00
 
 lunge dta 0,2,4,6,6,4,2,0
         icl 'battle-heroes.inc'
+
+ability_lo dta <s_hint,<s_lifesteal,<s_raised,<s_prepare,<s_hint,<s_hop,<s_summoned
+ability_hi dta >s_hint,>s_lifesteal,>s_raised,>s_prepare,>s_hint,>s_hop,>s_summoned
+s_lifesteal dta c'VAMPIRE HEALS 1 HP ON HIT',0
+s_raised dta c'RAISED! ZOMBIE ACTS NEXT ROUND',0
+s_prepare dta c'OGRE PREPARES +2 STRIKE: MOVE AWAY',0
+s_hop dta c'IMP HOPS AWAY AFTER ATTACKING',0
+s_summoned dta c'WARLOCK SUMMONS A SKELETON',0
+s_windup dta c'WIND',0

@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
 set -eu
+export HEROES_ART_PROFILE="${HEROES_ART_PROFILE:-vbxe-v2}"
 cd "$(dirname "$0")"
 node tools/build-medieval.js
 node tools/build-assets.js

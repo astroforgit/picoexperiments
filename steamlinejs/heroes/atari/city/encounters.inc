@@ -20,9 +20,18 @@
 .proc map_confirm
         lda popup_open
         beq ?location
+        mva #0 battle.practice_mode
         lda popup_choice
-        bne ?close
-        jsr can_enter_battle
+        cmp #1
+        beq ?close
+        cmp #2
+        bne ?fight
+        lda selected_location
+        bne ?done
+        lda region_wins
+        beq ?done
+        mva #1 battle.practice_mode
+?fight  jsr can_enter_battle
         bcc ?done
         jmp battle.start
 ?close  jmp close_popup
@@ -46,7 +55,7 @@
         tax
         dex
         lda region_wins,x
-        cmp #3
+        cmp battle.wins_required,x
         bcc ?no
 ?yes    sec
         rts
@@ -59,9 +68,12 @@ location_region dta 0,1,2,255,3
 .proc map_navigate
         lda popup_open
         beq ?map
+        inc popup_choice
         lda popup_choice
-        eor #1
-        sta popup_choice
+        cmp #3
+        bcc ?choice
+        mva #0 popup_choice
+?choice
         mva #1 dirty
         rts
 ?map    lda map_direction_offsets,x
@@ -139,13 +151,13 @@ map_cursor_w dta 56,56,56,72,56
 .endp
 
 .proc draw_scout_report
-        rect 22,28,280,128,1
-        rect 24,30,276,124,7
+        rect 22,28,280,140,1
+        rect 24,30,276,136,7
         rect 24,30,276,16,1
         mwa #22 calc_x
         mva #28 calc_y
         mwa #280 fr_w
-        mva #128 fr_h
+        mva #140 fr_h
         mva #2 fr_col
         jsr outline
         jsr location_name_pointer
@@ -177,6 +189,10 @@ map_cursor_w dta 56,56,56,72,56
         adc #48
         sta one_char
         labeltext 68,105,one_char
+        lda battle.wins_required,y
+        clc
+        adc #48
+        sta s_three+2
         labeltext 80,105,s_three
         jsr can_enter_battle
         bcs ?ready
@@ -189,12 +205,24 @@ map_cursor_w dta 56,56,56,72,56
         jmp ?buttons
 ?ready  labeltext 32,119,s_ready
 ?buttons
+        labeltext 32,151,s_practice
         rect 32,134,119,15,1
         rect 170,134,119,15,1
         lda popup_choice
-        bne ?back
+        cmp #2
+        beq ?practice
+        cmp #1
+        beq ?back
         mwa #32 calc_x
         jmp ?outline
+?practice
+        mwa #30 calc_x
+        mva #150 calc_y
+        mwa #260 fr_w
+        mva #10 fr_h
+        mva #2 fr_col
+        jsr outline
+        jmp ?labels
 ?back   mwa #170 calc_x
 ?outline
         mva #134 calc_y
@@ -202,7 +230,7 @@ map_cursor_w dta 56,56,56,72,56
         mva #15 fr_h
         mva #2 fr_col
         jsr outline
-        labeltext 74,138,s_fight
+?labels labeltext 74,138,s_fight
         labeltext 217,138,s_back
         rts
 .endp
@@ -235,3 +263,5 @@ s_caves_detail dta c'OGRES AND HUNGRY BATS LURK WITHIN.',0
 s_city_desc dta c'RETURN HOME TO BUILD AND UPGRADE.',0
 s_ruins_desc dta c'GREEN SOUL FIRE SPLITS THE RUINS.',0
 s_ruins_detail dta c'UNDEAD AND IMPS SERVE THE WARLOCK.',0
+
+s_practice dta c'PRACTICE: FOREST WIN NEEDED / 20 GOLD',0

@@ -18,7 +18,7 @@ def check(page,capture=False):
  m.call('battle.start');tick(m,300);m.call('battle.confirm');tick(m,556);m.call('battle.confirm');assert m.get('battle.unit_acted')==0
  m.call('battle.start');m.put('battle.unit_hp',2);m.put('battle.unit_move_left',1)
  m.call('battle.draw');assert m.get('battle.info_id')==0
- a=r.LABELS['battle.stats_line'];assert bytes(m.mem.ram[a+2:a+7])==b' 2/ 3'
+ a=r.LABELS['battle.stats_line'];assert bytes(m.mem.ram[a+2:a+7])==b' 2/ 4'
  assert bytes(m.mem.ram[a+12:a+15])==b'1/2'
  # Hovered enemies get the panel; empty ground falls back to the selected ally.
  m.put('battle.cursor_cell',m.mem.ram[r.LABELS['battle.unit_cell']+2]);m.call('battle.draw');assert m.get('battle.info_id')==2

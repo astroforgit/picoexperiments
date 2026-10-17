@@ -10,13 +10,13 @@ function mount(getData,getErrors){
  const strategy=make('select');strategy.setAttribute('aria-label','Simulation strategy');for(const [id,v] of Object.entries(sim.strategies)){const o=make('option',v.name);o.value=id;strategy.append(o);}strategy.value='mixed';
  const seed=make('input');seed.type='number';seed.min=0;seed.max=4294967295;seed.step=1;seed.value=1;seed.setAttribute('aria-label','Simulation starting seed');
  const count=make('input');count.type='number';count.min=1;count.max=200;count.step=1;count.value=50;count.setAttribute('aria-label','Simulation seeds per strategy');
- const candidateLabel=make('label'),candidate=make('input');candidate.type='checkbox';candidateLabel.append(candidate,document.createTextNode(' Test candidate: early practice + Demon HP 3 + Cavalry damage 3'));
- const once=make('button','Run one campaign'),compare=make('button','Compare current and candidate'),download=make('button','Export simulation JSON');download.disabled=true;
+ const candidateLabel=make('label'),candidate=make('input');candidate.type='checkbox';candidateLabel.append(candidate,document.createTextNode(' Test without monster abilities'));
+ const once=make('button','Run one campaign'),compare=make('button','Compare abilities on/off'),download=make('button','Export simulation JSON');download.disabled=true;
  bar.append(strategy,make('label','Seed'),seed,make('label','Seeds per strategy'),count,candidateLabel,once,compare,download);host.append(bar);
  const status=make('p','Ready. One campaign shows every purchase, encounter and tactical action. Comparison runs five shopping strategies against both configurations.');status.className='note';status.setAttribute('role','status');status.setAttribute('aria-live','polite');host.append(status);
  const result=make('div');result.className='note';host.append(result);let lastResult=null,running=false;
  const snapshot=()=>JSON.parse(JSON.stringify(getData()));
- const modified=data=>{const d=JSON.parse(JSON.stringify(data));d.enemies.find(u=>u.id==='demon').hp=3;d.players.find(u=>u.id==='lodge-3').damage=3;return d;};
+ const modified=data=>{const d=JSON.parse(JSON.stringify(data));d.monsterAbilitiesVersion=0;return d;};
  const options=()=>({earlyPractice:true,practiceReward:20});
  function valid(){const errors=getErrors();if(errors.length)throw Error('Fix the editor configuration first: '+errors[0]);if(!seed.validity.valid||!count.validity.valid||seed.value===''||count.value==='')throw Error('Use an integer seed and 1–200 seeds per strategy.');}
  function busy(value){running=value;once.disabled=compare.disabled=value;download.disabled=value||!lastResult;}
@@ -30,7 +30,7 @@ function mount(getData,getErrors){
    if(event.type==='purchase'){result.append(make('p',`Before fight ${event.beforeFight}: ${event.label}, ${event.cost} gold (${event.goldBefore} → ${event.goldAfter}).`));continue;}
    const detail=make('details');detail.append(make('summary',`Fight ${event.fight}: ${event.regionName}, stage ${event.stage}${event.replay?' practice/replay':''} — ${event.outcome}; ${event.rounds} rounds; +${event.reward} gold; balance ${event.goldAfter}`));
    detail.append(make('p',`Seed ${event.seed}. Enemies: ${event.enemies.join(', ')}. Army: ${event.army.map(id=>data.players.find(u=>u.id===id).name).join(', ')}.`));
-   detail.append(table(['Round','Fighter','Action','Detail'],event.trace.map(e=>[e.round,e.unit||'Warlock',e.action,e.action==='move'?`hex ${e.from} → ${e.to}`:e.action==='attack'?`${e.targetName}: ${e.hpBefore} → ${e.hpAfter} HP`:e.action==='summon'?`Demon at hex ${e.to}`:e.reason||''])));
+   detail.append(table(['Round','Fighter','Action','Detail'],event.trace.map(e=>[e.round,e.unit||'Warlock',e.action,e.action==='move'?`hex ${e.from} → ${e.to}`:e.action==='attack'?`${e.targetName}: ${e.hpBefore} → ${e.hpAfter} HP`:e.action==='summon'?`Undead at hex ${e.to}`:e.action==='heal'?`+${e.amount} HP`:e.action==='raise'?`Soldier ${e.target} becomes a 2 HP zombie`:e.action==='prepare'?`Heavy strike targets hex ${e.to}`:e.action==='hop'?`Retreat to hex ${e.to}`:e.reason||''])));
    result.append(detail);
   }
  }
@@ -49,8 +49,8 @@ function mount(getData,getErrors){
     if(done%5===0){status.textContent=`Simulated ${done} / ${total} campaigns…`;await new Promise(resolve=>setTimeout(resolve,0));}
    }
    const summaries=['current','candidate'].flatMap(variant=>sim.summarize(runs.filter(r=>r.variant===variant)).map(r=>({variant,...r})));
-   lastResult={model:'stats-only bot simulation',config:data,candidateChanges:{demonHP:3,cavalryDamage:3,earlyPracticeReward:20},seedStart:start,seedsPerStrategy:n,summaries,runs};result.replaceChildren();result.append(table(['Configuration','Strategy','Completed','Mean fights','Mean replays','Mean defeats','Mean draws'],summaries.map(r=>[r.variant,r.name,`${r.completed}/${r.runs} (${(r.completionRate*100).toFixed(1)}%)`,r.meanFights.toFixed(1),r.meanReplays.toFixed(1),r.meanDefeats.toFixed(1),r.meanDraws.toFixed(1)])));
-   status.textContent=`Finished ${total} campaigns. Candidate allows replaying the already-won opening encounter for 20 gold and sets Demon HP to 3 and Cavalry damage to 3. It is a separate experiment; editor values were kept.`;
+   lastResult={model:'stats-only bot simulation',config:data,candidateChanges:{monsterAbilitiesVersion:0},seedStart:start,seedsPerStrategy:n,summaries,runs};result.replaceChildren();result.append(table(['Configuration','Strategy','Completed','Mean fights','Mean replays','Mean defeats','Mean draws'],summaries.map(r=>[r.variant==='current'?'Abilities on':'Abilities off',r.name,`${r.completed}/${r.runs} (${(r.completionRate*100).toFixed(1)}%)`,r.meanFights.toFixed(1),r.meanReplays.toFixed(1),r.meanDefeats.toFixed(1),r.meanDraws.toFixed(1)])));
+   status.textContent=`Finished ${total} campaigns. Compared the current rules with classic monster behavior. Both use the same prices, stats and practice rewards. Editor values were kept.`;
   }catch(error){status.textContent=error.message;}finally{busy(false);}
  });
  download.addEventListener('click',()=>{if(!lastResult)return;const url=URL.createObjectURL(new Blob([JSON.stringify(lastResult,null,2)+'\n'],{type:'application/json'})),a=make('a');a.href=url;a.download='greenhaven-simulation.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);});
