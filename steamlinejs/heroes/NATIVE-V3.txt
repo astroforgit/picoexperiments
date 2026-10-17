@@ -83,3 +83,11 @@ python3 atari/city/tools/test-chapel.py
 python3 atari/city/tools/test-hero-animation.py
 python3 atari/city/tools/test-battle-speed.py
 python3 atari/city/tools/test-battle-controls.py
+
+Launch the published executable without rebuilding
+  ./atari/run-heroes-vbxe3.sh
+Windows shortcut: atari/run-heroes-vbxe3.cmd (double-click).
+Both launch atari/heroes-vbxe3.xex through the shared Atari VBXE toolkit and
+reuse the persistent Altirra profile. Enable VBXE in that profile beforehand.
+The runner works independently of the current directory. Use --check in the
+shell runner, or -Check in PowerShell, to check paths without starting Altirra.
