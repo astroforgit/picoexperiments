@@ -25,7 +25,10 @@ GEN = os.path.join(ROOT, 'gen')
 SRC = os.path.join(ROOT, 'src')
 DISK = os.path.join(ROOT, 'disk')
 MADS = os.environ.get('MADS', 'mads')
-OUT = os.path.join(ROOT, 'gng.xex')
+# GG_SMOOTH=0: no playfield shift between pictures (the gg2 build); GG_OUT:
+# the XEX file name
+SMOOTH = int(os.environ.get('GG_SMOOTH', '1'))
+OUT = os.path.join(ROOT, os.environ.get('GG_OUT', 'gng.xex'))
 
 V_STAGE, V_RTIMG, V_VIC, V_FILES, V_SAVE = 0x00000, 0x10000, 0x68000, 0x6CA00, 0x6C800
 VRAM_END = 0x80000
@@ -259,7 +262,7 @@ def main():
     open(os.path.join(GEN, 'sound-tables.asm'), 'w').write(sound_tables())
 
     # ---- runtime
-    out = assemble('runtime.asm', '-o:../gen/runtime.obx', '-l:../gen/runtime.lst',
+    out = assemble('runtime.asm', f'-d:SMOOTH={SMOOTH}', '-o:../gen/runtime.obx', '-l:../gen/runtime.lst',
                    '-t:../gen/runtime.lab')
     print('\n'.join(l.strip() for l in out.splitlines() if 'end:' in l or 'vars' in l))
     lab = labels(os.path.join(GEN, 'runtime.lab'))
@@ -334,7 +337,9 @@ def main():
         x += seg(0x2E2, blab['UPLOAD'].to_bytes(2, 'little'))
     x += seg(0x2E0, blab['STARTER'].to_bytes(2, 'little'))
     open(OUT, 'wb').write(x)
-    open(os.path.join(ROOT, 'gng.sha256'), 'w').write(hashlib.sha256(x).hexdigest() + '  gng.xex\n')
+    name = os.path.basename(OUT)
+    open(os.path.join(ROOT, os.path.splitext(name)[0] + '.sha256'), 'w').write(
+        hashlib.sha256(x).hexdigest() + f'  {name}\n')
     print(f'{os.path.basename(OUT)}: {len(x)} bytes, {len(chunks)} VRAM chunks')
 
 

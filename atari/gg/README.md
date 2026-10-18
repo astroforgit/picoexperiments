@@ -35,7 +35,12 @@ release of the game (on the C64 too; file `0B` is never loaded).
 ```sh
 ./build.sh     # -> gng.xex
 ./run.sh       # build, then start the persistent Altirra VBXE profile
+./gg2.sh       # -> gng2.xex: the same without smooth scrolling
 ```
+
+`gng2.xex` moves the playfield only when a new picture is shown (12-15
+times per second while scrolling), as before smooth scrolling was added:
+the background moves in steps, but the sprites never lag it.
 
 The build needs MADS 2.x and Python 3 with `py65`, `numpy` and `Pillow`.
 `tools/d64.py` extracts the disk files into `disk/`. The analysis results

@@ -313,6 +313,10 @@ xw_go   lda #MEMB_ON|(V_XDL>>14)
         sta xw_d+2
         ; shift: scroll since the picture, -8..8 (the sprites move with it:
         ; more would show them far from where they are)
+    .if SMOOTH=0
+        lda #0                  ; (gg2 build: the picture as it was composed)
+        beq xw_s1
+    .endif
         lda sc_T
         sec
         sbc lstT,x
