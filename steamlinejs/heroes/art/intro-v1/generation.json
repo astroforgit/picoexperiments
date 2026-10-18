@@ -21,14 +21,26 @@
     {
       "tool": "built-in image_gen",
       "input": "forest-love-before-carefree.png",
-      "output": "forest-love.png",
+      "output": "forest-love-before-romantic-smile.png",
       "prompt": "Use case: precise-object-edit. Edit only the adult forest nymph in this warm forest meeting pixel-art illustration. She is an adult woman in her twenties. Give her a humorous carefree, slightly tipsy personality: rosy flushed cheeks, a mischievous relaxed smiling face, slightly tousled auburn hair, a loosely tilted flower crown, a gently jaunty head tilt. She looks fondly at the prince with an amused playful grin. One hand still affectionately rests on his arm; in the other she casually holds a small rustic wooden drinking cup, as if cheerfully making a toast. Keep her modest green leaf dress, pointed ears, adult identity and overall silhouette. This is gentle fairy-tale comedy. Keep the prince, his pose and clothing, romantic forest clearing, palace, stream, sunlight, composition, pixel-art technique and exact dimensions unchanged. Make the facial expression clear when reduced to 320 pixels wide. No text or speech bubbles, no nudity, no watermark."
     },
     {
       "tool": "built-in image_gen",
       "input": "necromancer-abduction-before-carefree.png",
-      "output": "necromancer-abduction.png",
+      "output": "necromancer-abduction-before-black-metal.png",
       "prompt": "Use case: precise-object-edit. Edit only the adult forest nymph in this pixel-art fantasy abduction scene. She is an adult woman in her twenties. Make her a humorous easygoing, slightly tipsy heroine: rosy flushed cheeks, a cheeky relaxed smiling face instead of a frightened expression, slightly tousled long auburn hair and a slightly crooked leafy flower crown. Keep her modest green leaf dress, pointed ears, adult identity, body position and overall silhouette. With the arm extended toward the prince, she raises a small rustic wooden drinking cup in a carefree farewell toast, creating gentle fairy-tale comedy while the grumpy elderly HUMAN necromancer pulls her into the portal. Preserve the necromancer exactly as he is: wrinkled human face, red nose, scraggly grey beard, black-purple robes, flask at belt. Preserve prince, forest, violet portal, palace, composition, lighting, pixel-art style and exact image dimensions. Make her expression and toast clear at 320 pixel width. No text, no speech bubbles, no nudity, no watermark."
+    },
+    {
+      "tool": "built-in image_gen",
+      "input": "forest-love-before-romantic-smile.png",
+      "output": "forest-love.png",
+      "prompt": "Use case: precise-object-edit. Edit this pixel-art fantasy forest love-scene illustration. Make ONLY these changes: (1) Completely remove the wooden drinking cup and all drink/liquid from the adult nymph's hand; replace with an empty relaxed hand gently touching the prince's shoulder or a playful empty-hand gesture. Keep her carefree rosy-cheeked mischievous smiling face, auburn hair, green leaf dress and flower crown. (2) Change the adult prince's face to look unmistakably HAPPY AND IN LOVE: a broad warm delighted smile, lifted relaxed eyebrows, soft affectionate eyes directed at the nymph, relaxed cheeks. Remove any angry, stern or scowling expression. Keep his adult identity, brown hair, gold circlet, blue tunic, red cape and body position. Preserve the rest exactly: romantic sunlit forest, palace, stream, composition, deliberate classic pixel-art clusters, colors and image dimensions. Facial happiness should be readable at 320 pixels wide. No alcohol or drinking vessel in her hand, no text, no watermark."
+    },
+    {
+      "tool": "built-in image_gen",
+      "input": "necromancer-abduction-before-black-metal.png",
+      "output": "necromancer-abduction.png",
+      "prompt": "Use case: precise-object-edit. Edit this pixel-art fantasy abduction illustration with ONLY these changes. 1. Completely remove the adult nymph's wooden cup, drink and droplets. Her outstretched hand is now empty and makes a friendly carefree farewell wave toward the prince. Keep her cheerful mischievous smile, rosy cheeks, auburn hair, green leaf dress, adult identity and pose. 2. Restyle the evil elderly HUMAN necromancer on the left as an aging black-metal musician turned wizard: long flowing charcoal-black hair with grey streaks clearly visible down past his shoulders; pale wrinkled HUMAN face, dark black-metal stage eye makeup, malicious human eyes, crooked grin, scruffy grey beard and red nose. Keep a recognizably living old human face, never a skull. His hood is pushed back enough to reveal the long hair. Worn black robes, a few understated silver studs and a prominent silver INVERTED CROSS medallion on his chest (upside-down cross, long stem above the crossbar and short stem below). Make the long hair and pendant clearly readable at 320-pixel game resolution. Preserve the prince, violet portal, forest, palace, lighting, composition, image dimensions and classic hand-pixelled art style. No drinking vessel in the nymph's hand. No text, no watermark."
     }
   ]
 }
