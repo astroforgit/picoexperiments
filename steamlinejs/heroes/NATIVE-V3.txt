@@ -29,9 +29,10 @@ Source illustrations and exact image-generation prompts are in art/intro-v1/.
 Victory and wedding ending
 Defeating the Warlock in the final Necromancer Ruins encounter completes the
 campaign and automatically plays three ending pictures: the father reveal,
-the wedding ceremony, and the rowdy reception. The prince spares the defeated
+the wedding ceremony, and the rowdy garden reception. The prince spares the defeated
 necromancer after the nymph promises to marry him. Her father escorts her down
-the aisle; at the reception she dances and he regrets the free bar.
+the aisle; at the garden reception she dances, the prince struggles to stand,
+and her father is sick onto the grass after the free bar.
 Fire, Enter or Space advances each picture. After THE END, another press starts
 a fresh campaign. Ordinary victories, losses and retreats do not play it.
 The standalone XEX stores compact 160x72, 16-colour pictures at double scale,
