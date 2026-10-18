@@ -1,5 +1,6 @@
 {
   "campaigns": 2560,
+  "target": "Three wins in each lair for benchmark comparison; actual game is endless",
   "model": "Stats-only fixed shopping bots; native-style greedy enemy AI; all 256 native starting seeds; permanent casualties; surviving fighters recover HP; paid replacements; not hardware execution or measured human win rates.",
   "summaries": [
     {
@@ -55,13 +56,13 @@
       "runs": 256,
       "completed": 0,
       "completionRate": 0,
-      "meanFights": 5.65625,
-      "meanReplays": 1.328125,
-      "meanDefeats": 2.328125,
+      "meanFights": 3,
+      "meanReplays": 0,
+      "meanDefeats": 2,
       "meanDraws": 0,
-      "meanRounds": 21.63671875,
-      "meanGold": 13.28125,
-      "meanSpent": 178.28125,
+      "meanRounds": 10.3515625,
+      "meanGold": 10,
+      "meanSpent": 90,
       "reached": [
         256,
         0,
@@ -69,7 +70,7 @@
         0
       ],
       "failures": {
-        "All soldiers are dead and there is not enough gold to recruit a replacement.": 256
+        "The fallback replay is also unwinnable with this army.": 256
       }
     },
     {
@@ -79,13 +80,13 @@
       "runs": 256,
       "completed": 0,
       "completionRate": 0,
-      "meanFights": 7.1015625,
+      "meanFights": 6.55078125,
       "meanReplays": 0.55078125,
       "meanDefeats": 1.55078125,
       "meanDraws": 0,
-      "meanRounds": 39.72265625,
-      "meanGold": 12.24609375,
-      "meanSpent": 448.76953125,
+      "meanRounds": 37.31640625,
+      "meanGold": 15,
+      "meanSpent": 435,
       "reached": [
         256,
         256,
@@ -93,7 +94,8 @@
         0
       ],
       "failures": {
-        "All soldiers are dead and there is not enough gold to recruit a replacement.": 256
+        "The fallback replay is also unwinnable with this army.": 141,
+        "All soldiers are dead and there is not enough gold to recruit a replacement.": 115
       }
     },
     {
@@ -103,13 +105,13 @@
       "runs": 256,
       "completed": 0,
       "completionRate": 0,
-      "meanFights": 5.6171875,
+      "meanFights": 5.390625,
       "meanReplays": 0.2265625,
       "meanDefeats": 1.2265625,
       "meanDraws": 0,
-      "meanRounds": 29.2734375,
-      "meanGold": 8.22265625,
-      "meanSpent": 360.37109375,
+      "meanRounds": 28.19921875,
+      "meanGold": 9.35546875,
+      "meanSpent": 354.70703125,
       "reached": [
         256,
         179,
@@ -117,7 +119,8 @@
         0
       ],
       "failures": {
-        "All soldiers are dead and there is not enough gold to recruit a replacement.": 256
+        "The fallback replay is also unwinnable with this army.": 58,
+        "All soldiers are dead and there is not enough gold to recruit a replacement.": 198
       }
     },
     {
@@ -125,23 +128,24 @@
       "strategy": "infantry",
       "name": "Infantry",
       "runs": 256,
-      "completed": 128,
-      "completionRate": 0.5,
-      "meanFights": 9.41796875,
-      "meanReplays": 0.46875,
+      "completed": 134,
+      "completionRate": 0.5234375,
+      "meanFights": 9.6796875,
+      "meanReplays": 0.4921875,
       "meanDefeats": 0.96875,
       "meanDraws": 0,
-      "meanRounds": 43.55859375,
-      "meanGold": 554.375,
-      "meanSpent": 547.5390625,
+      "meanRounds": 45.78125,
+      "meanGold": 585.234375,
+      "meanSpent": 594.2578125,
       "reached": [
         256,
-        196,
-        128,
-        128
+        230,
+        134,
+        134
       ],
       "failures": {
-        "All soldiers are dead and there is not enough gold to recruit a replacement.": 128
+        "All soldiers are dead and there is not enough gold to recruit a replacement.": 86,
+        "The fallback replay is also unwinnable with this army.": 36
       }
     },
     {
@@ -151,13 +155,13 @@
       "runs": 256,
       "completed": 129,
       "completionRate": 0.50390625,
-      "meanFights": 8.9140625,
+      "meanFights": 8.828125,
       "meanReplays": 0.0859375,
       "meanDefeats": 0.58203125,
       "meanDraws": 0,
-      "meanRounds": 43.5078125,
-      "meanGold": 477.71484375,
-      "meanSpent": 643.49609375,
+      "meanRounds": 43.125,
+      "meanGold": 478.14453125,
+      "meanSpent": 641.34765625,
       "reached": [
         256,
         256,
@@ -165,7 +169,8 @@
         129
       ],
       "failures": {
-        "All soldiers are dead and there is not enough gold to recruit a replacement.": 127
+        "All soldiers are dead and there is not enough gold to recruit a replacement.": 105,
+        "The fallback replay is also unwinnable with this army.": 22
       }
     },
     {
@@ -175,13 +180,13 @@
       "runs": 256,
       "completed": 0,
       "completionRate": 0,
-      "meanFights": 5.65625,
-      "meanReplays": 1.328125,
-      "meanDefeats": 2.328125,
+      "meanFights": 3,
+      "meanReplays": 0,
+      "meanDefeats": 2,
       "meanDraws": 0,
-      "meanRounds": 21.63671875,
-      "meanGold": 13.28125,
-      "meanSpent": 178.28125,
+      "meanRounds": 10.3515625,
+      "meanGold": 10,
+      "meanSpent": 90,
       "reached": [
         256,
         0,
@@ -189,7 +194,7 @@
         0
       ],
       "failures": {
-        "All soldiers are dead and there is not enough gold to recruit a replacement.": 256
+        "The fallback replay is also unwinnable with this army.": 256
       }
     },
     {
@@ -199,13 +204,13 @@
       "runs": 256,
       "completed": 47,
       "completionRate": 0.18359375,
-      "meanFights": 7.30078125,
+      "meanFights": 7.03125,
       "meanReplays": 0.26953125,
       "meanDefeats": 1.0859375,
       "meanDraws": 0,
-      "meanRounds": 37.921875,
-      "meanGold": 175.9765625,
-      "meanSpent": 497.2265625,
+      "meanRounds": 36.85546875,
+      "meanGold": 177.32421875,
+      "meanSpent": 490.48828125,
       "reached": [
         256,
         256,
@@ -213,7 +218,8 @@
         47
       ],
       "failures": {
-        "All soldiers are dead and there is not enough gold to recruit a replacement.": 209
+        "The fallback replay is also unwinnable with this army.": 69,
+        "All soldiers are dead and there is not enough gold to recruit a replacement.": 140
       }
     },
     {
@@ -241,5 +247,5 @@
       }
     }
   ],
-  "configSHA256": "7fd1a6e9936155dedaeca7e8edb09ec8856ebb9f8777229cc564b20ad3276900"
+  "configSHA256": "f43db33433e512bef666d21c241c68b6daa0d8470788820e1c0fca40a99ddd04"
 }

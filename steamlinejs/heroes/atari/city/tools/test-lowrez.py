@@ -49,7 +49,7 @@ def check(page,capture=False):
   assert m.mem.ram[r.LABELS['region_wins']+region]==3
  m.call('battle.start');n=m.get('battle.unit_count');warlock=b.arr(m,'unit_type').index(22)
  m.put('battle.turn_number',2);m.put('battle.enemy_id',warlock);m.call('battle.enemy_act');assert m.get('battle.unit_count')==n+1
- assert b.arr(m,'unit_type')[n]==18 and b.arr(m,'unit_hp')[n]==content['enemies'][3]['hp']
+ assert b.arr(m,'unit_type')[n]==18 and b.arr(m,'unit_hp')[n]==min(99,content['enemies'][3]['hp']+m.get('battle.enemy_hp_bonus'))
  m.put('battle.attacker_unit',0);m.put('battle.defender_unit',warlock);m.mem.ram[r.LABELS['battle.unit_hp']+warlock]=1
  m.call('battle.attack_units');assert m.get('battle.game_state')==1
  before=m.get('gold',2);m.call('battle.check_result');assert m.get('gold',2)==before

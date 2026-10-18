@@ -5,7 +5,7 @@ function mount(getData,getErrors){
  const sim=root.GreenhavenSimulation,host=document.getElementById('campaign-simulator');
  if(!host)return;
  const make=(tag,text)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;return n;};
- const intro=make('p','Simulate buying, building upgrades, fighter upgrades, random encounters and tactical hex moves using a copy of the current editor values. Surviving fighters recover HP after battle. Killed or converted soldiers are permanently lost; replacements must be bought. Purchases follow fixed strategies; these are bot outcomes, not measured human win rates.');intro.className='note';host.append(intro);
+ const intro=make('p','Simulate buying, building upgrades, fighter upgrades, random encounters and tactical hex moves using a copy of the current editor values. Surviving fighters recover HP after battle. Killed or converted soldiers are permanently lost; replacements must be bought. This benchmark stops after three wins in every lair; the game continues indefinitely. Purchases follow fixed strategies; these are bot outcomes, not measured human win rates.');intro.className='note';host.append(intro);
  const bar=make('div');bar.className='encounter-bar';
  const strategy=make('select');strategy.setAttribute('aria-label','Simulation strategy');for(const [id,v] of Object.entries(sim.strategies)){const o=make('option',v.name);o.value=id;strategy.append(o);}strategy.value='mixed';
  const seed=make('input');seed.type='number';seed.min=0;seed.max=4294967295;seed.step=1;seed.value=1;seed.setAttribute('aria-label','Simulation starting seed');
@@ -23,12 +23,12 @@ function mount(getData,getErrors){
  function table(headers,rows){const wrap=make('div');wrap.className='table-wrap';const t=make('table'),h=make('thead'),tr=make('tr'),body=make('tbody');for(const x of headers)tr.append(make('th',x));h.append(tr);for(const row of rows){const r=body.insertRow();for(const x of row)r.insertCell().textContent=x;}t.append(h,body);wrap.append(t);return wrap;}
  function showCampaign(run,data){
   result.replaceChildren();
-  result.append(make('h3',`${sim.strategies[run.strategy].name} · seed ${run.seed} · ${run.completed?'Campaign completed':'Campaign stopped'}`),make('p',`${run.fights} fights, ${run.defeats} defeats, ${run.draws} round-limit draws, ${run.replays} practice/replay fights. Gold ${data.startingGold} start + ${run.earned} earned − ${run.spent} spent = ${run.gold} remaining.`));
+  result.append(make('h3',`${sim.strategies[run.strategy].name} · seed ${run.seed} · ${run.completed?(data.endlessLairs?'Opening progression reached; game continues':'Campaign completed'):'Campaign stopped'}`),make('p',`${run.fights} fights, ${run.defeats} defeats, ${run.draws} round-limit draws, ${run.replays} return visits. Gold ${data.startingGold} start + ${run.earned} earned − ${run.spent} spent = ${run.gold} remaining.`));
   if(run.blockedReason)result.append(make('p',run.blockedReason));
   result.append(make('p','Wins by region: '+run.wins.join(' / ')+'. Final army: '+run.army.map(id=>id?data.players.find(u=>u.id===id).name:'Empty slot').join(', ')));
   for(const event of run.events){
    if(event.type==='purchase'){result.append(make('p',`Before fight ${event.beforeFight}: ${event.replacement?'Replacement: ':''}${event.label}, ${event.cost} gold (${event.goldBefore} → ${event.goldAfter}).`));continue;}
-   const detail=make('details');detail.append(make('summary',`Fight ${event.fight}: ${event.regionName}, stage ${event.stage}${event.replay?' practice/replay':''} — ${event.outcome}; ${event.rounds} rounds; +${event.reward} gold; balance ${event.goldAfter}`));
+   const detail=make('details');detail.append(make('summary',`Fight ${event.fight}: ${event.regionName}, stage ${event.stage}${event.replay?' return visit':''} — ${event.outcome}; ${event.rounds} rounds; +${event.reward} gold; balance ${event.goldAfter}`));
    detail.append(make('p',`Seed ${event.seed}. Enemies: ${event.enemies.join(', ')}. Army: ${event.army.map(id=>id?data.players.find(u=>u.id===id).name:'Empty slot').join(', ')}.`));
    if(event.casualties?.length)detail.append(make('p','Permanently lost: '+event.casualties.map(c=>`${data.players.find(u=>u.id===c.id).name} (slot ${c.slot+1})`).join(', ')+'.'));
    detail.append(table(['Round','Fighter','Action','Detail'],event.trace.map(e=>[e.round,e.unit||`Unit ${e.actor+1}`,e.action,e.action==='move'?`hex ${e.from} → ${e.to}`:e.action==='attack'?`${e.targetName}: ${e.hpBefore} → ${e.hpAfter} HP`:e.action==='summon'?`Undead at hex ${e.to}`:e.action==='heal'?`+${e.amount} HP`:e.action==='raise'?`Soldier ${e.target} becomes a 2 HP zombie`:e.action==='prepare'?`Heavy strike targets hex ${e.to}`:e.action==='hop'?`Retreat to hex ${e.to}`:e.reason||''])));
@@ -50,7 +50,7 @@ function mount(getData,getErrors){
     if(done%5===0){status.textContent=`Simulated ${done} / ${total} campaigns…`;await new Promise(resolve=>setTimeout(resolve,0));}
    }
    const summaries=['current','candidate'].flatMap(variant=>sim.summarize(runs.filter(r=>r.variant===variant)).map(r=>({variant,...r})));
-   lastResult={model:'stats-only bot simulation',config:data,candidateChanges:{monsterAbilitiesVersion:0},seedStart:start,seedsPerStrategy:n,summaries,runs};result.replaceChildren();result.append(table(['Configuration','Strategy','Completed','Mean fights','Mean replays','Mean defeats','Mean draws'],summaries.map(r=>[r.variant==='current'?'Abilities on':'Abilities off',r.name,`${r.completed}/${r.runs} (${(r.completionRate*100).toFixed(1)}%)`,r.meanFights.toFixed(1),r.meanReplays.toFixed(1),r.meanDefeats.toFixed(1),r.meanDraws.toFixed(1)])));
+   lastResult={model:'stats-only bot simulation',config:data,candidateChanges:{monsterAbilitiesVersion:0},seedStart:start,seedsPerStrategy:n,summaries,runs};result.replaceChildren();result.append(table(['Configuration','Strategy','Completed','Mean fights','Mean return visits','Mean defeats','Mean draws'],summaries.map(r=>[r.variant==='current'?'Abilities on':'Abilities off',r.name,`${r.completed}/${r.runs} (${(r.completionRate*100).toFixed(1)}%)`,r.meanFights.toFixed(1),r.meanReplays.toFixed(1),r.meanDefeats.toFixed(1),r.meanDraws.toFixed(1)])));
    status.textContent=`Finished ${total} campaigns. Compared the current rules with classic monster behavior. Both use the same prices, stats and practice rewards. Editor values were kept.`;
   }catch(error){status.textContent=error.message;}finally{busy(false);}
  });

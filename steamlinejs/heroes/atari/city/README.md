@@ -44,11 +44,15 @@ On the map, joystick or W/A/S/D moves between five fixed landmarks:
 - **Necromancer Ruins:** shattered spires, undead and spectral fire.
 - **Back to Greenhaven:** the larger lower-left stone arch, with a peaceful green landscape and warm sunlight inside; Fire returns to the city.
 
-Selecting a hostile location opens its report. Choose **Fight**, **Back**, or **Practice**. Practice is available in Dark Forest after one Forest victory, pays 20 gold and gives no unlock progress.
-An empty army cannot enter combat. Dark Forest is available first; three victories
-on its successive contracts unlock Catacombs, then Monster Caves, then Necromancer
-Ruins. Each region has three difficulty stages; 34 weighted enemy groups provide variation across them. Retries preserve the group until a victory advances the native seed. Replaying a
-completed region pays a smaller practice reward without advancing its counter.
+Selecting a hostile location opens its report. Choose **Fight** or **Back**.
+Fight is disabled while the lair is locked or the army is empty. Three victories
+unlock the next lair in the chain. Every unlocked lair remains available for
+unlimited battles; no win counter or fixed battle quota appears in the popup.
+The first three difficulty stages use 34 weighted enemy groups. After the unlock
+threshold, each further victory adds 1 enemy HP, every three adds another damage
+point, and rewards rise by 10 gold per step. Enemy stats stop at 99 HP / 9 base
+damage to fit the native display; battles remain unlimited at that limit.
+The separate fixed-difficulty Practice option has been removed.
 
 ![Encounter map](generated/encounters-map.png)
 

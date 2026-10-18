@@ -18,7 +18,7 @@ for page in [0xd600,0xd700]:
     if not army:m.call('clear_army')
     m.put('selected_location',location)
     ready=army and (location==0 or unlocked)
-    practice=army and location==0 and unlocked
+    practice=False
     allowed=({0} if ready else set())|{1}|({2} if practice else set())
     for c in range(3):assert enabled(m,c)==(c in allowed),(page,location,unlocked,army,c)
     open_popup(m,location);assert m.get('popup_choice')==(0 if ready else 1)

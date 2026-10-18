@@ -37,7 +37,7 @@ function simulateBattle(data,army,encounter,options={}){
   t.hp=Math.max(0,t.hp-damage);attacks++;emit({action:'attack',actor:u.slot,unit:u.name,target:t.slot,targetName:t.name,damage:Math.min(before,damage),hpBefore:before,hpAfter:t.hp,from:u.cell,to:t.cell});
   if(t.hp===0&&t.id==='warlock')deadWarlock=true;
   if(abilities&&t.hp===0&&t.team===0&&u.id==='zombie'&&!u.raised&&conversions<2){
-   const slot=t.slot,cell=t.cell;Object.assign(t,copy(data.enemies.find(e=>e.id==='zombie')),{team:1,slot,cell,hp:2,maxHp:2,raised:true,spawned:round,summoned:false,charge:null});conversions++;emit({action:'raise',actor:u.slot,target:slot,to:cell,hp:2});
+   const slot=t.slot,cell=t.cell;Object.assign(t,copy(data.enemies.find(e=>e.id==='zombie')),{damage:Math.min(9,data.enemies.find(e=>e.id==='zombie').damage+(encounter.escalation?.damageBonus||0)),team:1,slot,cell,hp:2,maxHp:2,raised:true,spawned:round,summoned:false,charge:null});conversions++;emit({action:'raise',actor:u.slot,target:slot,to:cell,hp:2});
   }
   if(abilities&&u.id==='dark'&&before>0&&u.hp<u.maxHp){u.hp++;healing++;emit({action:'heal',actor:u.slot,hpAfter:u.hp,amount:1});}
   if(abilities&&u.id==='imp'){
@@ -74,7 +74,9 @@ function simulateBattle(data,army,encounter,options={}){
    if(abilities&&(round<2||units.filter(v=>v.summoned&&v.hp>0).length>=2))return;
    const reused=abilities?units.find(v=>v.team===1&&v.hp<=0):null;
    if(units.length>=12&&!reused){emit({action:'summon-blocked',reason:'12 allocated slots; dead slots are not reused',actor:u.slot});return;}
-   const walls=blocked(null);for(let c=0;c<42;c++)if(!walls.has(c)&&DIST[u.cell][c]<=3){const demon=data.enemies.find(x=>x.id===(abilities?'skeleton':'demon')),slot=reused?reused.slot:units.length;const summoned={...copy(demon),maxHp:demon.hp,team:1,cell:c,slot,spawned:abilities?round:0,summoned:true,raised:false,charge:null};if(reused)Object.assign(reused,summoned);else units.push(summoned);summons++;emit({action:'summon',actor:u.slot,unit:u.name,summoned:slot,to:c});return;}
+   const walls=blocked(null);for(let c=0;c<42;c++)if(!walls.has(c)&&DIST[u.cell][c]<=3){const demon=data.enemies.find(x=>x.id===(abilities?'skeleton':'demon')),slot=reused?reused.slot:units.length;const summonHP=abilities?Math.min(99,demon.hp+(encounter.escalation?.hpBonus||0)):demon.hp;
+    const summonDamage=abilities?Math.min(9,demon.damage+(encounter.escalation?.damageBonus||0)):demon.damage;
+    const summoned={...copy(demon),hp:summonHP,damage:summonDamage,maxHp:summonHP,team:1,cell:c,slot,spawned:abilities?round:0,summoned:true,raised:false,charge:null};if(reused)Object.assign(reused,summoned);else units.push(summoned);summons++;emit({action:'summon',actor:u.slot,unit:u.name,summoned:slot,to:c});return;}
    return;
   }
   if(abilities&&u.id==='ogre'&&u.charge!==null){const marked=u.charge;u.charge=null;const t=units.find(v=>v.team===0&&v.hp>0&&v.cell===marked);if(t&&DIST[u.cell][marked]<=1)hit(u,t,2);return;}
@@ -171,7 +173,8 @@ function simulateCampaign(data,options={}){
   let attemptedRegion=region;
   let practice=false;
   if(farming){
-   if(options.earlyPractice&&state.wins[0]>0){practice=true;attemptedRegion=0;}
+   if(data.endlessLairs)attemptedRegion=Math.max(0,region-1);
+   else if(options.earlyPractice&&state.wins[0]>0){practice=true;attemptedRegion=0;}
    else if(region===0){blockedReason='Opening region cannot be cleared with this purchase path; no cleared region is available to farm.';break;}
    else attemptedRegion=region-1;
   }
@@ -179,7 +182,7 @@ function simulateCampaign(data,options={}){
   else state=rules.beginEncounter(data,state,attemptedRegion);
   const encounter=copy(state.pending.encounter),before=copy(shop);
   const battle=simulateBattle(data,shop.army,encounter,{trace:options.trace,playerPolicy:options.playerPolicy,enemyPolicy:options.enemyPolicy,maxRounds:options.maxRounds});
-  const entry={fight:fight+1,region:attemptedRegion,regionName:encounter.region,stage:encounter.stage,variant:encounter.variant,seed:encounter.seed,enemies:encounter.enemies.map(u=>u.id),replay:encounter.replay,army:before.army,goldBefore:before.gold,...battle};
+  const entry={fight:fight+1,region:attemptedRegion,regionName:encounter.region,stage:encounter.stage,variant:encounter.variant,seed:encounter.seed,enemies:encounter.enemies.map(u=>u.id),replay:encounter.replay||(data.endlessLairs&&state.wins[attemptedRegion]>=rules.progression(data).winsRequired[attemptedRegion]),army:before.army,goldBefore:before.gold,...battle};
   if(data.permanentCasualties){
    const living=new Set(battle.survivors.map(u=>u.slot));entry.casualties=[];
    for(let slot=0;slot<shop.army.length;slot++)if(shop.army[slot]&&!living.has(slot)){

@@ -23,13 +23,9 @@
         lda popup_choice
         jsr map_choice_enabled
         bcc ?done
-        mva #0 battle.practice_mode
         lda popup_choice
         cmp #1
         beq ?close
-        cmp #2
-        bne ?fight
-        mva #1 battle.practice_mode
 ?fight  jsr can_enter_battle
         bcc ?done
         jmp battle.start
@@ -74,16 +70,8 @@ location_region dta 0,1,2,255,3
 .proc map_choice_enabled
         cmp #1
         beq ?yes
-        cmp #2
-        beq ?practice
         cmp #0
         bne ?no
-        jmp can_enter_battle
-?practice
-        lda selected_location
-        bne ?no
-        lda region_wins
-        beq ?no
         jmp can_enter_battle
 ?yes    sec
         rts
@@ -107,8 +95,8 @@ map_choice_step dta 1
         adc map_choice_step
         cmp #255
         bne ?upper
-        lda #2
-?upper  cmp #3
+        lda #1
+?upper  cmp #2
         bcc ?choice
         lda #0
 ?choice sta popup_choice
@@ -221,21 +209,6 @@ map_cursor_w dta 56,56,56,72,56
         mwa #32 text_x
         mva #88 text_y
         jsr draw_text
-        labeltext 32,105,s_wins
-        ldx selected_location
-        ldy location_region,x
-        lda region_wins,y
-        clc
-        adc #48
-        sta one_char
-        labeltext 68,105,one_char
-        ldx selected_location
-        ldy location_region,x
-        lda battle.wins_required,y
-        clc
-        adc #48
-        sta s_three+2
-        labeltext 80,105,s_three
         jsr can_enter_battle
         bcs ?ready
         lda army_count
@@ -256,33 +229,14 @@ map_cursor_w dta 56,56,56,72,56
         rect 32,134,119,15,7
 ?back_button
         rect 170,134,119,15,1
-        lda selected_location
-        bne ?focus
-        lda #2
-        jsr map_choice_enabled
-        bcc ?practice_locked
-        labeltext 32,151,s_practice
-        jmp ?focus
-?practice_locked
-        labeltext 32,151,s_practice_locked
 ?focus  lda popup_choice
         jsr map_choice_enabled
         bcc ?labels
         lda popup_choice
-        cmp #2
-        beq ?practice
         cmp #1
         beq ?back
         mwa #32 calc_x
         jmp ?outline
-?practice
-        mwa #30 calc_x
-        mva #150 calc_y
-        mwa #260 fr_w
-        mva #10 fr_h
-        mva #2 fr_col
-        jsr outline
-        jmp ?labels
 ?back   mwa #170 calc_x
 ?outline
         mva #134 calc_y
@@ -300,9 +254,7 @@ map_cursor_w dta 56,56,56,72,56
         labeltext 217,138,s_back
         rts
 .endp
-s_wins dta c'WINS',0
-s_three dta c'/ 3',0
-s_locked dta c'CLEAR PREVIOUS REGION FIRST',0
+s_locked dta c'WIN MORE IN THE PREVIOUS LAIR',0
 s_recruit_first dta c'RECRUIT AN ARMY IN THE CITY',0
 s_ready dta c'FIRE: FIGHT   ESC: BACK',0
 s_fight dta c'FIGHT',0
@@ -330,7 +282,5 @@ s_city_desc dta c'RETURN HOME TO BUILD AND UPGRADE.',0
 s_ruins_desc dta c'GREEN SOUL FIRE SPLITS THE RUINS.',0
 s_ruins_detail dta c'UNDEAD AND IMPS SERVE THE WARLOCK.',0
 
-s_practice dta c'PRACTICE: +20 GOLD / NO PROGRESS',0
 
 s_disabled dta c'LOCKED',0
-s_practice_locked dta c'PRACTICE LOCKED: WIN IN FOREST FIRST',0

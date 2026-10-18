@@ -20,15 +20,20 @@ individual upgrade and building prices are imported. Chapel costs 40/50/30,
 unlocking the fourth/fifth slots and then a 10-gold recruitment discount.
 Cavalry deals 3 damage; Demon has 3 HP, from the earlier simulation candidate.
 
-Random encounters and unlocks
-34 weighted enemy groups across four regions and three difficulty stages each.
-Dark Forest -> Catacombs -> Monster Caves -> Necromancer Ruins. Each region
-requires three victories before the next opens. Configurable 3..9 thresholds
-are compiled from the editor. Normal replays use the last stage and smaller
-region-specific rewards. No progress is awarded for replays.
-The map report also offers PRACTICE, available only in Dark Forest after one
-Forest victory. It uses the first stage, pays 20 gold and gives no progress.
-This provides a recovery route when the current army cannot win the next stage.
+Unlimited encounters and unlocks
+34 weighted enemy groups across four regions and three initial difficulty stages.
+Dark Forest -> Catacombs -> Monster Caves -> Necromancer Ruins. Three victories
+unlock the next lair; the current lair stays open for unlimited battles.
+There is no WINS x/3 text or battle limit in the pre-battle popup.
+After reaching the unlock threshold, each further victory adds one enemy HP;
+every three such wins adds one base damage. Reward increases by 10 gold for each
+HP step. Native caps are 99 HP and 9 base damage; Ogre preparation can add 2.
+The internal victory counter saturates at 255 to avoid wrapping or reading past
+the stage tables. It does not restrict entry, even after reaching that value.
+Further battles remain at maximum strength once the safe stat caps are reached.
+Defeat/retreat preserves the encounter seed and difficulty. The old flat Practice
+option is removed. Early fights use the authored pools; harder repeat fights
+use the final pool with strengthened enemies. Summons scale with the lair too.
 
 Native randomness uses an 8-bit seed initialized from Atari RANDOM and clock.
 Every successful battle advances it, wrapping after 255. Defeat and retreat
@@ -55,13 +60,13 @@ Killing the Warlock wins immediately. Ability messages appear above the board.
 Verification and limitations
 Tests execute the assembled 6502 code with a functional VBXE blitter at both
 D600 and D700. They cover all abilities, caps, delays, seeded groups, rewards,
-practice, army purchases and upgrades, animation, UI controls and memory bounds.
+unlimited lairs, army purchases and upgrades, animation, UI controls and memory bounds.
 This checks logic and pixels, not physical Atari raster/DMA timing or human
 play difficulty. No physical-hardware run has been performed.
 The editor simulator has the same special rules, with healing for survivors, purchases,
 upgrades and tactical logs. Its player uses fixed shopping plans and pathfinding;
 its default enemy follows the native greedy movement. Simulation is not native
-execution. Actual tactical choices can differ. Unlimited practice permits grind.
+execution. Actual tactical choices can differ. Returning to earlier lairs is allowed, but each victory there also increases difficulty.
 
 Benchmark
 node simulation/abilities-benchmark.cjs PATH_TO_OUTPUT_DIRECTORY
@@ -143,3 +148,13 @@ Regression tests:
   node tests/permanent-casualties.test.cjs
 The previous preset, native config and executable are preserved in
 backups/before-permanent-casualties-2026-10-18/.
+
+Endless lair progression (2026-10-18)
+The previous fixed Practice/replay descriptions above are historical and are
+superseded by the unlimited encounter rules. Unlock thresholds only gate the
+next lair. They never close the current lair or stop further battles.
+Native regression: python3 atari/city/tools/test-endless-lairs.py
+Editor/simulator regression: node tests/endless-lairs.test.cjs
+The stats benchmark still has a finite target (three wins in every region) for
+comparison; reaching that target does not end the actual game or editor preview.
+Previous configs and executable: backups/before-endless-lairs-2026-10-18/.

@@ -23,10 +23,10 @@ for(let r=0;r<4;r++){
   if(r<3)assert.equal(a.isUnlocked(d,state,r+1),win===2);
  }
  const gold=state.gold, wins=structuredClone(state.wins);
- state=a.beginEncounter(d,state,r);assert(state.pending.encounter.replay);assert.equal(state.pending.encounter.stage,3);
- state=a.recordResult(d,state,'victory');assert.equal(state.gold,gold+d.encounterConfig.regions[r].replayReward);assert.deepEqual(state.wins,wins);
+ state=a.beginEncounter(d,state,r);assert(!state.pending.encounter.replay);assert.equal(state.pending.encounter.stage,3);
+ state=a.recordResult(d,state,'victory');assert.equal(state.gold,gold+d.encounterConfig.regions[r].stages[2].reward+10);wins[r]++;assert.deepEqual(state.wins,wins);
 }
-assert.deepEqual(state.wins,[3,3,3,3]);
+assert.deepEqual(state.wins,[4,4,4,4]);
 const custom=structuredClone(d);custom.encounterConfig.progression.winsRequired=[6,4,5,3];
 state=a.createCampaign(custom);
 for(let i=0;i<6;i++){

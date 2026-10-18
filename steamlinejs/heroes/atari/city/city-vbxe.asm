@@ -153,7 +153,6 @@ main_loop
         lda $D20A
         eor RTCLOK+2
         sta battle.encounter_seed
-        mva #0 battle.practice_mode
         mva #0 selected_plot
         sta screen_mode
         sta selected_location

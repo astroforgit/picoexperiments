@@ -46,7 +46,7 @@ for(const [r,region] of config.regions.entries())for(const [stage,e] of region.s
   state=Math.imul(state^state>>>15,0x846ca68b)>>>0;state=(state^state>>>16)>>>0;
   let pick=state/4294967296*total;
   return start+e.variants.findIndex(v=>{pick-=v.weight;return pick<0;});
- });contracts.push({...e,picks,name:region.name.toUpperCase()+' '+(stage+1)});
+ });contracts.push({...e,picks,name:region.name.toUpperCase()+(c.endlessLairs?'':' '+(stage+1))});
 }
 if(variants.length>255)throw Error('Too many variants');
 ptr('contract_name',contracts.map((_,i)=>'contract_name_'+i));contracts.forEach((e,i)=>out.push(`contract_name_${i} dta c'${e.name}',0`));

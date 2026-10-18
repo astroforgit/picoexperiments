@@ -69,8 +69,7 @@ for page in [0xd600,0xd700]:
  m.call('new_city');m.put('selected_location',0);m.put('battle.encounter_seed',13);m.call('battle.start');first=[val(m,'unit_type',i) for i in range(m.get('battle.unit_count'))];m.call('battle.start');assert first==[val(m,'unit_type',i) for i in range(m.get('battle.unit_count'))]
  m.put('battle.game_state',1);m.call('battle.award');gold=m.get('gold',2);assert gold==100 and m.get('battle.encounter_seed')==14
  m.call('battle.award');assert m.get('gold',2)==gold
- # Practice through the actual menu, 20 gold, no progress, ordinary fight resets mode.
- m.put('popup_open',1);m.put('popup_choice',2);m.call('map_confirm');assert m.get('battle.practice_mode')==1 and m.get('battle.contract')==0
- m.call('battle.award');assert m.get('gold',2)==gold+20 and m.mem.ram[r.LABELS['region_wins']]==1
- m.put('popup_open',1);m.put('popup_choice',0);m.call('map_confirm');assert m.get('battle.practice_mode')==0 and m.get('battle.contract')==1
+ # The old Practice choice cannot be selected or confirmed.
+ m.put('popup_open',1);m.put('popup_choice',2);m.call('show_map');m.put('popup_open',1);m.call('map_confirm');assert m.get('screen_mode')==1
+ m.put('popup_choice',0);m.call('map_confirm');assert m.get('screen_mode')==2 and m.get('battle.contract')==1
  print(f'PASS ${page:04X}: all six abilities, conversion/summon caps and delays, 3072 native seed selections, region gates, retry, awards, and practice menu.')

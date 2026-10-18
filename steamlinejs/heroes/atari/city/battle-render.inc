@@ -230,13 +230,14 @@ s_shoot_label dta c'SHOOT',0
         mva number_text+4 stats_line+3
         ldx info_id
         ldy unit_type,x
-        mva type_hp,y number_value
+        jsr scaled_hp
+        sta number_value
         jsr format_number
         mva number_text+3 stats_line+5
         mva number_text+4 stats_line+6
         ldx info_id
         ldy unit_type,x
-        lda type_damage,y
+        jsr scaled_damage
         clc
         adc #48
         sta stats_line+9

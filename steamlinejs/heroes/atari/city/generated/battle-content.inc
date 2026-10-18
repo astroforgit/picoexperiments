@@ -48,18 +48,18 @@ cursor_offsets dta 0,42,84,126
 cursor_neighbours dta 0,1,2,3,4,5,6,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,42,42,42,42,42,42,0,0,1,2,3,4,5,7,7,8,9,10,11,12,14,14,15,16,17,18,19,21,21,22,23,24,25,26,28,28,29,30,31,32,33,35,35,36,37,38,39,40,1,2,3,4,5,6,6,8,9,10,11,12,13,13,15,16,17,18,19,20,20,22,23,24,25,26,27,27,29,30,31,32,33,34,34,36,37,38,39,40,41,41
 contract_name_lo dta <contract_name_0,<contract_name_1,<contract_name_2,<contract_name_3,<contract_name_4,<contract_name_5,<contract_name_6,<contract_name_7,<contract_name_8,<contract_name_9,<contract_name_10,<contract_name_11
 contract_name_hi dta >contract_name_0,>contract_name_1,>contract_name_2,>contract_name_3,>contract_name_4,>contract_name_5,>contract_name_6,>contract_name_7,>contract_name_8,>contract_name_9,>contract_name_10,>contract_name_11
-contract_name_0 dta c'DARK FOREST 1',0
-contract_name_1 dta c'DARK FOREST 2',0
-contract_name_2 dta c'DARK FOREST 3',0
-contract_name_3 dta c'CATACOMBS 1',0
-contract_name_4 dta c'CATACOMBS 2',0
-contract_name_5 dta c'CATACOMBS 3',0
-contract_name_6 dta c'MONSTER CAVES 1',0
-contract_name_7 dta c'MONSTER CAVES 2',0
-contract_name_8 dta c'MONSTER CAVES 3',0
-contract_name_9 dta c'NECROMANCER RUINS 1',0
-contract_name_10 dta c'NECROMANCER RUINS 2',0
-contract_name_11 dta c'NECROMANCER RUINS 3',0
+contract_name_0 dta c'DARK FOREST',0
+contract_name_1 dta c'DARK FOREST',0
+contract_name_2 dta c'DARK FOREST',0
+contract_name_3 dta c'CATACOMBS',0
+contract_name_4 dta c'CATACOMBS',0
+contract_name_5 dta c'CATACOMBS',0
+contract_name_6 dta c'MONSTER CAVES',0
+contract_name_7 dta c'MONSTER CAVES',0
+contract_name_8 dta c'MONSTER CAVES',0
+contract_name_9 dta c'NECROMANCER RUINS',0
+contract_name_10 dta c'NECROMANCER RUINS',0
+contract_name_11 dta c'NECROMANCER RUINS',0
 seed_ptr_lo dta <seed_0,<seed_1,<seed_2,<seed_3,<seed_4,<seed_5,<seed_6,<seed_7,<seed_8,<seed_9,<seed_10,<seed_11
 seed_ptr_hi dta >seed_0,>seed_1,>seed_2,>seed_3,>seed_4,>seed_5,>seed_6,>seed_7,>seed_8,>seed_9,>seed_10,>seed_11
 seed_0 dta 2,1,1,2,0,1,2,0,2,1,0,2,2,2,0,2,0,1,2,1,0,2,1,0,0,1,1,1,0,2,2,0,2,0,2,0,2,1,0,0,0,1,2,1,0,0,2,0,0,1,1,1,0,2,1,2,1,1,0,0,0,2,1,1,0,1,1,1,2,0,0,1,1,1,2,2,1,2,2,0,0,0,2,0,2,2,2,0,0,0,2,0,0,2,2,0,1,0,2,2,0,1,0,2,2,2,1,2,0,0,0,0,2,0,2,0,2,1,2,0,0,1,0,0,1,0,2,2,2,0,0,2,2,0,2,2,2,2,1,1,0,0,2,0,0,2,2,0,1,0,1,2,0,1,1,0,0,2,1,1,2,1,0,2,0,2,0,2,2,2,0,2,1,0,1,1,0,0,1,1,2,0,1,1,2,0,0,0,1,2,0,1,0,1,2,2,0,0,0,1,2,0,2,0,2,1,0,1,0,0,1,0,1,1,0,1,1,1,2,2,1,2,1,2,0,2,0,2,2,0,0,1,0,0,0,1,2,1,0,2,0,0,0,2,0,1,0,0,0,1,0,0,2,1,1,1

@@ -86,7 +86,7 @@
   function checkCampaign(data, state) {
     const errors = validate(data);
     if (errors.length) throw Error(errors[0]);
-    if (!state || !Array.isArray(state.wins) || state.wins.length !== 4 || state.wins.some((w, i) => !integer(w, 0, progression(data).winsRequired[i])) || !integer(state.gold, 0, 65535) || !integer(state.seed, 0, 0xffffffff)) throw Error('Invalid campaign preview state.');
+    if (!state || !Array.isArray(state.wins) || state.wins.length !== 4 || state.wins.some((w, i) => !integer(w, 0, data.endlessLairs ? 255 : progression(data).winsRequired[i])) || !integer(state.gold, 0, 65535) || !integer(state.seed, 0, 0xffffffff)) throw Error('Invalid campaign preview state.');
   }
   function isUnlocked(data, state, regionIndex) {
     if (!integer(regionIndex, 0, 3)) return false;
@@ -102,7 +102,16 @@
     const next = copy(state), required = progression(data).winsRequired[regionIndex];
     const wins = next.wins[regionIndex], replay = wins >= required;
     const stage = replay ? 2 : Math.min(2, Math.floor(wins * 3 / required));
-    next.pending = { regionIndex, encounter: generate(data, regionIndex, stage, next.seed, replay) };
+    const encounter = generate(data, regionIndex, stage, next.seed, data.endlessLairs ? false : replay);
+    if (data.endlessLairs) {
+      const hpBonus = Math.min(90, Math.max(0, wins - required + 1));
+      const damageBonus = Math.min(8, Math.floor(hpBonus / 3));
+      encounter.enemies.forEach(unit => { unit.hp = Math.min(99, unit.hp + hpBonus); unit.damage = Math.min(9, unit.damage + damageBonus); });
+      encounter.reward = Math.min(65535, encounter.reward + hpBonus * 10);
+      encounter.escalation = { hpBonus, damageBonus };
+      encounter.strength = encounter.enemies.reduce((sum, unit) => sum + power(unit), 0);
+    }
+    next.pending = { regionIndex, encounter };
     next.lastResult = 'Encounter prepared. Record a test result below; no battle is simulated.';
     return next;
   }
@@ -121,9 +130,14 @@
       return next;
     }
     next.gold = Math.min(65535, next.gold + encounter.reward);
-    if (!encounter.replay) next.wins[regionIndex] = Math.min(progression(data).winsRequired[regionIndex], next.wins[regionIndex] + 1);
+    if (data.endlessLairs || !encounter.replay) next.wins[regionIndex] = Math.min(data.endlessLairs ? 255 : progression(data).winsRequired[regionIndex], next.wins[regionIndex] + 1);
     next.seed = (next.seed + 1) >>> 0;
     next.pending = null;
+    if (data.endlessLairs) {
+      const unlocked = regionIndex < 3 && next.wins[regionIndex] === progression(data).winsRequired[regionIndex];
+      next.lastResult = `Test victory: +${encounter.reward} gold. ${unlocked ? 'Next lair unlocked. ' : ''}This lair remains open; further victories increase enemy strength.`;
+      return next;
+    }
     const cleared = next.wins[regionIndex] >= progression(data).winsRequired[regionIndex];
     next.lastResult = `Test victory: +${encounter.reward} gold.${encounter.replay ? ' Replay gives no further progress.' : cleared ? (regionIndex < 3 ? ' Next region unlocked.' : ' Campaign complete.') : ' Victory counted toward the next region.'}`;
     return next;
@@ -143,7 +157,7 @@
     host.replaceChildren();
     host.append(el('h3', 'Campaign progression preview'), el('p', 'Dark Forest is the easiest region; each next region requires victories in the previous one. These buttons record test results to check unlocks and rewards. They do not simulate combat. Editing the configuration resets this preview.'));
     const table = el('table'), head = el('thead'), row = el('tr'), body = el('tbody');
-    for (const text of ['Location', 'Estimated strength', 'Victories to clear', 'Progress / unlock', '']) row.append(el('th', text));
+    for (const text of ['Location', 'Estimated strength', 'Victories to unlock next lair', 'Availability', '']) row.append(el('th', text));
     head.append(row); table.append(head, body); const bands = difficultyBands(data);
     data.encounterConfig.regions.forEach((region, r) => {
       const tr = body.insertRow(), required = progression(data).winsRequired[r], open = isUnlocked(data, campaign, r), cleared = campaign.wins[r] >= required;
@@ -153,8 +167,8 @@
         if (!data.encounterConfig.progression) data.encounterConfig.progression = copy(progression(data));
         data.encounterConfig.progression.winsRequired[r] = value; changed();
       }));
-      tr.insertCell().textContent = !open ? `Locked — win ${progression(data).winsRequired[r - 1]} encounters in ${data.encounterConfig.regions[r - 1].name}` : `${campaign.wins[r]} / ${required} victories · ${cleared ? 'Cleared; replay available' : 'Open'}`;
-      const enter = button(campaign.pending?.regionIndex === r ? 'Retry same encounter' : cleared ? 'Preview replay' : 'Preview next encounter', () => {
+      tr.insertCell().textContent = !open ? `Locked — win ${progression(data).winsRequired[r - 1]} encounters in ${data.encounterConfig.regions[r - 1].name}` : data.endlessLairs ? 'Open · unlimited battles; enemies strengthen with victories' : `${campaign.wins[r]} / ${required} victories · ${cleared ? 'Cleared; replay available' : 'Open'}`;
+      const enter = button(campaign.pending?.regionIndex === r ? 'Retry same encounter' : cleared && !data.endlessLairs ? 'Preview replay' : 'Preview next encounter', () => {
         try { campaign = beginEncounter(data, campaign, r); renderProgression(data); } catch (error) { campaign.lastResult = error.message; renderProgression(data); }
       });
       enter.setAttribute('aria-label', `${region.name} preview next encounter`);

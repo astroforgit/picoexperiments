@@ -33,7 +33,7 @@ for(const strategy of Object.keys(sim.strategies))for(let seed=1;seed<=12;seed++
   }
  }
 }
-const legacy=clone(data);legacy.permanentCasualties=false;const mounted=sim.simulateCampaign(legacy,{strategy:'mounted',seed:1,earlyPractice:true,trace:true});assert(mounted.battles.some(b=>b.replay&&b.region===0));
+const legacy=clone(data);legacy.permanentCasualties=false;legacy.endlessLairs=false;const mounted=sim.simulateCampaign(legacy,{strategy:'mounted',seed:1,earlyPractice:true,trace:true});assert(mounted.battles.some(b=>b.replay&&b.region===0));
 console.log('PASS: all 1764 native geometry/shot pairs, fixed damage, boss victory, delayed skeleton summoning, purchase legality, 60 deterministic campaigns, gold conservation, movement occupancy and attack/AP limits.');
 
 const page=fs.readFileSync(__dirname+'/../unit-editor.html','utf8');

@@ -31,7 +31,8 @@ unit_spawned :12 dta 0
 conversions dta 0
 ability_event dta 0
 encounter_seed dta 1
-practice_mode dta 0
+enemy_hp_bonus dta 0
+enemy_damage_bonus dta 0
 terrain :42 dta 0
 
 .proc start
@@ -61,8 +62,12 @@ terrain :42 dta 0
         lda location_region,x
         sta region
         tax
+        jsr set_difficulty
         lda region_wins,x
-        sta init_index
+        cmp #10
+        bcc ?lookup
+        lda #9
+?lookup sta init_index
         txa
         asl
         asl
@@ -73,10 +78,7 @@ terrain :42 dta 0
         adc init_index
         tay
         lda stage_for_win,y
-        ldx practice_mode
-        beq ?stage
-        lda #0
-?stage  sta contract
+        sta contract
         lda region
         asl
         clc
@@ -177,7 +179,7 @@ add_cell dta 0
         sta unit_team,x
         lda add_cell
         sta unit_cell,x
-        lda type_hp,y
+        jsr scaled_hp
         sta unit_hp,x
         lda type_move,y
         sta unit_move_left,x
@@ -879,26 +881,31 @@ enemy_busy dta 0
         bne ?done
         mva #1 reward_committed
         inc encounter_seed
-        lda practice_mode
-        beq ?progress
-        mwa #20 reward
-        jmp ?pay
-?progress
         ldx region
         lda region_wins,x
-        cmp wins_required,x
-        bcs ?repeat
-        ldy contract
+        cmp #255
+        beq ?reward
+        inc region_wins,x
+?reward ldy contract
         lda reward_lo,y
         sta reward
         lda reward_hi,y
         sta reward+1
-        inc region_wins,x
-        jmp ?pay
-?repeat lda practice_lo,x
+        ldx enemy_hp_bonus
+        beq ?pay
+?extra  clc
+        lda reward
+        adc #10
         sta reward
-        lda practice_hi,x
+        lda reward+1
+        adc #0
         sta reward+1
+        bcc ?next_bonus
+        mwa #65535 reward
+        jmp ?pay
+?next_bonus
+        dex
+        bne ?extra
 ?pay    clc
         lda gold
         adc reward
