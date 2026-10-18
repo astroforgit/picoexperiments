@@ -262,15 +262,15 @@ const uploads=[];
 // Three temporary pages use banks 0..47, before gameplay assets replace them.
 // Keep the gameplay palette unchanged and stamp captions with the native font.
 const storyPages=[
- {file:'forest-love',title:'A LOVE IN THE FOREST',lines:[
+ {file:'forest-love',lines:[
   'IN THE FOREST, A YOUNG PRINCE MET A NYMPH.',
   'THEY FELL IN LOVE BENEATH THE ANCIENT TREES.'
  ],action:'FIRE / ENTER / SPACE: NEXT PAGE'},
- {file:'necromancer-abduction',title:'THE NECROMANCER STRIKES',lines:[
+ {file:'necromancer-abduction',lines:[
   'AN EVIL NECROMANCER KIDNAPPED THE NYMPH.',
   'THE PRINCE WAS NOT AMUSED.'
  ],action:'FIRE / ENTER / SPACE: NEXT PAGE'},
- {file:'prince-leads-army',title:'LOVE IS PATIENT. THE PRINCE IS NOT.',lines:[
+ {file:'prince-leads-army',lines:[
   'FURIOUS, HE VOWS TO LEAD AN ARMY.',
   'BUILD YOUR FORCES AT THE PALACE.',
   'DEFEAT THE NECROMANCER AND BRING HER HOME.'
@@ -286,7 +286,6 @@ for(const [page,story] of storyPages.entries()){
   for(let i=0;i<text.length;i++)for(let y1=0;y1<7;y1++)for(let x=0;x<5;x++)
    if(((font[text[i]]||[])[y1]||0)&(16>>x))pixels[(y+y1)*320+x0+i*6+x]=color;
  }
- caption(story.title,148,2);
  story.lines.forEach((text,i)=>caption(text,159+i*9,3));
  caption(story.action,190,5);
  fs.writeFileSync(`generated/intro-${page+1}.bin`,pixels);
