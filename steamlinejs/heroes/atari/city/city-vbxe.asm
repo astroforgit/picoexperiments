@@ -138,6 +138,7 @@ hardware_ready
 main_loop
         jsr wait_frame
         jsr poll_input
+        jsr check_game_over
         lda dirty
         beq main_loop
         jsr draw_city
@@ -186,11 +187,16 @@ main_loop
 .endp
 
         icl 'army.inc'
+        icl 'game-over.inc'
 
 ; A is 0 up, 1 down, 2 left, 3 right. Fixed directional neighbour graph.
 .proc navigate
         tax
         lda screen_mode
+        cmp #3
+        bne ?active
+        rts
+?active lda screen_mode
         cmp #2
         bne ?not_battle
         jmp battle.navigate
@@ -230,6 +236,10 @@ main_loop
 
 .proc close_popup
         lda screen_mode
+        cmp #3
+        bne ?active
+        rts
+?active lda screen_mode
         cmp #2
         bne ?not_battle
         jmp battle.cancel
@@ -408,6 +418,10 @@ neighbours
 
 .proc draw_city
         lda screen_mode
+        cmp #3
+        bne ?active
+        jmp draw_game_over
+?active lda screen_mode
         cmp #2
         bne ?not_battle
         jmp battle.draw

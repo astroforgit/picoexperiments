@@ -114,6 +114,12 @@
 
 .proc confirm_action
         lda screen_mode
+        cmp #3
+        bne ?active
+        jsr new_city
+        mva #1 action_latched
+        rts
+?active lda screen_mode
         cmp #2
         bne ?not_battle
         jmp battle.confirm

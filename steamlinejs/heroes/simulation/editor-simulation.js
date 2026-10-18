@@ -23,7 +23,7 @@ function mount(getData,getErrors){
  function table(headers,rows){const wrap=make('div');wrap.className='table-wrap';const t=make('table'),h=make('thead'),tr=make('tr'),body=make('tbody');for(const x of headers)tr.append(make('th',x));h.append(tr);for(const row of rows){const r=body.insertRow();for(const x of row)r.insertCell().textContent=x;}t.append(h,body);wrap.append(t);return wrap;}
  function showCampaign(run,data){
   result.replaceChildren();
-  result.append(make('h3',`${sim.strategies[run.strategy].name} · seed ${run.seed} · ${run.completed?(data.endlessLairs?'Opening progression reached; game continues':'Campaign completed'):'Campaign stopped'}`),make('p',`${run.fights} fights, ${run.defeats} defeats, ${run.draws} round-limit draws, ${run.replays} return visits. Gold ${data.startingGold} start + ${run.earned} earned − ${run.spent} spent = ${run.gold} remaining.`));
+  result.append(make('h3',`${sim.strategies[run.strategy].name} · seed ${run.seed} · ${run.completed?(data.endlessLairs?'Opening progression reached; game continues':'Campaign completed'):(run.gameOver?'GAME OVER':'Campaign stopped')}`),make('p',`${run.fights} fights, ${run.defeats} defeats, ${run.draws} round-limit draws, ${run.replays} return visits. Gold ${data.startingGold} start + ${run.earned} earned − ${run.spent} spent = ${run.gold} remaining.`));
   if(run.blockedReason)result.append(make('p',run.blockedReason));
   result.append(make('p','Wins by region: '+run.wins.join(' / ')+'. Final army: '+run.army.map(id=>id?data.players.find(u=>u.id===id).name:'Empty slot').join(', ')));
   for(const event of run.events){

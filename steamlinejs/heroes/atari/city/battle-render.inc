@@ -349,7 +349,7 @@ s_enemy dta c'ENEMY',0
 s_victory dta c'VICTORY!',0
 s_defeat dta c'DEFEAT',0
 s_retreated dta c'RETREATED',0
-s_recovery dta c'YOUR ARMY RECOVERS FULLY',0
+s_recovery dta c'FALLEN SOLDIERS ARE LOST',0
 s_reward dta c'GOLD EARNED',0
 s_return dta c'FIRE: RETURN TO MAP',0
 s_battle_menu dta c'BATTLE MENU',0

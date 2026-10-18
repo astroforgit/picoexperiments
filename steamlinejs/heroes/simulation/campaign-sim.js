@@ -148,6 +148,13 @@ function purchase(data,shop,action){
  else next.army[action.slot]=action.id;
  return {shop:next,event:{action:action.kind,label,cost,goldBefore:shop.gold,goldAfter:next.gold,army:next.army.slice()}};
 }
+function canAffordRecruit(data,shop){
+ return Object.entries(shop.levels).some(([family,tier])=>{
+  if(family==='chapel'||!tier)return false;
+  const unit=data.players.find(u=>u.family===family&&u.tier===tier);
+  return unit&&shop.gold>=Math.max(1,unit.recruit-((shop.levels.chapel||0)===3?data.chapel.recruitDiscount:0));
+ });
+}
 function simulateCampaign(data,options={}){
  options={...(data.simulationSettings||{}),...options};
  const strategy=options.strategy||'mixed',seed=options.seed===undefined?1:options.seed,maxFights=options.maxFights||45;
@@ -164,7 +171,7 @@ function simulateCampaign(data,options={}){
    const bought=purchase(data,shop,{kind:'recruit',id,slot:missing.slot});if(!bought)break;
    shop=bought.shop;replacements.shift();ledger.push({...bought.event,replacement:true,beforeFight:fight+1});record({type:'purchase',...bought.event,replacement:true,beforeFight:fight+1});
   }
-  if(!shop.army.some(Boolean)){blockedReason='All soldiers are dead and there is not enough gold to recruit a replacement.';break;}
+  if(!shop.army.some(Boolean)){blockedReason=canAffordRecruit(data,shop)?'The buying strategy cannot afford its planned replacement; another available recruit is affordable.':'GAME OVER: no soldiers and no affordable available recruit.';break;}
   while(!replacements.length&&planIndex<plan.length){const action=plan[planIndex];if(action.kind==='upgrade'){const old=data.players.find(u=>u.id===shop.army[action.slot]),target=data.players.find(u=>u.id===action.id);if(old&&old.family===target.family&&old.tier>=target.tier){planIndex++;continue;}}const bought=purchase(data,shop,action);if(!bought)break;shop=bought.shop;ledger.push({...bought.event,beforeFight:fight+1});record({type:'purchase',...bought.event,beforeFight:fight+1});planIndex++;}
   state.gold=shop.gold;
   if(options.nativeSeedCycle)state.seed&=255;
@@ -201,14 +208,16 @@ function simulateCampaign(data,options={}){
   entry.goldAfter=shop.gold;battles.push(entry);record({type:'battle',...entry});
   if(state.wins.every((w,r)=>w>=rules.progression(data).winsRequired[r]))break;
  }
+ const gameOver=!shop.army.some(Boolean)&&!canAffordRecruit(data,shop);
+ if(gameOver)blockedReason='GAME OVER: no soldiers and no affordable available recruit.';
  const completed=state.wins.every((w,r)=>w>=rules.progression(data).winsRequired[r]);
- return {strategy,seed,completed,wins:state.wins,fights:battles.length,victories:battles.filter(b=>b.outcome==='victory').length,defeats:battles.filter(b=>b.outcome==='defeat').length,draws:battles.filter(b=>b.outcome==='draw').length,replays:battles.filter(b=>b.replay).length,rounds:battles.reduce((n,b)=>n+b.rounds,0),gold:shop.gold,earned:battles.reduce((n,b)=>n+(b.reward||0),0),spent:ledger.reduce((n,e)=>n+e.cost,0),army:shop.army,levels:shop.levels,blockedReason:completed?null:blockedReason||'Fight budget reached.',ledger:options.trace?ledger:undefined,battles:options.trace?battles:battles.map(({trace,...b})=>b),events};
+ return {strategy,seed,completed,gameOver,wins:state.wins,fights:battles.length,victories:battles.filter(b=>b.outcome==='victory').length,defeats:battles.filter(b=>b.outcome==='defeat').length,draws:battles.filter(b=>b.outcome==='draw').length,replays:battles.filter(b=>b.replay).length,rounds:battles.reduce((n,b)=>n+b.rounds,0),gold:shop.gold,earned:battles.reduce((n,b)=>n+(b.reward||0),0),spent:ledger.reduce((n,e)=>n+e.cost,0),army:shop.army,levels:shop.levels,blockedReason:completed?null:blockedReason||'Fight budget reached.',ledger:options.trace?ledger:undefined,battles:options.trace?battles:battles.map(({trace,...b})=>b),events};
 }
 function summarize(runs){
  return Object.keys(STRATEGIES).map(strategy=>{const group=runs.filter(r=>r.strategy===strategy),n=group.length;if(!n)return null;
  const mean=k=>group.reduce((s,r)=>s+r[k],0)/n;
  return {strategy,name:STRATEGIES[strategy].name,runs:n,completed:group.filter(r=>r.completed).length,completionRate:group.filter(r=>r.completed).length/n,meanFights:mean('fights'),meanReplays:mean('replays'),meanDefeats:mean('defeats'),meanDraws:mean('draws'),meanRounds:mean('rounds'),meanGold:mean('gold'),meanSpent:mean('spent'),reached:group.reduce((out,r)=>out.map((v,i)=>v+(r.wins[i]>0?1:0)),[0,0,0,0]),failures:group.filter(r=>!r.completed).reduce((out,r)=>{out[r.blockedReason]=(out[r.blockedReason]||0)+1;return out;},{})};}).filter(Boolean);
 }
-const api={simulateBattle,simulateCampaign,summarize,purchase,shoppingPlan,strategies:STRATEGIES,distance,clear,neighbours};
+const api={simulateBattle,simulateCampaign,summarize,purchase,canAffordRecruit,shoppingPlan,strategies:STRATEGIES,distance,clear,neighbours};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.GreenhavenSimulation=api;
 })(typeof window!=='undefined'?window:globalThis);

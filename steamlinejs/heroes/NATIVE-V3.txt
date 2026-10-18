@@ -158,3 +158,16 @@ Editor/simulator regression: node tests/endless-lairs.test.cjs
 The stats benchmark still has a finite target (three wins in every region) for
 comparison; reaching that target does not end the actual game or editor preview.
 Previous configs and executable: backups/before-endless-lairs-2026-10-18/.
+
+Game over and restart (2026-10-18)
+The campaign now enters GAME OVER when no soldiers remain and no recruit from
+any currently built recruiting building is affordable. It compares the current
+highest unlocked tier in each building, applies Chapel's discount, and checks
+16-bit prices. Low gold alone is not a loss while soldiers remain alive.
+The defeat check runs after battle actions/rewards finish and after city actions.
+The game-over screen explains the loss. Fire starts a new campaign with the
+normal initial gold, buildings, two Spearmen and locked lairs. A held Fire press
+cannot also open the new city's popup. Escape/directions do not bypass game over.
+Simulator runs now expose gameOver separately from a fixed buying strategy that
+cannot afford its preferred replacement while a cheaper recruit is still possible.
+Tests: python3 atari/city/tools/test-game-over.py; node tests/game-over.test.cjs

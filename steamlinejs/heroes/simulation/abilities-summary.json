@@ -24,7 +24,7 @@
         235
       ],
       "failures": {
-        "All soldiers are dead and there is not enough gold to recruit a replacement.": 21
+        "GAME OVER: no soldiers and no affordable available recruit.": 21
       }
     },
     {
@@ -70,7 +70,7 @@
         0
       ],
       "failures": {
-        "The fallback replay is also unwinnable with this army.": 256
+        "GAME OVER: no soldiers and no affordable available recruit.": 256
       }
     },
     {
@@ -94,8 +94,7 @@
         0
       ],
       "failures": {
-        "The fallback replay is also unwinnable with this army.": 141,
-        "All soldiers are dead and there is not enough gold to recruit a replacement.": 115
+        "GAME OVER: no soldiers and no affordable available recruit.": 256
       }
     },
     {
@@ -119,8 +118,8 @@
         0
       ],
       "failures": {
-        "The fallback replay is also unwinnable with this army.": 58,
-        "All soldiers are dead and there is not enough gold to recruit a replacement.": 198
+        "GAME OVER: no soldiers and no affordable available recruit.": 196,
+        "The buying strategy cannot afford its planned replacement; another available recruit is affordable.": 60
       }
     },
     {
@@ -144,8 +143,7 @@
         134
       ],
       "failures": {
-        "All soldiers are dead and there is not enough gold to recruit a replacement.": 86,
-        "The fallback replay is also unwinnable with this army.": 36
+        "GAME OVER: no soldiers and no affordable available recruit.": 122
       }
     },
     {
@@ -169,8 +167,7 @@
         129
       ],
       "failures": {
-        "All soldiers are dead and there is not enough gold to recruit a replacement.": 105,
-        "The fallback replay is also unwinnable with this army.": 22
+        "GAME OVER: no soldiers and no affordable available recruit.": 127
       }
     },
     {
@@ -194,7 +191,7 @@
         0
       ],
       "failures": {
-        "The fallback replay is also unwinnable with this army.": 256
+        "GAME OVER: no soldiers and no affordable available recruit.": 256
       }
     },
     {
@@ -218,8 +215,7 @@
         47
       ],
       "failures": {
-        "The fallback replay is also unwinnable with this army.": 69,
-        "All soldiers are dead and there is not enough gold to recruit a replacement.": 140
+        "GAME OVER: no soldiers and no affordable available recruit.": 209
       }
     },
     {
@@ -243,7 +239,8 @@
         0
       ],
       "failures": {
-        "All soldiers are dead and there is not enough gold to recruit a replacement.": 256
+        "GAME OVER: no soldiers and no affordable available recruit.": 166,
+        "The buying strategy cannot afford its planned replacement; another available recruit is affordable.": 90
       }
     }
   ],

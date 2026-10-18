@@ -14,7 +14,7 @@ for(const event of run.events){
   for(let slot=0;slot<army.length;slot++)if(army[slot]&&!living.has(slot))army[slot]=null;
  }
 }
-assert.deepEqual(run.army,army);assert(!run.completed&&run.blockedReason.includes('All soldiers are dead'));
+assert.deepEqual(run.army,army);assert(!run.completed&&run.gameOver&&run.blockedReason.includes('GAME OVER'));
 // A spare army slot remains empty until paid for; discount applies to replacement recruits.
 const shop={gold:100,army:['barracks-2',null,'archery-2'],levels:{barracks:3,archery:2,chapel:3,lodge:0,tower:0}};
 const replaced=sim.purchase(data,shop,{kind:'recruit',id:'barracks-3',slot:1});assert.equal(replaced.event.cost,50);assert.deepEqual(replaced.shop.army,['barracks-2','barracks-3','archery-2']);assert.equal(shop.army[1],null);

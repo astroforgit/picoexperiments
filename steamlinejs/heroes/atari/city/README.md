@@ -11,6 +11,9 @@ or five Swordsmen are legal**, as are mixed armies. Each fighter has independent
 HP, actions, upgrades and dismissal. No stacks or troop quantities are used.
 The earlier standalone battle prototype remains independently runnable.
 Restarting the executable starts a new city; disk saves are not implemented.
+If your army is empty and you cannot afford any currently available recruit,
+GAME OVER appears. Fire starts a new campaign. Surviving soldiers let you keep
+fighting even with no gold.
 
 ![City](generated/city-start.png)
 
