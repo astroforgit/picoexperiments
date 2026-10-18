@@ -15,13 +15,16 @@ The 150 original art inputs remain unchanged. The old art comparison and its
 included executables are historical art-review builds, before v3 gameplay.
 
 Picture-story introduction
-Two illustrated screens play once at startup: the prince and forest nymph fall
-in love, then the necromancer abducts her. The prince must raise an army at his
-palace, defeat the necromancer and rescue her. Fire, Enter or Space advances
+Three illustrated screens play once during XEX loading: the prince and forest
+nymph fall in love; the necromancer abducts her with no army in that scene;
+then the furious prince leads his troops. Raise an army at the palace, defeat
+the necromancer and rescue her. Fire, Enter or Space advances
 each page; release the button between presses. The game starts at the palace.
-The 320x200 screens use the existing shared palette and reuse the two screen
-buffers, which gameplay replaces. Source illustrations and exact built-in
-image-generation prompts are in art/intro-v1/. No extra battle VRAM is used.
+The 320x200 screens use the existing shared palette and temporarily occupy
+the two screen buffers and the city-background cache. Game loading replaces
+the third picture with city art and overwrites ALL intro code at $7000 with
+battle data. The running game reserves no RAM or VRAM for the introduction.
+Source illustrations and exact image-generation prompts are in art/intro-v1/.
 
 Integrated balance
 Starts with 50 gold and two 4-HP Spearmen. The editor's current recruitment,

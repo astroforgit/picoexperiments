@@ -5,21 +5,22 @@ const assert=require("assert/strict");
 const labels=Object.fromEntries(fs.readFileSync("generated/city-vbxe.lab","utf8").split("\n").map(l=>l.trim().split(/\s+/)).filter(p=>p.length===3).map(p=>[p[2].toLowerCase(),parseInt(p[1],16)]));
 const data=fs.readFileSync("city-vbxe.xex");
 assert.equal(data.readUInt16LE(0),65535);
-let i=2,uploads=0,init=0,run;
+let i=2,uploads=0,init=0,run,storyLoaded=false;
 while(i<data.length){
   const start=data.readUInt16LE(i);i+=2;if(start===65535)continue;
   const end=data.readUInt16LE(i);i+=2;const n=end-start+1;
   assert(n>0&&i+n<=data.length,"Malformed XEX segment");
-  if(start===0x6000&&n===labels['battle.battle_data_end']-0x6000){assert(end<0x8000);assert.equal(uploads,127,'Runtime tables and story code must load after graphics staging');}
+  if(start===0x6000&&n===labels['battle.battle_data_end']-0x6000){assert(end<0x8000);assert.equal(uploads,143,'Battle tables must load after graphics staging');assert(start<=labels.story_intro&&end>=labels.story_intro_end-1,'Battle tables must overwrite all temporary intro code');}
   else if(start===0x6000){assert.equal(n,4096);uploads++;}
-  else if(start===0x2e2){assert.equal(n,2);init++;}
+  else if(start===0x2e2){assert.equal(n,2);init++;if(data.readUInt16LE(i)===labels.story_intro){assert(storyLoaded);assert.equal(uploads,48,'Show the intro before loading game graphics');}}
   else if(start===0x2e0){assert.equal(n,2);run=data.readUInt16LE(i);}
-  else assert((start>=0x2000&&end<0x6000)||(start===0x7000&&end<0x8000)||(start===0x8000&&end===0x83ff),"Unexpected CPU memory region");
+  else if(start===0x7000){assert.equal(start,labels.story_intro);assert.equal(end+1,labels.story_intro_end);storyLoaded=true;}
+  else assert((start>=0x2000&&end<0x6000)||(start===0x8000&&end===0x83ff),"Unexpected CPU memory region");
   i+=n;
 }
-assert.equal(uploads,127);assert.equal(init,128);assert.equal(run,labels.main);
-assert(labels.story_intro>=0x6000&&labels.story_intro<labels['battle.battle_data_end']);
-for(let page=1;page<=2;page++)assert.equal(fs.statSync(`generated/intro-${page}.bin`).size,65536);
+assert.equal(uploads,143);assert.equal(init,145);assert.equal(run,labels.main);
+assert(storyLoaded);
+for(let page=1;page<=3;page++)assert.equal(fs.statSync(`generated/intro-${page}.bin`).size,65536);
 assert(labels.code_end<=0x6000);assert.equal(fs.statSync("generated/palette.bin").size,768);
 assert.equal(fs.statSync("generated/vram.bin").size,389120);
 const c=JSON.parse(fs.readFileSync("content.json","utf8"));
@@ -36,7 +37,7 @@ for(const b of c.buildings){
     assert(b.hp[t]>0&&b.hp[t]<100&&b.damage[t]>0&&b.damage[t]<100&&b.range[t]>0&&b.range[t]<10);
   }
 }
-console.log(`PASS: ${data.length}-byte XEX, 127 graphics uploads including two intro screens, safe CPU regions, four recruit lines plus support Chapel, duplicate troops allowed.`);
+console.log(`PASS: ${data.length}-byte XEX, 143 graphics uploads including three temporary intro screens, intro code overwritten by battle data, safe CPU regions.`);
 
 const artProfile=fs.existsSync('generated/asset-profile.json')?JSON.parse(fs.readFileSync('generated/asset-profile.json')):{profile:'classic',buildingBytes:53760};
 const regions=[

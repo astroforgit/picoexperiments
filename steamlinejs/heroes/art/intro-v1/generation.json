@@ -39,8 +39,23 @@
     {
       "tool": "built-in image_gen",
       "input": "necromancer-abduction-before-black-metal.png",
-      "output": "necromancer-abduction.png",
+      "output": "necromancer-abduction-before-empty-bridge.png",
       "prompt": "Use case: precise-object-edit. Edit this pixel-art fantasy abduction illustration with ONLY these changes. 1. Completely remove the adult nymph's wooden cup, drink and droplets. Her outstretched hand is now empty and makes a friendly carefree farewell wave toward the prince. Keep her cheerful mischievous smile, rosy cheeks, auburn hair, green leaf dress, adult identity and pose. 2. Restyle the evil elderly HUMAN necromancer on the left as an aging black-metal musician turned wizard: long flowing charcoal-black hair with grey streaks clearly visible down past his shoulders; pale wrinkled HUMAN face, dark black-metal stage eye makeup, malicious human eyes, crooked grin, scruffy grey beard and red nose. Keep a recognizably living old human face, never a skull. His hood is pushed back enough to reveal the long hair. Worn black robes, a few understated silver studs and a prominent silver INVERTED CROSS medallion on his chest (upside-down cross, long stem above the crossbar and short stem below). Make the long hair and pendant clearly readable at 320-pixel game resolution. Preserve the prince, violet portal, forest, palace, lighting, composition, image dimensions and classic hand-pixelled art style. No drinking vessel in the nymph's hand. No text, no watermark."
+    },
+    {
+      "tool": "built-in image_gen",
+      "input": "necromancer-abduction-before-empty-bridge.png",
+      "output": "necromancer-abduction.png",
+      "prompt": "Use case: precise-object-edit. Edit this supplied pixel-art fantasy abduction illustration. Remove ALL the distant soldiers, marching army, military banners and their carried weapons from the right-hand background near the palace and bridge. Fill that area naturally with the empty moonlit stone bridge, palace approach, forest and mist. Preserve the palace itself and its lights. Keep everything else exactly the same: elderly long-haired black-metal HUMAN necromancer with inverted-cross medallion, cheerful adult auburn-haired nymph in green leaf dress waving with an EMPTY hand, distressed prince in blue tunic/red cape reaching toward her, violet portal, composition, colors, classic hand-pixelled style and image dimensions. No armies anywhere in this picture. No text, no watermark."
+    },
+    {
+      "tool": "built-in image_gen",
+      "references": [
+        "forest-love.png",
+        "necromancer-abduction-before-empty-bridge.png"
+      ],
+      "output": "prince-leads-army.png",
+      "prompt": "Use case: illustration-story. Create a THIRD intro picture for the same Atari VBXE fantasy game, using the supplied two images only as references for character identity and classic pixel-art style. Wide landscape composition, aspect ratio 2:1, designed to remain readable at 320x144 pixels. The same ADULT young brown-haired prince with modest golden circlet, blue-and-gold tunic, red cape and sword is NOW ABSOLUTELY FURIOUS and leads his army out from his palace to rescue the kidnapped nymph. Place him large in the foreground at the head of a column of spearmen, sword infantry and archers with blue banners marching behind him. Make his rage unmistakable and a little comically over-the-top: deeply knitted brows, clenched jaw, eyes glaring ahead, mouth shouting an angry order, cape whipping, one hand tightly gripping his drawn sword pointed onward. Keep him recognizably the same prince, not an old soldier. Palace gate and distant forest, dramatic dawn light. Strong clear silhouettes, bold deliberately hand-pixelled clusters, rich limited retro colors, coherent classic 1990s pixel-art cutscene matching the references. The humor comes from his enormous rage after his earlier happy romantic scene. No nymph or necromancer in this picture. No text, no lettering, no interface, no gore, no watermark."
     }
   ]
 }

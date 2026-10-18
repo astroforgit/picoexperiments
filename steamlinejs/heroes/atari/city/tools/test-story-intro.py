@@ -17,7 +17,8 @@ for page in (0xd600,0xd700):
     m=r.Machine(page,story=True)
     assert m.get('front_bank')==0
     assert m.mem.ram[page+0x40]&1
-    for picture in (1,2):
+    temporary_code=bytes(m.mem.ram[r.LABELS['story_intro']:r.LABELS['story_intro_end']])
+    for picture in (1,2,3):
         expected=(r.ROOT/f'generated/intro-{picture}.bin').read_bytes()
         assert bytes(m.mem.vram[(picture-1)*65536:picture*65536])==expected
     # A held button at boot must leave the first picture visible.
@@ -37,19 +38,43 @@ for page in (0xd600,0xd700):
     m.mem.ram[0xd20f]=255;at(m,'.press')
     m.mem.ram[0xd20f]=251;at(m,'.finish');advance(m)
     assert m.get('front_bank')==1
+    m.mem.ram[0xd20f]=255;at(m,'')
+    assert m.get('front_bank')==0
+    expected=(r.ROOT/'generated/intro-3.bin').read_bytes()[:64000]
+    assert bytes(m.mem.vram[:64000])==expected,'Third picture must be copied from temporary city cache'
+    xdl=int.from_bytes(m.mem.ram[page+0x41:page+0x44],'little')
+    assert int.from_bytes(m.mem.vram[xdl+3:xdl+6],'little')==0
+    m.mem.ram[0xd20f]=251;advance(m)
+    assert m.get('front_bank')==0
+    m.mem.ram[0xd20f]=255;at(m,'.press')
+    m.mem.ram[0xd20f]=251;at(m,'.finish');advance(m)
     m.mem.ram[0xd20f]=255;m.mem.ram[0x2fc]=12
-    m.run_until(r.LABELS['main_loop'])
+    m.resume_after_story()
+    assert m.get('upload_index')==127
+    assert bytes(m.mem.vram[0x20000:0x7f000])==(r.ROOT/'generated/vram.bin').read_bytes(),'All temporary scenery memory must be reclaimed'
+    start,end=r.LABELS['story_intro'],r.LABELS['story_intro_end']
+    assert bytes(m.mem.ram[start:end])!=temporary_code,'Intro code must be overwritten'
+    # The bytes now occupying the intro code are exactly the battle-table data
+    # from the final XEX segment, not a reserved or merely cleared buffer.
+    data=m.loader_data;i=0
+    while i<len(data):
+        seg=int.from_bytes(data[i:i+2],'little');i+=2
+        if seg==65535:continue
+        last=int.from_bytes(data[i:i+2],'little');i+=2;n=last-seg+1
+        if seg==0x6000 and last==r.LABELS['battle.battle_data_end']-1:
+            assert bytes(m.mem.ram[start:end])==data[i+start-seg:i+end-seg]
+        i+=n
     assert m.get('gold',2)==50 and m.get('army_count')==2
     assert m.get('screen_mode')==0 and m.get('popup_open')==0
     m.idle(3);assert m.get('popup_open')==0
     m.release();m.fire();assert m.get('popup_open')==1
-    print(f'PASS ${page:04X}: exact two loaded pictures, correct XDL switching, Fire/Enter/Space, held/released input, clean palace startup and responsive controls.')
+    print(f'PASS ${page:04X}: three exact story pictures, correct XDL switching, held/released Fire/Enter/Space, resumed XEX loading, all intro RAM/VRAM reclaimed and clean palace controls.')
 
 if '--screens' in sys.argv:
     from PIL import Image
     out=Path(sys.argv[sys.argv.index('--screens')+1]);out.mkdir(parents=True,exist_ok=True)
     pages=[]
-    for i in (1,2):
+    for i in (1,2,3):
         im=Image.open(r.ROOT/f'generated/intro-{i}.png').convert('RGB')
         im.save(out/f'story-intro-{i}.png');pages.append(im.resize((960,600),Image.Resampling.NEAREST))
     pages[0].save(out/'story-intro-preview.gif',save_all=True,append_images=pages[1:],duration=4500,loop=0)

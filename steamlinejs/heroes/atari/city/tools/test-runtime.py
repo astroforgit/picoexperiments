@@ -88,8 +88,14 @@ class Machine:
     def __init__(self, page=0xd600, story=False):
         self.mem = Memory(page)
         self.cpu = MPU(memory=self.mem)
-        data = (ROOT/'city-vbxe.xex').read_bytes()
-        i = 0
+        self.loader_data = (ROOT/'city-vbxe.xex').read_bytes()
+        self.loader_offset = 0
+        self.story = story and bool(page)
+        self.load_remaining()
+
+    def load_remaining(self):
+        data=self.loader_data
+        i=self.loader_offset
         while i < len(data):
             start = int.from_bytes(data[i:i+2], 'little'); i += 2
             if start == 65535: continue
@@ -98,18 +104,28 @@ class Machine:
             assert n > 0 and i+n <= len(data)
             for a, value in enumerate(data[i:i+n], start): self.mem[a] = value
             i += n
+            self.loader_offset=i
             if start <= 0x2e2 <= end:
-                self.call(int.from_bytes(self.mem.ram[0x2e2:0x2e4], 'little'))
+                entry=int.from_bytes(self.mem.ram[0x2e2:0x2e4], 'little')
+                if entry==LABELS['story_intro']:
+                    if self.story:
+                        self.cpu.sp=255
+                        self.cpu.stPushWord(0x05ff)
+                        self.cpu.pc=entry
+                        self.run_until(LABELS['story_intro.wait_action'])
+                        return
+                    # Gameplay tests skip only the blocking temporary INIT.
+                    # Native story tests run it and resume the real XEX loader.
+                    if self.mem.page:self.put('upload_index',32)
+                    else:self.call(entry) # Real no-VBXE INIT must return immediately.
+                else:self.call(entry)
         self.cpu.pc = LABELS['main']
-        if story and page:
-            self.run_until(LABELS['story_intro.wait_action'])
-        else:
-            # Gameplay tests bypass the blocking story; test-story-intro.py
-            # exercises the actual loader/startup and all page transitions.
-            entry=LABELS['story_intro'];opcode=self.mem.ram[entry]
-            self.mem.ram[entry]=0x60
-            self.run_until(LABELS['main_loop' if page else 'no_vbxe'])
-            self.mem.ram[entry]=opcode
+        self.run_until(LABELS['main_loop' if self.mem.page else 'no_vbxe'])
+
+    def resume_after_story(self):
+        self.run_until(0x600)
+        self.story=False
+        self.load_remaining()
 
     def run_until(self, stop, limit=4000000):
         for tick in range(limit):

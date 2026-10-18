@@ -95,6 +95,57 @@
         ins 'generated/bank-31.bin'
         ini upload_chunk
         org $6000
+        ins 'generated/intro-bank-32.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/intro-bank-33.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/intro-bank-34.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/intro-bank-35.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/intro-bank-36.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/intro-bank-37.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/intro-bank-38.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/intro-bank-39.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/intro-bank-40.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/intro-bank-41.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/intro-bank-42.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/intro-bank-43.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/intro-bank-44.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/intro-bank-45.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/intro-bank-46.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/intro-bank-47.bin'
+        ini upload_chunk
+        org $7000
+        icl 'story-intro.inc'
+        ini story_intro
+        org $6000
         ins 'generated/bank-32.bin'
         ini upload_chunk
         org $6000

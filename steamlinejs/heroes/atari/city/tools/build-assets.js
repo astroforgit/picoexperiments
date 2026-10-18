@@ -259,7 +259,7 @@ bytes("glyph_lo",Array.from({length:96},(_,i)=>(15*size+i*48)&255)),bytes("glyph
 fs.writeFileSync("generated/content.inc",defs.join("\n")+"\n");
 fs.writeFileSync("generated/asset-profile.inc",`CROPPED_BUILDINGS = ${artProfile==='classic'?0:1}\n`);
 const uploads=[];
-// Intro pages live in framebuffer banks 0..31 until the city replaces them.
+// Three temporary pages use banks 0..47, before gameplay assets replace them.
 // Keep the gameplay palette unchanged and stamp captions with the native font.
 const storyPages=[
  {file:'forest-love',title:'A LOVE IN THE FOREST',lines:[
@@ -268,8 +268,12 @@ const storyPages=[
  ],action:'FIRE / ENTER / SPACE: NEXT PAGE'},
  {file:'necromancer-abduction',title:'THE NECROMANCER STRIKES',lines:[
   'AN EVIL NECROMANCER KIDNAPPED THE NYMPH.',
-  'BACK AT HIS PALACE, THE PRINCE MUST RAISE',
-  'AN ARMY, DEFEAT HIM AND BRING HER HOME.'
+  'THE PRINCE WAS NOT AMUSED.'
+ ],action:'FIRE / ENTER / SPACE: NEXT PAGE'},
+ {file:'prince-leads-army',title:'LOVE IS PATIENT. THE PRINCE IS NOT.',lines:[
+  'FURIOUS, HE VOWS TO LEAD AN ARMY.',
+  'BUILD YOUR FORCES AT THE PALACE.',
+  'DEFEAT THE NECROMANCER AND BRING HER HOME.'
  ],action:'FIRE / ENTER / SPACE: RAISE YOUR ARMY'}
 ];
 for(const [page,story] of storyPages.entries()){
@@ -291,10 +295,14 @@ for(const [page,story] of storyPages.entries()){
  convert(['-size','320x200','-depth','8','rgb:-',`generated/intro-${page+1}.png`],rgb);
  for(let bank=0;bank<16;bank++){
   const id=page*16+bank;
-  fs.writeFileSync(`generated/bank-${id}.bin`,pixels.subarray(bank*4096,(bank+1)*4096));
-  uploads.push(`        org $6000\n        ins 'generated/bank-${id}.bin'\n        ini upload_chunk`);
+  const bankFile=`generated/${page===2?'intro-':''}bank-${id}.bin`;
+  fs.writeFileSync(bankFile,pixels.subarray(bank*4096,(bank+1)*4096));
+  uploads.push(`        org $6000\n        ins '${bankFile}'\n        ini upload_chunk`);
  }
 }
+// Display while loading; the next uploads replace picture three with city art,
+// and the final battle tables overwrite the temporary intro machine code.
+uploads.push(`        org $7000\n        icl 'story-intro.inc'\n        ini story_intro`);
 for(let i=0;i<vram.length/4096;i++){
   fs.writeFileSync(`generated/bank-${i+32}.bin`,vram.subarray(i*4096,(i+1)*4096));
   uploads.push(`        org $6000\n        ins 'generated/bank-${i+32}.bin'\n        ini upload_chunk`);
