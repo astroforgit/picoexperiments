@@ -10,11 +10,12 @@ while(i<data.length){
   const start=data.readUInt16LE(i);i+=2;if(start===65535)continue;
   const end=data.readUInt16LE(i);i+=2;const n=end-start+1;
   assert(n>0&&i+n<=data.length,"Malformed XEX segment");
-  if(start===0x6000&&n===labels['battle.battle_data_end']-0x6000){assert(end<0x8000);assert.equal(uploads,143,'Battle tables must load after graphics staging');assert(start<=labels.story_intro&&end>=labels.story_intro_end-1,'Battle tables must overwrite all temporary intro code');}
+  if(start===0x6000&&n===labels.runtime_data_end-0x6000){assert(end<0x8000);assert.equal(uploads,143,'Battle tables must load after graphics staging');assert(start<=labels.story_intro&&end>=labels.story_intro_end-1,'Battle tables must overwrite all temporary intro code');}
   else if(start===0x6000){assert.equal(n,4096);uploads++;}
   else if(start===0x2e2){assert.equal(n,2);init++;if(data.readUInt16LE(i)===labels.story_intro){assert(storyLoaded);assert.equal(uploads,48,'Show the intro before loading game graphics');}}
   else if(start===0x2e0){assert.equal(n,2);run=data.readUInt16LE(i);}
   else if(start===0x7000){assert.equal(start,labels.story_intro);assert.equal(end+1,labels.story_intro_end);storyLoaded=true;}
+  else if(start===0xa000){assert.equal(n,fs.statSync('generated/outro-cpu.bin').size);assert(end<0xc000);}
   else assert((start>=0x2000&&end<0x6000)||(start===0x8000&&end===0x83ff),"Unexpected CPU memory region");
   i+=n;
 }
@@ -56,6 +57,9 @@ console.log('PASS: all battle/city graphics fit without overlap below the reserv
 
 const anim=JSON.parse(fs.readFileSync('generated/hero-animation-layout.json'));
 const allocations=regions.map(([a,n,name])=>[a,a+n,name]);
+const outro=JSON.parse(fs.readFileSync('generated/outro-layout.json'));
+assert(outro.cpuBytes<=8192&&outro.width===160&&outro.height===72);
+allocations.push(...outro.allocations);
 for(const a of anim.idleCaches||[])allocations.push([a,a+896,'idle sprite cache']);
 allocations.push([anim.cache[0],anim.cache[0]+anim.cache[1],'decoded hero cache']);
 anim.addresses.forEach((a,i)=>{
@@ -68,3 +72,4 @@ for(let i=0;i<allocations.length;i++){
  if(i)assert(allocations[i-1][1]<=allocations[i][0],allocations[i][2]+' overlaps');
 }
 console.log('PASS: compressed hero frames and decode cache are disjoint from all scenery/UI banks.');
+console.log('PASS: ending pictures occupy only spare VRAM gaps and BASIC-off RAM.');

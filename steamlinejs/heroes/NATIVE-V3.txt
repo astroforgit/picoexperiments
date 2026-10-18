@@ -26,6 +26,21 @@ the third picture with city art and overwrites ALL intro code at $7000 with
 battle data. The running game reserves no RAM or VRAM for the introduction.
 Source illustrations and exact image-generation prompts are in art/intro-v1/.
 
+Victory and wedding ending
+Defeating the Warlock in the final Necromancer Ruins encounter completes the
+campaign and automatically plays three ending pictures: the father reveal,
+the wedding ceremony, and the rowdy reception. The prince spares the defeated
+necromancer after the nymph promises to marry him. Her father escorts her down
+the aisle; at the reception she dances and he regrets the free bar.
+Fire, Enter or Space advances each picture. After THE END, another press starts
+a fresh campaign. Ordinary victories, losses and retreats do not play it.
+The standalone XEX stores compact 160x72, 16-colour pictures at double scale,
+with native readable captions. They use 10,546 unused VRAM bytes and 6,734 bytes
+of BASIC-off RAM at $A000. Existing battle scenery, unit poses and caches remain
+intact; overlap checks cover the ending data too. No external image files or
+additional RAM hardware are needed. Full artwork and prompts: art/outro-v1/.
+Native ending regression: python3 atari/city/tools/test-outro.py
+
 Integrated balance
 Starts with 50 gold and two 4-HP Spearmen. The editor's current recruitment,
 individual upgrade and building prices are imported. Chapel costs 40/50/30,
@@ -35,7 +50,8 @@ Cavalry deals 3 damage; Demon has 3 HP, from the earlier simulation candidate.
 Unlimited encounters and unlocks
 34 weighted enemy groups across four regions and three initial difficulty stages.
 Dark Forest -> Catacombs -> Monster Caves -> Necromancer Ruins. Three victories
-unlock the next lair; the current lair stays open for unlimited battles.
+unlock the next lair; the current lair stays open for unlimited battles until
+the final necromancer victory finishes the campaign and plays the wedding.
 There is no WINS x/3 text or battle limit in the pre-battle popup.
 After reaching the unlock threshold, each further victory adds one enemy HP;
 every three such wins adds one base damage. Reward increases by 10 gold for each

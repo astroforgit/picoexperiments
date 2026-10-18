@@ -66,6 +66,9 @@ calc_out=$D3
         org $2000
 .proc loader_init
         cld
+        lda PORTB
+        ora #2
+        sta PORTB
         jsr detect_vbxe
         bcc ?done
         mva #1 hardware_ok
@@ -138,6 +141,7 @@ hardware_ready
 main_loop
         jsr wait_frame
         jsr poll_input
+        jsr outro.check
         jsr check_game_over
         lda dirty
         beq main_loop
@@ -879,7 +883,12 @@ code_end
 battle_data_end equ *
         ert battle_data_end>$8000
         .endl
+        icl 'outro.inc'
+runtime_data_end
+        ert runtime_data_end>$8000
         org $8000
 text_screen
         :1024 dta 0
+        org $A000
+        ins 'generated/outro-cpu.bin'
         run main

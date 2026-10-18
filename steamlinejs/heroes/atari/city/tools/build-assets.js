@@ -236,6 +236,7 @@ fs.writeFileSync('generated/hero-animation.inc',heroDefs);
 fs.writeFileSync('generated/hero-animation-layout.json',JSON.stringify({idleCaches,addresses,lengths:frames.map(f=>f.length),cache:[0x7e000,896]},null,2));
 console.log(`Packed 126 full-body fighter frames into ${frames.reduce((n,f)=>n+f.length,0)} VRAM bytes.`);
 fs.writeFileSync("generated/palette.bin",Buffer.from(palette.flat()));
+require('./build-outro')({convert,indexed,palette,vram,gaps,limits});
 fs.writeFileSync("generated/vram.bin",vram);
 const bytes=(name,a)=>`${name}\n        dta ${a.join(",")}\n`;
 const ptr=(name,a)=>bytes(name+"_lo",a.map(x=>"<"+x))+bytes(name+"_hi",a.map(x=>">"+x));

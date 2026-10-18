@@ -35,7 +35,12 @@ class Memory:
 
     def __setitem__(self, a, v):
         if 0x9000 <= a < 0xa000 and self.bank & 128:
-            self.vram[(self.bank & 127)*4096+a-0x9000] = v
+            target=(self.bank & 127)*4096+a-0x9000
+            if self.page and self.ram[self.page+0x40]&1 and target<0x20000:
+                xdl=int.from_bytes(self.ram[self.page+0x41:self.page+0x44],'little')
+                front=int.from_bytes(self.vram[xdl+3:xdl+6],'little')//65536
+                assert target//65536!=front,'CPU drawing into the displayed framebuffer'
+            self.vram[target] = v
             return
         self.ram[a] = v
         if self.page is None: return

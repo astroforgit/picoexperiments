@@ -61,7 +61,7 @@ for page in (0xd600,0xd700):
         seg=int.from_bytes(data[i:i+2],'little');i+=2
         if seg==65535:continue
         last=int.from_bytes(data[i:i+2],'little');i+=2;n=last-seg+1
-        if seg==0x6000 and last==r.LABELS['battle.battle_data_end']-1:
+        if seg==0x6000 and last==r.LABELS['runtime_data_end']-1:
             assert bytes(m.mem.ram[start:end])==data[i+start-seg:i+end-seg]
         i+=n
     assert m.get('gold',2)==50 and m.get('army_count')==2

@@ -5,7 +5,7 @@ function mount(getData,getErrors){
  const sim=root.GreenhavenSimulation,host=document.getElementById('campaign-simulator');
  if(!host)return;
  const make=(tag,text)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;return n;};
- const intro=make('p','Simulate buying, building upgrades, fighter upgrades, random encounters and tactical hex moves using a copy of the current editor values. Surviving fighters recover HP after battle. Killed or converted soldiers are permanently lost; replacements must be bought. This benchmark stops after three wins in every lair; the game continues indefinitely. Purchases follow fixed strategies; these are bot outcomes, not measured human win rates.');intro.className='note';host.append(intro);
+ const intro=make('p','Simulate buying, building upgrades, fighter upgrades, random encounters and tactical hex moves using a copy of the current editor values. Surviving fighters recover HP after battle. Killed or converted soldiers are permanently lost; replacements must be bought. This benchmark stops after three wins in every lair. In the native game, defeating the final necromancer plays the wedding ending. Purchases follow fixed strategies; these are bot outcomes, not measured human win rates.');intro.className='note';host.append(intro);
  const bar=make('div');bar.className='encounter-bar';
  const strategy=make('select');strategy.setAttribute('aria-label','Simulation strategy');for(const [id,v] of Object.entries(sim.strategies)){const o=make('option',v.name);o.value=id;strategy.append(o);}strategy.value='mixed';
  const seed=make('input');seed.type='number';seed.min=0;seed.max=4294967295;seed.step=1;seed.value=1;seed.setAttribute('aria-label','Simulation starting seed');
@@ -23,7 +23,7 @@ function mount(getData,getErrors){
  function table(headers,rows){const wrap=make('div');wrap.className='table-wrap';const t=make('table'),h=make('thead'),tr=make('tr'),body=make('tbody');for(const x of headers)tr.append(make('th',x));h.append(tr);for(const row of rows){const r=body.insertRow();for(const x of row)r.insertCell().textContent=x;}t.append(h,body);wrap.append(t);return wrap;}
  function showCampaign(run,data){
   result.replaceChildren();
-  result.append(make('h3',`${sim.strategies[run.strategy].name} · seed ${run.seed} · ${run.completed?(data.endlessLairs?'Opening progression reached; game continues':'Campaign completed'):(run.gameOver?'GAME OVER':'Campaign stopped')}`),make('p',`${run.fights} fights, ${run.defeats} defeats, ${run.draws} round-limit draws, ${run.replays} return visits. Gold ${data.startingGold} start + ${run.earned} earned − ${run.spent} spent = ${run.gold} remaining.`));
+  result.append(make('h3',`${sim.strategies[run.strategy].name} · seed ${run.seed} · ${run.completed?'Campaign target reached':(run.gameOver?'GAME OVER':'Campaign stopped')}`),make('p',`${run.fights} fights, ${run.defeats} defeats, ${run.draws} round-limit draws, ${run.replays} return visits. Gold ${data.startingGold} start + ${run.earned} earned − ${run.spent} spent = ${run.gold} remaining.`));
   if(run.blockedReason)result.append(make('p',run.blockedReason));
   result.append(make('p','Wins by region: '+run.wins.join(' / ')+'. Final army: '+run.army.map(id=>id?data.players.find(u=>u.id===id).name:'Empty slot').join(', ')));
   for(const event of run.events){
