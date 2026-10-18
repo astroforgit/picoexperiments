@@ -1338,6 +1338,9 @@ cm_1    jsr list_get            ; a list to build into?
         bcs cm_no
         lda log_ri
         sta log_busy
+        tax
+        lda logT,x
+        sta cm_T
         lda #0
         sta log_new
         ldx log_ri

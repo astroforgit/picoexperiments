@@ -35,12 +35,28 @@ split_take
 st_x    rts
 
 split_end
+        ; the playfield's scroll: running total of the game's scroll phase
+        ; ($0701, the IRQ writes it to $D016), every frame the chain runs
+        lda $0701
+        sec
+        sbc sc_701
+        and #7
+        cmp #4
+        bcc se_1
+        ora #$F8                ; (-4..-1)
+se_1    clc
+        adc sc_T
+        sta sc_T
+        lda $0701
+        sta sc_701
         lda log_on
         bne se_x
         ldx log_w
         lda log_n
         sta log_cnt,x
         stx log_ri              ; the newest complete log
+        lda sc_T                ; (the playfield's scroll for this log)
+        sta logT,x
         lda #1
         sta log_new
         txa
@@ -277,75 +293,132 @@ rws_21  .ds NR
 
 ; NMI: the XDL of framebuffer X from its picture's palette segments (the
 ; framebuffer is not on screen yet; the XDL is read when the display starts)
+; XDL of list X's framebuffer: one entry per palette segment, each with its
+; overlay address. The playfield (lines 0 to XW_BAND-1, where the game
+; scrolls) is shifted by the scroll the game made since the picture's log
+; (sc_T - lstT), so the background moves every frame between pictures.
+XW_BAND = 147                   ; C64 raster 198: the HUD below does not scroll
 xdl_write
         stx xw_l
-        txa
-        lsr
-        ror
-        and #$80                ; X * $80
-        clc
-        adc #<(WIN+(V_XDL&$3FFF)+3)
-        sta xw_d+1
-        lda #>(WIN+(V_XDL&$3FFF)+3)
-        adc #0
-        sta xw_d+2
-        lda #MEMB_ON|(V_XDL>>14)
-        jsr vbx_memb_a
-        lda xw_l
-        beq xw_0
-        lda #NR
-xw_0    sta xw_k                ; segment index in the tables
-        ldx xw_l
         lda seg_n,x
-        sta xw_n
-        ldy #0
-        ; first segment: overlay on, address and step of the framebuffer
-        lda #$62
-        jsr xw_put
-        jsr xw_end
-        jsr xw_put
-        jsr xw_rpt
-        ldx xw_l
+        bne xw_go
+        rts                     ; (no picture yet: the XDL of gfx_init)
+xw_go   lda #MEMB_ON|(V_XDL>>14)
+        jsr vbx_memb_a
+        lda #<(WIN+(V_XDL&$3FFF)+3)
+        sta xw_d+1
+        txa
+        clc
+        adc #>(WIN+(V_XDL&$3FFF)+3)
+        sta xw_d+2
+        ; shift: scroll since the picture, -8..8 (the sprites move with it:
+        ; more would show them far from where they are)
+        lda sc_T
+        sec
+        sbc lstT,x
+        bmi xw_sn
+        cmp #9
+        bcc xw_s1
+        lda #8
+        bne xw_s1
+xw_sn   cmp #$F8
+        bcs xw_s1
+        lda #$F8
+xw_s1   sta xw_sh
+        ; first line's address
         lda fb_lo,x
         clc
         adc #FBM
-        jsr xw_put
+        sta xw_a
         lda fb_mid,x
         adc #0
-        jsr xw_put
+        sta xw_a+1
         lda fb_hi,x
         adc #0
+        sta xw_a+2
+        lda #0
+        sta xw_s                ; line of the entry
+        lda #$62                ; (the first entry turns the overlay on)
+        sta xw_f
+        txa
+        beq xw_0
+        lda #NR
+xw_0    sta xw_k
+        lda seg_n,x
+        sta xw_n
+        ldy #0
+xw_seg  ldx xw_k
+        lda seg_ln,x
+        sta xw_c                ; lines left in this segment
+xw_part lda xw_c
+        ldx xw_s
+        cpx #XW_BAND
+        bcs xw_p1               ; below the playfield: the whole rest
+        txa
+        clc
+        adc xw_c
+        cmp #XW_BAND+1
+        bcc xw_p0
+        lda #XW_BAND            ; up to the end of the playfield
+        sec
+        sbc xw_s
+        jmp xw_p1
+xw_p0   lda xw_c
+xw_p1   sta xw_m                ; lines of this entry
+        jsr xw_ent
+        lda xw_c
+        sec
+        sbc xw_m
+        sta xw_c
+        bne xw_part
+        inc xw_k
+        dec xw_n
+        bne xw_seg
+        ; the last entry ends the XDL
+        ldy xw_e
+        lda #$88
+        jsr xw_put
+        lda #0
+        jmp vbx_memb_a
+; an entry for xw_m lines from line xw_s
+xw_ent  lda xw_f
+        jsr xw_put
+        sty xw_e                ; (its second byte)
+        lda #$08
+        jsr xw_put
+        ldx xw_m
+        dex
+        txa
+        jsr xw_put
+        ; address (+ the shift in the playfield)
+        lda #0
+        ldx xw_s
+        cpx #XW_BAND
+        bcs xw_e1
+        lda xw_sh
+xw_e1   sta xw_t
+        ora #$7F                ; (sign: $FF or $7F)
+        bmi xw_e2
+        lda #0
+        .byte $2C
+xw_e2   lda #$FF
+        sta xw_t+1
+        lda xw_a
+        clc
+        adc xw_t
+        jsr xw_put
+        lda xw_a+1
+        adc xw_t+1
+        jsr xw_put
+        lda xw_a+2
+        adc xw_t+1
+        and #7
         jsr xw_put
         lda #<FBW
         jsr xw_put
         lda #>FBW
         jsr xw_put
-        jsr xw_att
-xw_l2   dec xw_n
-        beq xw_x
-        inc xw_k
-        lda #$20                ; next segments: lines and palette only
-        jsr xw_put
-        jsr xw_end
-        jsr xw_put
-        jsr xw_rpt
-        jsr xw_att
-        jmp xw_l2
-xw_x    rts
-; A = $08 (attributes follow), $88 on the last segment
-xw_end  lda xw_n
-        cmp #1
-        beq xw_e1
-        lda #$08
-        rts
-xw_e1   lda #$88
-        rts
-xw_rpt  ldx xw_k
-        lda seg_ln,x
-        sec
-        sbc #1
-        jmp xw_put
-xw_att  ldx xw_k
+        ldx xw_k
         lda seg_pl,x
         asl
         asl
@@ -354,6 +427,44 @@ xw_att  ldx xw_k
         ora #$01                ; 320 pixels, overlay palette
         jsr xw_put
         lda #$FF
+        jsr xw_put
+        lda #$60                ; next entries: lines and address
+        sta xw_f
+        ; next line, address + lines * 368 (256 + 64 + 32 + 16)
+        lda xw_s
+        clc
+        adc xw_m
+        sta xw_s
+        lda xw_m
+        sta xw_t
+        lda #0
+        sta xw_t+1
+        ldx #4
+xw_m16  asl xw_t
+        rol xw_t+1
+        dex
+        bne xw_m16
+        ldx #3
+xw_ma   lda xw_a
+        clc
+        adc xw_t
+        sta xw_a
+        lda xw_a+1
+        adc xw_t+1
+        sta xw_a+1
+        bcc xw_mb
+        inc xw_a+2
+xw_mb   asl xw_t
+        rol xw_t+1
+        dex
+        bne xw_ma
+        lda xw_a+1
+        clc
+        adc xw_m
+        sta xw_a+1
+        bcc xw_mc
+        inc xw_a+2
+xw_mc   rts
 xw_put
 xw_d    sta WIN,y
         iny
@@ -361,6 +472,14 @@ xw_d    sta WIN,y
 xw_l    dta 0
 xw_k    dta 0
 xw_n    dta 0
+xw_c    dta 0
+xw_m    dta 0
+xw_s    dta 0
+xw_f    dta 0
+xw_e    dta 0
+xw_sh   dta 0
+xw_t    dta 0,0
+xw_a    dta 0,0,0
 
 ; raster_sync: 312 * 256 / avail for avail 8-156
 rsk_lo  :149 dta <(79872/(#+8))

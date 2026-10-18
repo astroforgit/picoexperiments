@@ -333,6 +333,8 @@ cl_s2   lda upd_cnt,x
         sta rdy_mid
         lda lst_v_hi,x
         sta rdy_hi
+        lda cm_T                ; (the scroll it shows)
+        sta lstT,x
         stx ready               ; (last: the NMI may start it at once)
         lda #0
         jmp vbx_memb_a
@@ -463,7 +465,7 @@ slot_adv
         inc ZPN+1
 er_x    rts
 bcb     .ds 21
-V_SCRC  = V_XDL+$100
+V_SCRC  = V_XDL+$200
 nop_bcb_c dta <V_SCRC,>V_SCRC,^V_SCRC, 0,0, 0, <V_SCRC,>V_SCRC,^V_SCRC, 0,0, 0, 0,0, 0, $FF,0, 0,0,0, 8
 
 ; the regions: char layer copies, blank and border fills

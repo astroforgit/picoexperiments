@@ -109,6 +109,14 @@ drawn. Pixels are palette indices that encode which colour register they use,
 so colour changes only rewrite the palette. Each region gets one of three
 overlay palettes, selected per line range by the XDL.
 
+**Smooth scrolling between pictures.** A picture takes a few frames to
+build, but the game scrolls the playfield by a pixel every frame. Every
+frame the NMI rewrites the XDL of the picture on screen so that the
+playfield lines (above the HUD) are shifted by the scroll the game made
+since the picture's log (its scroll phase `$0701`, at most 8 pixels). The
+background then moves every frame; the sprites move with it until the next
+picture, so they can be off by a pixel or two.
+
 **Sound.** The game's sound effects are on SID voice 3. It plays on POKEY
 channels 1+2 joined (16-bit pitch), with the SID envelope modelled per frame.
 The music voices (1 and 2) are not converted yet.

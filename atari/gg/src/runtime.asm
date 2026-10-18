@@ -717,8 +717,6 @@ nmi_display
         beq nd_1
 nd_b1   lda VBX+VB_BLIT
         bne nd_x                ; still drawing
-        ldx run
-        jsr t_xdl
         lda run
         sta shown
         jsr show_fb
@@ -740,7 +738,8 @@ nd_b2   lda VBX+VB_BLIT
         sta ready
         lda #1
         sta pending
-nd_x    rts
+nd_x    ldx shown               ; the picture on screen, its playfield moved
+        jmp t_xdl               ; by the scroll since it was composed
 
 ; per char row, renderer state shared by the banks (RAM)
 row_dcs   .ds 25                ; what the char layer row was drawn with

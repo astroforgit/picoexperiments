@@ -26,7 +26,7 @@ gi_c    lda clear_bcb,x
 gi_x    lda xdl_data,x
         sta WIN+(V_XDL&$3FFF),x
         lda xdl_data+13,x
-        sta WIN+(V_XDL&$3FFF)+$80,x
+        sta WIN+(V_XDL&$3FFF)+$100,x
         dex
         bpl gi_x
         ; fixed fields of the update and sprite slots of both lists
@@ -93,7 +93,7 @@ clear_bcb
         dta 0,0,0, 0,0, 0, <V_COLSH,>V_COLSH,^V_COLSH, 200,0, 1, 199,0, 4, 0,$FF, 0,0,0, 0
 upd_bcb dta 0,0,0, 8,0, 1, 0,0,0, <320,>320, 1, 7,0, 0, 0,0, 0,0,0, 9   ; (unused: no writes)
 spr_bcb dta 0,0,0, 24,0, 1, 0,0,0, <FBW,>FBW, 1, 23,0, 20, $FF,0, 0,0,0, 9
-V_SCR   = V_XDL+$100
+V_SCR   = V_XDL+$200
 nop_bcb dta <V_SCR,>V_SCR,^V_SCR, 0,0, 0, <V_SCR,>V_SCR,^V_SCR, 0,0, 0, 0,0, 0, $FF,0, 0,0,0, 8
 
 ; XDL: 20 blank lines, then 200 lines of the framebuffer (320 of 368 bytes)

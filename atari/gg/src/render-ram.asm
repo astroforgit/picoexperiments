@@ -1,15 +1,10 @@
 ; renderer code and tables in RAM (shared by the banks)
-show_fb asl
-        asl
-        asl
-        asl
-        asl
-        asl
-        asl                     ; *128: XDL 1 at V_XDL+$80
-        clc
-        adc #<V_XDL
+show_fb clc                     ; XDL 1 at V_XDL+$100
+        adc #>V_XDL
+        tax
+        lda #<V_XDL
 gs_0    sta VBX+VB_XDL0
-        lda #>V_XDL
+        txa
 gs_1    sta VBX+VB_XDL0+1
         lda #^V_XDL
 gs_2    sta VBX+VB_XDL0+2

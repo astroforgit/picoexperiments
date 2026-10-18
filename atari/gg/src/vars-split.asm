@@ -22,3 +22,8 @@ seg_pl    .ds 2*NR      ; its palette (1-3)
 pslot     .ds 3*6       ; colour set held by palettes 1-3 ($FF = none)
 fp_any    .ds 1         ; some row may be forced/priority (idle_step)
 edge_any  .ds 1         ; some row may have scroll edges
+sc_T      .ds 1         ; playfield scroll so far (pixels, wraps)
+sc_701    .ds 1         ; the game's scroll phase ($0701) last frame
+logT      .ds 2         ; sc_T of each log
+lstT      .ds 2         ; sc_T of the log each list was composed from
+cm_T      .ds 1
