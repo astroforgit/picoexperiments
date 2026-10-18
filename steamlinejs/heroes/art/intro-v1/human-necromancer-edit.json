@@ -1,0 +1,6 @@
+{
+  "tool": "built-in image_gen",
+  "input": "necromancer-abduction-skeletal-original.png",
+  "output": "necromancer-abduction.png",
+  "prompt": "Use case: precise-object-edit. Edit the supplied pixel-art fantasy intro illustration. Change only the necromancer on the left: make him an unmistakably living elderly HUMAN evil necromancer and shabby drunkard, with a fleshy wrinkled face, bulbous red nose, ruddy blotchy cheeks, narrow malicious human eyes, scraggly grey beard and wispy grey hair under his hood. Give him a sly nasty drunken leer, worn black-purple robes, human flesh on his grasping hand and a small battered wine flask hanging visibly at his belt. His face must read as an old human even at 320-pixel game resolution. Preserve exactly the composition, nymph and prince appearance and poses, violet magic portal, forest, palace, lighting, pixel-art style and image dimensions. Keep the nymph's abduction dramatic. No skull face, no skeletal hands, no undead skin, no text, no watermark. Keep the same coherent classic Atari VBXE pixel-art scene."
+}

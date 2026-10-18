@@ -7,8 +7,16 @@
       "prompt": "Use case: illustration-story. Asset type: first of two illustrated intro screens for a classic Atari VBXE fantasy strategy game. Create a wide landscape pixel-art illustration, aspect ratio 2:1, designed to remain readable reduced to 320x150 pixels. In a magical green woodland clearing an adult young prince with short brown hair, a modest gold circlet, blue tunic and red cape meets an adult beautiful forest nymph with long auburn hair, a green leaf dress and subtle pointed ears. They look lovingly at each other and gently hold hands. Warm sunlight through ancient trees, moss and a forest stream, romantic fairy-tale atmosphere. Strong clear silhouettes, deliberate coarse pixel clusters, restrained emerald, golden and teal colors, detailed classic 1990s hand-pixelled game cutscene. One single coherent illustration. No text, no lettering, no borders, no interface, no nudity, no watermark."
     },
     {
-      "file": "necromancer-abduction.png",
+      "file": "necromancer-abduction-skeletal-original.png",
       "prompt": "Use case: illustration-story. Asset type: second of two intro illustrations for a classic Atari VBXE fantasy strategy game. Single wide landscape pixel-art scene, aspect ratio 2:1, readable reduced to 320x150 pixels. An evil skeletal-faced necromancer wearing black and purple robes abducts an adult beautiful forest nymph with long auburn hair, pointed ears and a modest green leaf dress, drawing her through a spectral violet portal in a dark woodland. She reaches toward an adult young prince with short brown hair, gold circlet, blue tunic and red cape; he reaches back desperately but cannot reach her. Beyond the trees a small palace silhouette hints at his home and the army he must raise to rescue her. Coherent dramatic composition, clear large characters and silhouettes, classic 1990s hand-pixelled cutscene with deliberate coarse pixel clusters. Teal moonlit forest, purple magic, red cape. No text, no lettering, no borders, no interface, no gore, no nudity, no watermark."
+    }
+  ],
+  "edits": [
+    {
+      "tool": "built-in image_gen",
+      "input": "necromancer-abduction-skeletal-original.png",
+      "output": "necromancer-abduction.png",
+      "prompt": "Use case: precise-object-edit. Edit the supplied pixel-art fantasy intro illustration. Change only the necromancer on the left: make him an unmistakably living elderly HUMAN evil necromancer and shabby drunkard, with a fleshy wrinkled face, bulbous red nose, ruddy blotchy cheeks, narrow malicious human eyes, scraggly grey beard and wispy grey hair under his hood. Give him a sly nasty drunken leer, worn black-purple robes, human flesh on his grasping hand and a small battered wine flask hanging visibly at his belt. His face must read as an old human even at 320-pixel game resolution. Preserve exactly the composition, nymph and prince appearance and poses, violet magic portal, forest, palace, lighting, pixel-art style and image dimensions. Keep the nymph's abduction dramatic. No skull face, no skeletal hands, no undead skin, no text, no watermark. Keep the same coherent classic Atari VBXE pixel-art scene."
     }
   ]
 }
