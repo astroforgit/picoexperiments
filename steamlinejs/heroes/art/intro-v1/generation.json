@@ -3,7 +3,7 @@
   "useCase": "illustration-story",
   "images": [
     {
-      "file": "forest-love.png",
+      "file": "forest-love-before-carefree.png",
       "prompt": "Use case: illustration-story. Asset type: first of two illustrated intro screens for a classic Atari VBXE fantasy strategy game. Create a wide landscape pixel-art illustration, aspect ratio 2:1, designed to remain readable reduced to 320x150 pixels. In a magical green woodland clearing an adult young prince with short brown hair, a modest gold circlet, blue tunic and red cape meets an adult beautiful forest nymph with long auburn hair, a green leaf dress and subtle pointed ears. They look lovingly at each other and gently hold hands. Warm sunlight through ancient trees, moss and a forest stream, romantic fairy-tale atmosphere. Strong clear silhouettes, deliberate coarse pixel clusters, restrained emerald, golden and teal colors, detailed classic 1990s hand-pixelled game cutscene. One single coherent illustration. No text, no lettering, no borders, no interface, no nudity, no watermark."
     },
     {
@@ -15,8 +15,20 @@
     {
       "tool": "built-in image_gen",
       "input": "necromancer-abduction-skeletal-original.png",
-      "output": "necromancer-abduction.png",
+      "output": "necromancer-abduction-before-carefree.png",
       "prompt": "Use case: precise-object-edit. Edit the supplied pixel-art fantasy intro illustration. Change only the necromancer on the left: make him an unmistakably living elderly HUMAN evil necromancer and shabby drunkard, with a fleshy wrinkled face, bulbous red nose, ruddy blotchy cheeks, narrow malicious human eyes, scraggly grey beard and wispy grey hair under his hood. Give him a sly nasty drunken leer, worn black-purple robes, human flesh on his grasping hand and a small battered wine flask hanging visibly at his belt. His face must read as an old human even at 320-pixel game resolution. Preserve exactly the composition, nymph and prince appearance and poses, violet magic portal, forest, palace, lighting, pixel-art style and image dimensions. Keep the nymph's abduction dramatic. No skull face, no skeletal hands, no undead skin, no text, no watermark. Keep the same coherent classic Atari VBXE pixel-art scene."
+    },
+    {
+      "tool": "built-in image_gen",
+      "input": "forest-love-before-carefree.png",
+      "output": "forest-love.png",
+      "prompt": "Use case: precise-object-edit. Edit only the adult forest nymph in this warm forest meeting pixel-art illustration. She is an adult woman in her twenties. Give her a humorous carefree, slightly tipsy personality: rosy flushed cheeks, a mischievous relaxed smiling face, slightly tousled auburn hair, a loosely tilted flower crown, a gently jaunty head tilt. She looks fondly at the prince with an amused playful grin. One hand still affectionately rests on his arm; in the other she casually holds a small rustic wooden drinking cup, as if cheerfully making a toast. Keep her modest green leaf dress, pointed ears, adult identity and overall silhouette. This is gentle fairy-tale comedy. Keep the prince, his pose and clothing, romantic forest clearing, palace, stream, sunlight, composition, pixel-art technique and exact dimensions unchanged. Make the facial expression clear when reduced to 320 pixels wide. No text or speech bubbles, no nudity, no watermark."
+    },
+    {
+      "tool": "built-in image_gen",
+      "input": "necromancer-abduction-before-carefree.png",
+      "output": "necromancer-abduction.png",
+      "prompt": "Use case: precise-object-edit. Edit only the adult forest nymph in this pixel-art fantasy abduction scene. She is an adult woman in her twenties. Make her a humorous easygoing, slightly tipsy heroine: rosy flushed cheeks, a cheeky relaxed smiling face instead of a frightened expression, slightly tousled long auburn hair and a slightly crooked leafy flower crown. Keep her modest green leaf dress, pointed ears, adult identity, body position and overall silhouette. With the arm extended toward the prince, she raises a small rustic wooden drinking cup in a carefree farewell toast, creating gentle fairy-tale comedy while the grumpy elderly HUMAN necromancer pulls her into the portal. Preserve the necromancer exactly as he is: wrinkled human face, red nose, scraggly grey beard, black-purple robes, flask at belt. Preserve prince, forest, violet portal, palace, composition, lighting, pixel-art style and exact image dimensions. Make her expression and toast clear at 320 pixel width. No text, no speech bubbles, no nudity, no watermark."
     }
   ]
 }
