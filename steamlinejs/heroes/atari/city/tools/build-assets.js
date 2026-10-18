@@ -141,6 +141,7 @@ const font={
  "0":[14,17,19,21,25,17,14],"1":[4,12,4,4,4,4,14],"2":[14,17,1,2,4,8,31],"3":[30,1,1,14,1,1,30],"4":[2,6,10,18,31,2,2],"5":[31,16,16,30,1,1,30],"6":[14,16,16,30,17,17,14],"7":[31,1,2,4,8,8,8],"8":[14,17,17,14,17,17,14],"9":[14,17,17,15,1,1,14],
  ":":[0,4,4,0,4,4,0],"-":[0,0,0,31,0,0,0],"/":[1,1,2,4,8,16,16],"> ":[0,16,8,4,8,16,0],"+":[0,4,4,31,4,4,0],".":[0,0,0,0,0,12,12],"!":[4,4,4,4,4,0,4],"?":[14,17,1,2,4,0,4],"(":[2,4,8,8,8,4,2],")":[8,4,2,2,2,4,8]
 };
+font[","]=[0,0,0,0,0,4,8];
 font[">"]=font["> "];font["<"]=[0,1,2,4,2,1,0];
 const glyphs=Buffer.alloc(96*48);
 for(let ch=32;ch<128;ch++) for(let y=0;y<7;y++)for(let x=0;x<5;x++) {
@@ -258,6 +259,42 @@ bytes("glyph_lo",Array.from({length:96},(_,i)=>(15*size+i*48)&255)),bytes("glyph
 fs.writeFileSync("generated/content.inc",defs.join("\n")+"\n");
 fs.writeFileSync("generated/asset-profile.inc",`CROPPED_BUILDINGS = ${artProfile==='classic'?0:1}\n`);
 const uploads=[];
+// Intro pages live in framebuffer banks 0..31 until the city replaces them.
+// Keep the gameplay palette unchanged and stamp captions with the native font.
+const storyPages=[
+ {file:'forest-love',title:'A LOVE IN THE FOREST',lines:[
+  'IN THE FOREST, A YOUNG PRINCE MET A NYMPH.',
+  'THEY FELL IN LOVE BENEATH THE ANCIENT TREES.'
+ ],action:'FIRE / ENTER / SPACE: NEXT PAGE'},
+ {file:'necromancer-abduction',title:'THE NECROMANCER STRIKES',lines:[
+  'AN EVIL NECROMANCER KIDNAPPED THE NYMPH.',
+  'BACK AT HIS PALACE, THE PRINCE MUST RAISE',
+  'AN ARMY, DEFEAT HIM AND BRING HER HOME.'
+ ],action:'FIRE / ENTER / SPACE: RAISE YOUR ARMY'}
+];
+for(const [page,story] of storyPages.entries()){
+ const pixels=Buffer.alloc(65536,1);
+ indexed(rgba(`../../art/intro-v1/${story.file}.png`,320,144)).copy(pixels);
+ pixels.fill(2,144*320,145*320);
+ function caption(text,y,color){
+  if(text.length>52)throw Error('Intro caption too long');
+  const x0=Math.floor((320-text.length*6+1)/2);
+  for(let i=0;i<text.length;i++)for(let y1=0;y1<7;y1++)for(let x=0;x<5;x++)
+   if(((font[text[i]]||[])[y1]||0)&(16>>x))pixels[(y+y1)*320+x0+i*6+x]=color;
+ }
+ caption(story.title,148,2);
+ story.lines.forEach((text,i)=>caption(text,159+i*9,3));
+ caption(story.action,190,5);
+ fs.writeFileSync(`generated/intro-${page+1}.bin`,pixels);
+ const rgb=Buffer.alloc(64000*3);
+ for(let i=0;i<64000;i++)for(let c=0;c<3;c++)rgb[i*3+c]=palette[pixels[i]][c];
+ convert(['-size','320x200','-depth','8','rgb:-',`generated/intro-${page+1}.png`],rgb);
+ for(let bank=0;bank<16;bank++){
+  const id=page*16+bank;
+  fs.writeFileSync(`generated/bank-${id}.bin`,pixels.subarray(bank*4096,(bank+1)*4096));
+  uploads.push(`        org $6000\n        ins 'generated/bank-${id}.bin'\n        ini upload_chunk`);
+ }
+}
 for(let i=0;i<vram.length/4096;i++){
   fs.writeFileSync(`generated/bank-${i+32}.bin`,vram.subarray(i*4096,(i+1)*4096));
   uploads.push(`        org $6000\n        ins 'generated/bank-${i+32}.bin'\n        ini upload_chunk`);

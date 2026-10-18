@@ -85,7 +85,7 @@ class Memory:
             self.blits += 1
 
 class Machine:
-    def __init__(self, page=0xd600):
+    def __init__(self, page=0xd600, story=False):
         self.mem = Memory(page)
         self.cpu = MPU(memory=self.mem)
         data = (ROOT/'city-vbxe.xex').read_bytes()
@@ -101,7 +101,15 @@ class Machine:
             if start <= 0x2e2 <= end:
                 self.call(int.from_bytes(self.mem.ram[0x2e2:0x2e4], 'little'))
         self.cpu.pc = LABELS['main']
-        self.run_until(LABELS['main_loop' if page else 'no_vbxe'])
+        if story and page:
+            self.run_until(LABELS['story_intro.wait_action'])
+        else:
+            # Gameplay tests bypass the blocking story; test-story-intro.py
+            # exercises the actual loader/startup and all page transitions.
+            entry=LABELS['story_intro'];opcode=self.mem.ram[entry]
+            self.mem.ram[entry]=0x60
+            self.run_until(LABELS['main_loop' if page else 'no_vbxe'])
+            self.mem.ram[entry]=opcode
 
     def run_until(self, stop, limit=4000000):
         for tick in range(limit):

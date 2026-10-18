@@ -104,7 +104,7 @@ reg_restore
 ?done   rts
 .endp
 hardware_ok dta 0
-upload_index dta 32
+upload_index dta 0
 
 main
         cld
@@ -123,6 +123,7 @@ hardware_ready
         jsr setup_xdl
         jsr blit_init
         jsr load_city_palette
+        jsr story_intro
         jsr new_city
         mva #0 front_bank
         mva #1 back_bank
@@ -876,6 +877,9 @@ code_end
         .local battle
         org $6000
         icl 'generated/battle-content.inc'
+        .endl
+        icl 'story-intro.inc'
+        .local battle
 battle_data_end equ *
         ert battle_data_end>$8000
         .endl

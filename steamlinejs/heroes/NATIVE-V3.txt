@@ -14,6 +14,15 @@ config are in backups/before-native-abilities-2026-10-17/. Older backups remain.
 The 150 original art inputs remain unchanged. The old art comparison and its
 included executables are historical art-review builds, before v3 gameplay.
 
+Picture-story introduction
+Two illustrated screens play once at startup: the prince and forest nymph fall
+in love, then the necromancer abducts her. The prince must raise an army at his
+palace, defeat the necromancer and rescue her. Fire, Enter or Space advances
+each page; release the button between presses. The game starts at the palace.
+The 320x200 screens use the existing shared palette and reuse the two screen
+buffers, which gameplay replaces. Source illustrations and exact built-in
+image-generation prompts are in art/intro-v1/. No extra battle VRAM is used.
+
 Integrated balance
 Starts with 50 gold and two 4-HP Spearmen. The editor's current recruitment,
 individual upgrade and building prices are imported. Chapel costs 40/50/30,
