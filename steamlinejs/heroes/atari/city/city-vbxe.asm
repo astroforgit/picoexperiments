@@ -902,6 +902,4 @@ runtime_data_end
         org $8000
 text_screen
         :1024 dta 0
-        org $A000
-        ins 'generated/outro-cpu.bin'
         run main

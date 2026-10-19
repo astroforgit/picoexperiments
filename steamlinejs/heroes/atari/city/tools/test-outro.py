@@ -3,7 +3,7 @@
 import importlib.util,json,sys
 from pathlib import Path
 sp=importlib.util.spec_from_file_location('r',Path(__file__).with_name('test-runtime.py'));r=importlib.util.module_from_spec(sp);sp.loader.exec_module(r)
-layout=json.loads((r.ROOT/'generated/outro-layout.json').read_text())
+
 
 def advance(m,count=12000):
  for tick in range(count):
@@ -11,11 +11,7 @@ def advance(m,count=12000):
   m.cpu.step()
 def at(m,label=''):m.run_until(r.LABELS['outro.wait_action'+label])
 def expected(page):
- packed=(r.ROOT/f'generated/outro-{page+1}.bin').read_bytes();pal=layout['palettes'][page*16:page*16+16]
- small=bytes(pal[v] for b in packed for v in (b>>4,b&15));large=bytearray()
- for y in range(72):
-  row=bytes(v for c in small[y*160:y*160+160] for v in (c,c));large.extend(row);large.extend(row)
- return bytes(large)
+ return (r.ROOT/f'generated/story-{page+1}.bin').read_bytes()[:46080]
 
 frames=[]
 for register_page in (0xd600,0xd700):
@@ -37,7 +33,7 @@ for register_page in (0xd600,0xd700):
  for page in range(3):
   assert m.get('outro.page')==page
   start=m.get('front_bank')*65536
-  assert bytes(m.mem.vram[start:start+46080])==expected(page),'Native packed picture differs from export'
+  assert bytes(m.mem.vram[start:start+46080])==expected(page),'Full-resolution picture differs from export'
   if register_page==0xd600:
    from PIL import Image
    im=Image.frombytes('P',(320,200),bytes(m.mem.vram[start:start+64000]));im.putpalette(m.mem.palette);frames.append(im.convert('RGB'))
@@ -55,7 +51,7 @@ for register_page in (0xd600,0xd700):
  assert bytes(m.mem.ram[r.LABELS['region_wins']:r.LABELS['region_wins']+4])==bytes(4)
  m.idle(3);assert m.get('popup_open')==0
  m.release();m.fire();assert m.get('popup_open')==1
- print(f'PASS ${register_page:04X}: real Warlock kill, final-victory-only automatic ending, three exact decoded pictures, safe hidden-buffer writes, held/released Fire/Enter/Space and clean new campaign.')
+ print(f'PASS ${register_page:04X}: real Warlock kill, final-victory-only automatic ending, three exact full-resolution pictures, safe hidden-buffer writes, held/released Fire/Enter/Space and clean new campaign.')
 
 if '--screens' in sys.argv:
  out=Path(sys.argv[sys.argv.index('--screens')+1]);out.mkdir(parents=True,exist_ok=True)

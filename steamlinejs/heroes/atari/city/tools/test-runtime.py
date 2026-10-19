@@ -18,6 +18,8 @@ class Memory:
         self.vram = bytearray(0x80000)
         self.palette = bytearray(768)
         self.page, self.bank, self.color = page, 0, 0
+        self.story_disk = (ROOT/'generated/heroes-story.atr').read_bytes()
+        self.story_reads = []
         self.blits = 0
         self.portrait_blits = []
         self.hero_blits = []
@@ -136,8 +138,29 @@ class Machine:
         for tick in range(limit):
             if self.cpu.pc == stop: return
             if tick % 1000 == 0: self.mem.ram[0x14] = (self.mem.ram[0x14]+1) & 255
-            self.cpu.step()
+            if self.cpu.pc == 0xe459:
+                self.sio_read()
+            else:
+                self.cpu.step()
         raise AssertionError(f'CPU stuck at {self.cpu.pc:04x}, expected {stop:04x}')
+
+    def sio_read(self):
+        ram=self.mem.ram
+        sector=int.from_bytes(ram[0x30a:0x30c],'little')
+        size=int.from_bytes(ram[0x308:0x30a],'little')
+        ptr=int.from_bytes(ram[0x304:0x306],'little')
+        self.mem.story_reads.append((sector,size))
+        assert ram[0x300:0x304]==bytes([0x31,1,0x52,0x40])
+        assert size==(128 if sector<=3 else 256)
+        offset=16+(sector-1)*128 if sector<=3 else 16+384+(sector-4)*256
+        disk=self.mem.story_disk
+        if disk is None or sector<1 or offset+size>len(disk):
+            self.cpu.y=138
+        else:
+            ram[ptr:ptr+size]=disk[offset:offset+size]
+            self.cpu.y=1
+        ram[0x303]=self.cpu.y
+        self.cpu.pc=self.cpu.stPopWord()+1
 
     def call(self, name):
         self.cpu.sp = 255

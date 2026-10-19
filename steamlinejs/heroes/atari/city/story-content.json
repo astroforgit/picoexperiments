@@ -1,0 +1,34 @@
+[
+  {
+    "image": "../../art/outro-v1/father-reveal.png",
+    "lines": [
+      "NYMPH: WAIT! HE IS MY FATHER!",
+      "SPARE HIM AND I WILL MARRY YOU!",
+      "PRINCE: OK. NO PROBLEM.",
+      "I HAVE NOTHING AGAINST HIM."
+    ]
+  },
+  {
+    "image": "../../art/outro-v1/wedding-ceremony.png",
+    "lines": [
+      "THE NECROMANCER WALKS HIS DAUGHTER",
+      "DOWN THE AISLE. THE PRINCE SAYS: I DO."
+    ]
+  },
+  {
+    "image": "../../art/outro-v1/wedding-party.png",
+    "lines": [
+      "THE BRIDE DANCES. THE PRINCE WOBBLES.",
+      "HER FATHER REGRETS THE FREE BAR.",
+      "AND THEY LIVED... MORE OR LESS HAPPILY."
+    ]
+  },
+  {
+    "image": "../../art/game-over-v1/lost-nymph.png",
+    "lines": [
+      "THE PRINCE LOST HIS NYMPH.",
+      "HE IS DEVASTATED...",
+      "BUT FOR HOW LONG?"
+    ]
+  }
+]

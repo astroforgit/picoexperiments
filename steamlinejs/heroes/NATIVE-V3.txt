@@ -39,23 +39,41 @@ a fresh campaign. Ordinary victories, losses and retreats do not play it.
 Temporary preview shortcut: press O from the game to play the ending without
 winning. Its last page says FIRE: RETURN TO GAME. It returns to the current
 city, map, battle or game-over screen without resetting campaign progress.
-The standalone XEX stores compact 160x72, 16-colour pictures at double scale,
-with native readable captions. They use 10,546 unused VRAM bytes and 6,734 bytes
-of BASIC-off RAM at $A000. Existing battle scenery, unit poses and caches remain
-intact; overlap checks cover the ending data too. No external image files or
-additional RAM hardware are needed. Full artwork and prompts: art/outro-v1/.
-Native ending regression: python3 atari/city/tools/test-outro.py
+The main game now uses the approved full-quality 320x144 artwork with the
+shared 256-colour palette, at one native pixel per picture pixel. Four complete
+320x200 pages (three victory scenes plus defeat) stream from heroes-story.atr
+on D1: into the hidden framebuffer. Captions remain native and readable.
+No ending picture is reserved in gameplay VRAM or at $A000; a 256-byte buffer
+at $8400 is shared with existing rendering scratch RAM. Additional RAM hardware
+is not required. Source artwork: art/outro-v1/ and art/game-over-v1/.
 
-Full-quality outro test (standalone viewer)
-  node atari/city/tools/build-outro-full-quality.js
-  ./atari/run-outro-full-quality-test.sh
-This separate XEX starts directly on the ending pictures at 320x144 with the
-same shared 256-colour palette as the intro. Fire, Enter or Space advances;
-after picture three it replays. It uses dedicated VRAM picture caches because
-no campaign or battle assets run in this viewer. Both VBXE register pages and
-missing-VBXE fallback are tested by tools/test-outro-full-quality.py.
-The regular run-heroes-vbxe3.sh still starts the main game with its compact
-outro. The separate viewer demonstrates the proposed higher-quality export.
+Start the MAIN GAME with:
+  cd steamlinejs/heroes/atari
+  ./run-heroes-vbxe3.sh
+The runner now attaches heroes-story.atr to D1: and loads heroes-vbxe3.xex,
+using the existing persistent Altirra hardware profile. On Windows, use
+run-heroes-vbxe3.cmd. If loading the XEX manually, attach the ATR to D1: first.
+The executable checks the disk signature and palette version before loading;
+missing or incompatible media shows an explicit message. Fire retries an
+ending page, or starts a new campaign from the defeat screen.
+
+Losing the entire army without enough gold to recruit shows the prince crying
+while four smiling medieval women exchange glances behind him. Caption:
+  THE PRINCE LOST HIS NYMPH.
+  HE IS DEVASTATED...
+  BUT FOR HOW LONG?
+Fire starts a fresh game. The original bankruptcy and casualty rules remain.
+
+Regression checks:
+  python3 atari/city/tools/test-story-streaming.py
+  python3 atari/city/tools/test-outro.py
+  python3 atari/city/tools/test-outro-shortcut.py
+  python3 atari/city/tools/test-game-over.py
+  python3 atari/city/tools/test-story-intro.py
+These execute native 6502 code with both VBXE register pages. Story reads are
+modeled at the OS SIO boundary; raster timing and physical drive timing are not
+emulated by these tests. The separate full-quality viewer remains available
+for historical comparison, but the normal runner now includes this quality.
 
 Integrated balance
 Starts with 50 gold and two 4-HP Spearmen. The editor's current recruitment,

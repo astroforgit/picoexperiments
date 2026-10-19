@@ -19,8 +19,12 @@ fighting even with no gold.
 
 ## Play
 
-Open **[city-vbxe.xex](city-vbxe.xex)** in Altirra with VBXE enabled, or on an
-XL/XE with VBXE FX 1.2x. No external asset files are needed when playing.
+Run `../run-heroes-vbxe3.sh` (WSL) or `../run-heroes-vbxe3.cmd` (Windows)
+with VBXE enabled. The runner attaches `heroes-story.atr` to D1: before loading
+the game. For manual loading, mount `generated/heroes-story.atr` in D1: and open
+**[city-vbxe.xex](city-vbxe.xex)**. The intro reclaims all its memory after loading;
+the full-quality ending and game-over pictures stream from the companion disk.
+Press **O** for a temporary ending preview that returns to the current game.
 
 - **Joystick:** move between buildings, the gate and five army slots. Down from
   a lower-row building enters the army strip; Left/Right selects a slot and Up

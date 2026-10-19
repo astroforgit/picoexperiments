@@ -62,21 +62,10 @@
 .proc draw_game_over
         mva #0 dirty
         mva back_bank render_bank
-        rect 0,0,320,200,1
-        mwa #38 calc_x
-        mva #48 calc_y
-        mwa #244 fr_w
-        mva #106 fr_h
-        mva #9 fr_col
-        jsr outline
-        labeltext 130,65,s_game_over
-        labeltext 109,89,s_no_soldiers
-        labeltext 82,105,s_no_recruits
-        labeltext 100,132,s_restart_game
+        lda #3
+        jsr story.load
+        labeltext 100,190,s_restart_game
         jsr wait_blit
         jmp present_back_buffer
 .endp
-s_game_over dta c'GAME OVER',0
-s_no_soldiers dta c'NO SOLDIERS LEFT',0
-s_no_recruits dta c'CANNOT AFFORD ANY RECRUIT',0
 s_restart_game dta c'FIRE: START NEW GAME',0

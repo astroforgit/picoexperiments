@@ -1,22 +1,17 @@
 #!/usr/bin/env sh
-# Launch the published v3 executable with the workspace's persistent Altirra profile.
+# Reuse the persistent Altirra profile, mounting the story disk in D1:.
 set -eu
 runner_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 image="$runner_dir/heroes-vbxe3.xex"
-launcher="$runner_dir/../../../atari-vbxe-toolkit/scripts/run-xex.sh"
-if [ ! -f "$image" ]; then
-    echo "Game not found: $image" >&2
-    exit 1
-fi
-if [ ! -f "$launcher" ]; then
-    echo "Altirra launcher not found: $launcher" >&2
-    exit 1
-fi
+story="$runner_dir/heroes-story.atr"
+launcher="$runner_dir/run-heroes-vbxe3.ps1"
+for file in "$image" "$story" "$launcher"; do
+    if [ ! -f "$file" ]; then echo "Required game file not found: $file" >&2; exit 1; fi
+done
 case "${1:-}" in
-    --check)
-        printf 'Game: %s\nLauncher: %s\n' "$image" "$launcher"
-        exit 0 ;;
+    --check) printf 'Game: %s\nStory disk: %s\nLauncher: %s\n' "$image" "$story" "$launcher"; exit 0 ;;
     '') ;;
     *) echo "Usage: $0 [--check]" >&2; exit 2 ;;
 esac
-exec sh "$launcher" "$image"
+exec /mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe \
+    -NoProfile -ExecutionPolicy Bypass -File "$(wslpath -w "$launcher")"

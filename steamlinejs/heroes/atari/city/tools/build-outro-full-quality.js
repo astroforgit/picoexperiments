@@ -11,13 +11,11 @@ const names=['loader_init','upload_chunk','hardware_ok','upload_index','main','s
 fs.writeFileSync('generated/outro-full-quality-symbols.inc',names.map(n=>{assert(Number.isInteger(labels[n]),n);return `${n} = $${labels[n].toString(16)}`;}).join('\n')+'\n');
 const palette=fs.readFileSync('generated/palette.bin'),vram=fs.readFileSync('generated/vram.bin');
 const font=vram.subarray(0x3d200-0x20000,0x3d200-0x20000+4608),cache=new Map();
-const source=fs.readFileSync('outro.inc','utf8');
-const lines=Array.from({length:9},(_,i)=>{const m=source.match(new RegExp(`^s_${i} dta c'([^']*)'`,'m'));assert(m);return m[1];});
-const scenes=[{file:'father-reveal',lines:lines.slice(0,4)},{file:'wedding-ceremony',lines:lines.slice(4,6)},{file:'wedding-party',lines:lines.slice(6)}];
+const scenes=JSON.parse(fs.readFileSync('story-content.json','utf8')).slice(0,3);
 const convert=(args,input)=>cp.execFileSync('convert',args,{input,maxBuffer:16*1024*1024});
 const uploads=[];
 for(const [page,scene] of scenes.entries()){
- const raw=convert([`../../art/outro-v1/${scene.file}.png`,'-filter','Box','-resize','320x144!','-depth','8','rgba:-']);
+ const raw=convert([scene.image,'-filter','Box','-resize','320x144!','-depth','8','rgba:-']);
  const pixels=Buffer.alloc(65536,1);
  for(let i=0;i<320*144;i++){
   const r=raw[i*4],g=raw[i*4+1],b=raw[i*4+2],key=(r<<16)|(g<<8)|b;let best=cache.get(key);
