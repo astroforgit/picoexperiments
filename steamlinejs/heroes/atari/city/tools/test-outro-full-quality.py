@@ -24,23 +24,25 @@ def advance(m,count=12000):
   m.cpu.step()
 
 for register_page in (0xd600,0xd700):
- m=machine(register_page);assert m.get('upload_index')==80
+ m=machine(register_page);assert m.get('upload_index')==96
  assert m.mem.palette==(r.ROOT/'generated/palette.bin').read_bytes()
- for i in range(3):
-  assert bytes(m.mem.vram[(i+2)*65536:(i+3)*65536])==(r.ROOT/f'generated/outro-full-quality-{i+1}.bin').read_bytes()
  for i in range(4):
-  page=i%3
+  exported=(r.ROOT/f'generated/outro-full-quality-{i+1}.bin').read_bytes()
+  assert bytes(m.mem.vram[(i+2)*65536:(i+3)*65536])==exported
+  assert exported[:188*320]==(r.ROOT/f'generated/story-{i+1}.bin').read_bytes()[:188*320], 'Viewer differs from full-quality game artwork/captions'
+ for i in range(5):
+  page=i%4
   assert m.mem.ram[labels['full_outro.page']]==page
   front=m.get('front_bank')*65536
   assert bytes(m.mem.vram[front:front+64000])==(r.ROOT/f'generated/outro-full-quality-{page+1}.bin').read_bytes()[:64000]
-  if i==3:break # All three pictures replay to the original full-quality page.
-  address,down,up=(0xd010,0,1) if i==0 else (0xd20f,251,255)
-  if i:m.mem.ram[0xd209]=12 if i==1 else 33
+  if i==4:break # Three ending scenes plus game over replay to the first page.
+  address,down,up=(0xd010,0,1) if i in (0,3) else (0xd20f,251,255)
+  if i in (1,2):m.mem.ram[0xd209]=12 if i==1 else 33
   m.mem.ram[address]=down;advance(m);assert m.mem.ram[labels['full_outro.page']]==page
   m.mem.ram[address]=up;at(m,'.press')
   m.mem.ram[address]=down;at(m,'.finish');advance(m);assert m.mem.ram[labels['full_outro.page']]==page
   m.mem.ram[address]=up;at(m)
- print(f'PASS ${register_page:04X}: real standalone XEX uploads, shared 256-colour palette, exact 320x200 pages, Fire/Enter/Space, held-key handling and full replay.')
+ print(f'PASS ${register_page:04X}: real standalone XEX uploads, shared 256-colour palette, four exact 320x200 pages including game over, Fire/Enter/Space, held-key handling and full replay.')
 m=machine(None);assert m.get('hardware_ok')==0 and not m.mem.blits
 print('PASS missing VBXE: text fallback and no graphics writes.')
 
@@ -48,6 +50,6 @@ if '--screens' in sys.argv:
  from PIL import Image
  out=Path(sys.argv[sys.argv.index('--screens')+1]);out.mkdir(parents=True,exist_ok=True)
  frames=[]
- for i in (1,2,3):
+ for i in (1,2,3,4):
   im=Image.open(r.ROOT/f'generated/outro-full-quality-{i}.png').convert('RGB');im.save(out/f'story-outro-full-quality-{i}.png');frames.append(im.resize((960,600),Image.Resampling.NEAREST))
  frames[0].save(out/'story-outro-full-quality-preview.gif',save_all=True,append_images=frames[1:],duration=6500,loop=0)

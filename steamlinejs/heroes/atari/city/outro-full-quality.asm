@@ -1,4 +1,4 @@
-; Full-resolution standalone outro test. Generated core/helpers come from the
+; Full-resolution standalone outro and game-over test. Generated core/helpers come from the
 ; current game; no campaign runs and no reduced ending data is loaded.
         icl 'generated/outro-full-quality-symbols.inc'
         org $2000
@@ -29,7 +29,7 @@ ready   jsr setup_antic
 next    jsr wait_action
         inc page
         lda page
-        cmp #3
+        cmp #4
         bcc draw
         mva #0 page
 draw    lda page

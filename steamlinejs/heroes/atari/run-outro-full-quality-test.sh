@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Standalone full-resolution ending viewer with the existing Altirra profile.
+# Standalone full-resolution ending + game-over viewer with the existing Altirra profile.
 set -eu
 runner_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 image="$runner_dir/heroes-outro-full-quality-test.xex"
@@ -9,7 +9,7 @@ if [ ! -f "$image" ] || [ ! -f "$launcher" ]; then
     exit 1
 fi
 case "${1:-}" in
-    --check) printf 'Viewer: %s\nLauncher: %s\n' "$image" "$launcher"; exit 0 ;;
+    --check) printf 'Screens: three ending pictures, then game over; Fire/Enter/Space advances, then replay.\nViewer: %s\nLauncher: %s\n' "$image" "$launcher"; exit 0 ;;
     '') ;;
     *) echo "Usage: $0 [--check]" >&2; exit 2 ;;
 esac

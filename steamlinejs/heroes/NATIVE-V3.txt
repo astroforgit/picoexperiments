@@ -73,7 +73,10 @@ Regression checks:
 These execute native 6502 code with both VBXE register pages. Story reads are
 modeled at the OS SIO boundary; raster timing and physical drive timing are not
 emulated by these tests. The separate full-quality viewer remains available
-for historical comparison, but the normal runner now includes this quality.
+for direct inspection, now showing three ending pages followed by the game-over
+picture. Fire/Enter/Space advances, and the fourth page loops to the first.
+Run ./atari/run-outro-full-quality-test.sh; this standalone viewer embeds all
+four pages and needs no story disk. The normal runner includes this quality too.
 
 Integrated balance
 Starts with 50 gold and two 4-HP Spearmen. The editor's current recruitment,
