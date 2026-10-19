@@ -15,6 +15,7 @@ while(i<data.length){
   else if(start===0x2e2){assert.equal(n,2);init++;if(data.readUInt16LE(i)===labels.story_intro){assert(storyLoaded);assert.equal(uploads,48,'Show the intro before loading game graphics');}}
   else if(start===0x2e0){assert.equal(n,2);run=data.readUInt16LE(i);}
   else if(start===0x7000){assert.equal(start,labels.story_intro);assert.equal(end+1,labels.story_intro_end);storyLoaded=true;}
+  else if(start===0xa000){assert.equal(n,labels.release_ui_end-labels.release_ui_start);assert(end<0xc000);}
   else assert((start>=0x2000&&end<0x6000)||(start===0x8000&&end===0x83ff),"Unexpected CPU memory region");
   i+=n;
 }

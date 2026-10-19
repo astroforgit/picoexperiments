@@ -1,4 +1,13 @@
-# Heroes of Lowrez — Atari VBXE prototype
+# Prince and the Nimf — Atari VBXE
+
+Everything by **astrofor**.
+
+The complete game starts with `./run-prince-and-the-nimf.sh` or the Windows
+`run-prince-and-the-nimf.cmd`. The previous `run-heroes-vbxe3` launchers remain
+compatible. See [release instructions](../release/README.txt) for the title menu,
+controls, credits, story disk and current verification limits.
+
+## Earlier prototype notes
 
 The native **[Greenhaven city screen](city/README.md)** is available separately
 as [city/city-vbxe.xex](city/city-vbxe.xex): five selectable building plots,

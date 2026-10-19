@@ -184,13 +184,17 @@
         sta gold+1
         sec
         rts
-?poor   mva #1 notice
+?poor   lda #5
+        jsr sfx.play
+        mva #1 notice
         mva #1 dirty
         clc
         rts
 .endp
 
 .proc action_done
+        lda #1
+        jsr sfx.play
         mva #0 popup_open
         sta notice
         mva #1 dirty

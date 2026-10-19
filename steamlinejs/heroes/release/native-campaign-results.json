@@ -1,0 +1,422 @@
+[
+  {
+    "mapping": "0xd600",
+    "fight": 1,
+    "region": "Dark Forest",
+    "gold": 55,
+    "army": [
+      1,
+      1,
+      255,
+      255,
+      255
+    ],
+    "scenario": "native-campaign-plan"
+  },
+  {
+    "mapping": "0xd600",
+    "fight": 2,
+    "region": "Dark Forest",
+    "gold": 95,
+    "army": [
+      1,
+      1,
+      3,
+      255,
+      255
+    ],
+    "scenario": "native-campaign-plan"
+  },
+  {
+    "mapping": "0xd600",
+    "fight": 3,
+    "region": "Dark Forest",
+    "gold": 115,
+    "army": [
+      1,
+      1,
+      3,
+      3,
+      255
+    ],
+    "scenario": "native-campaign-plan"
+  },
+  {
+    "mapping": "0xd600",
+    "fight": 4,
+    "region": "Catacombs",
+    "gold": 130,
+    "army": [
+      255,
+      255,
+      3,
+      3,
+      3
+    ],
+    "scenario": "native-campaign-plan"
+  },
+  {
+    "mapping": "0xd600",
+    "fight": 5,
+    "region": "Catacombs",
+    "gold": 115,
+    "army": [
+      255,
+      255,
+      3,
+      3,
+      3
+    ],
+    "scenario": "native-campaign-plan"
+  },
+  {
+    "mapping": "0xd600",
+    "fight": 6,
+    "region": "Catacombs",
+    "gold": 145,
+    "army": [
+      255,
+      255,
+      4,
+      4,
+      3
+    ],
+    "scenario": "native-campaign-plan"
+  },
+  {
+    "mapping": "0xd600",
+    "fight": 7,
+    "region": "Monster Caves",
+    "gold": 200,
+    "army": [
+      1,
+      1,
+      4,
+      4,
+      4
+    ],
+    "scenario": "native-campaign-plan"
+  },
+  {
+    "mapping": "0xd600",
+    "fight": 8,
+    "region": "Monster Caves",
+    "gold": 160,
+    "army": [
+      255,
+      1,
+      5,
+      5,
+      5
+    ],
+    "scenario": "native-campaign-plan"
+  },
+  {
+    "mapping": "0xd600",
+    "fight": 9,
+    "region": "Monster Caves",
+    "gold": 190,
+    "army": [
+      2,
+      1,
+      5,
+      5,
+      5
+    ],
+    "scenario": "native-campaign-plan"
+  },
+  {
+    "mapping": "0xd600",
+    "fight": 10,
+    "region": "Necromancer Ruins",
+    "gold": 335,
+    "army": [
+      2,
+      2,
+      5,
+      5,
+      5
+    ],
+    "scenario": "native-campaign-plan"
+  },
+  {
+    "mapping": "0xd600",
+    "fight": 11,
+    "region": "Necromancer Ruins",
+    "gold": 555,
+    "army": [
+      2,
+      2,
+      5,
+      5,
+      5
+    ],
+    "scenario": "native-campaign-plan"
+  },
+  {
+    "mapping": "0xd600",
+    "fight": 12,
+    "region": "Necromancer Ruins",
+    "gold": 955,
+    "army": [
+      2,
+      2,
+      5,
+      5,
+      5
+    ],
+    "scenario": "native-campaign-plan"
+  },
+  {
+    "mapping": "0xd700",
+    "fight": 1,
+    "region": "Dark Forest",
+    "gold": 55,
+    "army": [
+      1,
+      1,
+      255,
+      255,
+      255
+    ],
+    "scenario": "native-campaign-plan"
+  },
+  {
+    "mapping": "0xd700",
+    "fight": 2,
+    "region": "Dark Forest",
+    "gold": 95,
+    "army": [
+      1,
+      1,
+      3,
+      255,
+      255
+    ],
+    "scenario": "native-campaign-plan"
+  },
+  {
+    "mapping": "0xd700",
+    "fight": 3,
+    "region": "Dark Forest",
+    "gold": 115,
+    "army": [
+      1,
+      1,
+      3,
+      3,
+      255
+    ],
+    "scenario": "native-campaign-plan"
+  },
+  {
+    "mapping": "0xd700",
+    "fight": 4,
+    "region": "Catacombs",
+    "gold": 130,
+    "army": [
+      255,
+      255,
+      3,
+      3,
+      3
+    ],
+    "scenario": "native-campaign-plan"
+  },
+  {
+    "mapping": "0xd700",
+    "fight": 5,
+    "region": "Catacombs",
+    "gold": 115,
+    "army": [
+      255,
+      255,
+      3,
+      3,
+      3
+    ],
+    "scenario": "native-campaign-plan"
+  },
+  {
+    "mapping": "0xd700",
+    "fight": 6,
+    "region": "Catacombs",
+    "gold": 145,
+    "army": [
+      255,
+      255,
+      4,
+      4,
+      3
+    ],
+    "scenario": "native-campaign-plan"
+  },
+  {
+    "mapping": "0xd700",
+    "fight": 7,
+    "region": "Monster Caves",
+    "gold": 200,
+    "army": [
+      1,
+      1,
+      4,
+      4,
+      4
+    ],
+    "scenario": "native-campaign-plan"
+  },
+  {
+    "mapping": "0xd700",
+    "fight": 8,
+    "region": "Monster Caves",
+    "gold": 160,
+    "army": [
+      255,
+      1,
+      5,
+      5,
+      5
+    ],
+    "scenario": "native-campaign-plan"
+  },
+  {
+    "mapping": "0xd700",
+    "fight": 9,
+    "region": "Monster Caves",
+    "gold": 190,
+    "army": [
+      2,
+      1,
+      5,
+      5,
+      5
+    ],
+    "scenario": "native-campaign-plan"
+  },
+  {
+    "mapping": "0xd700",
+    "fight": 10,
+    "region": "Necromancer Ruins",
+    "gold": 335,
+    "army": [
+      2,
+      2,
+      5,
+      5,
+      5
+    ],
+    "scenario": "native-campaign-plan"
+  },
+  {
+    "mapping": "0xd700",
+    "fight": 11,
+    "region": "Necromancer Ruins",
+    "gold": 555,
+    "army": [
+      2,
+      2,
+      5,
+      5,
+      5
+    ],
+    "scenario": "native-campaign-plan"
+  },
+  {
+    "mapping": "0xd700",
+    "fight": 12,
+    "region": "Necromancer Ruins",
+    "gold": 955,
+    "army": [
+      2,
+      2,
+      5,
+      5,
+      5
+    ],
+    "scenario": "native-campaign-plan"
+  },
+  {
+    "mapping": "0xd600",
+    "fight": 1,
+    "region": "Dark Forest",
+    "gold": 55,
+    "army": [
+      1,
+      1,
+      255,
+      255,
+      255
+    ],
+    "scenario": "native-defeat-plan"
+  },
+  {
+    "mapping": "0xd600",
+    "fight": 2,
+    "region": "Dark Forest",
+    "gold": 35,
+    "army": [
+      255,
+      255,
+      255,
+      255,
+      255
+    ],
+    "scenario": "native-defeat-plan"
+  },
+  {
+    "mapping": "0xd600",
+    "fight": 3,
+    "region": "Dark Forest",
+    "gold": 10,
+    "army": [
+      255,
+      255,
+      255,
+      255,
+      255
+    ],
+    "scenario": "native-defeat-plan"
+  },
+  {
+    "mapping": "0xd700",
+    "fight": 1,
+    "region": "Dark Forest",
+    "gold": 55,
+    "army": [
+      1,
+      1,
+      255,
+      255,
+      255
+    ],
+    "scenario": "native-defeat-plan"
+  },
+  {
+    "mapping": "0xd700",
+    "fight": 2,
+    "region": "Dark Forest",
+    "gold": 35,
+    "army": [
+      255,
+      255,
+      255,
+      255,
+      255
+    ],
+    "scenario": "native-defeat-plan"
+  },
+  {
+    "mapping": "0xd700",
+    "fight": 3,
+    "region": "Dark Forest",
+    "gold": 10,
+    "army": [
+      255,
+      255,
+      255,
+      255,
+      255
+    ],
+    "scenario": "native-defeat-plan"
+  }
+]

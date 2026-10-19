@@ -582,7 +582,13 @@ attack_frame     dta 0
         bcc ?impact
         jsr advance_projectile
         jsr advance_projectile
-?impact dec attack_frame
+?impact lda attack_frame
+        cmp #4
+        bne ?next_frame
+        lda #2
+        jsr sfx.play
+?next_frame
+        dec attack_frame
         bne ?frame
         mva #0 impact_damage
         rts
@@ -880,6 +886,8 @@ enemy_busy dta 0
         lda reward_committed
         bne ?done
         mva #1 reward_committed
+        lda #3
+        jsr sfx.play
         inc encounter_seed
         ldx region
         lda region_wins,x

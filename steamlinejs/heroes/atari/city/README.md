@@ -1,4 +1,10 @@
-# Greenhaven — native Atari VBXE city
+# Prince and the Nimf — Atari VBXE
+
+Everything by **astrofor**.
+
+The release includes a title menu, instructions and credits. It has short
+POKEY sound effects, without music or save/load. See [release notes](../../release/README.txt)
+for the complete package and [native notes](../../NATIVE-V3.txt) for validation.
 
 A playable native city, encounter map and tactical battle game. The Lowrez-based
 preset starts with **50 gold, level-2 Barracks and two Spearmen**. Other buildings
@@ -19,12 +25,13 @@ fighting even with no gold.
 
 ## Play
 
-Run `../run-heroes-vbxe3.sh` (WSL) or `../run-heroes-vbxe3.cmd` (Windows)
+Run `../run-prince-and-the-nimf.sh` (WSL) or `../run-prince-and-the-nimf.cmd` (Windows)
 with VBXE enabled. The runner attaches `heroes-story.atr` to D1: before loading
 the game. For manual loading, mount `generated/heroes-story.atr` in D1: and open
 **[city-vbxe.xex](city-vbxe.xex)**. The intro reclaims all its memory after loading;
 the full-quality ending and game-over pictures stream from the companion disk.
-Press **O** for a temporary ending preview that returns to the current game.
+The release removes the O preview shortcut. The separate
+`../run-outro-full-quality-test.sh` viewer still shows all four story endings.
 
 - **Joystick:** move between buildings, the gate and five army slots. Down from
   a lower-row building enters the army strip; Left/Right selects a slot and Up

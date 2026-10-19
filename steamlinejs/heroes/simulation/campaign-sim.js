@@ -72,7 +72,9 @@ function simulateBattle(data,army,encounter,options={}){
  function enemyAct(u){
   if(u.id==='warlock'){
    if(abilities&&(round<2||units.filter(v=>v.summoned&&v.hp>0).length>=2))return;
-   const reused=abilities?units.find(v=>v.team===1&&v.hp<=0):null;
+   // Native add_unit appends until all 12 slots are allocated, then reuses
+   // the first dead enemy slot. Preserve indices for audit trace replay.
+   const reused=abilities&&units.length>=12?units.find(v=>v.team===1&&v.hp<=0):null;
    if(units.length>=12&&!reused){emit({action:'summon-blocked',reason:'12 allocated slots; dead slots are not reused',actor:u.slot});return;}
    const walls=blocked(null);for(let c=0;c<42;c++)if(!walls.has(c)&&DIST[u.cell][c]<=3){const demon=data.enemies.find(x=>x.id===(abilities?'skeleton':'demon')),slot=reused?reused.slot:units.length;const summonHP=abilities?Math.min(99,demon.hp+(encounter.escalation?.hpBonus||0)):demon.hp;
     const summonDamage=abilities?Math.min(9,demon.damage+(encounter.escalation?.damageBonus||0)):demon.damage;

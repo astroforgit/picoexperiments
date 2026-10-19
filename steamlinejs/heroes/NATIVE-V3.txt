@@ -1,4 +1,16 @@
-GREENHAVEN VBXE V3 — BALANCE, ENCOUNTERS AND MONSTER RULES
+PRINCE AND THE NIMF — ATARI VBXE
+Everything by astrofor
+
+RELEASE
+Run ./atari/run-prince-and-the-nimf.sh or the Windows .cmd launcher.
+The old run-heroes-vbxe3 entry points remain compatible.
+A title menu follows the introduction: Start Game, How to Play, Credits.
+Short POKEY effects are enabled; music and saves are omitted.
+The development O shortcut is removed.
+Release README, checks, balance review and packaging: release/.
+Repeat the complete build/check/package flow with sh release/build.sh.
+
+BALANCE, ENCOUNTERS AND MONSTER RULES
 
 Build and play
   cd atari/city
@@ -36,9 +48,6 @@ at the garden reception she dances, the prince struggles to stand,
 and her father is sick onto the grass after the free bar.
 Fire, Enter or Space advances each picture. After THE END, another press starts
 a fresh campaign. Ordinary victories, losses and retreats do not play it.
-Temporary preview shortcut: press O from the game to play the ending without
-winning. Its last page says FIRE: RETURN TO GAME. It returns to the current
-city, map, battle or game-over screen without resetting campaign progress.
 The main game now uses the approved full-quality 320x144 artwork with the
 shared 256-colour palette, at one native pixel per picture pixel. Four complete
 320x200 pages (three victory scenes plus defeat) stream from heroes-story.atr

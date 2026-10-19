@@ -1,0 +1,3662 @@
+{
+  "config": {
+    "schemaVersion": 2,
+    "startingGold": 50,
+    "players": [
+      {
+        "id": "barracks-1",
+        "name": "Militia",
+        "building": "Barracks",
+        "family": "barracks",
+        "tier": 1,
+        "hp": 3,
+        "damage": 1,
+        "move": 2,
+        "range": 1,
+        "recruit": 15,
+        "buildingCost": 40,
+        "shootRange": 0,
+        "basis": "Balance v1 - playtest candidate",
+        "notes": "Budget infantry."
+      },
+      {
+        "id": "barracks-2",
+        "name": "Spearman",
+        "building": "Barracks",
+        "family": "barracks",
+        "tier": 2,
+        "hp": 4,
+        "damage": 2,
+        "move": 2,
+        "range": 1,
+        "recruit": 25,
+        "buildingCost": 70,
+        "shootRange": 0,
+        "basis": "Balance v1 - playtest candidate",
+        "notes": "Durable starting infantry."
+      },
+      {
+        "id": "barracks-3",
+        "name": "Swordsman",
+        "building": "Barracks",
+        "family": "barracks",
+        "tier": 3,
+        "hp": 6,
+        "damage": 3,
+        "move": 2,
+        "range": 1,
+        "recruit": 60,
+        "buildingCost": 90,
+        "shootRange": 0,
+        "basis": "Balance v1 - playtest candidate",
+        "notes": "Heavy frontline damage."
+      },
+      {
+        "id": "archery-1",
+        "name": "Hunter",
+        "building": "Archery Range",
+        "family": "archery",
+        "tier": 1,
+        "hp": 3,
+        "damage": 1,
+        "move": 1,
+        "range": 4,
+        "recruit": 25,
+        "buildingCost": 45,
+        "shootRange": 4,
+        "basis": "Balance v1 - playtest candidate",
+        "notes": "Long-range support; protect its low mobility."
+      },
+      {
+        "id": "archery-2",
+        "name": "Archer",
+        "building": "Archery Range",
+        "family": "archery",
+        "tier": 2,
+        "hp": 4,
+        "damage": 2,
+        "move": 1,
+        "range": 5,
+        "recruit": 50,
+        "buildingCost": 75,
+        "shootRange": 5,
+        "basis": "Balance v1 - playtest candidate",
+        "notes": "Stronger ranged damage."
+      },
+      {
+        "id": "archery-3",
+        "name": "Marksman",
+        "building": "Archery Range",
+        "family": "archery",
+        "tier": 3,
+        "hp": 5,
+        "damage": 2,
+        "move": 2,
+        "range": 6,
+        "recruit": 80,
+        "buildingCost": 100,
+        "shootRange": 6,
+        "basis": "Balance v1 - playtest candidate",
+        "notes": "Mobile long-range support."
+      },
+      {
+        "id": "lodge-1",
+        "name": "Scout",
+        "building": "Ranger Lodge",
+        "family": "lodge",
+        "tier": 1,
+        "hp": 3,
+        "damage": 1,
+        "move": 4,
+        "range": 1,
+        "recruit": 20,
+        "buildingCost": 45,
+        "shootRange": 0,
+        "basis": "Balance v1 - playtest candidate",
+        "notes": "Fast budget flanker.",
+        "mounted": true
+      },
+      {
+        "id": "lodge-2",
+        "name": "Ranger",
+        "building": "Ranger Lodge",
+        "family": "lodge",
+        "tier": 2,
+        "hp": 4,
+        "damage": 2,
+        "move": 4,
+        "range": 1,
+        "recruit": 45,
+        "buildingCost": 75,
+        "shootRange": 0,
+        "basis": "Balance v1 - playtest candidate",
+        "notes": "Mobile melee pressure.",
+        "mounted": true
+      },
+      {
+        "id": "lodge-3",
+        "name": "Cavalry",
+        "building": "Ranger Lodge",
+        "family": "lodge",
+        "tier": 3,
+        "hp": 6,
+        "damage": 3,
+        "move": 5,
+        "range": 1,
+        "recruit": 70,
+        "buildingCost": 100,
+        "shootRange": 0,
+        "basis": "Balance v1 - playtest candidate",
+        "notes": "Fast cavalry; 3 damage makes a mounted army viable.",
+        "mounted": true
+      },
+      {
+        "id": "tower-1",
+        "name": "Apprentice",
+        "building": "Wizard Tower",
+        "family": "tower",
+        "tier": 1,
+        "hp": 3,
+        "damage": 2,
+        "move": 1,
+        "range": 2,
+        "recruit": 25,
+        "buildingCost": 45,
+        "shootRange": 2,
+        "basis": "Balance v1 - playtest candidate",
+        "notes": "Short-range damage; stronger hit than Hunter."
+      },
+      {
+        "id": "tower-2",
+        "name": "Mage",
+        "building": "Wizard Tower",
+        "family": "tower",
+        "tier": 2,
+        "hp": 4,
+        "damage": 2,
+        "move": 2,
+        "range": 3,
+        "recruit": 50,
+        "buildingCost": 75,
+        "shootRange": 3,
+        "basis": "Balance v1 - playtest candidate",
+        "notes": "Mobile medium-range caster."
+      },
+      {
+        "id": "tower-3",
+        "name": "Wizard",
+        "building": "Wizard Tower",
+        "family": "tower",
+        "tier": 3,
+        "hp": 5,
+        "damage": 3,
+        "move": 2,
+        "range": 4,
+        "recruit": 85,
+        "buildingCost": 100,
+        "shootRange": 4,
+        "basis": "Balance v1 - playtest candidate",
+        "notes": "High damage at shorter range than Marksman."
+      }
+    ],
+    "enemies": [
+      {
+        "id": "minibeast",
+        "name": "Minibeast",
+        "hp": 3,
+        "damage": 1,
+        "move": 3,
+        "range": 1,
+        "shootRange": 0,
+        "basis": "Balance v1 - playtest candidate",
+        "notes": "Individual fighter; fixed damage, no armor or special abilities."
+      },
+      {
+        "id": "wolf",
+        "name": "Wolf",
+        "hp": 3,
+        "damage": 2,
+        "move": 3,
+        "range": 1,
+        "shootRange": 0,
+        "basis": "Balance v1 - playtest candidate",
+        "notes": "Individual fighter; fixed damage, no armor or special abilities."
+      },
+      {
+        "id": "bat",
+        "name": "Bat",
+        "hp": 2,
+        "damage": 1,
+        "move": 5,
+        "range": 1,
+        "shootRange": 0,
+        "basis": "Balance v1 - playtest candidate",
+        "notes": "Individual fighter; fixed damage, no armor or special abilities."
+      },
+      {
+        "id": "skeleton",
+        "name": "Skeleton",
+        "hp": 3,
+        "damage": 1,
+        "move": 1,
+        "range": 4,
+        "shootRange": 4,
+        "basis": "Balance v1 - playtest candidate",
+        "notes": "Arrows deal 1 less damage, minimum 1. Magic and melee deal full damage."
+      },
+      {
+        "id": "zombie",
+        "name": "Zombie",
+        "hp": 5,
+        "damage": 2,
+        "move": 1,
+        "range": 1,
+        "shootRange": 0,
+        "basis": "Balance v1 - playtest candidate",
+        "notes": "Kills raise a 2 HP zombie next round; at most 2 per battle. Raised zombies cannot raise others."
+      },
+      {
+        "id": "bone-archer",
+        "name": "Bone Archer",
+        "hp": 3,
+        "damage": 2,
+        "move": 1,
+        "range": 4,
+        "shootRange": 4,
+        "basis": "Balance v1 - playtest candidate",
+        "notes": "Individual fighter; fixed damage, no armor or special abilities."
+      },
+      {
+        "id": "ogre",
+        "name": "Ogre",
+        "hp": 7,
+        "damage": 3,
+        "move": 2,
+        "range": 1,
+        "shootRange": 0,
+        "basis": "Balance v1 - playtest candidate",
+        "notes": "Prepares a heavy strike for one turn, then attacks for +2 damage without moving. Move away to avoid it."
+      },
+      {
+        "id": "warlock",
+        "name": "Warlock",
+        "hp": 9,
+        "damage": 1,
+        "move": 1,
+        "range": 3,
+        "shootRange": 0,
+        "basis": "Balance v1 - playtest candidate",
+        "notes": "Summons skeletons from round 2; at most 2 living summons. Killing the Warlock wins."
+      },
+      {
+        "id": "imp",
+        "name": "Imp",
+        "hp": 4,
+        "damage": 2,
+        "move": 4,
+        "range": 1,
+        "shootRange": 0,
+        "basis": "Balance v1 - playtest candidate",
+        "notes": "After attacking, hops one open adjacent hex away from its target."
+      },
+      {
+        "id": "beast",
+        "name": "Beast",
+        "hp": 4,
+        "damage": 2,
+        "move": 3,
+        "range": 1,
+        "shootRange": 0,
+        "basis": "Balance v1 - playtest candidate",
+        "notes": "Individual fighter; fixed damage, no armor or special abilities."
+      },
+      {
+        "id": "dark",
+        "name": "Vampire",
+        "hp": 5,
+        "damage": 2,
+        "move": 2,
+        "range": 1,
+        "shootRange": 0,
+        "basis": "Balance v1 - playtest candidate",
+        "notes": "Melee damage heals 1 HP, capped at starting health."
+      },
+      {
+        "id": "demon",
+        "name": "Demon",
+        "hp": 3,
+        "damage": 3,
+        "move": 2,
+        "range": 1,
+        "shootRange": 0,
+        "basis": "Balance v1 - playtest candidate",
+        "notes": "Individual fighter; fixed damage, no armor or special abilities."
+      },
+      {
+        "id": "sniper",
+        "name": "Sniper",
+        "hp": 3,
+        "damage": 2,
+        "move": 2,
+        "range": 5,
+        "shootRange": 5,
+        "basis": "Balance v1 - playtest candidate",
+        "notes": "Individual fighter; fixed damage, no armor or special abilities."
+      }
+    ],
+    "chapel": {
+      "costs": [
+        40,
+        50,
+        30
+      ],
+      "baseCapacity": 3,
+      "capacityByLevel": [
+        3,
+        4,
+        5,
+        5
+      ],
+      "recruitDiscount": 10
+    },
+    "preset": "greenhaven-progression-v2",
+    "encounterConfig": {
+      "version": 1,
+      "selection": "weighted-seeded",
+      "terrain": "fixed",
+      "retrySameSeed": true,
+      "regions": [
+        {
+          "id": "forest",
+          "name": "Dark Forest",
+          "replayReward": 30,
+          "stages": [
+            {
+              "name": "Outskirts",
+              "reward": 50,
+              "variants": [
+                {
+                  "name": "Dark Forest 1 - 1",
+                  "weight": 1,
+                  "enemies": [
+                    "minibeast",
+                    "minibeast"
+                  ]
+                },
+                {
+                  "name": "Dark Forest 1 - 2",
+                  "weight": 1,
+                  "enemies": [
+                    "minibeast",
+                    "bat"
+                  ]
+                },
+                {
+                  "name": "Dark Forest 1 - 3",
+                  "weight": 1,
+                  "enemies": [
+                    "bat",
+                    "bat"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Stronghold",
+              "reward": 65,
+              "variants": [
+                {
+                  "name": "Dark Forest 2 - 1",
+                  "weight": 1,
+                  "enemies": [
+                    "wolf",
+                    "minibeast",
+                    "minibeast"
+                  ]
+                },
+                {
+                  "name": "Dark Forest 2 - 2",
+                  "weight": 1,
+                  "enemies": [
+                    "beast",
+                    "minibeast",
+                    "bat"
+                  ]
+                },
+                {
+                  "name": "Dark Forest 2 - 3",
+                  "weight": 1,
+                  "enemies": [
+                    "wolf",
+                    "wolf",
+                    "bat"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Region guard",
+              "reward": 85,
+              "variants": [
+                {
+                  "name": "Dark Forest 3 - 1",
+                  "weight": 1,
+                  "enemies": [
+                    "beast",
+                    "wolf",
+                    "minibeast"
+                  ]
+                },
+                {
+                  "name": "Dark Forest 3 - 2",
+                  "weight": 1,
+                  "enemies": [
+                    "beast",
+                    "beast",
+                    "minibeast"
+                  ]
+                },
+                {
+                  "name": "Dark Forest 3 - 3",
+                  "weight": 1,
+                  "enemies": [
+                    "wolf",
+                    "wolf",
+                    "wolf"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "catacombs",
+          "name": "Catacombs",
+          "replayReward": 50,
+          "stages": [
+            {
+              "name": "Outskirts",
+              "reward": 90,
+              "variants": [
+                {
+                  "name": "Catacombs 1 - 1",
+                  "weight": 1,
+                  "enemies": [
+                    "zombie",
+                    "skeleton",
+                    "zombie"
+                  ]
+                },
+                {
+                  "name": "Catacombs 1 - 2",
+                  "weight": 1,
+                  "enemies": [
+                    "zombie",
+                    "zombie",
+                    "zombie"
+                  ]
+                },
+                {
+                  "name": "Catacombs 1 - 3",
+                  "weight": 1,
+                  "enemies": [
+                    "dark",
+                    "skeleton",
+                    "zombie"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Stronghold",
+              "reward": 110,
+              "variants": [
+                {
+                  "name": "Catacombs 2 - 1",
+                  "weight": 1,
+                  "enemies": [
+                    "dark",
+                    "zombie",
+                    "skeleton"
+                  ]
+                },
+                {
+                  "name": "Catacombs 2 - 2",
+                  "weight": 1,
+                  "enemies": [
+                    "zombie",
+                    "zombie",
+                    "skeleton",
+                    "skeleton"
+                  ]
+                },
+                {
+                  "name": "Catacombs 2 - 3",
+                  "weight": 1,
+                  "enemies": [
+                    "dark",
+                    "dark",
+                    "zombie"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Region guard",
+              "reward": 130,
+              "variants": [
+                {
+                  "name": "Catacombs 3 - 1",
+                  "weight": 1,
+                  "enemies": [
+                    "dark",
+                    "dark",
+                    "skeleton",
+                    "zombie"
+                  ]
+                },
+                {
+                  "name": "Catacombs 3 - 2",
+                  "weight": 1,
+                  "enemies": [
+                    "dark",
+                    "bone-archer",
+                    "zombie",
+                    "skeleton"
+                  ]
+                },
+                {
+                  "name": "Catacombs 3 - 3",
+                  "weight": 1,
+                  "enemies": [
+                    "dark",
+                    "zombie",
+                    "zombie",
+                    "skeleton"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "caves",
+          "name": "Monster Caves",
+          "replayReward": 70,
+          "stages": [
+            {
+              "name": "Outskirts",
+              "reward": 130,
+              "variants": [
+                {
+                  "name": "Monster Caves 1 - 1",
+                  "weight": 1,
+                  "enemies": [
+                    "ogre",
+                    "beast",
+                    "beast",
+                    "bat"
+                  ]
+                },
+                {
+                  "name": "Monster Caves 1 - 2",
+                  "weight": 1,
+                  "enemies": [
+                    "beast",
+                    "beast",
+                    "beast",
+                    "beast"
+                  ]
+                },
+                {
+                  "name": "Monster Caves 1 - 3",
+                  "weight": 1,
+                  "enemies": [
+                    "ogre",
+                    "beast",
+                    "beast",
+                    "beast"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Stronghold",
+              "reward": 150,
+              "variants": [
+                {
+                  "name": "Monster Caves 2 - 1",
+                  "weight": 1,
+                  "enemies": [
+                    "ogre",
+                    "ogre",
+                    "beast",
+                    "bat"
+                  ]
+                },
+                {
+                  "name": "Monster Caves 2 - 2",
+                  "weight": 1,
+                  "enemies": [
+                    "ogre",
+                    "beast",
+                    "beast",
+                    "beast"
+                  ]
+                },
+                {
+                  "name": "Monster Caves 2 - 3",
+                  "weight": 1,
+                  "enemies": [
+                    "beast",
+                    "beast",
+                    "beast",
+                    "beast",
+                    "bat"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Region guard",
+              "reward": 180,
+              "variants": [
+                {
+                  "name": "Monster Caves 3 - 1",
+                  "weight": 1,
+                  "enemies": [
+                    "ogre",
+                    "ogre",
+                    "beast",
+                    "beast"
+                  ]
+                },
+                {
+                  "name": "Monster Caves 3 - 2",
+                  "weight": 1,
+                  "enemies": [
+                    "ogre",
+                    "ogre",
+                    "beast",
+                    "bat"
+                  ]
+                },
+                {
+                  "name": "Monster Caves 3 - 3",
+                  "weight": 1,
+                  "enemies": [
+                    "ogre",
+                    "beast",
+                    "beast",
+                    "beast",
+                    "bat"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ruins",
+          "name": "Necromancer Ruins",
+          "replayReward": 90,
+          "stages": [
+            {
+              "name": "Outer ruins",
+              "reward": 180,
+              "variants": [
+                {
+                  "name": "Necromancer Ruins 1 - 1",
+                  "weight": 1,
+                  "enemies": [
+                    "dark",
+                    "dark",
+                    "demon",
+                    "bone-archer",
+                    "imp"
+                  ]
+                },
+                {
+                  "name": "Necromancer Ruins 1 - 2",
+                  "weight": 1,
+                  "enemies": [
+                    "dark",
+                    "dark",
+                    "dark",
+                    "bone-archer",
+                    "bone-archer"
+                  ]
+                },
+                {
+                  "name": "Necromancer Ruins 1 - 3",
+                  "weight": 1,
+                  "enemies": [
+                    "demon",
+                    "demon",
+                    "sniper",
+                    "imp",
+                    "dark"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Inner ruins",
+              "reward": 220,
+              "variants": [
+                {
+                  "name": "Necromancer Ruins 2 - 1",
+                  "weight": 1,
+                  "enemies": [
+                    "dark",
+                    "dark",
+                    "demon",
+                    "demon",
+                    "sniper"
+                  ]
+                },
+                {
+                  "name": "Necromancer Ruins 2 - 2",
+                  "weight": 1,
+                  "enemies": [
+                    "dark",
+                    "dark",
+                    "dark",
+                    "demon",
+                    "imp"
+                  ]
+                },
+                {
+                  "name": "Necromancer Ruins 2 - 3",
+                  "weight": 1,
+                  "enemies": [
+                    "demon",
+                    "demon",
+                    "demon",
+                    "sniper",
+                    "imp"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Warlock",
+              "reward": 400,
+              "variants": [
+                {
+                  "name": "Necromancer Ruins 3 - 1",
+                  "weight": 1,
+                  "enemies": [
+                    "dark",
+                    "warlock",
+                    "demon",
+                    "dark",
+                    "demon"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "progression": {
+        "mode": "previous-region-wins",
+        "winsRequired": [
+          3,
+          3,
+          3,
+          3
+        ]
+      }
+    },
+    "monsterAbilitiesVersion": 1,
+    "simulationSettings": {
+      "nativeSeedCycle": true
+    },
+    "permanentCasualties": true,
+    "endlessLairs": true
+  },
+  "options": {
+    "nativeSeedCycle": true,
+    "strategy": "mounted",
+    "seed": 1,
+    "trace": true
+  },
+  "run": {
+    "strategy": "mounted",
+    "seed": 1,
+    "completed": false,
+    "gameOver": true,
+    "wins": [
+      1,
+      0,
+      0,
+      0
+    ],
+    "fights": 3,
+    "victories": 1,
+    "defeats": 2,
+    "draws": 0,
+    "replays": 0,
+    "rounds": 11,
+    "gold": 10,
+    "earned": 50,
+    "spent": 90,
+    "army": [
+      null,
+      null,
+      null
+    ],
+    "levels": {
+      "barracks": 2,
+      "chapel": 0,
+      "archery": 0,
+      "lodge": 1,
+      "tower": 0
+    },
+    "blockedReason": "GAME OVER: no soldiers and no affordable available recruit.",
+    "ledger": [
+      {
+        "action": "build",
+        "label": "lodge building level 1",
+        "cost": 45,
+        "goldBefore": 50,
+        "goldAfter": 5,
+        "army": [
+          "barracks-2",
+          "barracks-2"
+        ],
+        "beforeFight": 1
+      },
+      {
+        "action": "recruit",
+        "label": "Recruit Scout",
+        "cost": 20,
+        "goldBefore": 55,
+        "goldAfter": 35,
+        "army": [
+          "barracks-2",
+          "barracks-2",
+          "lodge-1"
+        ],
+        "beforeFight": 2
+      },
+      {
+        "action": "recruit",
+        "label": "Recruit Spearman",
+        "cost": 25,
+        "goldBefore": 35,
+        "goldAfter": 10,
+        "army": [
+          "barracks-2",
+          null,
+          null
+        ],
+        "replacement": true,
+        "beforeFight": 3
+      }
+    ],
+    "battles": [
+      {
+        "fight": 1,
+        "region": 0,
+        "regionName": "Dark Forest",
+        "stage": 1,
+        "variant": 1,
+        "seed": 1,
+        "enemies": [
+          "minibeast",
+          "bat"
+        ],
+        "replay": false,
+        "army": [
+          "barracks-2",
+          "barracks-2"
+        ],
+        "goldBefore": 5,
+        "initialUnits": [
+          {
+            "id": "barracks-2",
+            "name": "Spearman",
+            "building": "Barracks",
+            "family": "barracks",
+            "tier": 2,
+            "hp": 4,
+            "damage": 2,
+            "move": 2,
+            "range": 1,
+            "recruit": 25,
+            "buildingCost": 70,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Durable starting infantry.",
+            "team": 0,
+            "armySlot": 0,
+            "cell": 0,
+            "slot": 0,
+            "maxHp": 4,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "barracks-2",
+            "name": "Spearman",
+            "building": "Barracks",
+            "family": "barracks",
+            "tier": 2,
+            "hp": 4,
+            "damage": 2,
+            "move": 2,
+            "range": 1,
+            "recruit": 25,
+            "buildingCost": 70,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Durable starting infantry.",
+            "team": 0,
+            "armySlot": 1,
+            "cell": 7,
+            "slot": 1,
+            "maxHp": 4,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "minibeast",
+            "name": "Minibeast",
+            "hp": 3,
+            "damage": 1,
+            "move": 3,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 6,
+            "team": 1,
+            "slot": 2,
+            "maxHp": 3,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "bat",
+            "name": "Bat",
+            "hp": 2,
+            "damage": 1,
+            "move": 5,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 13,
+            "team": 1,
+            "slot": 3,
+            "maxHp": 2,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          }
+        ],
+        "finalUnits": [
+          {
+            "id": "barracks-2",
+            "name": "Spearman",
+            "building": "Barracks",
+            "family": "barracks",
+            "tier": 2,
+            "hp": 3,
+            "damage": 2,
+            "move": 2,
+            "range": 1,
+            "recruit": 25,
+            "buildingCost": 70,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Durable starting infantry.",
+            "team": 0,
+            "armySlot": 0,
+            "cell": 4,
+            "slot": 0,
+            "maxHp": 4,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "barracks-2",
+            "name": "Spearman",
+            "building": "Barracks",
+            "family": "barracks",
+            "tier": 2,
+            "hp": 4,
+            "damage": 2,
+            "move": 2,
+            "range": 1,
+            "recruit": 25,
+            "buildingCost": 70,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Durable starting infantry.",
+            "team": 0,
+            "armySlot": 1,
+            "cell": 18,
+            "slot": 1,
+            "maxHp": 4,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "minibeast",
+            "name": "Minibeast",
+            "hp": 0,
+            "damage": 1,
+            "move": 3,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 3,
+            "team": 1,
+            "slot": 2,
+            "maxHp": 3,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "bat",
+            "name": "Bat",
+            "hp": 0,
+            "damage": 1,
+            "move": 5,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 11,
+            "team": 1,
+            "slot": 3,
+            "maxHp": 2,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          }
+        ],
+        "outcome": "victory",
+        "rounds": 4,
+        "moves": 13,
+        "attacks": 4,
+        "summons": 0,
+        "healing": 0,
+        "conversions": 0,
+        "preparations": 0,
+        "hops": 0,
+        "survivors": [
+          {
+            "id": "barracks-2",
+            "hp": 3,
+            "slot": 0
+          },
+          {
+            "id": "barracks-2",
+            "hp": 4,
+            "slot": 1
+          }
+        ],
+        "enemiesRemaining": 0,
+        "trace": [
+          {
+            "action": "move",
+            "actor": 0,
+            "unit": "Spearman",
+            "from": 0,
+            "to": 1,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 0,
+            "unit": "Spearman",
+            "from": 1,
+            "to": 2,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 1,
+            "unit": "Spearman",
+            "from": 7,
+            "to": 8,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 1,
+            "unit": "Spearman",
+            "from": 8,
+            "to": 9,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 2,
+            "unit": "Minibeast",
+            "from": 6,
+            "to": 5,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 2,
+            "unit": "Minibeast",
+            "from": 5,
+            "to": 4,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 2,
+            "unit": "Minibeast",
+            "from": 4,
+            "to": 3,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Bat",
+            "from": 13,
+            "to": 12,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Bat",
+            "from": 12,
+            "to": 11,
+            "round": 1
+          },
+          {
+            "action": "attack",
+            "actor": 0,
+            "unit": "Spearman",
+            "target": 2,
+            "targetName": "Minibeast",
+            "damage": 2,
+            "hpBefore": 3,
+            "hpAfter": 1,
+            "from": 2,
+            "to": 3,
+            "round": 2
+          },
+          {
+            "action": "attack",
+            "actor": 1,
+            "unit": "Spearman",
+            "target": 2,
+            "targetName": "Minibeast",
+            "damage": 1,
+            "hpBefore": 1,
+            "hpAfter": 0,
+            "from": 9,
+            "to": 3,
+            "round": 2
+          },
+          {
+            "action": "move",
+            "actor": 0,
+            "unit": "Spearman",
+            "from": 2,
+            "to": 3,
+            "round": 3
+          },
+          {
+            "action": "move",
+            "actor": 0,
+            "unit": "Spearman",
+            "from": 3,
+            "to": 4,
+            "round": 3
+          },
+          {
+            "action": "move",
+            "actor": 1,
+            "unit": "Spearman",
+            "from": 9,
+            "to": 17,
+            "round": 3
+          },
+          {
+            "action": "move",
+            "actor": 1,
+            "unit": "Spearman",
+            "from": 17,
+            "to": 18,
+            "round": 3
+          },
+          {
+            "action": "attack",
+            "actor": 3,
+            "unit": "Bat",
+            "target": 0,
+            "targetName": "Spearman",
+            "damage": 1,
+            "hpBefore": 4,
+            "hpAfter": 3,
+            "from": 11,
+            "to": 4,
+            "round": 3
+          },
+          {
+            "action": "attack",
+            "actor": 0,
+            "unit": "Spearman",
+            "target": 3,
+            "targetName": "Bat",
+            "damage": 2,
+            "hpBefore": 2,
+            "hpAfter": 0,
+            "from": 4,
+            "to": 11,
+            "round": 4
+          }
+        ],
+        "casualties": [],
+        "reward": 50,
+        "goldAfter": 55
+      },
+      {
+        "fight": 2,
+        "region": 0,
+        "regionName": "Dark Forest",
+        "stage": 2,
+        "variant": 1,
+        "seed": 2,
+        "enemies": [
+          "beast",
+          "minibeast",
+          "bat"
+        ],
+        "replay": false,
+        "army": [
+          "barracks-2",
+          "barracks-2",
+          "lodge-1"
+        ],
+        "goldBefore": 35,
+        "initialUnits": [
+          {
+            "id": "barracks-2",
+            "name": "Spearman",
+            "building": "Barracks",
+            "family": "barracks",
+            "tier": 2,
+            "hp": 4,
+            "damage": 2,
+            "move": 2,
+            "range": 1,
+            "recruit": 25,
+            "buildingCost": 70,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Durable starting infantry.",
+            "team": 0,
+            "armySlot": 0,
+            "cell": 0,
+            "slot": 0,
+            "maxHp": 4,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "barracks-2",
+            "name": "Spearman",
+            "building": "Barracks",
+            "family": "barracks",
+            "tier": 2,
+            "hp": 4,
+            "damage": 2,
+            "move": 2,
+            "range": 1,
+            "recruit": 25,
+            "buildingCost": 70,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Durable starting infantry.",
+            "team": 0,
+            "armySlot": 1,
+            "cell": 7,
+            "slot": 1,
+            "maxHp": 4,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "lodge-1",
+            "name": "Scout",
+            "building": "Ranger Lodge",
+            "family": "lodge",
+            "tier": 1,
+            "hp": 3,
+            "damage": 1,
+            "move": 4,
+            "range": 1,
+            "recruit": 20,
+            "buildingCost": 45,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Fast budget flanker.",
+            "mounted": true,
+            "team": 0,
+            "armySlot": 2,
+            "cell": 14,
+            "slot": 2,
+            "maxHp": 3,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "beast",
+            "name": "Beast",
+            "hp": 4,
+            "damage": 2,
+            "move": 3,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 6,
+            "team": 1,
+            "slot": 3,
+            "maxHp": 4,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "minibeast",
+            "name": "Minibeast",
+            "hp": 3,
+            "damage": 1,
+            "move": 3,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 13,
+            "team": 1,
+            "slot": 4,
+            "maxHp": 3,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "bat",
+            "name": "Bat",
+            "hp": 2,
+            "damage": 1,
+            "move": 5,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 20,
+            "team": 1,
+            "slot": 5,
+            "maxHp": 2,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          }
+        ],
+        "finalUnits": [
+          {
+            "id": "barracks-2",
+            "name": "Spearman",
+            "building": "Barracks",
+            "family": "barracks",
+            "tier": 2,
+            "hp": 0,
+            "damage": 2,
+            "move": 2,
+            "range": 1,
+            "recruit": 25,
+            "buildingCost": 70,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Durable starting infantry.",
+            "team": 0,
+            "armySlot": 0,
+            "cell": 4,
+            "slot": 0,
+            "maxHp": 4,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "barracks-2",
+            "name": "Spearman",
+            "building": "Barracks",
+            "family": "barracks",
+            "tier": 2,
+            "hp": 0,
+            "damage": 2,
+            "move": 2,
+            "range": 1,
+            "recruit": 25,
+            "buildingCost": 70,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Durable starting infantry.",
+            "team": 0,
+            "armySlot": 1,
+            "cell": 18,
+            "slot": 1,
+            "maxHp": 4,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "lodge-1",
+            "name": "Scout",
+            "building": "Ranger Lodge",
+            "family": "lodge",
+            "tier": 1,
+            "hp": 0,
+            "damage": 1,
+            "move": 4,
+            "range": 1,
+            "recruit": 20,
+            "buildingCost": 45,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Fast budget flanker.",
+            "mounted": true,
+            "team": 0,
+            "armySlot": 2,
+            "cell": 18,
+            "slot": 2,
+            "maxHp": 3,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "beast",
+            "name": "Beast",
+            "hp": 2,
+            "damage": 2,
+            "move": 3,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 19,
+            "team": 1,
+            "slot": 3,
+            "maxHp": 4,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "minibeast",
+            "name": "Minibeast",
+            "hp": 1,
+            "damage": 1,
+            "move": 3,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 11,
+            "team": 1,
+            "slot": 4,
+            "maxHp": 3,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "bat",
+            "name": "Bat",
+            "hp": 0,
+            "damage": 1,
+            "move": 5,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 5,
+            "team": 1,
+            "slot": 5,
+            "maxHp": 2,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          }
+        ],
+        "outcome": "defeat",
+        "rounds": 4,
+        "moves": 18,
+        "attacks": 11,
+        "summons": 0,
+        "healing": 0,
+        "conversions": 0,
+        "preparations": 0,
+        "hops": 0,
+        "survivors": [],
+        "enemiesRemaining": 2,
+        "trace": [
+          {
+            "action": "move",
+            "actor": 0,
+            "unit": "Spearman",
+            "from": 0,
+            "to": 1,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 0,
+            "unit": "Spearman",
+            "from": 1,
+            "to": 2,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 1,
+            "unit": "Spearman",
+            "from": 7,
+            "to": 8,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 1,
+            "unit": "Spearman",
+            "from": 8,
+            "to": 9,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 2,
+            "unit": "Scout",
+            "from": 14,
+            "to": 15,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 2,
+            "unit": "Scout",
+            "from": 15,
+            "to": 16,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 2,
+            "unit": "Scout",
+            "from": 16,
+            "to": 17,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 2,
+            "unit": "Scout",
+            "from": 17,
+            "to": 18,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Beast",
+            "from": 6,
+            "to": 12,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Beast",
+            "from": 12,
+            "to": 19,
+            "round": 1
+          },
+          {
+            "action": "attack",
+            "actor": 3,
+            "unit": "Beast",
+            "target": 2,
+            "targetName": "Scout",
+            "damage": 2,
+            "hpBefore": 3,
+            "hpAfter": 1,
+            "from": 19,
+            "to": 18,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 4,
+            "unit": "Minibeast",
+            "from": 13,
+            "to": 12,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 4,
+            "unit": "Minibeast",
+            "from": 12,
+            "to": 11,
+            "round": 1
+          },
+          {
+            "action": "attack",
+            "actor": 4,
+            "unit": "Minibeast",
+            "target": 2,
+            "targetName": "Scout",
+            "damage": 1,
+            "hpBefore": 1,
+            "hpAfter": 0,
+            "from": 11,
+            "to": 18,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 5,
+            "unit": "Bat",
+            "from": 20,
+            "to": 12,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 0,
+            "unit": "Spearman",
+            "from": 2,
+            "to": 3,
+            "round": 2
+          },
+          {
+            "action": "move",
+            "actor": 0,
+            "unit": "Spearman",
+            "from": 3,
+            "to": 4,
+            "round": 2
+          },
+          {
+            "action": "move",
+            "actor": 1,
+            "unit": "Spearman",
+            "from": 9,
+            "to": 17,
+            "round": 2
+          },
+          {
+            "action": "move",
+            "actor": 1,
+            "unit": "Spearman",
+            "from": 17,
+            "to": 18,
+            "round": 2
+          },
+          {
+            "action": "attack",
+            "actor": 3,
+            "unit": "Beast",
+            "target": 1,
+            "targetName": "Spearman",
+            "damage": 2,
+            "hpBefore": 4,
+            "hpAfter": 2,
+            "from": 19,
+            "to": 18,
+            "round": 2
+          },
+          {
+            "action": "attack",
+            "actor": 4,
+            "unit": "Minibeast",
+            "target": 0,
+            "targetName": "Spearman",
+            "damage": 1,
+            "hpBefore": 4,
+            "hpAfter": 3,
+            "from": 11,
+            "to": 4,
+            "round": 2
+          },
+          {
+            "action": "move",
+            "actor": 5,
+            "unit": "Bat",
+            "from": 12,
+            "to": 5,
+            "round": 2
+          },
+          {
+            "action": "attack",
+            "actor": 5,
+            "unit": "Bat",
+            "target": 0,
+            "targetName": "Spearman",
+            "damage": 1,
+            "hpBefore": 3,
+            "hpAfter": 2,
+            "from": 5,
+            "to": 4,
+            "round": 2
+          },
+          {
+            "action": "attack",
+            "actor": 0,
+            "unit": "Spearman",
+            "target": 5,
+            "targetName": "Bat",
+            "damage": 2,
+            "hpBefore": 2,
+            "hpAfter": 0,
+            "from": 4,
+            "to": 5,
+            "round": 3
+          },
+          {
+            "action": "attack",
+            "actor": 1,
+            "unit": "Spearman",
+            "target": 3,
+            "targetName": "Beast",
+            "damage": 2,
+            "hpBefore": 4,
+            "hpAfter": 2,
+            "from": 18,
+            "to": 19,
+            "round": 3
+          },
+          {
+            "action": "attack",
+            "actor": 3,
+            "unit": "Beast",
+            "target": 1,
+            "targetName": "Spearman",
+            "damage": 2,
+            "hpBefore": 2,
+            "hpAfter": 0,
+            "from": 19,
+            "to": 18,
+            "round": 3
+          },
+          {
+            "action": "attack",
+            "actor": 4,
+            "unit": "Minibeast",
+            "target": 0,
+            "targetName": "Spearman",
+            "damage": 1,
+            "hpBefore": 2,
+            "hpAfter": 1,
+            "from": 11,
+            "to": 4,
+            "round": 3
+          },
+          {
+            "action": "attack",
+            "actor": 0,
+            "unit": "Spearman",
+            "target": 4,
+            "targetName": "Minibeast",
+            "damage": 2,
+            "hpBefore": 3,
+            "hpAfter": 1,
+            "from": 4,
+            "to": 11,
+            "round": 4
+          },
+          {
+            "action": "attack",
+            "actor": 4,
+            "unit": "Minibeast",
+            "target": 0,
+            "targetName": "Spearman",
+            "damage": 1,
+            "hpBefore": 1,
+            "hpAfter": 0,
+            "from": 11,
+            "to": 4,
+            "round": 4
+          }
+        ],
+        "casualties": [
+          {
+            "slot": 0,
+            "id": "barracks-2"
+          },
+          {
+            "slot": 1,
+            "id": "barracks-2"
+          },
+          {
+            "slot": 2,
+            "id": "lodge-1"
+          }
+        ],
+        "reward": 0,
+        "goldAfter": 35
+      },
+      {
+        "fight": 3,
+        "region": 0,
+        "regionName": "Dark Forest",
+        "stage": 2,
+        "variant": 1,
+        "seed": 2,
+        "enemies": [
+          "beast",
+          "minibeast",
+          "bat"
+        ],
+        "replay": false,
+        "army": [
+          "barracks-2",
+          null,
+          null
+        ],
+        "goldBefore": 10,
+        "initialUnits": [
+          {
+            "id": "barracks-2",
+            "name": "Spearman",
+            "building": "Barracks",
+            "family": "barracks",
+            "tier": 2,
+            "hp": 4,
+            "damage": 2,
+            "move": 2,
+            "range": 1,
+            "recruit": 25,
+            "buildingCost": 70,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Durable starting infantry.",
+            "team": 0,
+            "armySlot": 0,
+            "cell": 0,
+            "slot": 0,
+            "maxHp": 4,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "beast",
+            "name": "Beast",
+            "hp": 4,
+            "damage": 2,
+            "move": 3,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 6,
+            "team": 1,
+            "slot": 1,
+            "maxHp": 4,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "minibeast",
+            "name": "Minibeast",
+            "hp": 3,
+            "damage": 1,
+            "move": 3,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 13,
+            "team": 1,
+            "slot": 2,
+            "maxHp": 3,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "bat",
+            "name": "Bat",
+            "hp": 2,
+            "damage": 1,
+            "move": 5,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 20,
+            "team": 1,
+            "slot": 3,
+            "maxHp": 2,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          }
+        ],
+        "finalUnits": [
+          {
+            "id": "barracks-2",
+            "name": "Spearman",
+            "building": "Barracks",
+            "family": "barracks",
+            "tier": 2,
+            "hp": 0,
+            "damage": 2,
+            "move": 2,
+            "range": 1,
+            "recruit": 25,
+            "buildingCost": 70,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Durable starting infantry.",
+            "team": 0,
+            "armySlot": 0,
+            "cell": 2,
+            "slot": 0,
+            "maxHp": 4,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "beast",
+            "name": "Beast",
+            "hp": 2,
+            "damage": 2,
+            "move": 3,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 3,
+            "team": 1,
+            "slot": 1,
+            "maxHp": 4,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "minibeast",
+            "name": "Minibeast",
+            "hp": 3,
+            "damage": 1,
+            "move": 3,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 4,
+            "team": 1,
+            "slot": 2,
+            "maxHp": 3,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "bat",
+            "name": "Bat",
+            "hp": 0,
+            "damage": 1,
+            "move": 5,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 9,
+            "team": 1,
+            "slot": 3,
+            "maxHp": 2,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          }
+        ],
+        "outcome": "defeat",
+        "rounds": 3,
+        "moves": 12,
+        "attacks": 5,
+        "summons": 0,
+        "healing": 0,
+        "conversions": 0,
+        "preparations": 0,
+        "hops": 0,
+        "survivors": [],
+        "enemiesRemaining": 2,
+        "trace": [
+          {
+            "action": "move",
+            "actor": 0,
+            "unit": "Spearman",
+            "from": 0,
+            "to": 1,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 0,
+            "unit": "Spearman",
+            "from": 1,
+            "to": 2,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 1,
+            "unit": "Beast",
+            "from": 6,
+            "to": 5,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 1,
+            "unit": "Beast",
+            "from": 5,
+            "to": 4,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 1,
+            "unit": "Beast",
+            "from": 4,
+            "to": 3,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 2,
+            "unit": "Minibeast",
+            "from": 13,
+            "to": 12,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 2,
+            "unit": "Minibeast",
+            "from": 12,
+            "to": 11,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 2,
+            "unit": "Minibeast",
+            "from": 11,
+            "to": 4,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Bat",
+            "from": 20,
+            "to": 19,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Bat",
+            "from": 19,
+            "to": 18,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Bat",
+            "from": 18,
+            "to": 17,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Bat",
+            "from": 17,
+            "to": 9,
+            "round": 1
+          },
+          {
+            "action": "attack",
+            "actor": 3,
+            "unit": "Bat",
+            "target": 0,
+            "targetName": "Spearman",
+            "damage": 1,
+            "hpBefore": 4,
+            "hpAfter": 3,
+            "from": 9,
+            "to": 2,
+            "round": 1
+          },
+          {
+            "action": "attack",
+            "actor": 0,
+            "unit": "Spearman",
+            "target": 3,
+            "targetName": "Bat",
+            "damage": 2,
+            "hpBefore": 2,
+            "hpAfter": 0,
+            "from": 2,
+            "to": 9,
+            "round": 2
+          },
+          {
+            "action": "attack",
+            "actor": 1,
+            "unit": "Beast",
+            "target": 0,
+            "targetName": "Spearman",
+            "damage": 2,
+            "hpBefore": 3,
+            "hpAfter": 1,
+            "from": 3,
+            "to": 2,
+            "round": 2
+          },
+          {
+            "action": "attack",
+            "actor": 0,
+            "unit": "Spearman",
+            "target": 1,
+            "targetName": "Beast",
+            "damage": 2,
+            "hpBefore": 4,
+            "hpAfter": 2,
+            "from": 2,
+            "to": 3,
+            "round": 3
+          },
+          {
+            "action": "attack",
+            "actor": 1,
+            "unit": "Beast",
+            "target": 0,
+            "targetName": "Spearman",
+            "damage": 1,
+            "hpBefore": 1,
+            "hpAfter": 0,
+            "from": 3,
+            "to": 2,
+            "round": 3
+          }
+        ],
+        "casualties": [
+          {
+            "slot": 0,
+            "id": "barracks-2"
+          }
+        ],
+        "reward": 0
+      }
+    ],
+    "events": [
+      {
+        "type": "purchase",
+        "action": "build",
+        "label": "lodge building level 1",
+        "cost": 45,
+        "goldBefore": 50,
+        "goldAfter": 5,
+        "army": [
+          "barracks-2",
+          "barracks-2"
+        ],
+        "beforeFight": 1
+      },
+      {
+        "type": "battle",
+        "fight": 1,
+        "region": 0,
+        "regionName": "Dark Forest",
+        "stage": 1,
+        "variant": 1,
+        "seed": 1,
+        "enemies": [
+          "minibeast",
+          "bat"
+        ],
+        "replay": false,
+        "army": [
+          "barracks-2",
+          "barracks-2"
+        ],
+        "goldBefore": 5,
+        "initialUnits": [
+          {
+            "id": "barracks-2",
+            "name": "Spearman",
+            "building": "Barracks",
+            "family": "barracks",
+            "tier": 2,
+            "hp": 4,
+            "damage": 2,
+            "move": 2,
+            "range": 1,
+            "recruit": 25,
+            "buildingCost": 70,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Durable starting infantry.",
+            "team": 0,
+            "armySlot": 0,
+            "cell": 0,
+            "slot": 0,
+            "maxHp": 4,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "barracks-2",
+            "name": "Spearman",
+            "building": "Barracks",
+            "family": "barracks",
+            "tier": 2,
+            "hp": 4,
+            "damage": 2,
+            "move": 2,
+            "range": 1,
+            "recruit": 25,
+            "buildingCost": 70,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Durable starting infantry.",
+            "team": 0,
+            "armySlot": 1,
+            "cell": 7,
+            "slot": 1,
+            "maxHp": 4,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "minibeast",
+            "name": "Minibeast",
+            "hp": 3,
+            "damage": 1,
+            "move": 3,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 6,
+            "team": 1,
+            "slot": 2,
+            "maxHp": 3,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "bat",
+            "name": "Bat",
+            "hp": 2,
+            "damage": 1,
+            "move": 5,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 13,
+            "team": 1,
+            "slot": 3,
+            "maxHp": 2,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          }
+        ],
+        "finalUnits": [
+          {
+            "id": "barracks-2",
+            "name": "Spearman",
+            "building": "Barracks",
+            "family": "barracks",
+            "tier": 2,
+            "hp": 3,
+            "damage": 2,
+            "move": 2,
+            "range": 1,
+            "recruit": 25,
+            "buildingCost": 70,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Durable starting infantry.",
+            "team": 0,
+            "armySlot": 0,
+            "cell": 4,
+            "slot": 0,
+            "maxHp": 4,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "barracks-2",
+            "name": "Spearman",
+            "building": "Barracks",
+            "family": "barracks",
+            "tier": 2,
+            "hp": 4,
+            "damage": 2,
+            "move": 2,
+            "range": 1,
+            "recruit": 25,
+            "buildingCost": 70,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Durable starting infantry.",
+            "team": 0,
+            "armySlot": 1,
+            "cell": 18,
+            "slot": 1,
+            "maxHp": 4,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "minibeast",
+            "name": "Minibeast",
+            "hp": 0,
+            "damage": 1,
+            "move": 3,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 3,
+            "team": 1,
+            "slot": 2,
+            "maxHp": 3,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "bat",
+            "name": "Bat",
+            "hp": 0,
+            "damage": 1,
+            "move": 5,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 11,
+            "team": 1,
+            "slot": 3,
+            "maxHp": 2,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          }
+        ],
+        "outcome": "victory",
+        "rounds": 4,
+        "moves": 13,
+        "attacks": 4,
+        "summons": 0,
+        "healing": 0,
+        "conversions": 0,
+        "preparations": 0,
+        "hops": 0,
+        "survivors": [
+          {
+            "id": "barracks-2",
+            "hp": 3,
+            "slot": 0
+          },
+          {
+            "id": "barracks-2",
+            "hp": 4,
+            "slot": 1
+          }
+        ],
+        "enemiesRemaining": 0,
+        "trace": [
+          {
+            "action": "move",
+            "actor": 0,
+            "unit": "Spearman",
+            "from": 0,
+            "to": 1,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 0,
+            "unit": "Spearman",
+            "from": 1,
+            "to": 2,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 1,
+            "unit": "Spearman",
+            "from": 7,
+            "to": 8,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 1,
+            "unit": "Spearman",
+            "from": 8,
+            "to": 9,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 2,
+            "unit": "Minibeast",
+            "from": 6,
+            "to": 5,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 2,
+            "unit": "Minibeast",
+            "from": 5,
+            "to": 4,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 2,
+            "unit": "Minibeast",
+            "from": 4,
+            "to": 3,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Bat",
+            "from": 13,
+            "to": 12,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Bat",
+            "from": 12,
+            "to": 11,
+            "round": 1
+          },
+          {
+            "action": "attack",
+            "actor": 0,
+            "unit": "Spearman",
+            "target": 2,
+            "targetName": "Minibeast",
+            "damage": 2,
+            "hpBefore": 3,
+            "hpAfter": 1,
+            "from": 2,
+            "to": 3,
+            "round": 2
+          },
+          {
+            "action": "attack",
+            "actor": 1,
+            "unit": "Spearman",
+            "target": 2,
+            "targetName": "Minibeast",
+            "damage": 1,
+            "hpBefore": 1,
+            "hpAfter": 0,
+            "from": 9,
+            "to": 3,
+            "round": 2
+          },
+          {
+            "action": "move",
+            "actor": 0,
+            "unit": "Spearman",
+            "from": 2,
+            "to": 3,
+            "round": 3
+          },
+          {
+            "action": "move",
+            "actor": 0,
+            "unit": "Spearman",
+            "from": 3,
+            "to": 4,
+            "round": 3
+          },
+          {
+            "action": "move",
+            "actor": 1,
+            "unit": "Spearman",
+            "from": 9,
+            "to": 17,
+            "round": 3
+          },
+          {
+            "action": "move",
+            "actor": 1,
+            "unit": "Spearman",
+            "from": 17,
+            "to": 18,
+            "round": 3
+          },
+          {
+            "action": "attack",
+            "actor": 3,
+            "unit": "Bat",
+            "target": 0,
+            "targetName": "Spearman",
+            "damage": 1,
+            "hpBefore": 4,
+            "hpAfter": 3,
+            "from": 11,
+            "to": 4,
+            "round": 3
+          },
+          {
+            "action": "attack",
+            "actor": 0,
+            "unit": "Spearman",
+            "target": 3,
+            "targetName": "Bat",
+            "damage": 2,
+            "hpBefore": 2,
+            "hpAfter": 0,
+            "from": 4,
+            "to": 11,
+            "round": 4
+          }
+        ],
+        "casualties": [],
+        "reward": 50,
+        "goldAfter": 55
+      },
+      {
+        "type": "purchase",
+        "action": "recruit",
+        "label": "Recruit Scout",
+        "cost": 20,
+        "goldBefore": 55,
+        "goldAfter": 35,
+        "army": [
+          "barracks-2",
+          "barracks-2",
+          "lodge-1"
+        ],
+        "beforeFight": 2
+      },
+      {
+        "type": "battle",
+        "fight": 2,
+        "region": 0,
+        "regionName": "Dark Forest",
+        "stage": 2,
+        "variant": 1,
+        "seed": 2,
+        "enemies": [
+          "beast",
+          "minibeast",
+          "bat"
+        ],
+        "replay": false,
+        "army": [
+          "barracks-2",
+          "barracks-2",
+          "lodge-1"
+        ],
+        "goldBefore": 35,
+        "initialUnits": [
+          {
+            "id": "barracks-2",
+            "name": "Spearman",
+            "building": "Barracks",
+            "family": "barracks",
+            "tier": 2,
+            "hp": 4,
+            "damage": 2,
+            "move": 2,
+            "range": 1,
+            "recruit": 25,
+            "buildingCost": 70,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Durable starting infantry.",
+            "team": 0,
+            "armySlot": 0,
+            "cell": 0,
+            "slot": 0,
+            "maxHp": 4,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "barracks-2",
+            "name": "Spearman",
+            "building": "Barracks",
+            "family": "barracks",
+            "tier": 2,
+            "hp": 4,
+            "damage": 2,
+            "move": 2,
+            "range": 1,
+            "recruit": 25,
+            "buildingCost": 70,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Durable starting infantry.",
+            "team": 0,
+            "armySlot": 1,
+            "cell": 7,
+            "slot": 1,
+            "maxHp": 4,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "lodge-1",
+            "name": "Scout",
+            "building": "Ranger Lodge",
+            "family": "lodge",
+            "tier": 1,
+            "hp": 3,
+            "damage": 1,
+            "move": 4,
+            "range": 1,
+            "recruit": 20,
+            "buildingCost": 45,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Fast budget flanker.",
+            "mounted": true,
+            "team": 0,
+            "armySlot": 2,
+            "cell": 14,
+            "slot": 2,
+            "maxHp": 3,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "beast",
+            "name": "Beast",
+            "hp": 4,
+            "damage": 2,
+            "move": 3,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 6,
+            "team": 1,
+            "slot": 3,
+            "maxHp": 4,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "minibeast",
+            "name": "Minibeast",
+            "hp": 3,
+            "damage": 1,
+            "move": 3,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 13,
+            "team": 1,
+            "slot": 4,
+            "maxHp": 3,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "bat",
+            "name": "Bat",
+            "hp": 2,
+            "damage": 1,
+            "move": 5,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 20,
+            "team": 1,
+            "slot": 5,
+            "maxHp": 2,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          }
+        ],
+        "finalUnits": [
+          {
+            "id": "barracks-2",
+            "name": "Spearman",
+            "building": "Barracks",
+            "family": "barracks",
+            "tier": 2,
+            "hp": 0,
+            "damage": 2,
+            "move": 2,
+            "range": 1,
+            "recruit": 25,
+            "buildingCost": 70,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Durable starting infantry.",
+            "team": 0,
+            "armySlot": 0,
+            "cell": 4,
+            "slot": 0,
+            "maxHp": 4,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "barracks-2",
+            "name": "Spearman",
+            "building": "Barracks",
+            "family": "barracks",
+            "tier": 2,
+            "hp": 0,
+            "damage": 2,
+            "move": 2,
+            "range": 1,
+            "recruit": 25,
+            "buildingCost": 70,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Durable starting infantry.",
+            "team": 0,
+            "armySlot": 1,
+            "cell": 18,
+            "slot": 1,
+            "maxHp": 4,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "lodge-1",
+            "name": "Scout",
+            "building": "Ranger Lodge",
+            "family": "lodge",
+            "tier": 1,
+            "hp": 0,
+            "damage": 1,
+            "move": 4,
+            "range": 1,
+            "recruit": 20,
+            "buildingCost": 45,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Fast budget flanker.",
+            "mounted": true,
+            "team": 0,
+            "armySlot": 2,
+            "cell": 18,
+            "slot": 2,
+            "maxHp": 3,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "beast",
+            "name": "Beast",
+            "hp": 2,
+            "damage": 2,
+            "move": 3,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 19,
+            "team": 1,
+            "slot": 3,
+            "maxHp": 4,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "minibeast",
+            "name": "Minibeast",
+            "hp": 1,
+            "damage": 1,
+            "move": 3,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 11,
+            "team": 1,
+            "slot": 4,
+            "maxHp": 3,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "bat",
+            "name": "Bat",
+            "hp": 0,
+            "damage": 1,
+            "move": 5,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 5,
+            "team": 1,
+            "slot": 5,
+            "maxHp": 2,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          }
+        ],
+        "outcome": "defeat",
+        "rounds": 4,
+        "moves": 18,
+        "attacks": 11,
+        "summons": 0,
+        "healing": 0,
+        "conversions": 0,
+        "preparations": 0,
+        "hops": 0,
+        "survivors": [],
+        "enemiesRemaining": 2,
+        "trace": [
+          {
+            "action": "move",
+            "actor": 0,
+            "unit": "Spearman",
+            "from": 0,
+            "to": 1,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 0,
+            "unit": "Spearman",
+            "from": 1,
+            "to": 2,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 1,
+            "unit": "Spearman",
+            "from": 7,
+            "to": 8,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 1,
+            "unit": "Spearman",
+            "from": 8,
+            "to": 9,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 2,
+            "unit": "Scout",
+            "from": 14,
+            "to": 15,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 2,
+            "unit": "Scout",
+            "from": 15,
+            "to": 16,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 2,
+            "unit": "Scout",
+            "from": 16,
+            "to": 17,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 2,
+            "unit": "Scout",
+            "from": 17,
+            "to": 18,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Beast",
+            "from": 6,
+            "to": 12,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Beast",
+            "from": 12,
+            "to": 19,
+            "round": 1
+          },
+          {
+            "action": "attack",
+            "actor": 3,
+            "unit": "Beast",
+            "target": 2,
+            "targetName": "Scout",
+            "damage": 2,
+            "hpBefore": 3,
+            "hpAfter": 1,
+            "from": 19,
+            "to": 18,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 4,
+            "unit": "Minibeast",
+            "from": 13,
+            "to": 12,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 4,
+            "unit": "Minibeast",
+            "from": 12,
+            "to": 11,
+            "round": 1
+          },
+          {
+            "action": "attack",
+            "actor": 4,
+            "unit": "Minibeast",
+            "target": 2,
+            "targetName": "Scout",
+            "damage": 1,
+            "hpBefore": 1,
+            "hpAfter": 0,
+            "from": 11,
+            "to": 18,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 5,
+            "unit": "Bat",
+            "from": 20,
+            "to": 12,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 0,
+            "unit": "Spearman",
+            "from": 2,
+            "to": 3,
+            "round": 2
+          },
+          {
+            "action": "move",
+            "actor": 0,
+            "unit": "Spearman",
+            "from": 3,
+            "to": 4,
+            "round": 2
+          },
+          {
+            "action": "move",
+            "actor": 1,
+            "unit": "Spearman",
+            "from": 9,
+            "to": 17,
+            "round": 2
+          },
+          {
+            "action": "move",
+            "actor": 1,
+            "unit": "Spearman",
+            "from": 17,
+            "to": 18,
+            "round": 2
+          },
+          {
+            "action": "attack",
+            "actor": 3,
+            "unit": "Beast",
+            "target": 1,
+            "targetName": "Spearman",
+            "damage": 2,
+            "hpBefore": 4,
+            "hpAfter": 2,
+            "from": 19,
+            "to": 18,
+            "round": 2
+          },
+          {
+            "action": "attack",
+            "actor": 4,
+            "unit": "Minibeast",
+            "target": 0,
+            "targetName": "Spearman",
+            "damage": 1,
+            "hpBefore": 4,
+            "hpAfter": 3,
+            "from": 11,
+            "to": 4,
+            "round": 2
+          },
+          {
+            "action": "move",
+            "actor": 5,
+            "unit": "Bat",
+            "from": 12,
+            "to": 5,
+            "round": 2
+          },
+          {
+            "action": "attack",
+            "actor": 5,
+            "unit": "Bat",
+            "target": 0,
+            "targetName": "Spearman",
+            "damage": 1,
+            "hpBefore": 3,
+            "hpAfter": 2,
+            "from": 5,
+            "to": 4,
+            "round": 2
+          },
+          {
+            "action": "attack",
+            "actor": 0,
+            "unit": "Spearman",
+            "target": 5,
+            "targetName": "Bat",
+            "damage": 2,
+            "hpBefore": 2,
+            "hpAfter": 0,
+            "from": 4,
+            "to": 5,
+            "round": 3
+          },
+          {
+            "action": "attack",
+            "actor": 1,
+            "unit": "Spearman",
+            "target": 3,
+            "targetName": "Beast",
+            "damage": 2,
+            "hpBefore": 4,
+            "hpAfter": 2,
+            "from": 18,
+            "to": 19,
+            "round": 3
+          },
+          {
+            "action": "attack",
+            "actor": 3,
+            "unit": "Beast",
+            "target": 1,
+            "targetName": "Spearman",
+            "damage": 2,
+            "hpBefore": 2,
+            "hpAfter": 0,
+            "from": 19,
+            "to": 18,
+            "round": 3
+          },
+          {
+            "action": "attack",
+            "actor": 4,
+            "unit": "Minibeast",
+            "target": 0,
+            "targetName": "Spearman",
+            "damage": 1,
+            "hpBefore": 2,
+            "hpAfter": 1,
+            "from": 11,
+            "to": 4,
+            "round": 3
+          },
+          {
+            "action": "attack",
+            "actor": 0,
+            "unit": "Spearman",
+            "target": 4,
+            "targetName": "Minibeast",
+            "damage": 2,
+            "hpBefore": 3,
+            "hpAfter": 1,
+            "from": 4,
+            "to": 11,
+            "round": 4
+          },
+          {
+            "action": "attack",
+            "actor": 4,
+            "unit": "Minibeast",
+            "target": 0,
+            "targetName": "Spearman",
+            "damage": 1,
+            "hpBefore": 1,
+            "hpAfter": 0,
+            "from": 11,
+            "to": 4,
+            "round": 4
+          }
+        ],
+        "casualties": [
+          {
+            "slot": 0,
+            "id": "barracks-2"
+          },
+          {
+            "slot": 1,
+            "id": "barracks-2"
+          },
+          {
+            "slot": 2,
+            "id": "lodge-1"
+          }
+        ],
+        "reward": 0,
+        "goldAfter": 35
+      },
+      {
+        "type": "purchase",
+        "action": "recruit",
+        "label": "Recruit Spearman",
+        "cost": 25,
+        "goldBefore": 35,
+        "goldAfter": 10,
+        "army": [
+          "barracks-2",
+          null,
+          null
+        ],
+        "replacement": true,
+        "beforeFight": 3
+      },
+      {
+        "type": "battle",
+        "fight": 3,
+        "region": 0,
+        "regionName": "Dark Forest",
+        "stage": 2,
+        "variant": 1,
+        "seed": 2,
+        "enemies": [
+          "beast",
+          "minibeast",
+          "bat"
+        ],
+        "replay": false,
+        "army": [
+          "barracks-2",
+          null,
+          null
+        ],
+        "goldBefore": 10,
+        "initialUnits": [
+          {
+            "id": "barracks-2",
+            "name": "Spearman",
+            "building": "Barracks",
+            "family": "barracks",
+            "tier": 2,
+            "hp": 4,
+            "damage": 2,
+            "move": 2,
+            "range": 1,
+            "recruit": 25,
+            "buildingCost": 70,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Durable starting infantry.",
+            "team": 0,
+            "armySlot": 0,
+            "cell": 0,
+            "slot": 0,
+            "maxHp": 4,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "beast",
+            "name": "Beast",
+            "hp": 4,
+            "damage": 2,
+            "move": 3,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 6,
+            "team": 1,
+            "slot": 1,
+            "maxHp": 4,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "minibeast",
+            "name": "Minibeast",
+            "hp": 3,
+            "damage": 1,
+            "move": 3,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 13,
+            "team": 1,
+            "slot": 2,
+            "maxHp": 3,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "bat",
+            "name": "Bat",
+            "hp": 2,
+            "damage": 1,
+            "move": 5,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 20,
+            "team": 1,
+            "slot": 3,
+            "maxHp": 2,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          }
+        ],
+        "finalUnits": [
+          {
+            "id": "barracks-2",
+            "name": "Spearman",
+            "building": "Barracks",
+            "family": "barracks",
+            "tier": 2,
+            "hp": 0,
+            "damage": 2,
+            "move": 2,
+            "range": 1,
+            "recruit": 25,
+            "buildingCost": 70,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Durable starting infantry.",
+            "team": 0,
+            "armySlot": 0,
+            "cell": 2,
+            "slot": 0,
+            "maxHp": 4,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "beast",
+            "name": "Beast",
+            "hp": 2,
+            "damage": 2,
+            "move": 3,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 3,
+            "team": 1,
+            "slot": 1,
+            "maxHp": 4,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "minibeast",
+            "name": "Minibeast",
+            "hp": 3,
+            "damage": 1,
+            "move": 3,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 4,
+            "team": 1,
+            "slot": 2,
+            "maxHp": 3,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          },
+          {
+            "id": "bat",
+            "name": "Bat",
+            "hp": 0,
+            "damage": 1,
+            "move": 5,
+            "range": 1,
+            "shootRange": 0,
+            "basis": "Balance v1 - playtest candidate",
+            "notes": "Individual fighter; fixed damage, no armor or special abilities.",
+            "cell": 9,
+            "team": 1,
+            "slot": 3,
+            "maxHp": 2,
+            "spawned": 0,
+            "raised": false,
+            "summoned": false,
+            "charge": null
+          }
+        ],
+        "outcome": "defeat",
+        "rounds": 3,
+        "moves": 12,
+        "attacks": 5,
+        "summons": 0,
+        "healing": 0,
+        "conversions": 0,
+        "preparations": 0,
+        "hops": 0,
+        "survivors": [],
+        "enemiesRemaining": 2,
+        "trace": [
+          {
+            "action": "move",
+            "actor": 0,
+            "unit": "Spearman",
+            "from": 0,
+            "to": 1,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 0,
+            "unit": "Spearman",
+            "from": 1,
+            "to": 2,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 1,
+            "unit": "Beast",
+            "from": 6,
+            "to": 5,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 1,
+            "unit": "Beast",
+            "from": 5,
+            "to": 4,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 1,
+            "unit": "Beast",
+            "from": 4,
+            "to": 3,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 2,
+            "unit": "Minibeast",
+            "from": 13,
+            "to": 12,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 2,
+            "unit": "Minibeast",
+            "from": 12,
+            "to": 11,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 2,
+            "unit": "Minibeast",
+            "from": 11,
+            "to": 4,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Bat",
+            "from": 20,
+            "to": 19,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Bat",
+            "from": 19,
+            "to": 18,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Bat",
+            "from": 18,
+            "to": 17,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Bat",
+            "from": 17,
+            "to": 9,
+            "round": 1
+          },
+          {
+            "action": "attack",
+            "actor": 3,
+            "unit": "Bat",
+            "target": 0,
+            "targetName": "Spearman",
+            "damage": 1,
+            "hpBefore": 4,
+            "hpAfter": 3,
+            "from": 9,
+            "to": 2,
+            "round": 1
+          },
+          {
+            "action": "attack",
+            "actor": 0,
+            "unit": "Spearman",
+            "target": 3,
+            "targetName": "Bat",
+            "damage": 2,
+            "hpBefore": 2,
+            "hpAfter": 0,
+            "from": 2,
+            "to": 9,
+            "round": 2
+          },
+          {
+            "action": "attack",
+            "actor": 1,
+            "unit": "Beast",
+            "target": 0,
+            "targetName": "Spearman",
+            "damage": 2,
+            "hpBefore": 3,
+            "hpAfter": 1,
+            "from": 3,
+            "to": 2,
+            "round": 2
+          },
+          {
+            "action": "attack",
+            "actor": 0,
+            "unit": "Spearman",
+            "target": 1,
+            "targetName": "Beast",
+            "damage": 2,
+            "hpBefore": 4,
+            "hpAfter": 2,
+            "from": 2,
+            "to": 3,
+            "round": 3
+          },
+          {
+            "action": "attack",
+            "actor": 1,
+            "unit": "Beast",
+            "target": 0,
+            "targetName": "Spearman",
+            "damage": 1,
+            "hpBefore": 1,
+            "hpAfter": 0,
+            "from": 3,
+            "to": 2,
+            "round": 3
+          }
+        ],
+        "casualties": [
+          {
+            "slot": 0,
+            "id": "barracks-2"
+          }
+        ],
+        "reward": 0,
+        "goldAfter": 10
+      }
+    ]
+  }
+}

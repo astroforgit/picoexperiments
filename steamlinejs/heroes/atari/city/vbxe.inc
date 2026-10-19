@@ -46,7 +46,10 @@
         lda RTCLOK+2
 ?wait   cmp RTCLOK+2
         beq ?wait
-        rts
+        lda sfx_ready
+        beq ?done
+        jsr sfx.tick
+?done   rts
 .endp
 
 .proc detect_vbxe

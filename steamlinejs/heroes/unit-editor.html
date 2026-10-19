@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Greenhaven · Unit balance editor</title>
+<title>Prince and the Nimf · Unit balance editor</title>
 <style>
 :root{color-scheme:dark;--bg:#10171b;--panel:#192329;--line:#33434a;--text:#e9eee9;--muted:#a8bab7;--gold:#eac17b;--green:#9ad5b2;--red:#ffa69e}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top left,#233931 0,transparent 55%),var(--bg);color:var(--text);font:15px/1.5 system-ui,sans-serif}main{max-width:1480px;margin:auto;padding:40px 24px 64px}.eyebrow{color:var(--gold);font-size:12px;letter-spacing:.18em;text-transform:uppercase}h1{font:600 36px/1.2 Georgia,serif;margin:10px 0}h2{font-size:21px;margin:0}p{color:var(--muted);margin:10px 0}.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:20px 0}button,.file-button{font:inherit;cursor:pointer;border:1px solid var(--line);background:#233137;color:var(--text);padding:10px 16px;border-radius:7px;display:inline-block}button:hover,.file-button:hover{border-color:var(--gold)}button.primary{background:var(--gold);color:#1b2425;border-color:var(--gold);font-weight:650}button:disabled{opacity:.45;cursor:not-allowed}button:focus-visible,input:focus-visible,.file-button:focus-within{outline:2px solid var(--gold);outline-offset:2px}.file-button input{position:absolute;width:1px;height:1px;opacity:0}#status{font-size:13px;color:var(--green);margin-left:auto}#errors{border:1px solid var(--red);border-radius:7px;background:#362729;color:var(--red);padding:12px 16px;margin-bottom:16px}#errors[hidden]{display:none}.settings{display:flex;gap:12px;align-items:center;border-top:1px solid var(--line);padding:16px 0}.settings input{width:115px}section{margin-top:24px;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}.section-head{padding:20px 22px;display:flex;align-items:center;gap:12px}.badge{font-size:12px;border:1px solid #567568;border-radius:20px;padding:3px 10px;color:var(--green)}.enemy .badge{border-color:#795850;color:var(--red)}.table-wrap{overflow:auto;max-height:720px}table{border-collapse:separate;border-spacing:0;width:100%;font-size:14px}th{position:sticky;top:0;z-index:1;background:#233037;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em;text-align:left;padding:12px 10px;white-space:nowrap}td{padding:8px 10px;border-bottom:1px solid #29383e;white-space:nowrap}tr:last-child td{border-bottom:0}tr.family-start td{border-top:2px solid #46534b}tbody tr:hover{background:#203139}input{font:inherit;background:#111d23;border:1px solid #415159;border-radius:5px;color:var(--text);padding:8px 9px;min-width:0}td input[type=number]{width:76px}td input.price{width:92px}td input.name{width:165px}input:invalid{border-color:var(--red);background:#3b2628}.derived{color:var(--gold);font-variant-numeric:tabular-nums;display:block;min-width:50px}.building{font-size:12px;color:var(--muted)}.tier{display:inline-block;border-radius:4px;padding:2px 7px;background:#34463c;color:var(--green);font-size:12px}.note{padding:14px 22px;margin:0;border-top:1px solid var(--line);font-size:13px}.footnotes{margin-top:24px;font-size:13px;max-width:1000px}.footnotes strong{color:var(--text)}@media(max-width:650px){main{padding:24px 12px}h1{font-size:28px}#status{width:100%;margin-left:0}.section-head{padding:16px}.toolbar{gap:8px}button,.file-button{padding:9px 12px}}
@@ -20,7 +20,7 @@ th.preview-cell{z-index:4;background:#233a35}.unit-stage{position:relative;width
 </style>
 </head>
 <body><main>
-<div class="eyebrow">Greenhaven · Atari VBXE</div>
+<div class="eyebrow">Prince and the Nimf · Atari VBXE · Everything by astrofor</div>
 <h1>Unit balance editor</h1>
 <p><a href="art/asset-comparison.html" style="color:var(--gold)">Compare classic and VBXE v2 artwork</a> · Native palette previews, animated frames and separate Atari builds.</p>
 <p>Balance v5: unlimited escalating lairs, permanent soldier casualties, weighted random encounters, sequential region unlocks, six monster abilities, and Forest practice. These defaults are included in the new native VBXE build. The Vampire uses the existing Dark artwork. Ability rules are fixed in this version; stats and encounter pools remain editable.</p>
@@ -647,7 +647,9 @@ function simulateBattle(data,army,encounter,options={}){
  function enemyAct(u){
   if(u.id==='warlock'){
    if(abilities&&(round<2||units.filter(v=>v.summoned&&v.hp>0).length>=2))return;
-   const reused=abilities?units.find(v=>v.team===1&&v.hp<=0):null;
+   // Native add_unit appends until all 12 slots are allocated, then reuses
+   // the first dead enemy slot. Preserve indices for audit trace replay.
+   const reused=abilities&&units.length>=12?units.find(v=>v.team===1&&v.hp<=0):null;
    if(units.length>=12&&!reused){emit({action:'summon-blocked',reason:'12 allocated slots; dead slots are not reused',actor:u.slot});return;}
    const walls=blocked(null);for(let c=0;c<42;c++)if(!walls.has(c)&&DIST[u.cell][c]<=3){const demon=data.enemies.find(x=>x.id===(abilities?'skeleton':'demon')),slot=reused?reused.slot:units.length;const summonHP=abilities?Math.min(99,demon.hp+(encounter.escalation?.hpBonus||0)):demon.hp;
     const summonDamage=abilities?Math.min(9,demon.damage+(encounter.escalation?.damageBonus||0)):demon.damage;

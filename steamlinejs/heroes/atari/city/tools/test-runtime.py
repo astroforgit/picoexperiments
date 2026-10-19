@@ -20,6 +20,7 @@ class Memory:
         self.page, self.bank, self.color = page, 0, 0
         self.story_disk = (ROOT/'generated/heroes-story.atr').read_bytes()
         self.story_reads = []
+        self.audio_writes = []
         self.blits = 0
         self.portrait_blits = []
         self.hero_blits = []
@@ -45,6 +46,7 @@ class Memory:
             self.vram[target] = v
             return
         self.ram[a] = v
+        if a in (0xd202,0xd203):self.audio_writes.append((a,v))
         if self.page is None: return
         if a == self.page+0x5f: self.bank = v
         if a == self.page+0x44: self.color = v
@@ -92,11 +94,12 @@ class Memory:
             self.blits += 1
 
 class Machine:
-    def __init__(self, page=0xd600, story=False):
+    def __init__(self, page=0xd600, story=False, menu=False):
         self.mem = Memory(page)
         self.cpu = MPU(memory=self.mem)
         self.loader_data = (ROOT/'city-vbxe.xex').read_bytes()
         self.loader_offset = 0
+        self.menu = menu
         self.story = story and bool(page)
         self.load_remaining()
 
@@ -127,7 +130,7 @@ class Machine:
                     else:self.call(entry) # Real no-VBXE INIT must return immediately.
                 else:self.call(entry)
         self.cpu.pc = LABELS['main']
-        self.run_until(LABELS['main_loop' if self.mem.page else 'no_vbxe'])
+        self.run_until(LABELS['release_ui.show.loop' if self.menu else 'main_loop'] if self.mem.page else LABELS['no_vbxe'])
 
     def resume_after_story(self):
         self.run_until(0x600)
@@ -138,7 +141,11 @@ class Machine:
         for tick in range(limit):
             if self.cpu.pc == stop: return
             if tick % 1000 == 0: self.mem.ram[0x14] = (self.mem.ram[0x14]+1) & 255
-            if self.cpu.pc == 0xe459:
+            if self.cpu.pc == LABELS.get('release_ui.show') and not getattr(self,'menu',False):
+                # Gameplay fixtures skip only the blocking title menu; release UI
+                # tests execute it using menu=True. No bypass exists in the game.
+                self.cpu.pc=self.cpu.stPopWord()+1
+            elif self.cpu.pc == 0xe459:
                 self.sio_read()
             else:
                 self.cpu.step()

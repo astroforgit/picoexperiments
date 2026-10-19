@@ -12,6 +12,8 @@
         beq ?done
 ?check  jsr can_afford_recruit
         bcs ?done
+        lda #4
+        jsr sfx.play
         mva #3 screen_mode
         mva #0 popup_open
         mva #1 dirty

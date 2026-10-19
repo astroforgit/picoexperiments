@@ -108,6 +108,7 @@ reg_restore
 .endp
 hardware_ok dta 0
 upload_index dta 0
+sfx_ready dta 0
 
 main
         cld
@@ -123,6 +124,7 @@ main
 no_vbxe
         jmp no_vbxe
 hardware_ready
+        mva #1 sfx_ready
         jsr setup_xdl
         jsr blit_init
         jsr load_city_palette
@@ -137,6 +139,7 @@ hardware_ready
         jsr copy_background_cache
         jsr wait_blit
         jsr enable_display
+        jsr release_ui.show
         jsr draw_city
 main_loop
         jsr wait_frame
@@ -322,18 +325,14 @@ main_loop
         lda action_latched
         bne ?directions
         mva #1 action_latched
+        lda #0
+        jsr sfx.play
         lda action_mask
         and #2
         beq ?confirm
         jsr close_popup        ; cancel wins if sources disagree
         jmp ?directions
 ?confirm
-        lda action_mask
-        and #4
-        beq ?normal_confirm
-        jsr outro.preview
-        jmp ?directions
-?normal_confirm
         jsr confirm_action
         jmp ?directions
 ?released
@@ -381,13 +380,6 @@ main_loop
 
 ; Aggregate keyboard and joystick events into ONE logical action per press.
 .proc classify_action
-        cmp #$08                 ; O: temporary ending preview (Atari key code).
-        bne ?normal
-        lda action_mask
-        ora #4
-        sta action_mask
-        rts
-?normal
         cmp #$0C
         beq ?confirm
         cmp #$21
@@ -902,4 +894,6 @@ runtime_data_end
         org $8000
 text_screen
         :1024 dta 0
+        org $A000
+        icl 'release-ui.inc'
         run main

@@ -1,0 +1,1 @@
+Previous main game and story disk before the Prince and the Nimf release menu, credit, short POKEY effects, new package names and removal of the development O shortcut. Existing balance values are preserved.

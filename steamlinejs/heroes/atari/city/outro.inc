@@ -1,5 +1,5 @@
-; The final Warlock victory runs the ending. O previews it without changing
-; campaign state. Story pages stream from D1 into the hidden framebuffer.
+; The final Warlock victory runs the ending. Story pages stream from D1
+; into the hidden framebuffer. No development preview shortcut is enabled.
 .local outro
 .proc check
         lda screen_mode
@@ -16,17 +16,6 @@
         jsr play
 done    rts
 .endp
-.proc preview
-        mva #1 preview_mode
-        jsr play
-        mva #0 preview_mode
-        sta release_ticks
-        mva #1 action_latched
-        sta dirty
-        mva #$FF key_temp
-        sta CH
-        rts
-.endp
 .proc play
         mva #0 page
 next    jsr draw
@@ -35,10 +24,7 @@ next    jsr draw
         lda page
         cmp #3
         bcc next
-        lda preview_mode
-        bne done
         jmp new_city
-done    rts
 .endp
 .proc draw
         mva back_bank render_bank
@@ -51,11 +37,7 @@ ready   labeltext 67,190,s_next
         cmp #2
         bne present
         rect 0,188,320,12,1
-        lda preview_mode
-        beq ending
-        labeltext 100,190,s_return
-        jmp present
-ending  labeltext 85,190,s_end
+        labeltext 85,190,s_end
 present jsr wait_blit
         jmp present_back_buffer
 failed  labeltext 76,190,s_retry
@@ -104,10 +86,8 @@ yes     lda #1
         rts
 .endp
 page dta 0
-preview_mode dta 0
 s_next dta c'FIRE / ENTER / SPACE: NEXT PAGE',0
 s_end dta c'THE END - FIRE: NEW CAMPAIGN',0
-s_return dta c'FIRE: RETURN TO GAME',0
 s_retry dta c'FIRE: RETRY STORY DISK',0
 .endl
 
@@ -115,6 +95,9 @@ s_retry dta c'FIRE: RETRY STORY DISK',0
 ; existing framebuffers are the destination; scenery and sprites stay intact.
 .local story
 .proc load
+        pha
+        jsr sfx.finish
+        pla
         tax
         mva sector_lo,x sector
         mva sector_hi,x sector+1
@@ -206,6 +189,6 @@ remaining dta 0
 destination_bank dta 0
 destination_hi dta 0
 s_missing dta c'MISSING OR WRONG STORY DISK',0
-s_attach dta c'ATTACH HEROES-STORY.ATR TO D1:',0
+s_attach dta c'ATTACH THE STORY DISK TO D1:',0
         icl 'generated/story-content.inc'
 .endl
