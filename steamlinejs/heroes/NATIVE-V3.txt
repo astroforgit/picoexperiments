@@ -46,6 +46,17 @@ intact; overlap checks cover the ending data too. No external image files or
 additional RAM hardware are needed. Full artwork and prompts: art/outro-v1/.
 Native ending regression: python3 atari/city/tools/test-outro.py
 
+Full-quality outro test (standalone viewer)
+  node atari/city/tools/build-outro-full-quality.js
+  ./atari/run-outro-full-quality-test.sh
+This separate XEX starts directly on the ending pictures at 320x144 with the
+same shared 256-colour palette as the intro. Fire, Enter or Space advances;
+after picture three it replays. It uses dedicated VRAM picture caches because
+no campaign or battle assets run in this viewer. Both VBXE register pages and
+missing-VBXE fallback are tested by tools/test-outro-full-quality.py.
+The regular run-heroes-vbxe3.sh still starts the main game with its compact
+outro. The separate viewer demonstrates the proposed higher-quality export.
+
 Integrated balance
 Starts with 50 gold and two 4-HP Spearmen. The editor's current recruitment,
 individual upgrade and building prices are imported. Chapel costs 40/50/30,

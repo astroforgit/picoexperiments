@@ -1,0 +1,12 @@
+{
+  "width": 320,
+  "height": 144,
+  "scale": 1,
+  "colors": 256,
+  "sourceBanks": [
+    2,
+    3,
+    4
+  ],
+  "uploadCount": 48
+}
