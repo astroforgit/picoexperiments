@@ -31,10 +31,14 @@ Defeating the Warlock in the final Necromancer Ruins encounter completes the
 campaign and automatically plays three ending pictures: the father reveal,
 the wedding ceremony, and the rowdy garden reception. The prince spares the defeated
 necromancer after the nymph promises to marry him. Her father escorts her down
-the aisle; at the garden reception she dances, the prince struggles to stand,
+the aisle among happy human guests, zombies in suits and skeletons;
+at the garden reception she dances, the prince struggles to stand,
 and her father is sick onto the grass after the free bar.
 Fire, Enter or Space advances each picture. After THE END, another press starts
 a fresh campaign. Ordinary victories, losses and retreats do not play it.
+Temporary preview shortcut: press O from the game to play the ending without
+winning. Its last page says FIRE: RETURN TO GAME. It returns to the current
+city, map, battle or game-over screen without resetting campaign progress.
 The standalone XEX stores compact 160x72, 16-colour pictures at double scale,
 with native readable captions. They use 10,546 unused VRAM bytes and 6,734 bytes
 of BASIC-off RAM at $A000. Existing battle scenery, unit poses and caches remain

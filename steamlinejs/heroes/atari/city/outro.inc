@@ -16,6 +16,17 @@
         jsr play
 done    rts
 .endp
+.proc preview
+        mva #1 preview_mode
+        jsr play
+        mva #0 preview_mode
+        sta release_ticks
+        mva #1 action_latched
+        sta dirty
+        mva #$FF key_temp
+        sta CH
+        rts
+.endp
 .proc play
         mva #0 page
 next    jsr draw
@@ -24,8 +35,10 @@ next    jsr draw
         lda page
         cmp #3
         bcc next
-        jsr new_city
-        rts
+        lda preview_mode
+        bne done
+        jmp new_city
+done    rts
 .endp
 .proc draw
         mva back_bank render_bank
@@ -89,6 +102,11 @@ text    ldx line
         cmp #2
         bne present
         rect 0,188,320,12,1
+        lda preview_mode
+        beq ending
+        labeltext 100,190,s_return
+        jmp present
+ending
         labeltext 85,190,s_end
 present jsr wait_blit
         jmp present_back_buffer
@@ -212,6 +230,7 @@ yes     lda #1
         rts
 .endp
 page dta 0
+preview_mode dta 0
 chunk dta 0
 source_bank dta 0
 destination_bank dta 0
@@ -237,5 +256,6 @@ s_7 dta c'HER FATHER REGRETS THE FREE BAR.',0
 s_8 dta c'AND THEY LIVED... MORE OR LESS HAPPILY.',0
 s_next dta c'FIRE / ENTER / SPACE: NEXT PAGE',0
 s_end dta c'THE END - FIRE: NEW CAMPAIGN',0
+s_return dta c'FIRE: RETURN TO GAME',0
         icl 'generated/outro-content.inc'
 .endl

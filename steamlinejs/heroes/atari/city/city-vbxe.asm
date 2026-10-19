@@ -328,6 +328,12 @@ main_loop
         jsr close_popup        ; cancel wins if sources disagree
         jmp ?directions
 ?confirm
+        lda action_mask
+        and #4
+        beq ?normal_confirm
+        jsr outro.preview
+        jmp ?directions
+?normal_confirm
         jsr confirm_action
         jmp ?directions
 ?released
@@ -375,6 +381,13 @@ main_loop
 
 ; Aggregate keyboard and joystick events into ONE logical action per press.
 .proc classify_action
+        cmp #$08                 ; O: temporary ending preview (Atari key code).
+        bne ?normal
+        lda action_mask
+        ora #4
+        sta action_mask
+        rts
+?normal
         cmp #$0C
         beq ?confirm
         cmp #$21
