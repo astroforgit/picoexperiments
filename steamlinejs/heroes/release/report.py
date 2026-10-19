@@ -8,6 +8,7 @@ rows=''.join(f"<tr><td>{html.escape(s['name'])}</td><td>{s['completed']} / {s['r
 checks=''.join('<li>'+s+'</li>' for s in [
 'Title, How to Play and Credits, including Everything by astrofor.',
 'Six short POKEY effects, with decay to silence; no music.',
+'Chapel gallery: eight unique portraits, a painter-notes quest, shuffled locations, repeat-find protection and no extra resident image caches.',
 'Complete native 12-victory campaign with purchases, upgrades, legal movement, enemy turns, casualties and the real final boss kill, followed by the automatic wedding ending.',
 'Natural three-fight losing campaign, illustrated bankruptcy and safe restart.',
 'Intro images/code reclaimed; exact full-quality story disk reads; missing/wrong/truncated media.',

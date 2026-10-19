@@ -144,6 +144,7 @@ hardware_ready
 main_loop
         jsr wait_frame
         jsr poll_input
+        jsr gallery.check_events
         jsr outro.check
         jsr check_game_over
         lda dirty
@@ -189,6 +190,7 @@ main_loop
         mva #0 region_wins,x
         dex
         bpl ?progress
+        jsr gallery.new_game
         mva #1 dirty
         rts
 .endp
@@ -237,7 +239,8 @@ main_loop
         lda neighbours,x
         sta selected_plot
         mva #0 notice
-?redraw mva #1 dirty
+?redraw jsr gallery.skip_disabled
+        mva #1 dirty
         rts
 .endp
 

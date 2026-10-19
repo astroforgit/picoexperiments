@@ -12,7 +12,7 @@ def check(page,capture=False):
   m.put('selected_plot',3);before=m.get('gold',2);m.call('purchase')
   assert m.array('building_levels')[3]==level and m.get('gold',2)==before-cost
   assert m.get('army_capacity')==min(3+level,5)
-  m.call('describe_selection');assert m.get('secondary_available')==0 and m.get('target_index')==255
+  m.call('describe_selection');assert m.get('secondary_available')==1 and m.get('target_index')==255
   before=m.get('gold',2);army=m.array('army_units');m.call('recruit');assert m.get('gold',2)==before and m.array('army_units')==army
   if capture:
    m.put('popup_open',1);m.screenshot('chapel-level-'+str(level)+'.png');m.put('popup_open',0)

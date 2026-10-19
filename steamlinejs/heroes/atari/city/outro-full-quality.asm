@@ -1,11 +1,10 @@
-; Full-resolution standalone outro and game-over test. Generated core/helpers come from the
-; current game; no campaign runs and no reduced ending data is loaded.
+; Stream one gallery picture at a time from D1 into the existing screen buffers.
         icl 'generated/outro-full-quality-symbols.inc'
         org $2000
         ins 'generated/outro-full-quality-core.bin'
-        org $7000
+        org $B800
 .proc viewer_prepare
-        mva #32 upload_index
+        mva #61 upload_index
         rts
 .endp
 .local full_outro
@@ -22,25 +21,42 @@ ready   jsr setup_antic
         sta page
         sta render_bank
         mva #1 back_bank
-        mva #2 background_bank
-        jsr copy_background_cache
-        jsr wait_blit
+        jsr draw
         jsr enable_display
 next    jsr wait_action
+        lda load_ok
+        beq retry
         inc page
         lda page
-        cmp #4
-        bcc draw
+        cmp #GALLERY_COUNT
+        bcc retry
         mva #0 page
-draw    lda page
-        clc
-        adc #2
-        sta background_bank
-        mva back_bank render_bank
-        jsr copy_background_cache
-        jsr wait_blit
+retry   mva back_bank render_bank
+        jsr draw
         jsr present_back_buffer
         jmp next
+.endp
+.proc draw
+        mva #0 load_ok
+        lda page
+        clc
+        adc #4
+        jsr story_load
+        bcc failed
+        mva #1 load_ok
+        mwa #s_next text_src
+        mwa #NEXT_X text_x
+        lda page
+        cmp #[GALLERY_COUNT-1]
+        bne footer
+        mwa #s_replay text_src
+        mwa #REPLAY_X text_x
+        jmp footer
+failed  mwa #s_retry text_src
+        mwa #RETRY_X text_x
+footer  mva #190 text_y
+        jsr draw_text
+        jmp wait_blit
 .endp
 .proc wait_action
         ldx #2
@@ -82,8 +98,17 @@ yes     lda #1
         rts
 .endp
 page dta 0
+load_ok dta 0
+s_next dta c'FIRE / ENTER / SPACE: NEXT PAGE',0
+s_replay dta c'FIRE / ENTER / SPACE: REPLAY',0
+s_retry dta c'FIRE: RETRY STORY DISK',0
 .endl
+        ert *> $C000
         ini loader_init
         ini viewer_prepare
         icl 'generated/outro-full-quality-uploads.inc'
+        org $6000
+        ins 'generated/outro-full-quality-runtime.bin'
+        org $A000
+        ins 'generated/outro-full-quality-ui.bin'
         run full_outro.start

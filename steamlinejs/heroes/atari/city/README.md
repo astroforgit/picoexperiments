@@ -31,7 +31,7 @@ the game. For manual loading, mount `generated/heroes-story.atr` in D1: and open
 **[city-vbxe.xex](city-vbxe.xex)**. The intro reclaims all its memory after loading;
 the full-quality ending and game-over pictures stream from the companion disk.
 The release removes the O preview shortcut. The separate
-`../run-outro-full-quality-test.sh` viewer still shows all four story endings.
+`../run-outro-full-quality-test.sh` viewer now shows only the eight new gallery paintings.
 
 - **Joystick:** move between buildings, the gate and five army slots. Down from
   a lower-row building enters the army strip; Left/Right selects a slot and Up
@@ -310,3 +310,11 @@ row is removed. Floating health bars remain hidden.
 
 `python3 tools/test-battle-controls.py` checks double-Fire input and panel focus
 on both supported VBXE register pages.
+
+## Chapel Art Gallery
+
+Build the Chapel to enable its free Art Gallery action. Scouts find the goblin
+master painter’s notebook after two victories. Further victories recover eight
+unique portraits, shuffled among the four lairs, two per lair, each campaign. Missing portraits
+remain locked; viewing an owned painting does not change gold or the army.
+The collection resets on a new game. The companion ATR is now 1 MB.

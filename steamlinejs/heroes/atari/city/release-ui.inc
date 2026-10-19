@@ -310,5 +310,6 @@ controls dta $A0,$A0,$80,$A0,$80,$A0
 frames dta 0
 control dta 0
 .endl
+        icl 'gallery.inc'
 release_ui_end
         ert release_ui_end>$C000

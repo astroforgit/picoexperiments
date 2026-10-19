@@ -53,7 +53,9 @@ for scenario in ('native-campaign-plan','native-defeat-plan'):
    result.append(dict(scenario=scenario,mapping=hex(mapping),fight=fight['fight'],region=fight['regionName'],gold=m.get('gold',2),army=m.array('army_units')))
    if not (run['completed'] and fight['fight']==run['fights']):m.call('battle.confirm')
   assert m.mem.ram[r.LABELS['region_wins']:r.LABELS['region_wins']+4]==bytes(run['wins'])
+  assert m.get('gallery.wins')==run['victories'], 'Gallery discovery must count committed wins only'
   if run['completed']:
+   assert bin(m.get('gallery.collected')).count('1')==7, 'The standard route finds seven; a fourth Forest win gives the optional eighth'
    # Dispatch the real ending after the actual final kill, through the main loop.
    m.cpu.pc=r.LABELS['main_loop'];m.run_until(r.LABELS['outro.wait_action'])
    for page in range(3):

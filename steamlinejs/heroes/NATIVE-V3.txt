@@ -49,8 +49,8 @@ and her father is sick onto the grass after the free bar.
 Fire, Enter or Space advances each picture. After THE END, another press starts
 a fresh campaign. Ordinary victories, losses and retreats do not play it.
 The main game now uses the approved full-quality 320x144 artwork with the
-shared 256-colour palette, at one native pixel per picture pixel. Four complete
-320x200 pages (three victory scenes plus defeat) stream from heroes-story.atr
+shared 256-colour palette, at one native pixel per picture pixel. Twelve complete
+320x200 pages (three victory scenes, defeat and eight gallery paintings) stream from heroes-story.atr
 on D1: into the hidden framebuffer. Captions remain native and readable.
 No ending picture is reserved in gameplay VRAM or at $A000; a 256-byte buffer
 at $8400 is shared with existing rendering scratch RAM. Additional RAM hardware
@@ -82,10 +82,11 @@ Regression checks:
 These execute native 6502 code with both VBXE register pages. Story reads are
 modeled at the OS SIO boundary; raster timing and physical drive timing are not
 emulated by these tests. The separate full-quality viewer remains available
-for direct inspection, now showing three ending pages followed by the game-over
-picture. Fire/Enter/Space advances, and the fourth page loops to the first.
-Run ./atari/run-outro-full-quality-test.sh; this standalone viewer embeds all
-four pages and needs no story disk. The normal runner includes this quality too.
+for direct inspection, now showing only the eight gallery paintings. Fire,
+Enter or Space advances, and the eighth page loops to the first. The runner
+./atari/run-outro-full-quality-test.sh mounts the matched ATR automatically.
+The viewer streams one page at a time using the existing framebuffers; it
+needs the companion disk and reserves no per-picture VRAM caches.
 
 Integrated balance
 Starts with 50 gold and two 4-HP Spearmen. The editor's current recruitment,
@@ -245,3 +246,19 @@ cannot also open the new city's popup. Escape/directions do not bypass game over
 Simulator runs now expose gameOver separately from a fixed buying strategy that
 cannot afford its preferred replacement while a cheaper recruit is still possible.
 Tests: python3 atari/city/tools/test-game-over.py; node tests/game-over.test.cjs
+
+Chapel gallery
+After two victories, scouts discover the notes of goblin painter Grubbrush.
+Bandits scattered eight portraits, two hidden in each lair. Forest wins three
+and four yield its two; other regions yield theirs on wins one and two. The
+eight paintings are shuffled at campaign start with a separate seeded RNG;
+encounter seeds and gold rewards are unchanged. No duplicate finds. Build
+the Chapel to enable ART GALLERY. Missing items are locked; viewing art is free
+and returns to the same campaign/popup. A new game clears the collection.
+The matched XEX/ATR now uses a 1 MB companion disk with twelve pages. Both
+the game and standalone viewer stream one picture at a time into the existing
+front/back screen buffers via $8400..$84FF, with no resident picture caches.
+The standalone run-outro-full-quality-test.sh shows only the eight gallery
+paintings, loops after the last, and automatically attaches the story ATR.
+Sources and exact built-in imagegen prompts: art/gallery-v1/.
+Native checks: test-gallery.py, test-story-streaming.py, test-outro-full-quality.py

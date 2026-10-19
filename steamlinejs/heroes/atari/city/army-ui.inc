@@ -156,6 +156,8 @@
         lda button_index
         cmp popup_choice
         bne ?label
+        jsr gallery.button_available
+        bcc ?label
         ldx button_index
         lda button_y,x
         sta calc_y
@@ -187,7 +189,10 @@
         lda selected_plot
         cmp #3
         bne ?recruit_or_dismiss
-        mwa #s_support_only text_src
+        mwa #gallery.s_button text_src
+        lda secondary_available
+        bne ?text
+        mwa #gallery.s_build_first text_src
         jmp ?text
 ?recruit_or_dismiss
         lda selected_plot
@@ -222,6 +227,9 @@
         mwa upgrade_cost number_value
         jmp ?price
 ?secondary_price
+        lda selected_plot
+        cmp #3
+        beq ?next
         lda secondary_available
         beq ?next
         mwa secondary_cost number_value

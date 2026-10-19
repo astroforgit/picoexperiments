@@ -94,12 +94,13 @@ class Memory:
             self.blits += 1
 
 class Machine:
-    def __init__(self, page=0xd600, story=False, menu=False):
+    def __init__(self, page=0xd600, story=False, menu=False, gallery=False):
         self.mem = Memory(page)
         self.cpu = MPU(memory=self.mem)
         self.loader_data = (ROOT/'city-vbxe.xex').read_bytes()
         self.loader_offset = 0
         self.menu = menu
+        self.gallery = gallery
         self.story = story and bool(page)
         self.load_remaining()
 
@@ -144,6 +145,11 @@ class Machine:
             if self.cpu.pc == LABELS.get('release_ui.show') and not getattr(self,'menu',False):
                 # Gameplay fixtures skip only the blocking title menu; release UI
                 # tests execute it using menu=True. No bypass exists in the game.
+                self.cpu.pc=self.cpu.stPopWord()+1
+            elif self.cpu.pc == LABELS.get('gallery.check_events') and not getattr(self,'gallery',False):
+                # Other fixtures acknowledge blocking discoveries; dedicated gallery
+                # tests execute the messages. Collection/progression remains native.
+                self.put('gallery.notes_pending',0);self.put('gallery.painting_pending',0)
                 self.cpu.pc=self.cpu.stPopWord()+1
             elif self.cpu.pc == 0xe459:
                 self.sio_read()

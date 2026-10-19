@@ -1,5 +1,6 @@
 [
   {
+    "scenario": "native-campaign-plan",
     "mapping": "0xd600",
     "fight": 1,
     "region": "Dark Forest",
@@ -10,10 +11,10 @@
       255,
       255,
       255
-    ],
-    "scenario": "native-campaign-plan"
+    ]
   },
   {
+    "scenario": "native-campaign-plan",
     "mapping": "0xd600",
     "fight": 2,
     "region": "Dark Forest",
@@ -24,10 +25,10 @@
       3,
       255,
       255
-    ],
-    "scenario": "native-campaign-plan"
+    ]
   },
   {
+    "scenario": "native-campaign-plan",
     "mapping": "0xd600",
     "fight": 3,
     "region": "Dark Forest",
@@ -38,10 +39,10 @@
       3,
       3,
       255
-    ],
-    "scenario": "native-campaign-plan"
+    ]
   },
   {
+    "scenario": "native-campaign-plan",
     "mapping": "0xd600",
     "fight": 4,
     "region": "Catacombs",
@@ -52,10 +53,10 @@
       3,
       3,
       3
-    ],
-    "scenario": "native-campaign-plan"
+    ]
   },
   {
+    "scenario": "native-campaign-plan",
     "mapping": "0xd600",
     "fight": 5,
     "region": "Catacombs",
@@ -66,10 +67,10 @@
       3,
       3,
       3
-    ],
-    "scenario": "native-campaign-plan"
+    ]
   },
   {
+    "scenario": "native-campaign-plan",
     "mapping": "0xd600",
     "fight": 6,
     "region": "Catacombs",
@@ -80,10 +81,10 @@
       4,
       4,
       3
-    ],
-    "scenario": "native-campaign-plan"
+    ]
   },
   {
+    "scenario": "native-campaign-plan",
     "mapping": "0xd600",
     "fight": 7,
     "region": "Monster Caves",
@@ -94,10 +95,10 @@
       4,
       4,
       4
-    ],
-    "scenario": "native-campaign-plan"
+    ]
   },
   {
+    "scenario": "native-campaign-plan",
     "mapping": "0xd600",
     "fight": 8,
     "region": "Monster Caves",
@@ -108,10 +109,10 @@
       5,
       5,
       5
-    ],
-    "scenario": "native-campaign-plan"
+    ]
   },
   {
+    "scenario": "native-campaign-plan",
     "mapping": "0xd600",
     "fight": 9,
     "region": "Monster Caves",
@@ -122,10 +123,10 @@
       5,
       5,
       5
-    ],
-    "scenario": "native-campaign-plan"
+    ]
   },
   {
+    "scenario": "native-campaign-plan",
     "mapping": "0xd600",
     "fight": 10,
     "region": "Necromancer Ruins",
@@ -136,10 +137,10 @@
       5,
       5,
       5
-    ],
-    "scenario": "native-campaign-plan"
+    ]
   },
   {
+    "scenario": "native-campaign-plan",
     "mapping": "0xd600",
     "fight": 11,
     "region": "Necromancer Ruins",
@@ -150,10 +151,10 @@
       5,
       5,
       5
-    ],
-    "scenario": "native-campaign-plan"
+    ]
   },
   {
+    "scenario": "native-campaign-plan",
     "mapping": "0xd600",
     "fight": 12,
     "region": "Necromancer Ruins",
@@ -164,10 +165,10 @@
       5,
       5,
       5
-    ],
-    "scenario": "native-campaign-plan"
+    ]
   },
   {
+    "scenario": "native-campaign-plan",
     "mapping": "0xd700",
     "fight": 1,
     "region": "Dark Forest",
@@ -178,10 +179,10 @@
       255,
       255,
       255
-    ],
-    "scenario": "native-campaign-plan"
+    ]
   },
   {
+    "scenario": "native-campaign-plan",
     "mapping": "0xd700",
     "fight": 2,
     "region": "Dark Forest",
@@ -192,10 +193,10 @@
       3,
       255,
       255
-    ],
-    "scenario": "native-campaign-plan"
+    ]
   },
   {
+    "scenario": "native-campaign-plan",
     "mapping": "0xd700",
     "fight": 3,
     "region": "Dark Forest",
@@ -206,10 +207,10 @@
       3,
       3,
       255
-    ],
-    "scenario": "native-campaign-plan"
+    ]
   },
   {
+    "scenario": "native-campaign-plan",
     "mapping": "0xd700",
     "fight": 4,
     "region": "Catacombs",
@@ -220,10 +221,10 @@
       3,
       3,
       3
-    ],
-    "scenario": "native-campaign-plan"
+    ]
   },
   {
+    "scenario": "native-campaign-plan",
     "mapping": "0xd700",
     "fight": 5,
     "region": "Catacombs",
@@ -234,10 +235,10 @@
       3,
       3,
       3
-    ],
-    "scenario": "native-campaign-plan"
+    ]
   },
   {
+    "scenario": "native-campaign-plan",
     "mapping": "0xd700",
     "fight": 6,
     "region": "Catacombs",
@@ -248,10 +249,10 @@
       4,
       4,
       3
-    ],
-    "scenario": "native-campaign-plan"
+    ]
   },
   {
+    "scenario": "native-campaign-plan",
     "mapping": "0xd700",
     "fight": 7,
     "region": "Monster Caves",
@@ -262,10 +263,10 @@
       4,
       4,
       4
-    ],
-    "scenario": "native-campaign-plan"
+    ]
   },
   {
+    "scenario": "native-campaign-plan",
     "mapping": "0xd700",
     "fight": 8,
     "region": "Monster Caves",
@@ -276,10 +277,10 @@
       5,
       5,
       5
-    ],
-    "scenario": "native-campaign-plan"
+    ]
   },
   {
+    "scenario": "native-campaign-plan",
     "mapping": "0xd700",
     "fight": 9,
     "region": "Monster Caves",
@@ -290,10 +291,10 @@
       5,
       5,
       5
-    ],
-    "scenario": "native-campaign-plan"
+    ]
   },
   {
+    "scenario": "native-campaign-plan",
     "mapping": "0xd700",
     "fight": 10,
     "region": "Necromancer Ruins",
@@ -304,10 +305,10 @@
       5,
       5,
       5
-    ],
-    "scenario": "native-campaign-plan"
+    ]
   },
   {
+    "scenario": "native-campaign-plan",
     "mapping": "0xd700",
     "fight": 11,
     "region": "Necromancer Ruins",
@@ -318,10 +319,10 @@
       5,
       5,
       5
-    ],
-    "scenario": "native-campaign-plan"
+    ]
   },
   {
+    "scenario": "native-campaign-plan",
     "mapping": "0xd700",
     "fight": 12,
     "region": "Necromancer Ruins",
@@ -332,10 +333,10 @@
       5,
       5,
       5
-    ],
-    "scenario": "native-campaign-plan"
+    ]
   },
   {
+    "scenario": "native-defeat-plan",
     "mapping": "0xd600",
     "fight": 1,
     "region": "Dark Forest",
@@ -346,10 +347,10 @@
       255,
       255,
       255
-    ],
-    "scenario": "native-defeat-plan"
+    ]
   },
   {
+    "scenario": "native-defeat-plan",
     "mapping": "0xd600",
     "fight": 2,
     "region": "Dark Forest",
@@ -360,10 +361,10 @@
       255,
       255,
       255
-    ],
-    "scenario": "native-defeat-plan"
+    ]
   },
   {
+    "scenario": "native-defeat-plan",
     "mapping": "0xd600",
     "fight": 3,
     "region": "Dark Forest",
@@ -374,10 +375,10 @@
       255,
       255,
       255
-    ],
-    "scenario": "native-defeat-plan"
+    ]
   },
   {
+    "scenario": "native-defeat-plan",
     "mapping": "0xd700",
     "fight": 1,
     "region": "Dark Forest",
@@ -388,10 +389,10 @@
       255,
       255,
       255
-    ],
-    "scenario": "native-defeat-plan"
+    ]
   },
   {
+    "scenario": "native-defeat-plan",
     "mapping": "0xd700",
     "fight": 2,
     "region": "Dark Forest",
@@ -402,10 +403,10 @@
       255,
       255,
       255
-    ],
-    "scenario": "native-defeat-plan"
+    ]
   },
   {
+    "scenario": "native-defeat-plan",
     "mapping": "0xd700",
     "fight": 3,
     "region": "Dark Forest",
@@ -416,7 +417,6 @@
       255,
       255,
       255
-    ],
-    "scenario": "native-defeat-plan"
+    ]
   }
 ]

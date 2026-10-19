@@ -107,7 +107,9 @@
         mva next_unit target_index
         jmp ?done
 ?support mva #255 target_index
-        mva #0 secondary_available
+        lda current_level
+        beq ?done
+        mva #1 secondary_available
 ?done   mwa upgrade_cost purchase_cost
         rts
 .endp
@@ -154,6 +156,11 @@
         jmp ?redraw
 ?secondary
         lda selected_plot
+        cmp #3
+        bne ?ordinary_secondary
+        jsr gallery.open
+        jmp ?redraw
+?ordinary_secondary
         cmp #6
         bcs ?dismiss
         jsr recruit
@@ -234,6 +241,9 @@ action_unavailable
         rts
 
 .proc recruit
+        lda selected_plot
+        cmp #3
+        jeq action_unavailable
         jsr describe_selection
         lda secondary_available
         jeq action_unavailable

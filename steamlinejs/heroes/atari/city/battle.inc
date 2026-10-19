@@ -894,7 +894,8 @@ enemy_busy dta 0
         cmp #255
         beq ?reward
         inc region_wins,x
-?reward ldy contract
+?reward jsr gallery.record_win
+        ldy contract
         lda reward_lo,y
         sta reward
         lda reward_hi,y

@@ -17,4 +17,4 @@ for page in (0xd600,0xd700):
   assert bytes(m.mem.vram[0x20000:])==assets,'Story page changed gameplay graphics'
  for disk in (None,bytes(len(m.mem.story_disk)),m.mem.story_disk[:2000]):
   m.mem.story_disk=disk;m.cpu.a=0;m.call('story.load');assert not m.cpu.p&1
- print(f'PASS ${page:04X}: four exact 320x200 pages, correct sector sizes/ranges, untouched gameplay VRAM, missing/wrong/truncated disk handling.')
+ print(f'PASS ${page:04X}: twelve exact 320x200 story/gallery pages, correct sector sizes/ranges, untouched gameplay VRAM, missing/wrong/truncated disk handling.')

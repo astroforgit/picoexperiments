@@ -61,8 +61,9 @@ const story=JSON.parse(fs.readFileSync('generated/story-layout.json'));
 assert.equal(story.width,320);assert.equal(story.height,144);assert.equal(story.colors,256);
 const disk=fs.readFileSync('generated/heroes-story.atr');
 assert.equal(disk.readUInt16LE(0),0x296);assert.equal(disk.readUInt16LE(4),256);
-assert.equal(disk.length,368272);assert.equal(story.sectors.length,4);
-for(let i=1;i<=4;i++)assert.equal(fs.statSync(`generated/story-${i}.bin`).size,64000);
+assert.equal(disk.length,1048208);assert.equal(story.sectors.length,12);
+assert(story.sectors.at(-1)+250-1<=story.sectorCount);
+for(let i=1;i<=12;i++)assert.equal(fs.statSync(`generated/story-${i}.bin`).size,64000);
 for(const a of anim.idleCaches||[])allocations.push([a,a+896,'idle sprite cache']);
 allocations.push([anim.cache[0],anim.cache[0]+anim.cache[1],'decoded hero cache']);
 anim.addresses.forEach((a,i)=>{
@@ -75,4 +76,4 @@ for(let i=0;i<allocations.length;i++){
  if(i)assert(allocations[i-1][1]<=allocations[i][0],allocations[i][2]+' overlaps');
 }
 console.log('PASS: compressed hero frames and decode cache are disjoint from all scenery/UI banks.');
-console.log('PASS: four full-quality story pages stream from the companion ATR with no permanent picture allocation.');
+console.log('PASS: twelve full-quality story/gallery pages stream from the companion ATR with no permanent picture allocation.');

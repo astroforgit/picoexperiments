@@ -15,7 +15,7 @@ It mounts prince-and-the-nimf.atr in D1: and starts prince-and-the-nimf.xex.
 Manual loading / real Atari: use an XL/XE with 64 KB and VBXE FX 1.2x,
 load prince-and-the-nimf.xex with BASIC disabled and mount the companion
 prince-and-the-nimf.atr as D1:. The disk has 256-byte sectors; the drive or
-SIO peripheral must support the supplied 360 KB ATR. The full-quality ending
+SIO peripheral must support the supplied 1 MB ATR. The full-quality ending
 and game-over artwork need this disk. Additional extended CPU RAM is not needed.
 The introduction reclaims its picture/code memory after loading.
 
@@ -40,10 +40,19 @@ soldiers for. Different purchasing routes carry different risks.
 Killing the final Warlock wins immediately and plays the wedding ending.
 Losing every soldier without enough gold for any available recruit is game over.
 Fire starts a fresh campaign after defeat or after the final ending page.
-There are no saves; restarting starts over. Short sound effects are included,
+There are no saves; restarting starts over. The Chapel has a free ART GALLERY action after it is built. After two
+victories, scouts find the notes of goblin master painter Grubbrush, whose
+portraits of the nimf were scattered by bandits. Later victories recover eight
+unique paintings, two hidden in each lair, with locations shuffled each campaign.
+The Forest yields its paintings on the third and fourth wins; each other lair
+yields one on its first win and another on its second. Revisit the Forest once
+for the full collection. All eight can be recovered before the final boss. Viewing the
+collection changes no gold or troops. A new campaign clears the collection;
+there are still no saves. Short sound effects are included,
 without music. The development O shortcut is removed from the release game.
-For direct picture inspection, the separate story-test XEX remains available
-in the source repository; it is not needed to play this package.
+For direct picture inspection, the separate story-test XEX now shows ONLY
+the eight new gallery paintings. It now also streams from the companion ATR; its runner mounts the disk
+automatically. It remains in the source repository and is not needed to play.
 
 CREDITS
 Everything by astrofor.

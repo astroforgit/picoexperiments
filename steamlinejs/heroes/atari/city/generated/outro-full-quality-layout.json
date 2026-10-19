@@ -1,13 +1,18 @@
 {
   "width": 320,
   "height": 144,
-  "scale": 1,
   "colors": 256,
-  "sourceBanks": [
-    2,
-    3,
-    4,
-    5
+  "pictureCount": 8,
+  "residentPictureCaches": 0,
+  "framebuffers": [
+    0,
+    1
   ],
-  "uploadCount": 64
+  "stagingBytes": 256,
+  "fontBanks": [
+    61,
+    62
+  ],
+  "uploadCount": 2,
+  "requires": "prince-and-the-nimf.atr"
 }

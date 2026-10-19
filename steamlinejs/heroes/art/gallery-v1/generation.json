@@ -1,0 +1,69 @@
+{
+  "tool": "built-in imagegen",
+  "reference": "art/intro-v1/forest-love.png",
+  "prompts": [
+    {
+      "name": "painter-sitting",
+      "prompt": "Use case: illustration-story. Asset: a wide landscape collectible painting for the humorous adult fantasy Atari VBXE game Prince and the Nimf. Image 1 is a CHARACTER AND ART STYLE REFERENCE, not an edit target: match its expressive hand-painted pixel-art look, rich forest colors and the same unmistakably ADULT 25-year-old nymph: long wavy copper-red hair, pointed ears, green eyes, flowers in hair, green leaf costume. All characters are adults. Compose wide 16:9, readable at 320x144, expressive face and clear silhouette. No lettering, logos, captions, UI, borders or watermarks. Non-explicit, fully clothed, playful fantasy illustration, no erotic performance or sexual acts. In a cozy goblin master painter's studio, a short elderly green goblin in a paint-spattered artist's smock and beret works at an easel. His canvas shows a tasteful portrait of the nymph posing opposite him. She wears an opaque strapless green leaf bodice and flowing green skirt, with her forearms crossed modestly over the bodice, shoulders bare, giving a mischievous knowing smile. Let her be self-confident and cheeky, not shy or solemn. Comedic contrast: the little master takes the portrait extremely seriously. Paint pots, brushes and woodland light. Medium-wide composition, both painter and nymph visible. No nudity.",
+      "references": [
+        "art/intro-v1/forest-love.png"
+      ]
+    },
+    {
+      "name": "tavern-dance",
+      "references": [
+        "art/intro-v1/forest-love.png"
+      ]
+    },
+    {
+      "name": "lake-reflection",
+      "prompt": "Use case: illustration-story. Asset: a wide landscape collectible painting for the humorous adult fantasy Atari VBXE game Prince and the Nimf. Image 1 is a CHARACTER AND ART STYLE REFERENCE, not an edit target: match its expressive hand-painted pixel-art look, rich forest colors and the same unmistakably ADULT 25-year-old nymph: long wavy copper-red hair, pointed ears, green eyes, flowers in hair, green leaf costume. All characters are adults. Compose wide 16:9, readable at 320x144, expressive face and clear silhouette. No lettering, logos, captions, UI, borders or watermarks. Non-explicit, fully clothed, playful fantasy illustration, no erotic performance or sexual acts. The adult red-haired nymph admires her reflection in a perfectly still woodland lake that acts as a mirror. She is kneeling gracefully on the grassy bank, wearing a fitted opaque green leaf bodice and green skirt, adjusting a flower in her copper hair and looking at her reflection with a playful self-satisfied grin. Show a clear recognizable mirrored face and costume on the water, lily pads, ferns, flowers, soft sunlight. Wide storybook landscape, flattering elegant composition, no nudity, no erotic focus.",
+      "references": [
+        "art/intro-v1/forest-love.png"
+      ]
+    },
+    {
+      "name": "flower-pentagram",
+      "prompt": "Use case: illustration-story. Asset: a wide landscape collectible painting for the humorous adult fantasy Atari VBXE game Prince and the Nimf. Image 1 is a CHARACTER AND ART STYLE REFERENCE, not an edit target: match its expressive hand-painted pixel-art look, rich forest colors and the same unmistakably ADULT 25-year-old nymph: long wavy copper-red hair, pointed ears, green eyes, flowers in hair, green leaf costume. All characters are adults. Compose wide 16:9, readable at 320x144, expressive face and clear silhouette. No lettering, logos, captions, UI, borders or watermarks. Non-explicit, fully clothed, playful fantasy illustration, no erotic performance or sexual acts. A back-view portrait of the adult red-haired nymph in a moonlit flower garden. She wears an elegant green BACKLESS leaf dress: chest, hips and legs covered, bare upper back visible from shoulders down to waist. Her long copper-red hair is swept over one shoulder to keep the entire upper back visible. Centered between her shoulder blades is a clearly readable tattoo of an INVERTED PENTAGRAM (five-pointed star with ONE POINT DOWN), dark ink entwined with delicate vines and colorful flowers. She turns her face over her shoulder with a cheeky smile. Emphasize the tattoo as decorative fantasy character storytelling, no nudity, no erotic pose. Frame from head to hips with flowers surrounding her.",
+      "references": [
+        "art/intro-v1/forest-love.png"
+      ]
+    },
+    {
+      "name": "apple-thief",
+      "title": "THE APPLE THIEF",
+      "prompt": "Use case: illustration-story. Create a wide landscape 16:9 game painting for Prince and the Nimf. References are for character identity and colorful detailed pixel-art/storybook style. Match the same clearly adult 25-year-old nymph with long copper-red curls, pointed ears, green eyes, flowers in her hair and opaque green medieval leaf clothing. Every character is an adult. Keep the face expressive and the composition readable at 320x144 pixels. Rich woodland colors, detailed fantasy scenery, humorous character acting. No text, captions, borders, lettering or watermark. The adult woodland nymph sits on a low orchard stone wall in a green leaf dress, boots and flower crown, playfully holding one freshly picked apple behind her back while smiling with comic innocence at a suspicious elderly goblin gardener. An apple basket and lush branches make her little prank obvious to the viewer. Sunlit orchard, mischievous storybook comedy.",
+      "references": [
+        "art/intro-v1/forest-love.png",
+        "art/gallery-v1/painter-sitting.png"
+      ]
+    },
+    {
+      "name": "loaded-dice",
+      "title": "THE LOADED DICE",
+      "prompt": "Use case: illustration-story. Create a wide landscape 16:9 game painting for Prince and the Nimf. References are for character identity and colorful detailed pixel-art/storybook style. Match the same clearly adult 25-year-old nymph with long copper-red curls, pointed ears, green eyes, flowers in her hair and opaque green medieval leaf clothing. Every character is an adult. Keep the face expressive and the composition readable at 320x144 pixels. Rich woodland colors, detailed fantasy scenery, humorous character acting. No text, captions, borders, lettering or watermark. Inside a warmly lit medieval inn, the adult red-haired woodland nymph in a green fitted folk dress plays a friendly dice game at a table with two adult bearded dwarves and an adult barbarian adventurer. She smiles knowingly at her excellent roll while the others react with exaggerated astonishment and laughter. Show dice, wooden mugs and a few fantasy coins on the table. Lighthearted character comedy, everyone fully dressed.",
+      "references": [
+        "art/intro-v1/forest-love.png",
+        "art/gallery-v1/painter-sitting.png"
+      ]
+    },
+    {
+      "name": "borrowed-crown",
+      "title": "A BORROWED CROWN",
+      "prompt": "Use case: illustration-story. Create a wide landscape 16:9 game painting for Prince and the Nimf. References are for character identity and colorful detailed pixel-art/storybook style. Match the same clearly adult 25-year-old nymph with long copper-red curls, pointed ears, green eyes, flowers in her hair and opaque green medieval leaf clothing. Every character is an adult. Keep the face expressive and the composition readable at 320x144 pixels. Rich woodland colors, detailed fantasy scenery, humorous character acting. No text, captions, borders, lettering or watermark. The adult red-haired nymph has borrowed the prince's gold circlet and oversized royal red cloak, worn over her opaque green leaf dress. In a castle garden she poses like an absurdly grand queen, lifting her chin with a cheeky smirk. Her goblin master painter sits at his easel nearby, chuckling as he attempts a serious royal portrait. Roses, ivy and warm afternoon light; playful humorous fantasy.",
+      "references": [
+        "art/intro-v1/forest-love.png",
+        "art/gallery-v1/painter-sitting.png"
+      ]
+    },
+    {
+      "name": "moonlight-dance",
+      "title": "THE MOONLIGHT DANCE",
+      "prompt": "Use case: illustration-story. Create a wide landscape 16:9 game painting for Prince and the Nimf. References are for character identity and colorful detailed pixel-art/storybook style. Match the same clearly adult 25-year-old nymph with long copper-red curls, pointed ears, green eyes, flowers in her hair and opaque green medieval leaf clothing. Every character is an adult. Keep the face expressive and the composition readable at 320x144 pixels. Rich woodland colors, detailed fantasy scenery, humorous character acting. No text, captions, borders, lettering or watermark. The adult red-haired woodland nymph dances a graceful festive folk dance in a moonlit forest glade, wearing an elegant opaque green leaf gown with a flowing layered skirt and floral hair garland. Several adult goblin musicians play fiddle and lute beside glowing lanterns. She smiles with lively confidence, one hand lifting the edge of her skirt slightly above her boots to step over flowers. Charming, magical and joyful, fully clothed.",
+      "references": [
+        "art/intro-v1/forest-love.png",
+        "art/gallery-v1/painter-sitting.png"
+      ]
+    }
+  ]
+}
