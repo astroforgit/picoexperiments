@@ -12,7 +12,7 @@
         beq ?done
 ?check  jsr can_afford_recruit
         bcs ?done
-        lda #4
+        lda #SFX_LAMENT
         jsr sfx.play
         mva #3 screen_mode
         mva #0 popup_open

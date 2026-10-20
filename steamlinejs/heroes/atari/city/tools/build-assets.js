@@ -236,9 +236,6 @@ fs.writeFileSync('generated/hero-animation.inc',heroDefs);
 fs.writeFileSync('generated/hero-animation-layout.json',JSON.stringify({idleCaches,addresses,lengths:frames.map(f=>f.length),cache:[0x7e000,896]},null,2));
 console.log(`Packed 126 full-body fighter frames into ${frames.reduce((n,f)=>n+f.length,0)} VRAM bytes.`);
 fs.writeFileSync("generated/palette.bin",Buffer.from(palette.flat()));
-const releaseTitle='PRINCE AND THE NIMF';
-const logo=Array.from(releaseTitle).flatMap(c=>Array.from({length:6},(_,x)=>Array.from({length:7},(_,y)=>glyphs[(c.charCodeAt(0)-32)*48+y*6+x]?1<<y:0).reduce((a,b)=>a|b,0)));
-fs.writeFileSync('generated/release-logo.inc','logo_data dta '+logo.join(',')+'\n');
 require('./build-story-assets')({convert,indexed,palette,font:glyphs});
 fs.writeFileSync("generated/vram.bin",vram);
 const bytes=(name,a)=>`${name}\n        dta ${a.join(",")}\n`;
@@ -306,6 +303,22 @@ for(const [page,story] of storyPages.entries()){
 // Display while loading; the next uploads replace picture three with city art,
 // and the final battle tables overwrite the temporary intro machine code.
 uploads.push(`        org $7000\n        icl 'story-intro.inc'\n        ini story_intro`);
+// Title picture: composed by art/tools/compose-title.py. It loads into the
+// spare back buffer once the intro has finished with it; the menu copies it
+// to the front buffer and gameplay overwrites both buffers after Start.
+{
+ const pixels=Buffer.alloc(65536,1);
+ indexed(rgba('../../art/title-v1/title.png',320,200)).copy(pixels);
+ fs.writeFileSync('generated/title.bin',pixels);
+ const rgb=Buffer.alloc(64000*3);
+ for(let i=0;i<64000;i++)for(let c=0;c<3;c++)rgb[i*3+c]=palette[pixels[i]][c];
+ convert(['-size','320x200','-depth','8','rgb:-','generated/title.png'],rgb);
+ for(let bank=0;bank<16;bank++){
+  const bankFile=`generated/title-bank-${bank+16}.bin`;
+  fs.writeFileSync(bankFile,pixels.subarray(bank*4096,(bank+1)*4096));
+  uploads.push(`        org $6000\n        ins '${bankFile}'\n        ini upload_chunk`);
+ }
+}
 for(let i=0;i<vram.length/4096;i++){
   fs.writeFileSync(`generated/bank-${i+32}.bin`,vram.subarray(i*4096,(i+1)*4096));
   uploads.push(`        org $6000\n        ins 'generated/bank-${i+32}.bin'\n        ini upload_chunk`);

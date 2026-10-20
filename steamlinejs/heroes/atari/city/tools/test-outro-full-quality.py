@@ -4,9 +4,13 @@ import importlib.util,json,sys
 from pathlib import Path
 sp=importlib.util.spec_from_file_location('r',Path(__file__).with_name('test-runtime.py'));r=importlib.util.module_from_spec(sp);sp.loader.exec_module(r)
 labels={p[2].lower():int(p[1],16) for line in (r.ROOT/'generated/outro-full-quality.lab').read_text().splitlines() if len(p:=line.split())==3}
-layout=json.loads((r.ROOT/'generated/story-layout.json').read_text())
-def machine(page,missing_disk=False):
+layout=json.loads((r.ROOT/'generated/outro-full-quality-layout.json').read_text())
+count=layout['pictureCount'];offset=layout.get('pageOffset',4)
+disk=r.ROOT/'generated'/('heroes-story.atr' if layout['requires']=='prince-and-the-nimf.atr' else layout['requires'])
+def machine(page,missing_disk=False,wrong_disk=False):
  m=r.Machine.__new__(r.Machine);m.mem=r.Memory(page);m.cpu=r.MPU(memory=m.mem)
+ m.mem.story_disk=disk.read_bytes()
+ if wrong_disk:m.mem.story_disk=(r.ROOT/'generated/heroes-story.atr').read_bytes()
  if missing_disk:m.mem.story_disk=None
  data=(r.ROOT/'outro-full-quality-test.xex').read_bytes();i=0
  while i<len(data):
@@ -35,23 +39,27 @@ for register_page in (0xd600,0xd700):
  m=machine(register_page);assert m.get('upload_index')==63
  immutable=bytes(m.mem.vram[0x20000:0x7f000])
  assert m.mem.palette==(r.ROOT/'generated/palette.bin').read_bytes()
- for i in range(9):
-  page=i%8;assert m.mem.ram[labels['full_outro.page']]==page
+ for i in range(count+1):
+  page=i%count;assert m.mem.ram[labels['full_outro.page']]==page
   front=m.get('front_bank')*65536
   assert bytes(m.mem.vram[front:front+64000])==(r.ROOT/f'generated/outro-full-quality-{page+1}.bin').read_bytes()[:64000]
   assert bytes(m.mem.vram[0x20000:0x7f000])==immutable,'An image cache was allocated outside the screen buffers'
-  sector=layout['sectors'][page+4]
+  sector=layout['sectors'][page+offset]
   assert m.mem.story_reads[-251:]==[(1,128)]+[(s,256) for s in range(sector,sector+250)]
-  if i<8:next_page(m,i)
- print(f'PASS ${register_page:04X}: eight exact disk-streamed pages, full replay, Fire/Enter/Space and held-key handling, 256-byte staging, zero resident image caches.',flush=True)
+  if i<count:next_page(m,i)
+ print(f'PASS ${register_page:04X}: {count} exact disk-streamed pages, full replay, Fire/Enter/Space and held-key handling, 256-byte staging, zero resident image caches.',flush=True)
 m=machine(0xd600,True);assert m.mem.ram[labels['full_outro.load_ok']]==0
-m.mem.story_disk=(r.ROOT/'generated/heroes-story.atr').read_bytes();next_page(m,0)
+m.mem.story_disk=disk.read_bytes();next_page(m,0)
 assert m.mem.ram[labels['full_outro.page']]==0 and m.mem.ram[labels['full_outro.load_ok']]==1
 m=machine(None);assert m.get('hardware_ok')==0 and not m.mem.blits
 print('PASS: missing disk retries the same picture after attachment; missing VBXE uses the text fallback.')
+if layout.get('configFile')=='galleryartist-content.json':
+ m=machine(0xd600,wrong_disk=True)
+ assert m.mem.ram[labels['full_outro.load_ok']]==0,'Accepted the unrelated main-game disk'
+ print('PASS: artist viewer rejects the main-game disk instead of displaying unrelated pictures.')
 if '--screens' in sys.argv:
  from PIL import Image
  out=Path(sys.argv[sys.argv.index('--screens')+1]);out.mkdir(parents=True,exist_ok=True);frames=[]
- for i in range(1,9):
-  im=Image.open(r.ROOT/f'generated/outro-full-quality-{i}.png').convert('RGB');im.save(out/f'gallery-native-{i}.png');frames.append(im.resize((960,600),Image.Resampling.NEAREST))
+ for i in range(1,count+1):
+  im=Image.open(r.ROOT/f'generated/outro-full-quality-{i}.png').convert('RGB');im.save(out/f'gallery-native-{i}.png');frames.append(im.resize((960,600),Image.NEAREST))
  frames[0].save(out/'gallery-preview.gif',save_all=True,append_images=frames[1:],duration=5000,loop=0)

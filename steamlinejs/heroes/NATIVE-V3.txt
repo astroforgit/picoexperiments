@@ -4,8 +4,25 @@ Everything by astrofor
 RELEASE
 Run ./atari/run-prince-and-the-nimf.sh or the Windows .cmd launcher.
 The old run-heroes-vbxe3 entry points remain compatible.
-A title menu follows the introduction: Start Game, How to Play, Credits.
-Short POKEY effects are enabled; music and saves are omitted.
+A title menu follows the introduction: Start Game, Level, How to Play,
+Credits, Sound On/Off (Fire toggles; off silences every cue for the session).
+Level cycles EASY / MEDIUM / HARD; MEDIUM is the default and the unchanged
+release balance. Levels live in difficulty.json: EASY starts with 100 gold and
++25% battle rewards, HARD with 30 gold and -12.5% rewards; enemies are the same.
+
+Enemy AI: an enemy attacks the nearest hero it can hit from where it stands
+(range and line of sight, so archers shoot any visible hero in range). If none,
+it searches the shortest open path around trees and fighters to the nearest
+hex from which some hero can be hit, and steps along it. Only when no such hex
+is reachable does it fall back to stepping towards the nearest hero.
+Native: atari/city/enemy-path.inc; simulator: enemyPolicy 'search' (default).
+release/audit-balance.cjs simulates every level and fails the release build if
+EASY becomes automatic for every plan or HARD stops being winnable.
+It sits on a painted 320x200 title picture (art/title-v1/) that loads into
+the spare back buffer straight after the intro; gameplay reuses that VRAM.
+Rebuild the picture with python3 art/tools/compose-title.py.
+Short, soft POKEY cues (coin chime, fanfare, falling defeat phrase, muffled
+hits) play on channel 2; music and saves are omitted.
 The development O shortcut is removed.
 Release README, checks, balance review and packaging: release/.
 Repeat the complete build/check/package flow with sh release/build.sh.
@@ -260,5 +277,6 @@ the game and standalone viewer stream one picture at a time into the existing
 front/back screen buffers via $8400..$84FF, with no resident picture caches.
 The standalone run-outro-full-quality-test.sh shows only the eight gallery
 paintings, loops after the last, and automatically attaches the story ATR.
-Sources and exact built-in imagegen prompts: art/gallery-v1/.
+Selected artwork: art/gallery-selection.json. Source images and built-in imagegen
+prompts are preserved in art/gallery-v1/ through art/gallery-v4/.
 Native checks: test-gallery.py, test-story-streaming.py, test-outro-full-quality.py

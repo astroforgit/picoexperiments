@@ -1,7 +1,7 @@
 'use strict';
 const assert=require('node:assert/strict'),sim=require('../simulation/campaign-sim.js'),data=require('../greenhaven-unit-balance.json');
 assert.equal(data.permanentCasualties,true);
-const run=sim.simulateCampaign(data,{strategy:'infantry',seed:1,trace:true});
+const run=sim.simulateCampaign(data,{strategy:'ranged',seed:8,trace:true}); // ends in game over with the path-finding enemy AI
 assert(run.battles.some(b=>b.outcome==='victory'&&b.casualties.length),'Victories must retain casualties');
 assert(run.battles.some(b=>b.casualties.length));assert(run.ledger.some(p=>p.replacement),'Replacements must be bought');
 assert.equal(run.gold,data.startingGold+run.earned-run.spent);

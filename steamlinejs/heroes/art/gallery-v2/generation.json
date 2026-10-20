@@ -1,0 +1,27 @@
+{
+  "tool": "built-in imagegen",
+  "status": "Artwork review; game binaries retain v1 until artwork approved",
+  "rule": "The prince never appears in the collectible gallery paintings. He discovers them later.",
+  "prompts": [
+    {
+      "name": "painter-mischief",
+      "prompt": "Use case: illustration-story. Create one wide 16:9 fantasy game painting. Reference image is for the existing character and colorful hand-painted pixel-art storybook style only. Same clearly adult 25-year-old woodland nymph, long copper-red curls, pointed ears, green eyes, flowers in hair. All other characters are adults. Humorous mischievous fantasy adventure, expressive faces, warm rich colors, clear silhouettes readable at 320x144. Fully opaque clothing. No nudity, lingerie, sexual activity, erotic framing, text, borders or watermark. In an elderly goblin master painter's woodland studio, the nymph wears an elegant opaque green off-shoulder leaf gown, sitting backwards on a wooden chair with her arms resting across its back, flashing a bold knowing grin at the painter. The elderly goblin in a paint-splattered smock and beret looks comically flustered while painting her as an absurdly solemn saint with a halo on his canvas. The comic mismatch tells us the prince's supposedly gentle innocent sweetheart has a cheeky rebellious personality. Include easel, brushes and golden woodland light. Wide medium shot showing both adults and canvas."
+    },
+    {
+      "name": "tavern-revel",
+      "prompt": "Use case: illustration-story. Create one wide 16:9 fantasy game painting. Reference image is for the existing character and colorful hand-painted pixel-art storybook style only. Same clearly adult 25-year-old woodland nymph, long copper-red curls, pointed ears, green eyes, flowers in hair. All other characters are adults. Humorous mischievous fantasy adventure, expressive faces, warm rich colors, clear silhouettes readable at 320x144. Fully opaque clothing. No nudity, lingerie, sexual activity, erotic framing, text, borders or watermark. A lively medieval tavern folk celebration: the adult red-haired nymph is the life of the party, joyfully dancing a vigorous folk jig on a sturdy table wearing an opaque green off-shoulder folk dress with full flowing knee-length skirt and boots. She has a flushed laughing face and a cheeky wink, a little tipsy but safely balanced. Adult dwarves and barbarian adventurers clap and laugh around her, one fiddler supplies the music. Mugs and spilled ale, comic astonishment, warmly lit wooden beams. This is a boisterous folk dance, not an erotic performance. Wide shot shows her entire clothed figure and the happy audience."
+    },
+    {
+      "name": "waterfall-shower",
+      "prompt": "Use case: illustration-story. Create one wide 16:9 fantasy game painting. Reference image is for the existing character and colorful hand-painted pixel-art storybook style only. Same clearly adult 25-year-old woodland nymph, long copper-red curls, pointed ears, green eyes, flowers in hair. All other characters are adults. Humorous mischievous fantasy adventure, expressive faces, warm rich colors, clear silhouettes readable at 320x144. Fully opaque clothing. No nudity, lingerie, sexual activity, erotic framing, text, borders or watermark. At a secluded sunlit woodland waterfall, the adult red-haired nymph stands under a gentle narrow stream of falling water, rinsing her copper hair with both hands, eyes open and laughing with unrestrained cheerful delight. She wears a substantial fully opaque teal-green knee-length bathing dress with securely fitted bodice and skirt: the heavy fabric stays opaque and conceals her torso and hips completely, without clinging or anatomical detail. Bare shoulders, arms and lower legs only. Water splashes around her boots set on the grassy bank; ferns, mossy stones, sparkling pool and flowers. A relaxed mischievous fantasy holiday scene, wide landscape composition and medium-long camera distance, emphasis on face and waterfall scenery."
+    },
+    {
+      "name": "borrowed-crown",
+      "prompt": "Use case: precise-object-edit. Edit this fantasy game gallery painting. Remove ONLY the young human prince in the upper left (brown-haired man wearing gold circlet, blue tunic, red cape). Replace his entire figure with the continuing rose-covered stone garden wall, ivy and existing garden scenery. Keep the goblin painter, easel, seated adult red-haired nymph, her clothing, expression and all other details and original pixel-art style unchanged. No prince anywhere in the image. No new people. This painting depicts events before the prince knew about it."
+    },
+    {
+      "name": "moonlight-dance",
+      "prompt": "Use case: precise-object-edit. Edit this fantasy game gallery painting. Remove ONLY the human prince seated and clapping at the far left (young brown-haired man wearing gold circlet, blue tunic and red cloak), including his entire body, head, hands and boots. Fill his former area with continuous woodland scenery, mossy roots, flowering ferns, lantern light and the stone seat. Do not add another human observer. Preserve the dancing adult red-haired nymph, her green gown, all three goblin musicians and their instruments, moon, castle, waterfall, all other details and the original hand-painted pixel-art style. No prince anywhere: these are events he only discovers later through recovered paintings."
+    }
+  ]
+}

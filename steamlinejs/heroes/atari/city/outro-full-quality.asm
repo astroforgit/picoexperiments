@@ -40,7 +40,7 @@ retry   mva back_bank render_bank
         mva #0 load_ok
         lda page
         clc
-        adc #4
+        adc #GALLERY_PAGE_OFFSET
         jsr story_load
         bcc failed
         mva #1 load_ok

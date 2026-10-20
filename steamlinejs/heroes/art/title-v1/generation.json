@@ -1,0 +1,12 @@
+{
+  "tool": "built-in imagegen",
+  "use": "Replace only the existing menu painting; existing title typography, menu positions and code remain unchanged.",
+  "references": [
+    "art/title-v1/title-key-art.png (previous key art, backed up under backups/menu-art-before-style-match-2026-10-20/)",
+    "art/intro-v1/forest-love.png (style and character identity)"
+  ],
+  "prompt": "Use case: style-transfer. Repaint Image 1, the existing game title key art, to match the rich detailed illustrated pixel-art style and character appearance of Image 2, the game's forest love story painting. Image 1 is the edit target and exact composition reference; Image 2 is the style and adult character identity reference. Preserve Image 1's broad layout: adult brown-haired prince with gold circlet, blue medieval tunic, red cloak and sword, with the adult copper-red curly-haired woodland nymph in an opaque green leaf dress and flower crown beside him, standing in the lower-left foreground looking over a forest valley; bright white palace far left; dark necromancer's black tower with subtle green and violet glow at right; golden sunset and open sky across the top. Their anatomy, faces and costumes must look like the expressive hand-painted characters in Image 2, not simplistic block figures. Use dense painterly pixel detail, lush emerald foliage, warm golden highlights and teal shadows like Image 2. Keep the upper 25% mostly calm open sky for the existing title logo. Keep the central lower rectangle (x=33%..67%, y=57%..83%) subdued forest scenery without important characters or objects: the existing menu overlays it. Characters stay left of that rectangle, tower at right. Wide 8:5 composition, ideally 1280x800. No new lettering, text, logo, buttons, UI, captions, borders or watermark. This is only a replacement background painting; the game will add its existing logo and menu unchanged.",
+  "generatedFile": "exec-d09520c8-195b-4f6b-87bf-82821ea20acb.png",
+  "pipeline": "Mechanical resize to existing 1280x800 key-art dimensions, then unchanged art/tools/compose-title.py and atari/city/tools/build-assets.js.",
+  "sourceMetadata": "art/title-v2/generation.json"
+}

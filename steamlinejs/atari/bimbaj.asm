@@ -1,11 +1,12 @@
 ;==============================================================================
-; STREAMLINE STANDARD ATARI
+; BIMBAJ
 ;
-; Atari XL/XE ANTIC 4 character-graphics port of Francois van Niekerk's Streamline.
-; Rules and level data are derived from steamlinejs/orggame/orggame.js.
+; Atari XL/XE ANTIC 4 character-graphics puzzle game based on Francois van
+; Niekerk's Streamline. Rules are derived from steamlinejs/orggame/orggame.js;
+; levels and story texts come from bimbaj.json (edit with bimbaj-editor.html).
 ;
 ; Build:
-;   mads streamline-atari.asm -o:streamline-atari.xex
+;   ./build.sh   (generates the includes, then mads bimbaj.asm -o:bimbaj.xex)
 ;
 ; Controls:
 ;   joystick 0 / W A S D  move
@@ -90,6 +91,7 @@ tile_src  = $D6                ; 2, source glyph pointer
         sta old_console
         lda #$FF
         sta CH
+        jsr maybe_story_pause  ; texts placed before the first level
         jsr init_level
         jsr draw_everything
 
@@ -124,6 +126,7 @@ tile_src  = $D6                ; 2, source glyph pointer
         lda #0
         sta level_number
         sta game_complete
+        jsr maybe_story_pause
         jsr init_level
         jsr draw_everything
         jmp ?loop
@@ -358,6 +361,7 @@ saved_active dta 0
         sta level_ptr
         lda level_ptr_hi,x
         sta level_ptr+1
+        jsr fetch_level
         ldy #0
         lda (level_ptr),y
         sta level_width
@@ -437,6 +441,7 @@ saved_active dta 0
 
 .proc next_level
         inc level_number
+        jsr maybe_story_pause  ; also texts after the last level
         lda level_number
         cmp #LEVEL_COUNT
         bcc ?load
@@ -445,9 +450,109 @@ saved_active dta 0
         jsr clear_board
         jsr draw_status
         rts
-?load   jsr maybe_story_pause
-        jsr init_level
+?load   jsr init_level
         jmp draw_everything
+.endp
+
+; Levels and story pages live in the RAM under the OS ROM ($C000-$CFFF,
+; $D800-$FFF9). Accesses switch the ROM out with all interrupts masked.
+.proc rom_off
+        sei
+        lda #0
+        sta $D40E
+        lda PORTB
+        and #$FE
+        sta PORTB
+        rts
+.endp
+
+; A = NMIEN value for the current display.
+.proc rom_on
+        tax
+        lda PORTB
+        ora #1
+        sta PORTB
+        stx $D40E
+        cli
+        rts
+.endp
+
+fetch_end dta 0
+
+; Copy the board at level_ptr to level_buffer and point level_ptr there.
+.proc fetch_level
+        jsr rom_off
+        ldy #0
+        lda (level_ptr),y
+        sta level_buffer
+        iny
+        lda (level_ptr),y
+        sta level_buffer+1
+        tax
+        lda #2                 ; 2 + width * height, 256 wraps to 0
+?mul    clc
+        adc level_buffer
+        dex
+        bne ?mul
+        sta fetch_end
+        ldy #2
+?copy   lda (level_ptr),y
+        sta level_buffer,y
+        iny
+        cpy fetch_end
+        bne ?copy
+        lda #<level_buffer
+        sta level_ptr
+        lda #>level_buffer
+        sta level_ptr+1
+        lda #$C0               ; OS VBI plus display-list interrupts
+        jmp rom_on
+.endp
+
+bank_count dta a(0)
+
+; INIT routine for each bimbaj-bank.inc chunk: a(destination), a(length),
+; bytes at bank_stage. Copies them under the ROM and clears the stage, which
+; is board-font RAM during play.
+.proc bank_loader
+        lda bank_stage
+        sta work_ptr
+        lda bank_stage+1
+        sta work_ptr+1
+        lda bank_stage+2
+        sta bank_count
+        lda bank_stage+3
+        sta bank_count+1
+        lda #<[bank_stage+4]
+        sta level_ptr
+        lda #>[bank_stage+4]
+        sta level_ptr+1
+        jsr rom_off
+        ldy #0
+        sty bank_stage
+        sty bank_stage+1
+        sty bank_stage+2
+        sty bank_stage+3
+?copy   lda bank_count
+        ora bank_count+1
+        beq ?done
+        lda (level_ptr),y
+        sta (work_ptr),y
+        tya
+        sta (level_ptr),y
+        inc level_ptr
+        bne ?source
+        inc level_ptr+1
+?source inc work_ptr
+        bne ?count
+        inc work_ptr+1
+?count  lda bank_count
+        bne ?low
+        dec bank_count+1
+?low    dec bank_count
+        jmp ?copy
+?done   lda #$40               ; the OS VBI runs while DOS loads
+        jmp rom_on
 .endp
 
 story_page_index dta 0
@@ -455,7 +560,7 @@ story_pages_left dta 0
 story_line_len dta 0
 
 ; A break is keyed by the number of boards already completed. Its pages are
-; compiled from story_pauses.json, so further breaks need no new game logic.
+; compiled from bimbaj.json, so further breaks need no new game logic.
 .proc maybe_story_pause
         ldx #0
 ?scan   cpx #STORY_BREAK_TOTAL
@@ -533,6 +638,7 @@ story_line_len dta 0
         sta text_screen+$300,x
 ?skip   inx
         bne ?clear
+        jsr rom_off
 ?record jsr read_story_byte
         cmp #$FF
         beq ?done
@@ -569,7 +675,9 @@ story_line_len dta 0
 ?count  dec story_line_len
         bne ?char
         jmp ?record
-?done   lda #$22
+?done   lda #$40               ; story screen: OS VBI only
+        jsr rom_on
+        lda #$22
         sta SDMCTL            ; reveal only the complete page
         rts
 .endp
@@ -1081,11 +1189,11 @@ story_line_len dta 0
         lda #$E0               ; ROM text for the status area
         sta CHBAS
         sta $D409
-        lda #$0C
+        lda #THEME_LIGHT       ; board pixel 2 and the status text
         sta COLOR1
-        lda #$02
+        lda #THEME_STATUS
         sta COLOR2
-        lda #0
+        lda #THEME_BACKGROUND
         sta COLOR4
         lda #<display_interrupt
         sta $0200
@@ -1180,9 +1288,9 @@ story_line_len dta 0
         sta text_src
         lda #>s_title
         sta text_src+1
-        lda #<[status_screen+11]
+        lda #<[status_screen+17]
         sta text_dst
-        lda #>[status_screen+11]
+        lda #>[status_screen+17]
         sta text_dst+1
         jsr copy_text
 
@@ -1211,9 +1319,9 @@ story_line_len dta 0
 ?level_digits
         jsr draw_2digits
 
-        lda #<s_of_57
+        lda #<s_of_total
         sta text_src
-        lda #>s_of_57
+        lda #>s_of_total
         sta text_src+1
         lda #<[status_screen+1*40+10]
         sta text_dst
@@ -1387,12 +1495,10 @@ story_line_len dta 0
 .endp
 
 ; MADS d'...' emits Atari screen codes.
-s_title dta s_title_end-s_title-1,d'STREAMLINE: TRUNK!'
+s_title dta s_title_end-s_title-1,d'BIMBAJ'
 s_title_end
 s_level dta s_level_end-s_level-1,d'LEVEL '
 s_level_end
-s_of_57 dta s_of_57_end-s_of_57-1,d'/57 '
-s_of_57_end
 s_moves dta s_moves_end-s_moves-1,d'MOVES '
 s_moves_end
 s_dual dta s_dual_end-s_dual-1,d'TRUNK /2'
@@ -1405,8 +1511,6 @@ s_full dta s_full_end-s_full-1,d'TRUNK MEMORY FULL: UNDO OR RESTART. '
 s_full_end
 s_won dta s_won_end-s_won-1,d'LEVEL COMPLETE! NEXT LEVEL IN A MOMENT'
 s_won_end
-s_all_done dta s_all_done_end-s_all_done-1,d'ALL 57 LEVELS COMPLETE! FIRE TO REPLAY.'
-s_all_done_end
 
 ;==============================================================================
 ;==============================================================================
@@ -1436,15 +1540,14 @@ frame_col dta 0
 palette_phase dta 0
 dli_index dta 0
 font_pages dta $40,$44,$48,$4C,$50,$54,$58,$5C,$60,$64,$68,$6C,$80,$84,$88,$8C,$90,$94,$98,$9C,$E0
-dli_blue :20 dta $9C
-        dta $02
-dli_copper :20 dta $18
+; calculate_board fills the board rows; the last entry is the status bar.
+dli_blue :20 dta 0
+        dta THEME_STATUS
+dli_copper :20 dta 0
         dta $28
-dli_stone :20 dta $04
+dli_stone :20 dta 0
         dta $06
-gradient_blue dta $9C,$9A,$98
-gradient_copper dta $1A,$18,$16
-gradient_stone dta $04,$04,$04
+        icl 'theme.inc'        ; the board design's colours (generate_tiles.js)
 screen_row_lo dta <[text_screen+80],<[text_screen+120],<[text_screen+160],<[text_screen+200],<[text_screen+240],<[text_screen+280],<[text_screen+320],<[text_screen+360],<[text_screen+400],<[text_screen+440],<[text_screen+480],<[text_screen+520],<[text_screen+560],<[text_screen+600],<[text_screen+640],<[text_screen+680],<[text_screen+720],<[text_screen+760],<[text_screen+800],<[text_screen+840]
 screen_row_hi dta >[text_screen+80],>[text_screen+120],>[text_screen+160],>[text_screen+200],>[text_screen+240],>[text_screen+280],>[text_screen+320],>[text_screen+360],>[text_screen+400],>[text_screen+440],>[text_screen+480],>[text_screen+520],>[text_screen+560],>[text_screen+600],>[text_screen+640],>[text_screen+680],>[text_screen+720],>[text_screen+760],>[text_screen+800],>[text_screen+840]
 ; Earth-coloured obstacles and keys; blue goals, portals and elephants.
@@ -1934,7 +2037,7 @@ neighbour dta 0
 
 ; Generated levels and memory
 ;==============================================================================
-        icl 'levels-standard.inc'
+        icl 'bimbaj-data.inc'
 
         .align $100
 display_list
@@ -1993,6 +2096,11 @@ cached_colours :256 dta 0
         org $7D00
 status_screen :160 dta 0
 
+        org $7E00
+level_buffer :256 dta 0
+
+bank_stage = $8000           ; bank chunks are staged in board-font RAM
+
         org $8000
 row_fonts_high :$2000 dta 0
 
@@ -2003,8 +2111,7 @@ row_fonts_high :$2000 dta 0
         org $B400
 story_font
         ins 'story-font.bin'
-        org $B800
-        icl 'story-pages.inc'
-        ert * > $C000
+
+        icl 'bimbaj-bank.inc'
 
         run main

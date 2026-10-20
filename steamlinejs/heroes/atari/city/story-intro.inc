@@ -1,5 +1,6 @@
 ; Temporary XEX INIT at $7000: later battle tables overwrite this entire code.
-; Three pictures use VRAM $00000/$10000/$20000 until gameplay reloads them.
+; Three pictures use VRAM $00000/$10000/$20000 until the title picture and
+; gameplay reload them.
 .proc story_intro
         lda hardware_ok
         beq done
@@ -27,7 +28,7 @@
         ; Reuse the relocated startup display reset before painting both buffers.
         jsr loader_init
         mva #$FF CH
-done    mva #32 upload_index
+done    mva #16 upload_index         ; title picture follows into the back buffer
         rts
 
 .proc wait_action

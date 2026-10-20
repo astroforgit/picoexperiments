@@ -39,7 +39,9 @@ terrain :42 dta 0
         jsr can_enter_battle
         bcs ?yes
         rts
-?yes    mva #2 screen_mode
+?yes    lda #SFX_MARCH
+        jsr sfx.play
+        mva #2 screen_mode
         mva #0 popup_open
         sta game_state
         sta unit_count
@@ -585,8 +587,15 @@ attack_frame     dta 0
 ?impact lda attack_frame
         cmp #4
         bne ?next_frame
-        lda #2
-        jsr sfx.play
+        ldx defender_unit
+        lda impact_damage
+        beq ?thud
+        cmp unit_hp,x
+        bne ?thud
+        lda #SFX_FALL           ; this blow knocks the target out
+        bne ?sound
+?thud   lda #SFX_THUD
+?sound  jsr sfx.play
 ?next_frame
         dec attack_frame
         bne ?frame
@@ -677,7 +686,20 @@ enemy_best_dist dta 0
         beq ?find
         jmp release_ogre
 ?find
-        ; Find closest living hero.
+        ; Attack the nearest hero that can be hit from here (range and sight).
+        ldx enemy_id
+        lda unit_cell,x
+        jsr target_from
+        bcs ?has_target
+        ; Otherwise walk the shortest open path towards a cell from which a
+        ; hero can be hit, going around trees and other fighters.
+        jsr path_step
+        cmp #$FF
+        beq ?nearest
+        sta enemy_best
+        jmp ?walk
+?nearest
+        ; No such cell is reachable: step closer to the nearest hero.
         lda #$FF
         sta enemy_target
         lda #$7F
@@ -704,26 +726,11 @@ enemy_best_dist dta 0
         ldx scan_id
 ?next   inx
         jmp ?hero
-
 ?have   lda enemy_target
         cmp #$FF
-        bne ?has_target
+        bne ?move
         rts
 ?has_target
-        ldx enemy_id
-        ldy unit_type,x
-        lda type_shoot_range,y
-        bne ?shot_range
-        lda #1
-?shot_range
-        cmp enemy_best_dist
-        bcc ?move
-        ldx enemy_id
-        lda unit_cell,x
-        ldy enemy_target
-        ldx unit_cell,y
-        jsr shot_clear
-        bne ?move
         lda enemy_id
         sta attacker_unit
         lda enemy_target
@@ -774,7 +781,7 @@ enemy_best_dist dta 0
         lda enemy_best
         cmp #$FF
         beq ?done
-        ldx enemy_id
+?walk   ldx enemy_id
         stx animation_unit
         lda unit_cell,x
         sta animation_from
@@ -873,6 +880,8 @@ candidate_dist dta 0
         bne ?done
         lda #2
         sta game_state
+        lda #SFX_RETREAT
+        jsr sfx.play
 ?done   rts
 .endp
 hero_alive  dta 0
@@ -886,7 +895,7 @@ enemy_busy dta 0
         lda reward_committed
         bne ?done
         mva #1 reward_committed
-        lda #3
+        lda #SFX_FANFARE
         jsr sfx.play
         inc encounter_seed
         ldx region
@@ -900,6 +909,7 @@ enemy_busy dta 0
         sta reward
         lda reward_hi,y
         sta reward+1
+        jsr scale_reward
         ldx enemy_hp_bonus
         beq ?pay
 ?extra  clc
@@ -1004,6 +1014,8 @@ enemy_busy dta 0
         jsr skip_hero
         jmp ?redraw
 ?retreat
+        lda #SFX_RETREAT
+        jsr sfx.play
         mva #3 game_state
         jmp ?redraw
 ?cell   lda cursor_cell

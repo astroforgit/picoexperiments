@@ -191,7 +191,7 @@
         sta gold+1
         sec
         rts
-?poor   lda #5
+?poor   lda #SFX_DENIED
         jsr sfx.play
         mva #1 notice
         mva #1 dirty
@@ -200,7 +200,7 @@
 .endp
 
 .proc action_done
-        lda #1
+        lda #SFX_COIN
         jsr sfx.play
         mva #0 popup_open
         sta notice

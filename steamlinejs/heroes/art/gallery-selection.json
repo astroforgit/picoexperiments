@@ -1,0 +1,54 @@
+{
+  "format": "prince-and-the-nimf-gallery-selection",
+  "version": 1,
+  "paintings": [
+    {
+      "file": "gallery-v4--lake-reflection.png",
+      "image": "art/gallery-v4/lake-reflection.png",
+      "title": "HER OWN BIGGEST ADMIRER",
+      "group": "gallery-v4"
+    },
+    {
+      "file": "gallery-v4--tavern-singalong.png",
+      "image": "art/gallery-v4/tavern-singalong.png",
+      "title": "ONE MORE CHORUS",
+      "group": "gallery-v4"
+    },
+    {
+      "file": "gallery-v2--tavern-revel.png",
+      "image": "art/gallery-v2/tavern-revel.png",
+      "title": "Tavern Revel",
+      "group": "gallery-v2"
+    },
+    {
+      "file": "gallery-v1--flower-pentagram.png",
+      "image": "art/gallery-v1/flower-pentagram.png",
+      "title": "Flower Pentagram",
+      "group": "gallery-v1"
+    },
+    {
+      "file": "gallery-v1--lake-reflection.png",
+      "image": "art/gallery-v1/lake-reflection.png",
+      "title": "Lake Reflection",
+      "group": "gallery-v1"
+    },
+    {
+      "file": "gallery-v1--painter-sitting.png",
+      "image": "art/gallery-v1/painter-sitting.png",
+      "title": "Painter Sitting",
+      "group": "gallery-v1"
+    },
+    {
+      "file": "gallery-v1--apple-thief.png",
+      "image": "art/gallery-v1/apple-thief.png",
+      "title": "THE APPLE THIEF",
+      "group": "gallery-v1"
+    },
+    {
+      "file": "gallery-v1--tavern-dance.png",
+      "image": "art/gallery-v1/tavern-dance.png",
+      "title": "Tavern Dance",
+      "group": "gallery-v1"
+    }
+  ]
+}

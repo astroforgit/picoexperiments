@@ -85,6 +85,23 @@ function simulateBattle(data,army,encounter,options={}){
   for(let ap=u.move;ap>0;ap--){
    const heroes=units.filter(v=>v.team===0&&v.hp>0);if(!heroes.length)return;
    let target=heroes[0];for(const t of heroes)if(DIST[u.cell][t.cell]<DIST[u.cell][target.cell])target=t;
+   if(!options.enemyPolicy||options.enemyPolicy==='search'){
+    // Native rule (enemy-path.inc): hit the nearest hero that can be hit from
+    // here; otherwise breadth-first search over open cells, in neighbour
+    // order, to the nearest cell from which some hero can be hit, and take
+    // one step along it. Unreachable: fall through to the greedy step.
+    const hittable=c=>{let best=null;for(const t of heroes)if(canHit(u,c,t)&&(!best||DIST[c][t.cell]<DIST[c][best.cell]))best=t;return best;};
+    const here=hittable(u.cell);
+    if(here)target=here;
+    else{
+     const walls=blocked(u),first=new Map([[u.cell,null]]),q=[u.cell];let step=null;
+     for(let k=0;k<q.length&&step===null;k++){
+      const cur=q[k];if(cur!==u.cell&&hittable(cur)){step=first.get(cur);break;}
+      for(const n of neighbours[cur])if(!walls.has(n)&&!first.has(n)){first.set(n,cur===u.cell?n:first.get(cur));q.push(n);}
+     }
+     if(step!==null){move(u,step);continue;}
+    }
+   }
    if(canHit(u,u.cell,target)){if(abilities&&u.id==='ogre'){u.charge=target.cell;preparations++;emit({action:'prepare',actor:u.slot,to:target.cell,bonus:2});}else hit(u,target);return;}
    const walls=blocked(u);let next=u.cell,best=DIST[u.cell][target.cell];
    if(options.enemyPolicy==='pathfinding'){

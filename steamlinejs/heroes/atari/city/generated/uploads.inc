@@ -146,6 +146,54 @@
         icl 'story-intro.inc'
         ini story_intro
         org $6000
+        ins 'generated/title-bank-16.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/title-bank-17.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/title-bank-18.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/title-bank-19.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/title-bank-20.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/title-bank-21.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/title-bank-22.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/title-bank-23.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/title-bank-24.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/title-bank-25.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/title-bank-26.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/title-bank-27.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/title-bank-28.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/title-bank-29.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/title-bank-30.bin'
+        ini upload_chunk
+        org $6000
+        ins 'generated/title-bank-31.bin'
+        ini upload_chunk
+        org $6000
         ins 'generated/bank-32.bin'
         ini upload_chunk
         org $6000

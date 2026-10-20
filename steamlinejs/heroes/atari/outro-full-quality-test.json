@@ -1,0 +1,34 @@
+{
+  "width": 320,
+  "height": 144,
+  "colors": 256,
+  "pictureCount": 8,
+  "residentPictureCaches": 0,
+  "framebuffers": [
+    0,
+    1
+  ],
+  "stagingBytes": 256,
+  "fontBanks": [
+    61,
+    62
+  ],
+  "uploadCount": 2,
+  "requires": "prince-and-the-nimf.atr",
+  "configFile": "gallery-content.json",
+  "pageOffset": 4,
+  "sectors": [
+    4,
+    254,
+    504,
+    754,
+    1004,
+    1254,
+    1504,
+    1754,
+    2004,
+    2254,
+    2504,
+    2754
+  ]
+}

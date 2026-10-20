@@ -4,12 +4,17 @@ set -eu
 runner_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 image="$runner_dir/heroes-outro-full-quality-test.xex"
 story="$runner_dir/prince-and-the-nimf.atr"
+metadata="$runner_dir/outro-full-quality-test.json"
+if [ -f "$metadata" ]; then
+    disk_name=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["requires"])' "$metadata")
+    story="$runner_dir/$disk_name"
+fi
 launcher="$runner_dir/run-outro-full-quality-test.ps1"
 for file in "$image" "$story" "$launcher"; do
     if [ ! -f "$file" ]; then echo "Required viewer file not found: $file" >&2; exit 1; fi
 done
 case "${1:-}" in
-    --check) printf 'Screens: eight new gallery paintings; Fire/Enter/Space advances, then replay.\nMemory: existing screen buffers, 256-byte staging, no picture caches.\nViewer: %s\nStory disk: %s\n' "$image" "$story"; exit 0 ;;
+    --check) printf 'Fire/Enter/Space advances; the last picture loops to the first.\nMemory: existing screen buffers, 256-byte staging, no picture caches.\nViewer: %s\nStory disk: %s\n' "$image" "$story"; exit 0 ;;
     '') ;;
     *) echo "Usage: $0 [--check]" >&2; exit 2 ;;
 esac

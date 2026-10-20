@@ -10,8 +10,8 @@ while(i<data.length){
   const start=data.readUInt16LE(i);i+=2;if(start===65535)continue;
   const end=data.readUInt16LE(i);i+=2;const n=end-start+1;
   assert(n>0&&i+n<=data.length,"Malformed XEX segment");
-  if(start===0x6000&&n===labels.runtime_data_end-0x6000){assert(end<0x8000);assert.equal(uploads,143,'Battle tables must load after graphics staging');assert(start<=labels.story_intro&&end>=labels.story_intro_end-1,'Battle tables must overwrite all temporary intro code');}
-  else if(start===0x6000){assert.equal(n,4096);uploads++;}
+  if(start===0x6000&&n===labels.runtime_data_end-0x6000){assert(end<0x8000);assert.equal(uploads,159,'Battle tables must load after graphics staging');assert(start<=labels.story_intro&&end>=labels.story_intro_end-1,'Battle tables must overwrite all temporary intro code');}
+  else if(start===0x6000){assert.equal(n,4096);uploads++;if(uploads===49)assert(storyLoaded&&init===50,'Title picture loads straight after the intro');}
   else if(start===0x2e2){assert.equal(n,2);init++;if(data.readUInt16LE(i)===labels.story_intro){assert(storyLoaded);assert.equal(uploads,48,'Show the intro before loading game graphics');}}
   else if(start===0x2e0){assert.equal(n,2);run=data.readUInt16LE(i);}
   else if(start===0x7000){assert.equal(start,labels.story_intro);assert.equal(end+1,labels.story_intro_end);storyLoaded=true;}
@@ -19,9 +19,10 @@ while(i<data.length){
   else assert((start>=0x2000&&end<0x6000)||(start===0x8000&&end===0x83ff),"Unexpected CPU memory region");
   i+=n;
 }
-assert.equal(uploads,143);assert.equal(init,145);assert.equal(run,labels.main);
+assert.equal(uploads,159);assert.equal(init,161);assert.equal(run,labels.main);
 assert(storyLoaded);
 for(let page=1;page<=3;page++)assert.equal(fs.statSync(`generated/intro-${page}.bin`).size,65536);
+assert.equal(fs.statSync('generated/title.bin').size,65536);
 assert(labels.code_end<=0x6000);assert.equal(fs.statSync("generated/palette.bin").size,768);
 assert.equal(fs.statSync("generated/vram.bin").size,389120);
 const c=JSON.parse(fs.readFileSync("content.json","utf8"));

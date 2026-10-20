@@ -6,19 +6,22 @@ release_ui_start
         sta choice
         sta latch
         sta neutral
+        jsr prepare
+        jsr enable_display      ; shows bank 0: picture and empty menu frame
+        jsr draw
+        jmp loop
 redraw  jsr draw
 loop    jsr wait_frame
         jsr input
-        beq released
+        jeq released
         sta action
         mva #0 neutral
         lda latch
         bne loop
         mva #1 latch
-        lda #0
-        jsr sfx.play
+        jsr action_sound
         lda page
-        beq menu
+        jeq menu
         lda action
         cmp #3
         bcc loop
@@ -33,38 +36,64 @@ menu    lda action
         bne loop
         lda choice
         beq start
+        cmp #1
+        beq level
+        cmp #4
+        beq sound
+        sec
+        sbc #1                  ; rows 2/3 open pages 1/2
         sta page
+        jmp redraw
+level   inc difficulty
+        lda difficulty
+        cmp #3
+        bcc relevel
+        mva #0 difficulty
+relevel jsr starting_gold
+        jmp redraw
+sound   jsr sfx.toggle
         jmp redraw
 previous
         lda choice
         bne decrease
-        mva #3 choice
+        mva #5 choice
 decrease
         dec choice
         jmp redraw
 next    inc choice
         lda choice
-        cmp #3
-        bcc redraw
+        cmp #5
+        jcc redraw
         mva #0 choice
         jmp redraw
 released
         lda neutral
         cmp #2
-        bcs loop
+        jcs loop
         inc neutral
         lda neutral
         cmp #2
-        bcc loop
+        jcc loop
         mva #0 latch
         jmp loop
-start   mva #1 action_latched
+start   jsr starting_gold
+        lda #SFX_MARCH
+        jsr sfx.play
+        mva #1 action_latched
         sta dirty
         mva #0 release_ticks
         mva #$FF CH
         sta key_temp
+        mva #2 background_bank
         rts
 .endp
+; Move, choose and back sound different in every menu.
+.proc action_sound
+        ldx action
+        lda action_cue,x
+        jmp sfx.play
+.endp
+action_cue dta SFX_CLICK,SFX_MOVE,SFX_MOVE,SFX_CLICK,SFX_BACK
 ; One logical menu event; held keys and sticks require two neutral polls.
 .proc input
         mva #$FF menu_key
@@ -119,101 +148,192 @@ confirm lda #3
 back    lda #4
         rts
 .endp
+;-----------------------------------------------------------------------------
+; Title screen. The painted picture arrives in bank 1 during loading. Both
+; banks get the picture with the menu frame; every change is drawn into the
+; hidden bank and presented. A help/credits panel is only ever drawn over the
+; hidden copy, so the other bank keeps the menu and the painting under the
+; panel. Returning presents that bank and repairs the other from it.
+MENU_X = 106
+MENU_Y = 104
+ROW_X = 110
+ROW_W = 100
+.proc prepare
+        mva #1 background_bank
+        mva #0 render_bank
+        jsr copy_background_cache
+        jsr frame
+        mva #1 render_bank
+        jsr frame
+        mva #0 drawn_page
+        rts
+frame   jsr band
+        rect MENU_X,MENU_Y,108,80,1
+        rect MENU_X+2,MENU_Y+2,104,76,7
+        mwa #MENU_X calc_x
+        mva #MENU_Y calc_y
+        mwa #108 fr_w
+        mva #80 fr_h
+        mva #2 fr_col
+        jmp outline
+.endp
 .proc draw
         mva back_bank render_bank
-        jsr copy_background_cache
-        rect 12,26,296,158,1
-        rect 12,26,296,1,2
-        rect 12,183,296,1,2
+        jsr band
         lda page
-        bne other
-        jmp title
-other   cmp #1
-        bne credits
-        jmp help
-credits
-        labeltext 139,43,s_credits
-        labeltext 106,70,s_title
-        labeltext 94,99,s_author
-        labeltext 82,119,s_work
-        labeltext 106,134,s_design
-        jmp footer
-help    labeltext 127,36,s_help
-        mwa #help_lo text_src
+        jeq menu
+        jsr panel
+        lda page
+        cmp #1
+        beq help
+        mwa #s_credits text_src
+        jsr heading
+        mva #80 text_y
+        mwa #s_title text_src
+        jsr centered
+        mva #98 text_y
+        mwa #s_author text_src
+        jsr centered
+        mva #120 text_y
+        mwa #s_work text_src
+        jsr centered
+        mva #132 text_y
+        mwa #s_design text_src
+        jsr centered
+        mva #160 text_y
+        mwa #s_thanks text_src
+        jsr centered
+        jmp back
+help    mwa #s_help text_src
+        jsr heading
         mva #0 line
-        mva #53 line_y
+        mva #70 line_y
 next    ldx line
         mva help_lo,x text_src
         mva help_hi,x text_src+1
-        mwa #25 text_x
+        mwa #28 text_x
         mva line_y text_y
         jsr draw_text
         lda line_y
         clc
-        adc #10
+        adc #9
         sta line_y
         inc line
         lda line
         cmp #12
         bcc next
-footer  labeltext 82,171,s_back
-        jmp present
-title   jsr logo
-        labeltext 94,77,s_author
-        labeltext 121,105,s_start
-        labeltext 121,125,s_help
-        labeltext 121,145,s_credits
-        lda choice
-        asl
-        asl
-        sta mark_y
-        asl
-        asl
-        clc
-        adc mark_y
-        adc #105
-        sta text_y
-        mwa #103 text_x
-        mwa #s_mark text_src
-        jsr draw_text
-        labeltext 70,169,s_controls
-present jsr wait_blit
-        jmp present_back_buffer
-.endp
-.proc logo
-        mva #0 column
-nextcol ldx column
-        mva logo_data,x bits
-        mva #0 row
-nextrow lsr bits
-        bcc blank
-        lda column
-        asl
-        clc
-        adc #46
-        sta calc_x
-        lda #0
-        adc #0
-        sta calc_x+1
-        lda row
-        asl
-        clc
-        adc #48
+back    labeltext 229,190,s_back
+        jmp show_it
+menu    labeltext 241,190,s_controls
+        mva #0 line
+row     ldx line
+        lda row_y,x
         sta calc_y
-        mwa #2 fr_w
-        mva #2 fr_h
-        mva #2 fr_col
+        mwa #ROW_X calc_x
+        mwa #ROW_W fr_w
+        mva #13 fr_h
+        mva #1 fr_col
         jsr fill_rect
-blank   inc row
-        lda row
-        cmp #7
-        bcc nextrow
-        inc column
-        lda column
-        cmp #114
-        bcc nextcol
+        lda line
+        cmp choice
+        bne label
+        ldx line
+        lda row_y,x
+        sta calc_y
+        mwa #ROW_X calc_x
+        mwa #ROW_W fr_w
+        mva #13 fr_h
+        mva #2 fr_col
+        jsr outline
+label   ldx line
+        lda row_y,x
+        clc
+        adc #3
+        sta text_y
+        lda row_lo,x
+        sta text_src
+        lda row_hi,x
+        sta text_src+1
+        cpx #1
+        bne sound
+        ldy difficulty
+        mva battle.difficulty_label_lo,y text_src
+        mva battle.difficulty_label_hi,y text_src+1
+sound   cpx #4
+        bne say
+        lda sfx.enabled
+        bne say
+        mwa #s_sound_off text_src
+say     jsr centered
+        inc line
+        lda line
+        cmp #5
+        jcc row
+show_it jsr wait_blit
+        jsr present_back_buffer
+        lda drawn_page
+        ldx page
+        stx drawn_page
+        cmp #0
+        beq done
+        txa
+        bne done
+        ; Back from a panel: the hidden bank still shows it; copy the menu.
+        mva front_bank background_bank
+        mva back_bank render_bank
+        jsr copy_background_cache
+        jsr wait_blit
+done    rts
+.endp
+; Bottom bar, like the city HUD: dark band with a gold rule and the credit.
+.proc band
+        rect 0,186,320,14,1
+        rect 0,186,320,1,2
+        labeltext 8,190,s_author
         rts
 .endp
+; Popup-style page frame below the logo.
+.proc panel
+        rect 16,48,288,136,1
+        rect 18,50,284,132,7
+        rect 18,50,284,16,1
+        mwa #16 calc_x
+        mva #48 calc_y
+        mwa #288 fr_w
+        mva #136 fr_h
+        mva #2 fr_col
+        jmp outline
+.endp
+.proc heading
+        mva #55 text_y
+        jmp centered
+.endp
+; Draw text_src centred on the screen at text_y (6-pixel glyph advance).
+.proc centered
+        ldy #0
+count   lda (text_src),y
+        beq measured
+        iny
+        bne count
+measured
+        tya
+        asl
+        sta mark_y
+        tya
+        clc
+        adc mark_y
+        sta mark_y              ; 3 * length = half the 6-pixel advance
+        lda #160
+        sec
+        sbc mark_y
+        sta text_x
+        mva #0 text_x+1
+        jmp draw_text
+.endp
+row_y dta 109,123,137,151,165
+row_lo dta <s_start,<s_start,<s_help,<s_credits,<s_sound_on
+row_hi dta >s_start,>s_start,>s_help,>s_credits,>s_sound_on
+drawn_page dta 0
 page dta 0
 choice dta 0
 latch dta 0
@@ -223,9 +343,6 @@ menu_key dta 0
 line dta 0
 line_y dta 0
 mark_y dta 0
-column dta 0
-row dta 0
-bits dta 0
 s_title dta c'PRINCE AND THE NIMF',0
 s_author dta c'EVERYTHING BY ASTROFOR',0
 s_work dta c'GAME, CODE, ART AND STORY',0
@@ -233,9 +350,11 @@ s_design dta c'DESIGN AND BALANCE',0
 s_start dta c'START GAME',0
 s_help dta c'HOW TO PLAY',0
 s_credits dta c'CREDITS',0
-s_mark dta c'>',0
-s_controls dta c'UP/DOWN: SELECT  FIRE: CHOOSE',0
-s_back dta c'FIRE / ESC: BACK TO MENU',0
+s_sound_on dta c'SOUND: ON',0
+s_sound_off dta c'SOUND: OFF',0
+s_controls dta c'FIRE: CHOOSE',0
+s_thanks dta c'THANK YOU FOR PLAYING!',0
+s_back dta c'FIRE/ESC: BACK',0
 help_lo dta <h0,<h1,<h2,<h3,<h4,<h5,<h6,<h7,<h8,<h9,<h10,<h11
 help_hi dta >h0,>h1,>h2,>h3,>h4,>h5,>h6,>h7,>h8,>h9,>h10,>h11
 h0 dta c'BUILD AN ARMY TO RESCUE THE NIMF.',0
@@ -250,10 +369,14 @@ h8 dta c'DOUBLE FIRE ON A SOLDIER: SKIP',0
 h9 dta c'DEAD SOLDIERS ARE LOST FOREVER',0
 h10 dta c'NO ARMY AND NO RECRUIT GOLD: GAME OVER',0
 h11 dta c'KILL THE NECROMANCER TO RESCUE HER',0
-        icl 'generated/release-logo.inc'
 .endl
 
-; Short POKEY sound effects only. The OS keyboard channel and AUDCTL are untouched.
+;-----------------------------------------------------------------------------
+; Short POKEY sound effects only. The OS keyboard channel and AUDCTL are untouched;
+; SIO keeps channels 3/4. Each cue is a list of per-frame (AUDF, AUDC) pairs with
+; quiet pure tones and bell-like decays; AUDF 0 ends it. Channel 2 plays the cue,
+; channel 1 repeats it ECHO_DELAY frames later at half volume for a softer sound.
+ECHO_DELAY = 4
 .local sfx
 .proc play
         php
@@ -262,16 +385,23 @@ h11 dta c'KILL THE NECROMANCER TO RESCUE HER',0
         pha
         tya
         pha
+        lda enabled
+        beq off
         tsx
         lda $0103,x             ; caller's A, saved beneath X and Y
         tax
-        lda notes,x
-        sta $D202
-        mva controls,x control
-        mva #6 frames
-        ora control
-        sta $D203
-        pla
+        lda cue_lo,x
+        sta cursor
+        sta echo
+        lda cue_hi,x
+        sta cursor+1
+        sta echo+1
+        mva #1 frames
+        sta main_on
+        mva #ECHO_DELAY delay
+        mva #0 $D201
+        jsr step
+off     pla
         tay
         pla
         tax
@@ -284,15 +414,96 @@ h11 dta c'KILL THE NECROMANCER TO RESCUE HER',0
         pha
         lda frames
         beq done
-        dec frames
-        beq mute
-        lda frames
-        ora control
-        sta $D203
+        lda main_on
+        beq echoing
+        jsr step
+echoing lda delay
+        beq repeat
+        dec delay
         jmp done
-mute    mva #0 $D203
+repeat  jsr echo_step
 done    pla
         plp
+        rts
+.endp
+; Main voice. Uses A only; callers keep X and Y.
+.proc step
+        lda cursor
+        sta freq+1
+        sta ctrl+1
+        lda cursor+1
+        sta freq+2
+        sta ctrl+2
+        inc ctrl+1
+        bne freq
+        inc ctrl+2
+freq    lda $FFFF
+        beq stop
+        sta $D202
+ctrl    lda $FFFF
+        sta $D203
+        lda cursor
+        clc
+        adc #2
+        sta cursor
+        bcc done
+        inc cursor+1
+done    rts
+stop    sta main_on
+        sta $D203
+        rts
+.endp
+; Echo voice: same pairs, volume (v+1)/2. The cue is over when it ends.
+.proc echo_step
+        lda echo
+        sta freq+1
+        sta ctrl+1
+        lda echo+1
+        sta freq+2
+        sta ctrl+2
+        inc ctrl+1
+        bne freq
+        inc ctrl+2
+freq    lda $FFFF
+        beq stop
+        sta $D200
+ctrl    lda $FFFF
+        sta shape
+        and #15
+        beq quiet
+        clc
+        adc #1
+        lsr
+quiet   sta level
+        lda shape
+        and #$F0
+        ora level
+        sta $D201
+        lda echo
+        clc
+        adc #2
+        sta echo
+        bcc done
+        inc echo+1
+done    rts
+stop    sta frames
+        sta $D201
+        sta $D203
+        rts
+.endp
+; Title menu SOUND: ON/OFF. Turning it off silences a cue already playing;
+; turning it on confirms with a click.
+.proc toggle
+        lda enabled
+        eor #1
+        sta enabled
+        beq mute
+        lda #SFX_CLICK
+        jmp play
+mute    sta frames
+        sta main_on
+        sta $D201
+        sta $D203
         rts
 .endp
 .proc finish
@@ -304,11 +515,42 @@ done    pla
         jmp finish
 done    rts
 .endp
-; click, purchase, impact, victory, defeat, unavailable
-notes dta 55,30,130,18,190,220
-controls dta $A0,$A0,$80,$A0,$80,$A0
-frames dta 0
-control dta 0
+; Cue numbers: SFX_CLICK..SFX_SPARKLE below the .local block.
+cue_lo  dta <click,<coin,<thud,<fanfare,<lament,<denied,<move,<back,<fall,<march,<retreat,<sparkle
+cue_hi  dta >click,>coin,>thud,>fanfare,>lament,>denied,>move,>back,>fall,>march,>retreat,>sparkle
+; Generated from note names and envelopes (C5=60 E5=47 G5=40 A5=35 C6=29 at 64 kHz):
+; tick, E5-A5 "ding-dong", soft falling tock, C-E-G-C chime, G-E-C sigh, A-F bump.
+click   dta 30,$A2,30,$A1,30,$A1,0
+coin    dta 47,$A4,47,$A3,47,$A3,47,$A2,35,$A4,35,$A4,35,$A3,35,$A3,35,$A3,35,$A2
+        dta 35,$A2,35,$A2,35,$A2,35,$A1,35,$A1,35,$A1,35,$A1,35,$A1,0
+thud    dta 60,$A3,75,$A3,90,$A2,105,$A1,120,$A1,0
+fanfare dta 60,$A4,60,$A3,60,$A2,60,$A2,47,$A4,47,$A3,47,$A2,47,$A2,40,$A4,40,$A3
+        dta 40,$A2,40,$A2,29,$A4,29,$A4,29,$A3,29,$A3,29,$A3,29,$A2,29,$A2,29,$A2
+        dta 29,$A2,29,$A1,29,$A1,29,$A1,29,$A1,29,$A1,29,$A1,29,$A1,0
+lament  dta 81,$A3,81,$A3,81,$A3,81,$A2,81,$A2,81,$A2,81,$A1,81,$A1,96,$A3,96,$A3
+        dta 96,$A3,96,$A2,96,$A2,96,$A2,96,$A1,96,$A1,121,$A3,121,$A3,121,$A3,121,$A3
+        dta 121,$A2,121,$A2,121,$A2,121,$A2,121,$A1,121,$A1,121,$A1,121,$A1,0
+denied  dta 71,$A3,71,$A2,71,$A1,71,$A0,91,$A3,91,$A2,91,$A2,91,$A1,91,$A1,0
+; Cursor tick, A-E "back", falling knock-out glide, C-G-C battle call,
+; E-C-A retreat, quick C-E-G-C sparkle for a discovered painting.
+move    dta 36,$A2,36,$A1,0
+back    dta 35,$A3,35,$A2,47,$A3,47,$A2,47,$A2,47,$A1,47,$A1,0
+fall    dta 47,$A3,55,$A3,64,$A3,75,$A2,88,$A2,103,$A2,121,$A1,140,$A1,0
+march   dta 121,$A3,121,$A2,81,$A3,81,$A2,60,$A3,60,$A3,60,$A3,60,$A2,60,$A2,60,$A2
+        dta 60,$A2,60,$A1,60,$A1,60,$A1,60,$A1,60,$A1,0
+retreat dta 47,$A3,47,$A3,47,$A2,60,$A3,60,$A3,60,$A2,71,$A3,71,$A3,71,$A2,71,$A2
+        dta 71,$A2,71,$A1,71,$A1,71,$A1,71,$A1,0
+sparkle dta 60,$A3,60,$A2,47,$A3,47,$A2,40,$A3,40,$A2,29,$A4,29,$A3,29,$A3,29,$A3
+        dta 29,$A2,29,$A2,29,$A2,29,$A2,29,$A2,29,$A1,29,$A1,29,$A1,29,$A1,29,$A1
+        dta 29,$A1,0
+cursor  dta a(0)
+echo    dta a(0)
+frames  dta 0
+enabled dta 1
+main_on dta 0
+delay   dta 0
+shape   dta 0
+level   dta 0
 .endl
         icl 'gallery.inc'
 release_ui_end

@@ -1,0 +1,70 @@
+{
+  "notesAfterWins": 2,
+  "regionWinsToFind": 1,
+  "paintings": [
+    {
+      "image": "../../art/gallery-v4/lake-reflection.png",
+      "title": "HER OWN BIGGEST ADMIRER",
+      "lines": [
+        "HER OWN BIGGEST ADMIRER",
+        "FROM MASTER GRUBBRUSH'S LOST WORKS."
+      ]
+    },
+    {
+      "image": "../../art/gallery-v4/tavern-singalong.png",
+      "title": "ONE MORE CHORUS",
+      "lines": [
+        "ONE MORE CHORUS",
+        "FROM MASTER GRUBBRUSH'S LOST WORKS."
+      ]
+    },
+    {
+      "image": "../../art/gallery-v2/tavern-revel.png",
+      "title": "TAVERN REVEL",
+      "lines": [
+        "TAVERN REVEL",
+        "FROM MASTER GRUBBRUSH'S LOST WORKS."
+      ]
+    },
+    {
+      "image": "../../art/gallery-v1/flower-pentagram.png",
+      "title": "FLOWER PENTAGRAM",
+      "lines": [
+        "FLOWER PENTAGRAM",
+        "FROM MASTER GRUBBRUSH'S LOST WORKS."
+      ]
+    },
+    {
+      "image": "../../art/gallery-v1/lake-reflection.png",
+      "title": "LAKE REFLECTION",
+      "lines": [
+        "LAKE REFLECTION",
+        "FROM MASTER GRUBBRUSH'S LOST WORKS."
+      ]
+    },
+    {
+      "image": "../../art/gallery-v1/painter-sitting.png",
+      "title": "PAINTER SITTING",
+      "lines": [
+        "PAINTER SITTING",
+        "FROM MASTER GRUBBRUSH'S LOST WORKS."
+      ]
+    },
+    {
+      "image": "../../art/gallery-v1/apple-thief.png",
+      "title": "THE APPLE THIEF",
+      "lines": [
+        "THE APPLE THIEF",
+        "FROM MASTER GRUBBRUSH'S LOST WORKS."
+      ]
+    },
+    {
+      "image": "../../art/gallery-v1/tavern-dance.png",
+      "title": "TAVERN DANCE",
+      "lines": [
+        "TAVERN DANCE",
+        "FROM MASTER GRUBBRUSH'S LOST WORKS."
+      ]
+    }
+  ]
+}

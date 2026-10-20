@@ -2,6 +2,11 @@ param([switch]$Check, [string]$AltirraPath)
 $ErrorActionPreference = 'Stop'
 $image = Join-Path $PSScriptRoot 'heroes-outro-full-quality-test.xex'
 $story = Join-Path $PSScriptRoot 'prince-and-the-nimf.atr'
+$metadata = Join-Path $PSScriptRoot 'outro-full-quality-test.json'
+if (Test-Path -LiteralPath $metadata -PathType Leaf) {
+    $viewer = Get-Content -LiteralPath $metadata -Raw | ConvertFrom-Json
+    $story = Join-Path $PSScriptRoot $viewer.requires
+}
 $module = Join-Path $PSScriptRoot 'AltirraTools.psm1'
 if (-not (Test-Path -LiteralPath $module -PathType Leaf)) {
     $module = Join-Path $PSScriptRoot '../../../atari-vbxe-toolkit/scripts/AltirraTools.psm1'

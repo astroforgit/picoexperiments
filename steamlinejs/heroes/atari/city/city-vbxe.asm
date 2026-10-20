@@ -41,6 +41,19 @@ BCB_OFF=$100
 XDL_B_OFF=$20
 SCR_W=320
 SCR_H=200
+; Sound cues (sfx.play with the number in A), data in release-ui.inc.
+SFX_CLICK = 0
+SFX_COIN = 1
+SFX_THUD = 2
+SFX_FANFARE = 3
+SFX_LAMENT = 4
+SFX_DENIED = 5
+SFX_MOVE = 6
+SFX_BACK = 7
+SFX_FALL = 8
+SFX_MARCH = 9
+SFX_RETREAT = 10
+SFX_SPARKLE = 11
 work_ptr=$CB
 data_ptr=$CD
 text_src=$CF
@@ -131,16 +144,14 @@ hardware_ready
         jsr new_city
         mva #0 front_bank
         mva #1 back_bank
-        ; Paint both buffers before enabling the overlay.
-        mva #0 render_bank
-        jsr copy_background_cache
-        jsr wait_blit
-        mva #1 render_bank
-        jsr copy_background_cache
-        jsr wait_blit
-        jsr enable_display
+        ; The title picture waits in bank 1; the menu shows it from bank 0.
         jsr release_ui.show
+        jsr enable_display
+        ; Present the city from bank 1, then repaint the hidden bank 0.
         jsr draw_city
+        mva back_bank render_bank
+        jsr copy_background_cache
+        jsr wait_blit
 main_loop
         jsr wait_frame
         jsr poll_input
@@ -153,7 +164,7 @@ main_loop
         jmp main_loop
 
 .proc new_city
-        mwa #START_GOLD gold
+        jsr starting_gold
         ldx #4
 ?copy   lda initial_levels,x
         sta building_levels,x
@@ -195,6 +206,49 @@ main_loop
         rts
 .endp
 
+; Campaign gold for the selected difficulty level.
+.proc starting_gold
+        ldx difficulty
+        mva battle.start_gold_lo,x gold
+        mva battle.start_gold_hi,x gold+1
+        rts
+.endp
+
+; Easy adds reward>>n, Hard subtracts reward>>n; Medium leaves it unchanged.
+.proc scale_reward
+        ldx difficulty
+        lda battle.reward_bonus_shift,x
+        beq ?cut
+        jsr ?part
+        clc
+        lda battle.reward
+        adc ?amount
+        sta battle.reward
+        lda battle.reward+1
+        adc ?amount+1
+        sta battle.reward+1
+        rts
+?cut    lda battle.reward_cut_shift,x
+        beq ?done
+        jsr ?part
+        sec
+        lda battle.reward
+        sbc ?amount
+        sta battle.reward
+        lda battle.reward+1
+        sbc ?amount+1
+        sta battle.reward+1
+?done   rts
+?part   tay
+        mwa battle.reward ?amount
+?shift  lsr ?amount+1
+        ror ?amount
+        dey
+        bne ?shift
+        rts
+?amount dta a(0)
+.endp
+
         icl 'army.inc'
         icl 'game-over.inc'
 
@@ -205,7 +259,9 @@ main_loop
         cmp #3
         bne ?active
         rts
-?active lda screen_mode
+?active lda #SFX_MOVE
+        jsr sfx.play
+        lda screen_mode
         cmp #2
         bne ?not_battle
         jmp battle.navigate
@@ -328,11 +384,16 @@ main_loop
         lda action_latched
         bne ?directions
         mva #1 action_latched
-        lda #0
-        jsr sfx.play
         lda action_mask
         and #2
-        beq ?confirm
+        beq ?click
+        lda #SFX_BACK
+        jsr sfx.play
+        jmp ?cancel
+?click  lda #SFX_CLICK
+        jsr sfx.play
+        jmp ?confirm
+?cancel
         jsr close_popup        ; cancel wins if sources disagree
         jmp ?directions
 ?confirm
@@ -401,6 +462,7 @@ main_loop
 .endp
 
 gold dta a(0)
+difficulty dta battle.DEFAULT_DIFFICULTY ; 0 easy, 1 medium, 2 hard (difficulty.json)
 building_levels :5 dta 0
 army_units :5 dta 255
 army_count dta 0
@@ -891,6 +953,7 @@ code_end
 battle_data_end equ *
         ert battle_data_end>$8000
         .endl
+        icl 'enemy-path.inc'
         icl 'outro.inc'
 runtime_data_end
         ert runtime_data_end>$8000

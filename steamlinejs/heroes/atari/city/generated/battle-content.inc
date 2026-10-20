@@ -117,3 +117,13 @@ practice_lo dta 30,50,70,90
 practice_hi dta 0,0,0,0
 stage_for_win dta 0,1,2,2,2,2,2,2,2,2,0,1,2,2,2,2,2,2,2,2,0,1,2,2,2,2,2,2,2,2,0,1,2,2,2,2,2,2,2,2
 type_ability dta 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,2,0,4,6,5,0,1,0,0
+DEFAULT_DIFFICULTY = 1
+start_gold_lo dta 100,50,30
+start_gold_hi dta 0,0,0
+reward_bonus_shift dta 2,0,0
+reward_cut_shift dta 0,0,3
+difficulty_label_lo dta <difficulty_label_0,<difficulty_label_1,<difficulty_label_2
+difficulty_label_hi dta >difficulty_label_0,>difficulty_label_1,>difficulty_label_2
+difficulty_label_0 dta c'LEVEL: EASY',0
+difficulty_label_1 dta c'LEVEL: MEDIUM',0
+difficulty_label_2 dta c'LEVEL: HARD',0

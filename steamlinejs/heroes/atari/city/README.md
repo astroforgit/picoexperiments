@@ -2,8 +2,8 @@
 
 Everything by **astrofor**.
 
-The release includes a title menu, instructions and credits. It has short
-POKEY sound effects, without music or save/load. See [release notes](../../release/README.txt)
+The release includes a painted title screen with a menu, instructions and
+credits (art in `art/title-v1/`). It has short, soft POKEY sound cues, without music or save/load. See [release notes](../../release/README.txt)
 for the complete package and [native notes](../../NATIVE-V3.txt) for validation.
 
 A playable native city, encounter map and tactical battle game. The Lowrez-based

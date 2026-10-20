@@ -127,7 +127,7 @@ class Machine:
                         return
                     # Gameplay tests skip only the blocking temporary INIT.
                     # Native story tests run it and resume the real XEX loader.
-                    if self.mem.page:self.put('upload_index',32)
+                    if self.mem.page:self.put('upload_index',16)
                     else:self.call(entry) # Real no-VBXE INIT must return immediately.
                 else:self.call(entry)
         self.cpu.pc = LABELS['main']

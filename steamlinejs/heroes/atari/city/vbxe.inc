@@ -111,7 +111,11 @@ vbreg_setup_bank
         lda #VC_XDL_ON+VC_XCOLOR
 vbreg_vctl
         sta VBXE_VCTL
-        lda #0
+        lda #0                  ; XDL A shows bank 0, XDL B bank 1
+        ldx front_bank
+        beq ?xdl
+        lda #<XDL_B_OFF
+?xdl
 vbreg_xdl0
         sta VBXE_XDL0
         lda #$F0

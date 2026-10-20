@@ -3,34 +3,50 @@
   "regionWinsToFind": 1,
   "paintings": [
     {
-      "image": "../../art/gallery-v1/painter-sitting.png",
-      "title": "THE ARTIST AND HIS MUSE",
+      "image": "../../art/gallery-v4/lake-reflection.png",
+      "title": "HER OWN BIGGEST ADMIRER",
       "lines": [
-        "THE ARTIST AND HIS MUSE",
+        "HER OWN BIGGEST ADMIRER",
         "FROM MASTER GRUBBRUSH'S LOST WORKS."
       ]
     },
     {
-      "image": "../../art/gallery-v1/tavern-dance.png",
-      "title": "THE TAVERN DANCE",
+      "image": "../../art/galleryartist/gallery-v5--tavern-singalong.png",
+      "title": "ONE MORE CHORUS",
       "lines": [
-        "THE TAVERN DANCE",
+        "ONE MORE CHORUS",
         "FROM MASTER GRUBBRUSH'S LOST WORKS."
       ]
     },
     {
-      "image": "../../art/gallery-v1/lake-reflection.png",
-      "title": "A MOMENT OF VANITY",
+      "image": "../../art/gallery-v2/tavern-revel.png",
+      "title": "TAVERN REVEL",
       "lines": [
-        "A MOMENT OF VANITY",
+        "TAVERN REVEL",
         "FROM MASTER GRUBBRUSH'S LOST WORKS."
       ]
     },
     {
-      "image": "../../art/gallery-v1/flower-pentagram.png",
-      "title": "FLOWERS AND SECRETS",
+      "image": "../../art/galleryartist/flower-pentagram.png",
+      "title": "FLOWER PENTAGRAM",
       "lines": [
-        "FLOWERS AND SECRETS",
+        "FLOWER PENTAGRAM",
+        "FROM MASTER GRUBBRUSH'S LOST WORKS."
+      ]
+    },
+    {
+      "image": "../../art/galleryartist/lake-reflection.png",
+      "title": "LAKE REFLECTION",
+      "lines": [
+        "LAKE REFLECTION",
+        "FROM MASTER GRUBBRUSH'S LOST WORKS."
+      ]
+    },
+    {
+      "image": "../../art/galleryartist/painter-sitting.png",
+      "title": "PAINTER SITTING",
+      "lines": [
+        "PAINTER SITTING",
         "FROM MASTER GRUBBRUSH'S LOST WORKS."
       ]
     },
@@ -43,26 +59,10 @@
       ]
     },
     {
-      "image": "../../art/gallery-v1/loaded-dice.png",
-      "title": "THE LOADED DICE",
+      "image": "../../art/galleryartist/tavern-dance.png",
+      "title": "TAVERN DANCE",
       "lines": [
-        "THE LOADED DICE",
-        "FROM MASTER GRUBBRUSH'S LOST WORKS."
-      ]
-    },
-    {
-      "image": "../../art/gallery-v1/borrowed-crown.png",
-      "title": "A BORROWED CROWN",
-      "lines": [
-        "A BORROWED CROWN",
-        "FROM MASTER GRUBBRUSH'S LOST WORKS."
-      ]
-    },
-    {
-      "image": "../../art/gallery-v1/moonlight-dance.png",
-      "title": "THE MOONLIGHT DANCE",
-      "lines": [
-        "THE MOONLIGHT DANCE",
+        "TAVERN DANCE",
         "FROM MASTER GRUBBRUSH'S LOST WORKS."
       ]
     }

@@ -62,5 +62,15 @@ const thresholds=config.progression.winsRequired;
 bytes('stage_for_win',thresholds.flatMap(n=>Array.from({length:10},(_,w)=>Math.min(2,Math.floor(w*3/n)))));
 // Ability IDs remain stable: Vampire uses the existing dark sprite set.
 bytes('type_ability',[...Array(15).fill(0),...c.enemies.map(e=>({dark:1,zombie:2,skeleton:3,ogre:4,imp:5,warlock:6}[e.id]||0))]);
+// Difficulty levels shared with release/audit-balance.cjs; Medium is the release balance.
+const difficulty=JSON.parse(fs.readFileSync('../../difficulty.json'));
+if(difficulty.levels.length!==3||difficulty.levels[1].startingGold!==c.startingGold)throw Error('Medium difficulty must keep the release starting gold');
+for(const l of difficulty.levels)if(!Number.isInteger(l.startingGold)||l.startingGold<0||l.startingGold>65535||!Number.isInteger(l.rewardShift)||Math.abs(l.rewardShift)>7||!/^[A-Z]{1,6}$/.test(l.name))throw Error('Invalid difficulty level');
+out.push(`DEFAULT_DIFFICULTY = ${difficulty.default}`);
+bytes('start_gold_lo',difficulty.levels.map(l=>l.startingGold&255));bytes('start_gold_hi',difficulty.levels.map(l=>l.startingGold>>8));
+bytes('reward_bonus_shift',difficulty.levels.map(l=>Math.max(0,l.rewardShift)));
+bytes('reward_cut_shift',difficulty.levels.map(l=>Math.max(0,-l.rewardShift)));
+ptr('difficulty_label',difficulty.levels.map((_,i)=>'difficulty_label_'+i));
+difficulty.levels.forEach((l,i)=>out.push(`difficulty_label_${i} dta c'LEVEL: ${l.name}',0`));
 fs.writeFileSync('generated/battle-content.inc',out.join('\n')+'\n');
 console.log(`Exported 28 fighter types, ${encounters.length} weighted encounters, seed tables and monster abilities.`);

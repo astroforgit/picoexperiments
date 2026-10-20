@@ -80,7 +80,7 @@
       255,
       4,
       4,
-      3
+      255
     ]
   },
   {
@@ -88,7 +88,7 @@
     "mapping": "0xd600",
     "fight": 7,
     "region": "Monster Caves",
-    "gold": 200,
+    "gold": 175,
     "army": [
       1,
       1,
@@ -102,13 +102,13 @@
     "mapping": "0xd600",
     "fight": 8,
     "region": "Monster Caves",
-    "gold": 160,
+    "gold": 165,
     "army": [
       255,
       1,
       5,
       5,
-      5
+      4
     ]
   },
   {
@@ -116,9 +116,9 @@
     "mapping": "0xd600",
     "fight": 9,
     "region": "Monster Caves",
-    "gold": 190,
+    "gold": 200,
     "army": [
-      2,
+      1,
       1,
       5,
       5,
@@ -130,7 +130,7 @@
     "mapping": "0xd600",
     "fight": 10,
     "region": "Necromancer Ruins",
-    "gold": 335,
+    "gold": 310,
     "army": [
       2,
       2,
@@ -144,10 +144,10 @@
     "mapping": "0xd600",
     "fight": 11,
     "region": "Necromancer Ruins",
-    "gold": 555,
+    "gold": 530,
     "army": [
       2,
-      2,
+      255,
       5,
       5,
       5
@@ -158,7 +158,7 @@
     "mapping": "0xd600",
     "fight": 12,
     "region": "Necromancer Ruins",
-    "gold": 955,
+    "gold": 870,
     "army": [
       2,
       2,
@@ -248,7 +248,7 @@
       255,
       4,
       4,
-      3
+      255
     ]
   },
   {
@@ -256,7 +256,7 @@
     "mapping": "0xd700",
     "fight": 7,
     "region": "Monster Caves",
-    "gold": 200,
+    "gold": 175,
     "army": [
       1,
       1,
@@ -270,13 +270,13 @@
     "mapping": "0xd700",
     "fight": 8,
     "region": "Monster Caves",
-    "gold": 160,
+    "gold": 165,
     "army": [
       255,
       1,
       5,
       5,
-      5
+      4
     ]
   },
   {
@@ -284,9 +284,9 @@
     "mapping": "0xd700",
     "fight": 9,
     "region": "Monster Caves",
-    "gold": 190,
+    "gold": 200,
     "army": [
-      2,
+      1,
       1,
       5,
       5,
@@ -298,7 +298,7 @@
     "mapping": "0xd700",
     "fight": 10,
     "region": "Necromancer Ruins",
-    "gold": 335,
+    "gold": 310,
     "army": [
       2,
       2,
@@ -312,10 +312,10 @@
     "mapping": "0xd700",
     "fight": 11,
     "region": "Necromancer Ruins",
-    "gold": 555,
+    "gold": 530,
     "army": [
       2,
-      2,
+      255,
       5,
       5,
       5
@@ -326,7 +326,7 @@
     "mapping": "0xd700",
     "fight": 12,
     "region": "Necromancer Ruins",
-    "gold": 955,
+    "gold": 870,
     "army": [
       2,
       2,

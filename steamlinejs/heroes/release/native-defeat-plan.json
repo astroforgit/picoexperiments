@@ -817,7 +817,6 @@
     "endlessLairs": true
   },
   "options": {
-    "nativeSeedCycle": true,
     "strategy": "mounted",
     "seed": 1,
     "trace": true
@@ -838,7 +837,7 @@
     "defeats": 2,
     "draws": 0,
     "replays": 0,
-    "rounds": 11,
+    "rounds": 10,
     "gold": 10,
     "earned": 50,
     "spent": 90,
@@ -1022,7 +1021,7 @@
             "notes": "Durable starting infantry.",
             "team": 0,
             "armySlot": 0,
-            "cell": 4,
+            "cell": 2,
             "slot": 0,
             "maxHp": 4,
             "spawned": 0,
@@ -1036,7 +1035,7 @@
             "building": "Barracks",
             "family": "barracks",
             "tier": 2,
-            "hp": 4,
+            "hp": 3,
             "damage": 2,
             "move": 2,
             "range": 1,
@@ -1047,7 +1046,7 @@
             "notes": "Durable starting infantry.",
             "team": 0,
             "armySlot": 1,
-            "cell": 18,
+            "cell": 9,
             "slot": 1,
             "maxHp": 4,
             "spawned": 0,
@@ -1084,7 +1083,7 @@
             "shootRange": 0,
             "basis": "Balance v1 - playtest candidate",
             "notes": "Individual fighter; fixed damage, no armor or special abilities.",
-            "cell": 11,
+            "cell": 17,
             "team": 1,
             "slot": 3,
             "maxHp": 2,
@@ -1095,9 +1094,9 @@
           }
         ],
         "outcome": "victory",
-        "rounds": 4,
-        "moves": 13,
-        "attacks": 4,
+        "rounds": 3,
+        "moves": 11,
+        "attacks": 5,
         "summons": 0,
         "healing": 0,
         "conversions": 0,
@@ -1111,7 +1110,7 @@
           },
           {
             "id": "barracks-2",
-            "hp": 4,
+            "hp": 3,
             "slot": 1
           }
         ],
@@ -1178,15 +1177,44 @@
             "actor": 3,
             "unit": "Bat",
             "from": 13,
-            "to": 12,
+            "to": 20,
             "round": 1
           },
           {
             "action": "move",
             "actor": 3,
             "unit": "Bat",
-            "from": 12,
-            "to": 11,
+            "from": 20,
+            "to": 19,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Bat",
+            "from": 19,
+            "to": 18,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Bat",
+            "from": 18,
+            "to": 17,
+            "round": 1
+          },
+          {
+            "action": "attack",
+            "actor": 3,
+            "unit": "Bat",
+            "target": 1,
+            "targetName": "Spearman",
+            "damage": 1,
+            "hpBefore": 4,
+            "hpAfter": 3,
+            "from": 17,
+            "to": 9,
             "round": 1
           },
           {
@@ -1206,72 +1234,40 @@
             "action": "attack",
             "actor": 1,
             "unit": "Spearman",
-            "target": 2,
-            "targetName": "Minibeast",
-            "damage": 1,
-            "hpBefore": 1,
-            "hpAfter": 0,
-            "from": 9,
-            "to": 3,
-            "round": 2
-          },
-          {
-            "action": "move",
-            "actor": 0,
-            "unit": "Spearman",
-            "from": 2,
-            "to": 3,
-            "round": 3
-          },
-          {
-            "action": "move",
-            "actor": 0,
-            "unit": "Spearman",
-            "from": 3,
-            "to": 4,
-            "round": 3
-          },
-          {
-            "action": "move",
-            "actor": 1,
-            "unit": "Spearman",
-            "from": 9,
-            "to": 17,
-            "round": 3
-          },
-          {
-            "action": "move",
-            "actor": 1,
-            "unit": "Spearman",
-            "from": 17,
-            "to": 18,
-            "round": 3
-          },
-          {
-            "action": "attack",
-            "actor": 3,
-            "unit": "Bat",
-            "target": 0,
-            "targetName": "Spearman",
-            "damage": 1,
-            "hpBefore": 4,
-            "hpAfter": 3,
-            "from": 11,
-            "to": 4,
-            "round": 3
-          },
-          {
-            "action": "attack",
-            "actor": 0,
-            "unit": "Spearman",
             "target": 3,
             "targetName": "Bat",
             "damage": 2,
             "hpBefore": 2,
             "hpAfter": 0,
-            "from": 4,
-            "to": 11,
-            "round": 4
+            "from": 9,
+            "to": 17,
+            "round": 2
+          },
+          {
+            "action": "attack",
+            "actor": 2,
+            "unit": "Minibeast",
+            "target": 0,
+            "targetName": "Spearman",
+            "damage": 1,
+            "hpBefore": 4,
+            "hpAfter": 3,
+            "from": 3,
+            "to": 2,
+            "round": 2
+          },
+          {
+            "action": "attack",
+            "actor": 0,
+            "unit": "Spearman",
+            "target": 2,
+            "targetName": "Minibeast",
+            "damage": 1,
+            "hpBefore": 1,
+            "hpAfter": 0,
+            "from": 2,
+            "to": 3,
+            "round": 3
           }
         ],
         "casualties": [],
@@ -1475,7 +1471,7 @@
             "notes": "Durable starting infantry.",
             "team": 0,
             "armySlot": 1,
-            "cell": 18,
+            "cell": 9,
             "slot": 1,
             "maxHp": 4,
             "spawned": 0,
@@ -1519,7 +1515,7 @@
             "shootRange": 0,
             "basis": "Balance v1 - playtest candidate",
             "notes": "Individual fighter; fixed damage, no armor or special abilities.",
-            "cell": 19,
+            "cell": 11,
             "team": 1,
             "slot": 3,
             "maxHp": 4,
@@ -1531,7 +1527,7 @@
           {
             "id": "minibeast",
             "name": "Minibeast",
-            "hp": 1,
+            "hp": 0,
             "damage": 1,
             "move": 3,
             "range": 1,
@@ -1557,7 +1553,7 @@
             "shootRange": 0,
             "basis": "Balance v1 - playtest candidate",
             "notes": "Individual fighter; fixed damage, no armor or special abilities.",
-            "cell": 5,
+            "cell": 17,
             "team": 1,
             "slot": 5,
             "maxHp": 2,
@@ -1569,15 +1565,15 @@
         ],
         "outcome": "defeat",
         "rounds": 4,
-        "moves": 18,
-        "attacks": 11,
+        "moves": 22,
+        "attacks": 12,
         "summons": 0,
         "healing": 0,
         "conversions": 0,
         "preparations": 0,
         "hops": 0,
         "survivors": [],
-        "enemiesRemaining": 2,
+        "enemiesRemaining": 1,
         "trace": [
           {
             "action": "move",
@@ -1706,7 +1702,44 @@
             "actor": 5,
             "unit": "Bat",
             "from": 20,
-            "to": 12,
+            "to": 26,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 5,
+            "unit": "Bat",
+            "from": 26,
+            "to": 25,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 5,
+            "unit": "Bat",
+            "from": 25,
+            "to": 24,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 5,
+            "unit": "Bat",
+            "from": 24,
+            "to": 17,
+            "round": 1
+          },
+          {
+            "action": "attack",
+            "actor": 5,
+            "unit": "Bat",
+            "target": 1,
+            "targetName": "Spearman",
+            "damage": 1,
+            "hpBefore": 4,
+            "hpAfter": 3,
+            "from": 17,
+            "to": 9,
             "round": 1
           },
           {
@@ -1726,19 +1759,32 @@
             "round": 2
           },
           {
-            "action": "move",
+            "action": "attack",
             "actor": 1,
             "unit": "Spearman",
+            "target": 5,
+            "targetName": "Bat",
+            "damage": 2,
+            "hpBefore": 2,
+            "hpAfter": 0,
             "from": 9,
             "to": 17,
             "round": 2
           },
           {
             "action": "move",
-            "actor": 1,
-            "unit": "Spearman",
-            "from": 17,
+            "actor": 3,
+            "unit": "Beast",
+            "from": 19,
             "to": 18,
+            "round": 2
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Beast",
+            "from": 18,
+            "to": 17,
             "round": 2
           },
           {
@@ -1748,10 +1794,10 @@
             "target": 1,
             "targetName": "Spearman",
             "damage": 2,
-            "hpBefore": 4,
-            "hpAfter": 2,
-            "from": 19,
-            "to": 18,
+            "hpBefore": 3,
+            "hpAfter": 1,
+            "from": 17,
+            "to": 9,
             "round": 2
           },
           {
@@ -1768,37 +1814,16 @@
             "round": 2
           },
           {
-            "action": "move",
-            "actor": 5,
-            "unit": "Bat",
-            "from": 12,
-            "to": 5,
-            "round": 2
-          },
-          {
-            "action": "attack",
-            "actor": 5,
-            "unit": "Bat",
-            "target": 0,
-            "targetName": "Spearman",
-            "damage": 1,
-            "hpBefore": 3,
-            "hpAfter": 2,
-            "from": 5,
-            "to": 4,
-            "round": 2
-          },
-          {
             "action": "attack",
             "actor": 0,
             "unit": "Spearman",
-            "target": 5,
-            "targetName": "Bat",
+            "target": 4,
+            "targetName": "Minibeast",
             "damage": 2,
-            "hpBefore": 2,
-            "hpAfter": 0,
+            "hpBefore": 3,
+            "hpAfter": 1,
             "from": 4,
-            "to": 5,
+            "to": 11,
             "round": 3
           },
           {
@@ -1810,8 +1835,8 @@
             "damage": 2,
             "hpBefore": 4,
             "hpAfter": 2,
-            "from": 18,
-            "to": 19,
+            "from": 9,
+            "to": 17,
             "round": 3
           },
           {
@@ -1820,11 +1845,11 @@
             "unit": "Beast",
             "target": 1,
             "targetName": "Spearman",
-            "damage": 2,
-            "hpBefore": 2,
+            "damage": 1,
+            "hpBefore": 1,
             "hpAfter": 0,
-            "from": 19,
-            "to": 18,
+            "from": 17,
+            "to": 9,
             "round": 3
           },
           {
@@ -1834,8 +1859,8 @@
             "target": 0,
             "targetName": "Spearman",
             "damage": 1,
-            "hpBefore": 2,
-            "hpAfter": 1,
+            "hpBefore": 3,
+            "hpAfter": 2,
             "from": 11,
             "to": 4,
             "round": 3
@@ -1846,21 +1871,37 @@
             "unit": "Spearman",
             "target": 4,
             "targetName": "Minibeast",
-            "damage": 2,
-            "hpBefore": 3,
-            "hpAfter": 1,
+            "damage": 1,
+            "hpBefore": 1,
+            "hpAfter": 0,
             "from": 4,
             "to": 11,
             "round": 4
           },
           {
+            "action": "move",
+            "actor": 3,
+            "unit": "Beast",
+            "from": 17,
+            "to": 18,
+            "round": 4
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Beast",
+            "from": 18,
+            "to": 11,
+            "round": 4
+          },
+          {
             "action": "attack",
-            "actor": 4,
-            "unit": "Minibeast",
+            "actor": 3,
+            "unit": "Beast",
             "target": 0,
             "targetName": "Spearman",
-            "damage": 1,
-            "hpBefore": 1,
+            "damage": 2,
+            "hpBefore": 2,
             "hpAfter": 0,
             "from": 11,
             "to": 4,
@@ -2042,7 +2083,7 @@
             "shootRange": 0,
             "basis": "Balance v1 - playtest candidate",
             "notes": "Individual fighter; fixed damage, no armor or special abilities.",
-            "cell": 4,
+            "cell": 9,
             "team": 1,
             "slot": 2,
             "maxHp": 3,
@@ -2073,7 +2114,7 @@
         ],
         "outcome": "defeat",
         "rounds": 3,
-        "moves": 12,
+        "moves": 15,
         "attacks": 5,
         "summons": 0,
         "healing": 0,
@@ -2136,29 +2177,13 @@
             "actor": 2,
             "unit": "Minibeast",
             "from": 12,
-            "to": 11,
+            "to": 19,
             "round": 1
           },
           {
             "action": "move",
             "actor": 2,
             "unit": "Minibeast",
-            "from": 11,
-            "to": 4,
-            "round": 1
-          },
-          {
-            "action": "move",
-            "actor": 3,
-            "unit": "Bat",
-            "from": 20,
-            "to": 19,
-            "round": 1
-          },
-          {
-            "action": "move",
-            "actor": 3,
-            "unit": "Bat",
             "from": 19,
             "to": 18,
             "round": 1
@@ -2167,7 +2192,31 @@
             "action": "move",
             "actor": 3,
             "unit": "Bat",
-            "from": 18,
+            "from": 20,
+            "to": 26,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Bat",
+            "from": 26,
+            "to": 25,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Bat",
+            "from": 25,
+            "to": 24,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Bat",
+            "from": 24,
             "to": 17,
             "round": 1
           },
@@ -2177,19 +2226,6 @@
             "unit": "Bat",
             "from": 17,
             "to": 9,
-            "round": 1
-          },
-          {
-            "action": "attack",
-            "actor": 3,
-            "unit": "Bat",
-            "target": 0,
-            "targetName": "Spearman",
-            "damage": 1,
-            "hpBefore": 4,
-            "hpAfter": 3,
-            "from": 9,
-            "to": 2,
             "round": 1
           },
           {
@@ -2212,9 +2248,38 @@
             "target": 0,
             "targetName": "Spearman",
             "damage": 2,
-            "hpBefore": 3,
-            "hpAfter": 1,
+            "hpBefore": 4,
+            "hpAfter": 2,
             "from": 3,
+            "to": 2,
+            "round": 2
+          },
+          {
+            "action": "move",
+            "actor": 2,
+            "unit": "Minibeast",
+            "from": 18,
+            "to": 17,
+            "round": 2
+          },
+          {
+            "action": "move",
+            "actor": 2,
+            "unit": "Minibeast",
+            "from": 17,
+            "to": 9,
+            "round": 2
+          },
+          {
+            "action": "attack",
+            "actor": 2,
+            "unit": "Minibeast",
+            "target": 0,
+            "targetName": "Spearman",
+            "damage": 1,
+            "hpBefore": 2,
+            "hpAfter": 1,
+            "from": 9,
             "to": 2,
             "round": 2
           },
@@ -2394,7 +2459,7 @@
             "notes": "Durable starting infantry.",
             "team": 0,
             "armySlot": 0,
-            "cell": 4,
+            "cell": 2,
             "slot": 0,
             "maxHp": 4,
             "spawned": 0,
@@ -2408,7 +2473,7 @@
             "building": "Barracks",
             "family": "barracks",
             "tier": 2,
-            "hp": 4,
+            "hp": 3,
             "damage": 2,
             "move": 2,
             "range": 1,
@@ -2419,7 +2484,7 @@
             "notes": "Durable starting infantry.",
             "team": 0,
             "armySlot": 1,
-            "cell": 18,
+            "cell": 9,
             "slot": 1,
             "maxHp": 4,
             "spawned": 0,
@@ -2456,7 +2521,7 @@
             "shootRange": 0,
             "basis": "Balance v1 - playtest candidate",
             "notes": "Individual fighter; fixed damage, no armor or special abilities.",
-            "cell": 11,
+            "cell": 17,
             "team": 1,
             "slot": 3,
             "maxHp": 2,
@@ -2467,9 +2532,9 @@
           }
         ],
         "outcome": "victory",
-        "rounds": 4,
-        "moves": 13,
-        "attacks": 4,
+        "rounds": 3,
+        "moves": 11,
+        "attacks": 5,
         "summons": 0,
         "healing": 0,
         "conversions": 0,
@@ -2483,7 +2548,7 @@
           },
           {
             "id": "barracks-2",
-            "hp": 4,
+            "hp": 3,
             "slot": 1
           }
         ],
@@ -2550,15 +2615,44 @@
             "actor": 3,
             "unit": "Bat",
             "from": 13,
-            "to": 12,
+            "to": 20,
             "round": 1
           },
           {
             "action": "move",
             "actor": 3,
             "unit": "Bat",
-            "from": 12,
-            "to": 11,
+            "from": 20,
+            "to": 19,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Bat",
+            "from": 19,
+            "to": 18,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Bat",
+            "from": 18,
+            "to": 17,
+            "round": 1
+          },
+          {
+            "action": "attack",
+            "actor": 3,
+            "unit": "Bat",
+            "target": 1,
+            "targetName": "Spearman",
+            "damage": 1,
+            "hpBefore": 4,
+            "hpAfter": 3,
+            "from": 17,
+            "to": 9,
             "round": 1
           },
           {
@@ -2578,72 +2672,40 @@
             "action": "attack",
             "actor": 1,
             "unit": "Spearman",
-            "target": 2,
-            "targetName": "Minibeast",
-            "damage": 1,
-            "hpBefore": 1,
-            "hpAfter": 0,
-            "from": 9,
-            "to": 3,
-            "round": 2
-          },
-          {
-            "action": "move",
-            "actor": 0,
-            "unit": "Spearman",
-            "from": 2,
-            "to": 3,
-            "round": 3
-          },
-          {
-            "action": "move",
-            "actor": 0,
-            "unit": "Spearman",
-            "from": 3,
-            "to": 4,
-            "round": 3
-          },
-          {
-            "action": "move",
-            "actor": 1,
-            "unit": "Spearman",
-            "from": 9,
-            "to": 17,
-            "round": 3
-          },
-          {
-            "action": "move",
-            "actor": 1,
-            "unit": "Spearman",
-            "from": 17,
-            "to": 18,
-            "round": 3
-          },
-          {
-            "action": "attack",
-            "actor": 3,
-            "unit": "Bat",
-            "target": 0,
-            "targetName": "Spearman",
-            "damage": 1,
-            "hpBefore": 4,
-            "hpAfter": 3,
-            "from": 11,
-            "to": 4,
-            "round": 3
-          },
-          {
-            "action": "attack",
-            "actor": 0,
-            "unit": "Spearman",
             "target": 3,
             "targetName": "Bat",
             "damage": 2,
             "hpBefore": 2,
             "hpAfter": 0,
-            "from": 4,
-            "to": 11,
-            "round": 4
+            "from": 9,
+            "to": 17,
+            "round": 2
+          },
+          {
+            "action": "attack",
+            "actor": 2,
+            "unit": "Minibeast",
+            "target": 0,
+            "targetName": "Spearman",
+            "damage": 1,
+            "hpBefore": 4,
+            "hpAfter": 3,
+            "from": 3,
+            "to": 2,
+            "round": 2
+          },
+          {
+            "action": "attack",
+            "actor": 0,
+            "unit": "Spearman",
+            "target": 2,
+            "targetName": "Minibeast",
+            "damage": 1,
+            "hpBefore": 1,
+            "hpAfter": 0,
+            "from": 2,
+            "to": 3,
+            "round": 3
           }
         ],
         "casualties": [],
@@ -2862,7 +2924,7 @@
             "notes": "Durable starting infantry.",
             "team": 0,
             "armySlot": 1,
-            "cell": 18,
+            "cell": 9,
             "slot": 1,
             "maxHp": 4,
             "spawned": 0,
@@ -2906,7 +2968,7 @@
             "shootRange": 0,
             "basis": "Balance v1 - playtest candidate",
             "notes": "Individual fighter; fixed damage, no armor or special abilities.",
-            "cell": 19,
+            "cell": 11,
             "team": 1,
             "slot": 3,
             "maxHp": 4,
@@ -2918,7 +2980,7 @@
           {
             "id": "minibeast",
             "name": "Minibeast",
-            "hp": 1,
+            "hp": 0,
             "damage": 1,
             "move": 3,
             "range": 1,
@@ -2944,7 +3006,7 @@
             "shootRange": 0,
             "basis": "Balance v1 - playtest candidate",
             "notes": "Individual fighter; fixed damage, no armor or special abilities.",
-            "cell": 5,
+            "cell": 17,
             "team": 1,
             "slot": 5,
             "maxHp": 2,
@@ -2956,15 +3018,15 @@
         ],
         "outcome": "defeat",
         "rounds": 4,
-        "moves": 18,
-        "attacks": 11,
+        "moves": 22,
+        "attacks": 12,
         "summons": 0,
         "healing": 0,
         "conversions": 0,
         "preparations": 0,
         "hops": 0,
         "survivors": [],
-        "enemiesRemaining": 2,
+        "enemiesRemaining": 1,
         "trace": [
           {
             "action": "move",
@@ -3093,7 +3155,44 @@
             "actor": 5,
             "unit": "Bat",
             "from": 20,
-            "to": 12,
+            "to": 26,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 5,
+            "unit": "Bat",
+            "from": 26,
+            "to": 25,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 5,
+            "unit": "Bat",
+            "from": 25,
+            "to": 24,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 5,
+            "unit": "Bat",
+            "from": 24,
+            "to": 17,
+            "round": 1
+          },
+          {
+            "action": "attack",
+            "actor": 5,
+            "unit": "Bat",
+            "target": 1,
+            "targetName": "Spearman",
+            "damage": 1,
+            "hpBefore": 4,
+            "hpAfter": 3,
+            "from": 17,
+            "to": 9,
             "round": 1
           },
           {
@@ -3113,19 +3212,32 @@
             "round": 2
           },
           {
-            "action": "move",
+            "action": "attack",
             "actor": 1,
             "unit": "Spearman",
+            "target": 5,
+            "targetName": "Bat",
+            "damage": 2,
+            "hpBefore": 2,
+            "hpAfter": 0,
             "from": 9,
             "to": 17,
             "round": 2
           },
           {
             "action": "move",
-            "actor": 1,
-            "unit": "Spearman",
-            "from": 17,
+            "actor": 3,
+            "unit": "Beast",
+            "from": 19,
             "to": 18,
+            "round": 2
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Beast",
+            "from": 18,
+            "to": 17,
             "round": 2
           },
           {
@@ -3135,10 +3247,10 @@
             "target": 1,
             "targetName": "Spearman",
             "damage": 2,
-            "hpBefore": 4,
-            "hpAfter": 2,
-            "from": 19,
-            "to": 18,
+            "hpBefore": 3,
+            "hpAfter": 1,
+            "from": 17,
+            "to": 9,
             "round": 2
           },
           {
@@ -3155,37 +3267,16 @@
             "round": 2
           },
           {
-            "action": "move",
-            "actor": 5,
-            "unit": "Bat",
-            "from": 12,
-            "to": 5,
-            "round": 2
-          },
-          {
-            "action": "attack",
-            "actor": 5,
-            "unit": "Bat",
-            "target": 0,
-            "targetName": "Spearman",
-            "damage": 1,
-            "hpBefore": 3,
-            "hpAfter": 2,
-            "from": 5,
-            "to": 4,
-            "round": 2
-          },
-          {
             "action": "attack",
             "actor": 0,
             "unit": "Spearman",
-            "target": 5,
-            "targetName": "Bat",
+            "target": 4,
+            "targetName": "Minibeast",
             "damage": 2,
-            "hpBefore": 2,
-            "hpAfter": 0,
+            "hpBefore": 3,
+            "hpAfter": 1,
             "from": 4,
-            "to": 5,
+            "to": 11,
             "round": 3
           },
           {
@@ -3197,8 +3288,8 @@
             "damage": 2,
             "hpBefore": 4,
             "hpAfter": 2,
-            "from": 18,
-            "to": 19,
+            "from": 9,
+            "to": 17,
             "round": 3
           },
           {
@@ -3207,11 +3298,11 @@
             "unit": "Beast",
             "target": 1,
             "targetName": "Spearman",
-            "damage": 2,
-            "hpBefore": 2,
+            "damage": 1,
+            "hpBefore": 1,
             "hpAfter": 0,
-            "from": 19,
-            "to": 18,
+            "from": 17,
+            "to": 9,
             "round": 3
           },
           {
@@ -3221,8 +3312,8 @@
             "target": 0,
             "targetName": "Spearman",
             "damage": 1,
-            "hpBefore": 2,
-            "hpAfter": 1,
+            "hpBefore": 3,
+            "hpAfter": 2,
             "from": 11,
             "to": 4,
             "round": 3
@@ -3233,21 +3324,37 @@
             "unit": "Spearman",
             "target": 4,
             "targetName": "Minibeast",
-            "damage": 2,
-            "hpBefore": 3,
-            "hpAfter": 1,
+            "damage": 1,
+            "hpBefore": 1,
+            "hpAfter": 0,
             "from": 4,
             "to": 11,
             "round": 4
           },
           {
+            "action": "move",
+            "actor": 3,
+            "unit": "Beast",
+            "from": 17,
+            "to": 18,
+            "round": 4
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Beast",
+            "from": 18,
+            "to": 11,
+            "round": 4
+          },
+          {
             "action": "attack",
-            "actor": 4,
-            "unit": "Minibeast",
+            "actor": 3,
+            "unit": "Beast",
             "target": 0,
             "targetName": "Spearman",
-            "damage": 1,
-            "hpBefore": 1,
+            "damage": 2,
+            "hpBefore": 2,
             "hpAfter": 0,
             "from": 11,
             "to": 4,
@@ -3445,7 +3552,7 @@
             "shootRange": 0,
             "basis": "Balance v1 - playtest candidate",
             "notes": "Individual fighter; fixed damage, no armor or special abilities.",
-            "cell": 4,
+            "cell": 9,
             "team": 1,
             "slot": 2,
             "maxHp": 3,
@@ -3476,7 +3583,7 @@
         ],
         "outcome": "defeat",
         "rounds": 3,
-        "moves": 12,
+        "moves": 15,
         "attacks": 5,
         "summons": 0,
         "healing": 0,
@@ -3539,29 +3646,13 @@
             "actor": 2,
             "unit": "Minibeast",
             "from": 12,
-            "to": 11,
+            "to": 19,
             "round": 1
           },
           {
             "action": "move",
             "actor": 2,
             "unit": "Minibeast",
-            "from": 11,
-            "to": 4,
-            "round": 1
-          },
-          {
-            "action": "move",
-            "actor": 3,
-            "unit": "Bat",
-            "from": 20,
-            "to": 19,
-            "round": 1
-          },
-          {
-            "action": "move",
-            "actor": 3,
-            "unit": "Bat",
             "from": 19,
             "to": 18,
             "round": 1
@@ -3570,7 +3661,31 @@
             "action": "move",
             "actor": 3,
             "unit": "Bat",
-            "from": 18,
+            "from": 20,
+            "to": 26,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Bat",
+            "from": 26,
+            "to": 25,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Bat",
+            "from": 25,
+            "to": 24,
+            "round": 1
+          },
+          {
+            "action": "move",
+            "actor": 3,
+            "unit": "Bat",
+            "from": 24,
             "to": 17,
             "round": 1
           },
@@ -3580,19 +3695,6 @@
             "unit": "Bat",
             "from": 17,
             "to": 9,
-            "round": 1
-          },
-          {
-            "action": "attack",
-            "actor": 3,
-            "unit": "Bat",
-            "target": 0,
-            "targetName": "Spearman",
-            "damage": 1,
-            "hpBefore": 4,
-            "hpAfter": 3,
-            "from": 9,
-            "to": 2,
             "round": 1
           },
           {
@@ -3615,9 +3717,38 @@
             "target": 0,
             "targetName": "Spearman",
             "damage": 2,
-            "hpBefore": 3,
-            "hpAfter": 1,
+            "hpBefore": 4,
+            "hpAfter": 2,
             "from": 3,
+            "to": 2,
+            "round": 2
+          },
+          {
+            "action": "move",
+            "actor": 2,
+            "unit": "Minibeast",
+            "from": 18,
+            "to": 17,
+            "round": 2
+          },
+          {
+            "action": "move",
+            "actor": 2,
+            "unit": "Minibeast",
+            "from": 17,
+            "to": 9,
+            "round": 2
+          },
+          {
+            "action": "attack",
+            "actor": 2,
+            "unit": "Minibeast",
+            "target": 0,
+            "targetName": "Spearman",
+            "damage": 1,
+            "hpBefore": 2,
+            "hpAfter": 1,
+            "from": 9,
             "to": 2,
             "round": 2
           },

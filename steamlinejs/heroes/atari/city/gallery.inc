@@ -86,6 +86,8 @@ active  lda notes_pending
         beq painting
         mva #0 notes_pending
         jsr draw_notes
+        lda #SFX_SPARKLE
+        jsr sfx.play
         jsr wait_button
 painting
         lda painting_pending
@@ -95,6 +97,8 @@ painting
         sta selection
         mva #0 painting_pending
         jsr picture
+        lda #SFX_SPARKLE
+        jsr sfx.play
         jsr wait_button
 done    mva #1 dirty
         mva #1 action_latched
@@ -119,6 +123,7 @@ loop    jsr wait_frame
         lda latch
         bne loop
         mva #1 latch
+        jsr release_ui.action_sound
         lda action
         cmp #4
         beq done
@@ -284,6 +289,8 @@ press   jsr wait_frame
         jsr release_ui.input
         cmp #3
         bcc press
+        lda #SFX_CLICK
+        jsr sfx.play
         mva #0 neutral
 finish  jsr wait_frame
         jsr release_ui.input
