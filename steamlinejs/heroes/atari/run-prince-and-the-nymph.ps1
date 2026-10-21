@@ -1,7 +1,7 @@
 param([switch]$Check, [string]$AltirraPath)
 $ErrorActionPreference = 'Stop'
-$image = Join-Path $PSScriptRoot 'prince-and-the-nimf.xex'
-$story = Join-Path $PSScriptRoot 'prince-and-the-nimf.atr'
+$image = Join-Path $PSScriptRoot 'prince-and-the-nymph.xex'
+$story = Join-Path $PSScriptRoot 'prince-and-the-nymph.atr'
 $module = Join-Path $PSScriptRoot 'AltirraTools.psm1'
 if (-not (Test-Path -LiteralPath $module -PathType Leaf)) {
     $module = Join-Path $PSScriptRoot '../../../atari-vbxe-toolkit/scripts/AltirraTools.psm1'

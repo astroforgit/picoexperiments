@@ -46,7 +46,7 @@
         "move": 2,
         "range": 1,
         "recruit": 60,
-        "buildingCost": 90,
+        "buildingCost": 140,
         "shootRange": 0,
         "basis": "Balance v1 - playtest candidate",
         "notes": "Heavy frontline damage."
@@ -94,7 +94,7 @@
         "move": 2,
         "range": 6,
         "recruit": 80,
-        "buildingCost": 100,
+        "buildingCost": 160,
         "shootRange": 6,
         "basis": "Balance v1 - playtest candidate",
         "notes": "Mobile long-range support."
@@ -144,7 +144,7 @@
         "move": 5,
         "range": 1,
         "recruit": 70,
-        "buildingCost": 100,
+        "buildingCost": 160,
         "shootRange": 0,
         "basis": "Balance v1 - playtest candidate",
         "notes": "Fast cavalry; 3 damage makes a mounted army viable.",
@@ -193,7 +193,7 @@
         "move": 2,
         "range": 4,
         "recruit": 85,
-        "buildingCost": 100,
+        "buildingCost": 160,
         "shootRange": 4,
         "basis": "Balance v1 - playtest candidate",
         "notes": "High damage at shorter range than Marksman."
@@ -348,7 +348,7 @@
       "costs": [
         40,
         50,
-        30
+        70
       ],
       "baseCapacity": 3,
       "capacityByLevel": [

@@ -343,8 +343,8 @@ menu_key dta 0
 line dta 0
 line_y dta 0
 mark_y dta 0
-s_title dta c'PRINCE AND THE NIMF',0
-s_author dta c'EVERYTHING BY ASTROFOR',0
+s_title dta c'PRINCE AND THE NYMPH',0
+s_author dta c'AUTHOR: ASTROFOR',0
 s_work dta c'GAME, CODE, ART AND STORY',0
 s_design dta c'DESIGN AND BALANCE',0
 s_start dta c'START GAME',0
@@ -357,7 +357,7 @@ s_thanks dta c'THANK YOU FOR PLAYING!',0
 s_back dta c'FIRE/ESC: BACK',0
 help_lo dta <h0,<h1,<h2,<h3,<h4,<h5,<h6,<h7,<h8,<h9,<h10,<h11
 help_hi dta >h0,>h1,>h2,>h3,>h4,>h5,>h6,>h7,>h8,>h9,>h10,>h11
-h0 dta c'BUILD AN ARMY TO RESCUE THE NIMF.',0
+h0 dta c'BUILD AN ARMY TO RESCUE THE NYMPH.',0
 h1 dta c'JOYSTICK / WASD / ARROWS: MOVE',0
 h2 dta c'FIRE / ENTER / SPACE: CHOOSE',0
 h3 dta c'ESC / SELECT: BACK OR RETREAT',0
@@ -553,5 +553,6 @@ shape   dta 0
 level   dta 0
 .endl
         icl 'gallery.inc'
+        icl 'duel.inc'
 release_ui_end
         ert release_ui_end>$C000

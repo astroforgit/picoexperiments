@@ -26,6 +26,12 @@
         lda popup_choice
         cmp #1
         beq ?close
+        cmp #2
+        bne ?campaign
+        mva #1 battle.duel
+        jmp battle.start
+?campaign
+        mva #0 battle.duel
 ?fight  jsr can_enter_battle
         bcc ?done
         jmp battle.start
@@ -70,7 +76,10 @@ location_region dta 0,1,2,255,3
 .proc map_choice_enabled
         cmp #1
         beq ?yes
-        cmp #0
+        cmp #2
+        bne ?fight
+        jmp can_duel
+?fight  cmp #0
         bne ?no
         jmp can_enter_battle
 ?yes    sec
@@ -79,6 +88,8 @@ location_region dta 0,1,2,255,3
         rts
 .endp
 map_choice_step dta 1
+map_button_slot dta 0,2,1       ; choice -> position on screen
+map_button_choice dta 0,2,1     ; position -> choice
 
 .proc map_navigate
         lda popup_open
@@ -90,16 +101,19 @@ map_choice_step dta 1
         bne ?next
 ?previous
         mva #255 map_choice_step
-?next   lda popup_choice
+?next   ldx popup_choice           ; buttons left to right: fight, duel, back
+        lda map_button_slot,x
         clc
         adc map_choice_step
         cmp #255
         bne ?upper
-        lda #1
-?upper  cmp #2
+        lda #2
+?upper  cmp #3
         bcc ?choice
         lda #0
-?choice sta popup_choice
+?choice tax
+        lda map_button_choice,x
+        sta popup_choice
         jsr map_choice_enabled
         bcc ?next
         mva #1 dirty
@@ -178,82 +192,7 @@ map_cursor_w dta 56,56,56,72,56
         rts
 .endp
 
-.proc draw_scout_report
-        rect 22,28,280,140,1
-        rect 24,30,276,136,7
-        rect 24,30,276,16,1
-        mwa #22 calc_x
-        mva #28 calc_y
-        mwa #280 fr_w
-        mva #140 fr_h
-        mva #2 fr_col
-        jsr outline
-        jsr location_name_pointer
-        mwa #32 text_x
-        mva #34 text_y
-        jsr draw_text
-        labeltext 32,54,s_scout
-        ldx selected_location
-        lda location_desc_lo,x
-        sta text_src
-        lda location_desc_hi,x
-        sta text_src+1
-        mwa #32 text_x
-        mva #72 text_y
-        jsr draw_text
-        ldx selected_location
-        lda location_detail_lo,x
-        sta text_src
-        lda location_detail_hi,x
-        sta text_src+1
-        mwa #32 text_x
-        mva #88 text_y
-        jsr draw_text
-        jsr can_enter_battle
-        bcs ?ready
-        lda army_count
-        beq ?no_army
-        labeltext 32,119,s_locked
-        jmp ?buttons
-?no_army
-        labeltext 32,119,s_recruit_first
-        jmp ?buttons
-?ready  labeltext 32,119,s_ready
-?buttons
-        jsr can_enter_battle
-        bcc ?disabled
-        rect 32,134,119,15,1
-        jmp ?back_button
-?disabled
-        ; Blend the disabled control into the panel; it cannot receive focus.
-        rect 32,134,119,15,7
-?back_button
-        rect 170,134,119,15,1
-?focus  lda popup_choice
-        jsr map_choice_enabled
-        bcc ?labels
-        lda popup_choice
-        cmp #1
-        beq ?back
-        mwa #32 calc_x
-        jmp ?outline
-?back   mwa #170 calc_x
-?outline
-        mva #134 calc_y
-        mwa #119 fr_w
-        mva #15 fr_h
-        mva #2 fr_col
-        jsr outline
-?labels jsr can_enter_battle
-        bcc ?locked_label
-        labeltext 74,138,s_fight
-        jmp ?back_label
-?locked_label
-        labeltext 72,138,s_disabled
-?back_label
-        labeltext 217,138,s_back
-        rts
-.endp
+; draw_scout_report lives in duel.inc (three buttons with the Dark Forest duel).
 s_locked dta c'WIN MORE IN THE PREVIOUS LAIR',0
 s_recruit_first dta c'RECRUIT AN ARMY IN THE CITY',0
 s_ready dta c'FIRE: FIGHT   ESC: BACK',0

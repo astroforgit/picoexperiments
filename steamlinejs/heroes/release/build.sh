@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Build, verify and package Prince and the Nimf. Pass an output directory optionally.
+# Build, verify and package Prince and the Nymph. Pass an output directory optionally.
 set -eu
 release_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 cd "$release_dir/.."

@@ -6,7 +6,7 @@ sp=importlib.util.spec_from_file_location('r',Path(__file__).with_name('test-run
 labels={p[2].lower():int(p[1],16) for line in (r.ROOT/'generated/outro-full-quality.lab').read_text().splitlines() if len(p:=line.split())==3}
 layout=json.loads((r.ROOT/'generated/outro-full-quality-layout.json').read_text())
 count=layout['pictureCount'];offset=layout.get('pageOffset',4)
-disk=r.ROOT/'generated'/('heroes-story.atr' if layout['requires']=='prince-and-the-nimf.atr' else layout['requires'])
+disk=r.ROOT/'generated'/('heroes-story.atr' if layout['requires']=='prince-and-the-nymph.atr' else layout['requires'])
 def machine(page,missing_disk=False,wrong_disk=False):
  m=r.Machine.__new__(r.Machine);m.mem=r.Memory(page);m.cpu=r.MPU(memory=m.mem)
  m.mem.story_disk=disk.read_bytes()

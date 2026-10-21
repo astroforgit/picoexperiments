@@ -110,10 +110,10 @@ def glint(art, centre, radius):
 def main():
     art = Image.open(ROOT / 'title-key-art.png').convert('RGB')
     assert art.size == (320 * SCALE, 200 * SCALE)
-    cap, small = font('URWBookman-Demi.otf', 40), font('URWBookman-Demi.otf', 29)
-    script = font('Z003-MediumItalic.otf', 21)
-    words = [('P', cap, 0), ('RINCE', small, 7 * SCALE), ('and the', script, 7 * SCALE),
-             ('N', cap, 0), ('IMF', small, 0)]
+    cap, small = font('URWBookman-Demi.otf', 35), font('URWBookman-Demi.otf', 25)
+    script = font('Z003-MediumItalic.otf', 18)
+    words = [('P', cap, 0), ('RINCE', small, 5 * SCALE), ('and the', script, 5 * SCALE),
+             ('N', cap, 0), ('YMPH', small, 0)]
     runs, total = layout(words)
     x0, baseline = (art.width - total) // 2, 38 * SCALE
     big = [r for r in runs if r[2] is not script]

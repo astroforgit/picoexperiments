@@ -1,5 +1,5 @@
-PRINCE AND THE NIMF - GALLERY ART V4
-Everything by astrofor
+PRINCE AND THE NYMPH - GALLERY ART V4
+Author: astrofor
 
 Eight freshly regenerated images, made with built-in imagegen.
 Exact prompts and original generated filenames: generation.json.

@@ -1,9 +1,9 @@
-# Prince and the Nimf — Atari VBXE
+# Prince and the Nymph — Atari VBXE
 
-Everything by **astrofor**.
+Author: **astrofor**.
 
-The complete game starts with `./run-prince-and-the-nimf.sh` or the Windows
-`run-prince-and-the-nimf.cmd`. The previous `run-heroes-vbxe3` launchers remain
+The complete game starts with `./run-prince-and-the-nymph.sh` or the Windows
+`run-prince-and-the-nymph.cmd`. The previous `run-heroes-vbxe3` launchers remain
 compatible. See [release instructions](../release/README.txt) for the title menu,
 controls, credits, story disk and current verification limits.
 

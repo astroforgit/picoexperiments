@@ -118,6 +118,9 @@ practice_hi dta 0,0,0,0
 stage_for_win dta 0,1,2,2,2,2,2,2,2,2,0,1,2,2,2,2,2,2,2,2,0,1,2,2,2,2,2,2,2,2,0,1,2,2,2,2,2,2,2,2
 type_ability dta 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,2,0,4,6,5,0,1,0,0
 DEFAULT_DIFFICULTY = 1
+DUEL_TYPE = 15
+DUEL_CELL = 20
+DUEL_REWARD = 15
 start_gold_lo dta 100,50,30
 start_gold_hi dta 0,0,0
 reward_bonus_shift dta 2,0,0

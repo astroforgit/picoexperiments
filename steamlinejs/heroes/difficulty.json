@@ -1,5 +1,5 @@
 {
-  "format": "prince-and-the-nimf-difficulty",
+  "format": "prince-and-the-nymph-difficulty",
   "version": 1,
   "default": 1,
   "notes": "Medium is the unchanged release balance. rewardShift n>0 adds reward>>n, n<0 subtracts reward>>-n, applied to each battle's table reward before the endless-lair bonus. Enemy stats and AI are identical on every level. Validated by release/audit-balance.cjs.",

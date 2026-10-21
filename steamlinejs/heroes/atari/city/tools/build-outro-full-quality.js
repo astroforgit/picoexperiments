@@ -8,7 +8,7 @@ const configFile=artist?'galleryartist-content.json':'gallery-content.json';
 const scenes=JSON.parse(fs.readFileSync(configFile,'utf8')).paintings;
 assert(scenes.length>0&&scenes.length<=12);
 const pageOffset=artist?0:4;
-const diskName=artist?'heroes-galleryartist-test.atr':'prince-and-the-nimf.atr';
+const diskName=artist?'heroes-galleryartist-test.atr':'prince-and-the-nymph.atr';
 const labels=Object.fromEntries(fs.readFileSync('generated/city-vbxe.lab','utf8').split('\n').map(s=>s.trim().split(/\s+/)).filter(p=>p.length===3).map(p=>[p[2].toLowerCase(),parseInt(p[1],16)]));
 const game=fs.readFileSync('city-vbxe.xex'),parts=[];
 for(let i=0;i<game.length;){const start=game.readUInt16LE(i);i+=2;if(start===65535)continue;const end=game.readUInt16LE(i);i+=2;const n=end-start+1;parts.push({start,end,data:game.subarray(i,i+n)});i+=n;}

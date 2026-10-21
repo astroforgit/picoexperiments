@@ -3,7 +3,7 @@
 set -eu
 runner_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 image="$runner_dir/heroes-outro-full-quality-test.xex"
-story="$runner_dir/prince-and-the-nimf.atr"
+story="$runner_dir/prince-and-the-nymph.atr"
 metadata="$runner_dir/outro-full-quality-test.json"
 if [ -f "$metadata" ]; then
     disk_name=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["requires"])' "$metadata")

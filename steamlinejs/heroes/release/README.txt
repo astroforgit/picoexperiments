@@ -1,20 +1,20 @@
-PRINCE AND THE NIMF
-Everything by astrofor
+PRINCE AND THE NYMPH
+Author: astrofor
 
 A humorous fantasy strategy game for Atari XL/XE with VBXE FX 1.2x.
 Recruit an army in Greenhaven, clear the four lairs, defeat the necromancer,
-and rescue the nimf. The story continues through a three-picture wedding ending.
+and rescue the nymph. The story continues through a three-picture wedding ending.
 
 START
-Windows: extract the complete package, then run run-prince-and-the-nimf.cmd.
-WSL: run ./run-prince-and-the-nimf.sh from the extracted directory.
+Windows: extract the complete package, then run run-prince-and-the-nymph.cmd.
+WSL: run ./run-prince-and-the-nymph.sh from the extracted directory.
 The launcher finds an existing Altirra installation and uses its persistent
 hardware profile. Enable VBXE in that profile. Set ALTIRRA_PATH if necessary.
-It mounts prince-and-the-nimf.atr in D1: and starts prince-and-the-nimf.xex.
+It mounts prince-and-the-nymph.atr in D1: and starts prince-and-the-nymph.xex.
 
 Manual loading / real Atari: use an XL/XE with 64 KB and VBXE FX 1.2x,
-load prince-and-the-nimf.xex with BASIC disabled and mount the companion
-prince-and-the-nimf.atr as D1:. The disk has 256-byte sectors; the drive or
+load prince-and-the-nymph.xex with BASIC disabled and mount the companion
+prince-and-the-nymph.atr as D1:. The disk has 256-byte sectors; the drive or
 SIO peripheral must support the supplied 1 MB ATR. The full-quality ending
 and game-over artwork need this disk. Additional extended CPU RAM is not needed.
 The introduction reclaims its picture/code memory after loading.
@@ -42,7 +42,7 @@ Losing every soldier without enough gold for any available recruit is game over.
 Fire starts a fresh campaign after defeat or after the final ending page.
 There are no saves; restarting starts over. The Chapel has a free ART GALLERY action after it is built. After two
 victories, scouts find the notes of goblin master painter Grubbrush, whose
-portraits of the nimf were scattered by bandits. Later victories recover eight
+portraits of the nymph were scattered by bandits. Later victories recover eight
 unique paintings, two hidden in each lair, with locations shuffled each campaign.
 The Forest yields its paintings on the third and fourth wins; each other lair
 yields one on its first win and another on its second. Revisit the Forest once
@@ -55,7 +55,7 @@ the eight new gallery paintings. It now also streams from the companion ATR; its
 automatically. It remains in the source repository and is not needed to play.
 
 CREDITS
-Everything by astrofor.
+Author: astrofor.
 Game, code, art, story, design and balance: astrofor.
 
 VALIDATION

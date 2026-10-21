@@ -1,3 +1,3 @@
 param([switch]$Check, [string]$AltirraPath)
 $ErrorActionPreference = 'Stop'
-& (Join-Path $PSScriptRoot 'run-prince-and-the-nimf.ps1') -Check:$Check -AltirraPath $AltirraPath
+& (Join-Path $PSScriptRoot 'run-prince-and-the-nymph.ps1') -Check:$Check -AltirraPath $AltirraPath

@@ -1,6 +1,6 @@
-# Prince and the Nimf — Atari VBXE
+# Prince and the Nymph — Atari VBXE
 
-Everything by **astrofor**.
+Author: **astrofor**.
 
 The release includes a painted title screen with a menu, instructions and
 credits (art in `art/title-v1/`). It has short, soft POKEY sound cues, without music or save/load. See [release notes](../../release/README.txt)
@@ -25,7 +25,7 @@ fighting even with no gold.
 
 ## Play
 
-Run `../run-prince-and-the-nimf.sh` (WSL) or `../run-prince-and-the-nimf.cmd` (Windows)
+Run `../run-prince-and-the-nymph.sh` (WSL) or `../run-prince-and-the-nymph.cmd` (Windows)
 with VBXE enabled. The runner attaches `heroes-story.atr` to D1: before loading
 the game. For manual loading, mount `generated/heroes-story.atr` in D1: and open
 **[city-vbxe.xex](city-vbxe.xex)**. The intro reclaims all its memory after loading;

@@ -15,9 +15,7 @@
         mwa #0 calc_x
         mva #28 calc_y
         jsr transparent_blit
-        ldx contract
-        mva contract_name_lo,x text_src
-        mva contract_name_hi,x text_src+1
+        jsr title_pointer
         mwa #8 text_x
         mva #4 text_y
         jsr draw_text

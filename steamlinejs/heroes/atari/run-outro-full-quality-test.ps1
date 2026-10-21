@@ -1,7 +1,7 @@
 param([switch]$Check, [string]$AltirraPath)
 $ErrorActionPreference = 'Stop'
 $image = Join-Path $PSScriptRoot 'heroes-outro-full-quality-test.xex'
-$story = Join-Path $PSScriptRoot 'prince-and-the-nimf.atr'
+$story = Join-Path $PSScriptRoot 'prince-and-the-nymph.atr'
 $metadata = Join-Path $PSScriptRoot 'outro-full-quality-test.json'
 if (Test-Path -LiteralPath $metadata -PathType Leaf) {
     $viewer = Get-Content -LiteralPath $metadata -Raw | ConvertFrom-Json

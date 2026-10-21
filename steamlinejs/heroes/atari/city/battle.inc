@@ -65,6 +65,7 @@ terrain :42 dta 0
         sta region
         tax
         jsr set_difficulty
+        jsr duel_setup
         lda region_wins,x
         cmp #10
         bcc ?lookup
@@ -114,6 +115,8 @@ terrain :42 dta 0
         cmp army_capacity
         bne ?hero
         mva unit_count hero_count
+        jsr duel_enemy
+        bcs ?ready
         ldx contract
         lda seed_ptr_lo,x
         sta data_ptr
@@ -897,6 +900,8 @@ enemy_busy dta 0
         mva #1 reward_committed
         lda #SFX_FANFARE
         jsr sfx.play
+        jsr duel_award
+        bcs ?done
         inc encounter_seed
         ldx region
         lda region_wins,x

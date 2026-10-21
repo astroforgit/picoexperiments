@@ -1,5 +1,5 @@
-Prince and the Nimf — the lost paintings of goblin master Grubbrush
-Everything by astrofor
+Prince and the Nymph — the lost paintings of goblin master Grubbrush
+Author: astrofor
 
 Eight source images, created with the built-in imagegen tool using the original
 forest story illustration as a character/style reference. Exact final prompts

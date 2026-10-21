@@ -1,0 +1,8 @@
+{
+  "format": "prince-and-the-nymph-duel",
+  "version": 1,
+  "notes": "Dark Forest duel: always available with any army; one weak enemy, no lair escalation, no region progress and no paintings. Reward: a Dark Forest outskirts fight pays 50 for two enemies (25 each); a duel pays less, matching the cheapest recruit. Difficulty reward scaling applies.",
+  "enemy": "minibeast",
+  "cell": 20,
+  "reward": 15
+}

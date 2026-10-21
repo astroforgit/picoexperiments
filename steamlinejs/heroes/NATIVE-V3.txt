@@ -1,14 +1,23 @@
-PRINCE AND THE NIMF — ATARI VBXE
-Everything by astrofor
+PRINCE AND THE NYMPH — ATARI VBXE
+Author: astrofor
 
 RELEASE
-Run ./atari/run-prince-and-the-nimf.sh or the Windows .cmd launcher.
+Run ./atari/run-prince-and-the-nymph.sh or the Windows .cmd launcher.
 The old run-heroes-vbxe3 entry points remain compatible.
 A title menu follows the introduction: Start Game, Level, How to Play,
 Credits, Sound On/Off (Fire toggles; off silences every cue for the session).
 Level cycles EASY / MEDIUM / HARD; MEDIUM is the default and the unchanged
 release balance. Levels live in difficulty.json: EASY starts with 100 gold and
 +25% battle rewards, HARD with 30 gold and -12.5% rewards; enemies are the same.
+
+Dark Forest duel (duel.json): the Dark Forest scout report has FIGHT, DUEL
+and BACK. A duel is a normal battle with your current army against one
+Minibeast, without lair escalation. Winning pays 15 gold (difficulty-scaled),
+the price of the cheapest recruit, and gives no region progress or paintings;
+losses and casualties follow the usual rules. It is always available.
+
+Building prices: the highest level costs 140 (Barracks), 160 (Archery Range,
+Ranger Lodge, Wizard Tower) and 70 (Chapel discount level); previously 90/100/30.
 
 Enemy AI: an enemy attacks the nearest hero it can hit from where it stands
 (range and line of sight, so archers shoot any visible hero in range). If none,
