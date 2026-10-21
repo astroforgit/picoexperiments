@@ -8,3 +8,7 @@ node tools/build-battle.js
 mads city-vbxe.asm -x -o:city-vbxe.xex -t:generated/city-vbxe.lab -l:generated/city-vbxe.lst
 node tools/build-boot-atr.js
 node tools/verify-build.js
+# Keep the runner copies in ../ in step with this build.
+cp city-vbxe.xex ../prince-and-the-nymph.xex
+cp generated/heroes-story.atr ../prince-and-the-nymph.atr
+cp city-vbxe.atr ../prince-and-the-nymph-boot.atr

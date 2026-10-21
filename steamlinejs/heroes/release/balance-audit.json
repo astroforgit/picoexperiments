@@ -1,61 +1,62 @@
 {
   "title": "Prince and the Nymph",
   "credit": "Author: astrofor",
-  "configHash": "674b8c107dfb35f6a0768d9bf1ee636da837b781300ddb241ac0d6b9ebb8f663",
+  "configHash": "98891395ea5634ab42cff99f08e7e085a0c8b55849d7d723ab52381e5bc83708",
   "model": "Five fixed shopping/tactical bots, all 256 native encounter seeds. Completion frequencies are not human win rates. Native campaign execution is checked separately. Failed rigid purchase plans do not prove a human softlock.",
   "experiments": [
     {
-      "id": "release",
-      "description": "Current release, unchanged unit/economy values (MEDIUM difficulty)",
+      "id": "difficulty-easy",
+      "description": "EASY: starting gold 100, reward shift 0; Easy enemy groups",
       "summary": [
         {
           "strategy": "infantry",
           "name": "Infantry",
           "runs": 256,
-          "completed": 232,
-          "completionRate": 0.90625,
-          "meanFights": 11.90234375,
-          "meanReplays": 0.28515625,
-          "meanDefeats": 0.37890625,
+          "completed": 0,
+          "completionRate": 0,
+          "meanFights": 11.63671875,
+          "meanReplays": 1.55078125,
+          "meanDefeats": 2.55078125,
           "meanDraws": 0,
-          "meanRounds": 53.953125,
-          "meanGold": 853.0859375,
-          "meanSpent": 873.6328125,
+          "meanRounds": 51.5625,
+          "meanGold": 58.53515625,
+          "meanSpent": 1060.8984375,
           "reached": [
             256,
             256,
-            232,
-            232
+            190,
+            0
           ],
           "failures": {
-            "GAME OVER: no soldiers and no affordable available recruit.": 24
+            "GAME OVER: no soldiers and no affordable available recruit.": 203,
+            "This fully upgraded party repeatedly loses the same enemy group; further farming cannot upgrade it.": 53
           },
-          "gameOvers": 24,
-          "strategyStops": 0
+          "gameOvers": 203,
+          "strategyStops": 53
         },
         {
           "strategy": "ranged",
           "name": "Archers",
           "runs": 256,
-          "completed": 232,
-          "completionRate": 0.90625,
-          "meanFights": 11.4375,
-          "meanReplays": 0,
-          "meanDefeats": 0.09375,
+          "completed": 0,
+          "completionRate": 0,
+          "meanFights": 5.11328125,
+          "meanReplays": 0.6484375,
+          "meanDefeats": 1.6484375,
           "meanDraws": 0,
-          "meanRounds": 52.30859375,
-          "meanGold": 714.43359375,
-          "meanSpent": 995.25390625,
+          "meanRounds": 24.125,
+          "meanGold": 2.265625,
+          "meanSpent": 341.8359375,
           "reached": [
             256,
-            256,
-            232,
-            232
+            90,
+            0,
+            0
           ],
           "failures": {
-            "GAME OVER: no soldiers and no affordable available recruit.": 24
+            "GAME OVER: no soldiers and no affordable available recruit.": 256
           },
-          "gameOvers": 24,
+          "gameOvers": 256,
           "strategyStops": 0
         },
         {
@@ -64,13 +65,13 @@
           "runs": 256,
           "completed": 0,
           "completionRate": 0,
-          "meanFights": 3,
+          "meanFights": 4,
           "meanReplays": 0,
           "meanDefeats": 2,
           "meanDraws": 0,
-          "meanRounds": 9.421875,
-          "meanGold": 10,
-          "meanSpent": 90,
+          "meanRounds": 14.08203125,
+          "meanGold": 0,
+          "meanSpent": 215,
           "reached": [
             256,
             0,
@@ -87,26 +88,27 @@
           "strategy": "casters",
           "name": "Casters",
           "runs": 256,
-          "completed": 94,
-          "completionRate": 0.3671875,
-          "meanFights": 8.08203125,
-          "meanReplays": 0.21875,
-          "meanDefeats": 0.8515625,
+          "completed": 127,
+          "completionRate": 0.49609375,
+          "meanFights": 8.73828125,
+          "meanReplays": 0.44921875,
+          "meanDefeats": 0.953125,
           "meanDraws": 0,
-          "meanRounds": 36.75,
-          "meanGold": 301.484375,
-          "meanSpent": 621.5234375,
+          "meanRounds": 37.96484375,
+          "meanGold": 372.44140625,
+          "meanSpent": 745.29296875,
           "reached": [
             256,
-            256,
-            94,
-            94
+            180,
+            127,
+            127
           ],
           "failures": {
-            "GAME OVER: no soldiers and no affordable available recruit.": 162
+            "GAME OVER: no soldiers and no affordable available recruit.": 120,
+            "The fallback replay is also unwinnable with this army.": 9
           },
-          "gameOvers": 162,
-          "strategyStops": 0
+          "gameOvers": 120,
+          "strategyStops": 9
         },
         {
           "strategy": "mixed",
@@ -114,16 +116,16 @@
           "runs": 256,
           "completed": 0,
           "completionRate": 0,
-          "meanFights": 5,
-          "meanReplays": 0.3515625,
-          "meanDefeats": 1.3515625,
+          "meanFights": 4.26171875,
+          "meanReplays": 0.26171875,
+          "meanDefeats": 1.8984375,
           "meanDraws": 0,
-          "meanRounds": 24.109375,
-          "meanGold": 0,
-          "meanSpent": 308.359375,
+          "meanRounds": 15.328125,
+          "meanGold": 10,
+          "meanSpent": 235.87890625,
           "reached": [
             256,
-            166,
+            0,
             0,
             0
           ],
@@ -136,53 +138,57 @@
       ]
     },
     {
-      "id": "difficulty-easy",
-      "description": "EASY: starting gold 100, reward shift 2; enemies unchanged",
+      "id": "difficulty-medium",
+      "description": "MEDIUM: starting gold 100, reward shift 0; Medium enemy groups",
       "summary": [
         {
           "strategy": "infantry",
           "name": "Infantry",
           "runs": 256,
-          "completed": 256,
-          "completionRate": 1,
-          "meanFights": 12,
-          "meanReplays": 0,
-          "meanDefeats": 0,
+          "completed": 0,
+          "completionRate": 0,
+          "meanFights": 5.69921875,
+          "meanReplays": 1,
+          "meanDefeats": 2,
           "meanDraws": 0,
-          "meanRounds": 51.80078125,
-          "meanGold": 1506.65625,
-          "meanSpent": 827.34375,
+          "meanRounds": 23.01171875,
+          "meanGold": 14.39453125,
+          "meanSpent": 348.53515625,
           "reached": [
             256,
-            256,
-            256,
-            256
+            179,
+            0,
+            0
           ],
-          "failures": {},
-          "gameOvers": 0,
+          "failures": {
+            "GAME OVER: no soldiers and no affordable available recruit.": 256
+          },
+          "gameOvers": 256,
           "strategyStops": 0
         },
         {
           "strategy": "ranged",
           "name": "Archers",
           "runs": 256,
-          "completed": 256,
-          "completionRate": 1,
-          "meanFights": 12,
-          "meanReplays": 0,
-          "meanDefeats": 0,
+          "completed": 0,
+          "completionRate": 0,
+          "meanFights": 3.91796875,
+          "meanReplays": 0.36328125,
+          "meanDefeats": 1.5546875,
           "meanDraws": 0,
-          "meanRounds": 45.06640625,
-          "meanGold": 1378.4921875,
-          "meanSpent": 955.5078125,
+          "meanRounds": 16.9453125,
+          "meanGold": 5.21484375,
+          "meanSpent": 240.6640625,
           "reached": [
             256,
-            256,
-            256,
-            256
+            0,
+            0,
+            0
           ],
-          "failures": {},
-          "gameOvers": 0,
+          "failures": {
+            "GAME OVER: no soldiers and no affordable available recruit.": 256
+          },
+          "gameOvers": 256,
           "strategyStops": 0
         },
         {
@@ -191,13 +197,13 @@
           "runs": 256,
           "completed": 0,
           "completionRate": 0,
-          "meanFights": 3.3515625,
+          "meanFights": 3.359375,
           "meanReplays": 0,
-          "meanDefeats": 1.3515625,
+          "meanDefeats": 2.359375,
           "meanDraws": 0,
-          "meanRounds": 13.09375,
-          "meanGold": 8,
-          "meanSpent": 235,
+          "meanRounds": 11.796875,
+          "meanGold": 6.6015625,
+          "meanSpent": 143.3984375,
           "reached": [
             256,
             0,
@@ -214,24 +220,27 @@
           "strategy": "casters",
           "name": "Casters",
           "runs": 256,
-          "completed": 256,
-          "completionRate": 1,
-          "meanFights": 12,
-          "meanReplays": 0,
-          "meanDefeats": 0,
+          "completed": 0,
+          "completionRate": 0,
+          "meanFights": 4.703125,
+          "meanReplays": 0.703125,
+          "meanDefeats": 1.703125,
           "meanDraws": 0,
-          "meanRounds": 39.90234375,
-          "meanGold": 1425.171875,
-          "meanSpent": 908.828125,
+          "meanRounds": 19.890625,
+          "meanGold": 6.796875,
+          "meanSpent": 293.203125,
           "reached": [
             256,
-            256,
-            256,
-            256
+            0,
+            0,
+            0
           ],
-          "failures": {},
-          "gameOvers": 0,
-          "strategyStops": 0
+          "failures": {
+            "GAME OVER: no soldiers and no affordable available recruit.": 169,
+            "The fallback replay is also unwinnable with this army.": 87
+          },
+          "gameOvers": 169,
+          "strategyStops": 87
         },
         {
           "strategy": "mixed",
@@ -239,80 +248,79 @@
           "runs": 256,
           "completed": 0,
           "completionRate": 0,
-          "meanFights": 5.68359375,
-          "meanReplays": 0.58984375,
-          "meanDefeats": 1.58984375,
+          "meanFights": 3.671875,
+          "meanReplays": 0,
+          "meanDefeats": 1.671875,
           "meanDraws": 0,
-          "meanRounds": 28.27734375,
-          "meanGold": 4.82421875,
-          "meanSpent": 486.23046875,
+          "meanRounds": 13.0625,
+          "meanGold": 3.203125,
+          "meanSpent": 211.796875,
           "reached": [
             256,
-            193,
-            19,
-            4
+            0,
+            0,
+            0
           ],
           "failures": {
-            "GAME OVER: no soldiers and no affordable available recruit.": 245,
-            "The fallback replay is also unwinnable with this army.": 11
+            "GAME OVER: no soldiers and no affordable available recruit.": 256
           },
-          "gameOvers": 245,
-          "strategyStops": 11
+          "gameOvers": 256,
+          "strategyStops": 0
         }
       ]
     },
     {
       "id": "difficulty-hard",
-      "description": "HARD: starting gold 30, reward shift -3; enemies unchanged",
+      "description": "HARD: starting gold 100, reward shift 0; Hard enemy groups",
       "summary": [
         {
           "strategy": "infantry",
           "name": "Infantry",
           "runs": 256,
-          "completed": 150,
-          "completionRate": 0.5859375,
-          "meanFights": 9.890625,
-          "meanReplays": 0.37890625,
-          "meanDefeats": 0.79296875,
+          "completed": 0,
+          "completionRate": 0,
+          "meanFights": 4,
+          "meanReplays": 0,
+          "meanDefeats": 1,
           "meanDraws": 0,
-          "meanRounds": 45.88671875,
-          "meanGold": 375.44140625,
-          "meanSpent": 721.6015625,
+          "meanRounds": 16.1015625,
+          "meanGold": 9.0234375,
+          "meanSpent": 290.9765625,
           "reached": [
             256,
-            256,
-            150,
-            150
+            0,
+            0,
+            0
           ],
           "failures": {
-            "GAME OVER: no soldiers and no affordable available recruit.": 106
+            "GAME OVER: no soldiers and no affordable available recruit.": 256
           },
-          "gameOvers": 106,
+          "gameOvers": 256,
           "strategyStops": 0
         },
         {
           "strategy": "ranged",
           "name": "Archers",
           "runs": 256,
-          "completed": 50,
-          "completionRate": 0.1953125,
-          "meanFights": 6.90234375,
-          "meanReplays": 0.33203125,
-          "meanDefeats": 1.13671875,
+          "completed": 0,
+          "completionRate": 0,
+          "meanFights": 3,
+          "meanReplays": 0,
+          "meanDefeats": 1.51171875,
           "meanDraws": 0,
-          "meanRounds": 35.5546875,
-          "meanGold": 109.53125,
-          "meanSpent": 457.6171875,
+          "meanRounds": 12.25,
+          "meanGold": 2.44140625,
+          "meanSpent": 179.296875,
           "reached": [
             256,
-            179,
-            50,
-            50
+            0,
+            0,
+            0
           ],
           "failures": {
-            "GAME OVER: no soldiers and no affordable available recruit.": 206
+            "GAME OVER: no soldiers and no affordable available recruit.": 256
           },
-          "gameOvers": 206,
+          "gameOvers": 256,
           "strategyStops": 0
         },
         {
@@ -323,13 +331,13 @@
           "completionRate": 0,
           "meanFights": 2,
           "meanReplays": 0,
-          "meanDefeats": 1,
+          "meanDefeats": 2,
           "meanDraws": 0,
-          "meanRounds": 6.75,
-          "meanGold": 9,
-          "meanSpent": 65,
+          "meanRounds": 7.203125,
+          "meanGold": 5,
+          "meanSpent": 95,
           "reached": [
-            256,
+            0,
             0,
             0,
             0
@@ -346,109 +354,29 @@
           "runs": 256,
           "completed": 0,
           "completionRate": 0,
-          "meanFights": 4.8515625,
-          "meanReplays": 0.36328125,
-          "meanDefeats": 1.36328125,
+          "meanFights": 4.23046875,
+          "meanReplays": 0.3203125,
+          "meanDefeats": 1.66796875,
           "meanDraws": 0,
-          "meanRounds": 22.359375,
-          "meanGold": 16.79296875,
-          "meanSpent": 230.3125,
+          "meanRounds": 19.08203125,
+          "meanGold": 10.625,
+          "meanSpent": 253.984375,
           "reached": [
             256,
-            89,
+            0,
             0,
             0
           ],
           "failures": {
-            "GAME OVER: no soldiers and no affordable available recruit.": 256
+            "The fallback replay is also unwinnable with this army.": 82,
+            "GAME OVER: no soldiers and no affordable available recruit.": 174
           },
-          "gameOvers": 256,
-          "strategyStops": 0
+          "gameOvers": 174,
+          "strategyStops": 82
         },
         {
           "strategy": "mixed",
           "name": "Mixed army",
-          "runs": 256,
-          "completed": 0,
-          "completionRate": 0,
-          "meanFights": 5.34765625,
-          "meanReplays": 0.69921875,
-          "meanDefeats": 1.69921875,
-          "meanDraws": 0,
-          "meanRounds": 24.29296875,
-          "meanGold": 11.8359375,
-          "meanSpent": 245.390625,
-          "reached": [
-            256,
-            166,
-            0,
-            0
-          ],
-          "failures": {
-            "GAME OVER: no soldiers and no affordable available recruit.": 256
-          },
-          "gameOvers": 256,
-          "strategyStops": 0
-        }
-      ]
-    },
-    {
-      "id": "scout-experiment",
-      "description": "Review only: Scout HP4 and damage2; not adopted",
-      "summary": [
-        {
-          "strategy": "infantry",
-          "name": "Infantry",
-          "runs": 256,
-          "completed": 232,
-          "completionRate": 0.90625,
-          "meanFights": 11.90234375,
-          "meanReplays": 0.28515625,
-          "meanDefeats": 0.37890625,
-          "meanDraws": 0,
-          "meanRounds": 53.953125,
-          "meanGold": 853.0859375,
-          "meanSpent": 873.6328125,
-          "reached": [
-            256,
-            256,
-            232,
-            232
-          ],
-          "failures": {
-            "GAME OVER: no soldiers and no affordable available recruit.": 24
-          },
-          "gameOvers": 24,
-          "strategyStops": 0
-        },
-        {
-          "strategy": "ranged",
-          "name": "Archers",
-          "runs": 256,
-          "completed": 232,
-          "completionRate": 0.90625,
-          "meanFights": 11.4375,
-          "meanReplays": 0,
-          "meanDefeats": 0.09375,
-          "meanDraws": 0,
-          "meanRounds": 52.30859375,
-          "meanGold": 714.43359375,
-          "meanSpent": 995.25390625,
-          "reached": [
-            256,
-            256,
-            232,
-            232
-          ],
-          "failures": {
-            "GAME OVER: no soldiers and no affordable available recruit.": 24
-          },
-          "gameOvers": 24,
-          "strategyStops": 0
-        },
-        {
-          "strategy": "mounted",
-          "name": "Mounted",
           "runs": 256,
           "completed": 0,
           "completionRate": 0,
@@ -456,9 +384,9 @@
           "meanReplays": 0,
           "meanDefeats": 2,
           "meanDraws": 0,
-          "meanRounds": 9.421875,
-          "meanGold": 10,
-          "meanSpent": 90,
+          "meanRounds": 11.3515625,
+          "meanGold": 7.1875,
+          "meanSpent": 142.8125,
           "reached": [
             256,
             0,
@@ -470,57 +398,6 @@
           },
           "gameOvers": 256,
           "strategyStops": 0
-        },
-        {
-          "strategy": "casters",
-          "name": "Casters",
-          "runs": 256,
-          "completed": 94,
-          "completionRate": 0.3671875,
-          "meanFights": 8.08203125,
-          "meanReplays": 0.21875,
-          "meanDefeats": 0.8515625,
-          "meanDraws": 0,
-          "meanRounds": 36.75,
-          "meanGold": 301.484375,
-          "meanSpent": 621.5234375,
-          "reached": [
-            256,
-            256,
-            94,
-            94
-          ],
-          "failures": {
-            "GAME OVER: no soldiers and no affordable available recruit.": 162
-          },
-          "gameOvers": 162,
-          "strategyStops": 0
-        },
-        {
-          "strategy": "mixed",
-          "name": "Mixed army",
-          "runs": 256,
-          "completed": 0,
-          "completionRate": 0,
-          "meanFights": 6.86328125,
-          "meanReplays": 0.4921875,
-          "meanDefeats": 1.4921875,
-          "meanDraws": 0,
-          "meanRounds": 32.93359375,
-          "meanGold": 8.02734375,
-          "meanSpent": 502.28515625,
-          "reached": [
-            256,
-            256,
-            60,
-            0
-          ],
-          "failures": {
-            "GAME OVER: no soldiers and no affordable available recruit.": 254,
-            "The fallback replay is also unwinnable with this army.": 2
-          },
-          "gameOvers": 254,
-          "strategyStops": 2
         }
       ]
     }
@@ -530,29 +407,24 @@
       {
         "name": "EASY",
         "startingGold": 100,
-        "rewardShift": 2
+        "rewardShift": 0
       },
       {
         "name": "MEDIUM",
-        "startingGold": 50,
+        "startingGold": 100,
         "rewardShift": 0
       },
       {
         "name": "HARD",
-        "startingGold": 30,
-        "rewardShift": -3
+        "startingGold": 100,
+        "rewardShift": 0
       }
     ],
-    "bestPlanCompletion": {
-      "easy": 1,
-      "medium": 0.90625,
-      "hard": 0.5859375
-    },
     "meanPlanCompletion": {
-      "easy": 0.6,
-      "medium": 0.4359375,
-      "hard": 0.15625
+      "easy": 0.09921875,
+      "medium": 0,
+      "hard": 0
     }
   },
-  "decision": "Keep existing game prices/stats. The Scout buff fails to resolve the weak fixed buying plans and would narrow the difference from Ranger. A full native ranged campaign passes without free troops, injected gold or forced victories. Recommend keeping replacement money and treating early expensive specialization as a risk. Further human balance testing remains valuable."
+  "decision": "Stats come from the playtested editor balance. Difficulty changes only the enemy groups. The fixed bots never farm or adapt per region, so their completion rates understate a human player; use them to compare levels, not as win rates."
 }

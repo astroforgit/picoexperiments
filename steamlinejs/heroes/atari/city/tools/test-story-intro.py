@@ -64,7 +64,7 @@ for page in (0xd600,0xd700):
         if seg==0x6000 and last==r.LABELS['runtime_data_end']-1:
             assert bytes(m.mem.ram[start:end])==data[i+start-seg:i+end-seg]
         i+=n
-    assert m.get('gold',2)==50 and m.get('army_count')==2
+    assert m.get('gold',2)==r.START_GOLD and m.get('army_count')==2
     assert m.get('screen_mode')==0 and m.get('popup_open')==0
     m.idle(3);assert m.get('popup_open')==0
     m.release();m.fire();assert m.get('popup_open')==1

@@ -193,6 +193,7 @@ enemy_sprite_hi dta >$E000,>$E380,>$E700,>$EA80,>$EE00,>$F180,>$F500,>$F880,>$FC
         cmp #42
         bcc ?labels
         mwa #7 calc_x
+        lda cursor_cell         ; mwa clobbered A
         cmp #43
         bne ?border
         mwa #233 calc_x
@@ -203,7 +204,7 @@ enemy_sprite_hi dta >$E000,>$E380,>$E700,>$EA80,>$EE00,>$F180,>$F500,>$F880,>$FC
         jsr outline
 ?labels labeltext 20,192,s_skip
         labeltext 103,192,s_fire
-        labeltext 260,192,s_menu
+        labeltext 252,192,s_retreat
         rts
 .endp
 s_health_label dta c'HEALTH',0
@@ -228,14 +229,14 @@ s_shoot_label dta c'SHOOT',0
         mva number_text+4 stats_line+3
         ldx info_id
         ldy unit_type,x
-        jsr scaled_hp
+        lda type_hp,y
         sta number_value
         jsr format_number
         mva number_text+3 stats_line+5
         mva number_text+4 stats_line+6
         ldx info_id
         ldy unit_type,x
-        jsr scaled_damage
+        lda type_damage,y
         clc
         adc #48
         sta stats_line+9
@@ -297,7 +298,14 @@ info_y dta 0
         mva #57 text_y
         jsr draw_text
         labeltext 62,80,s_recovery
-        labeltext 62,96,s_reward
+        mwa #s_reward text_src
+        lda game_state
+        cmp #3
+        bne ?earned
+        mwa #s_lost text_src
+?earned mwa #62 text_x
+        mva #96 text_y
+        jsr draw_text
         mwa reward number_value
         jsr format_number
         labeltext 206,96,number_text
@@ -340,7 +348,6 @@ s_round dta c'ROUND',0
 s_hint dta c'FIRE:ACTION  DOUBLE FIRE ON ALLY:SKIP',0
 s_skip dta c'SKIP UNIT',0
 s_fire dta c'FIRE: ACTION',0
-s_menu dta c'MENU',0
 s_acted dta c'ACTED',0
 s_ready_unit dta c'READY',0
 s_enemy dta c'ENEMY',0
@@ -349,6 +356,7 @@ s_defeat dta c'DEFEAT',0
 s_retreated dta c'RETREATED',0
 s_recovery dta c'FALLEN SOLDIERS ARE LOST',0
 s_reward dta c'GOLD EARNED',0
+s_lost dta c'GOLD LOST',0
 s_return dta c'FIRE: RETURN TO MAP',0
 s_battle_menu dta c'BATTLE MENU',0
 s_retreat dta c'RETREAT',0

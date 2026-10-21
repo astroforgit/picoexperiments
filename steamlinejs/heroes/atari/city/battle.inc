@@ -31,8 +31,6 @@ unit_spawned :12 dta 0
 conversions dta 0
 ability_event dta 0
 encounter_seed dta 1
-enemy_hp_bonus dta 0
-enemy_damage_bonus dta 0
 terrain :42 dta 0
 
 .proc start
@@ -64,8 +62,6 @@ terrain :42 dta 0
         lda location_region,x
         sta region
         tax
-        jsr set_difficulty
-        jsr duel_setup
         lda region_wins,x
         cmp #10
         bcc ?lookup
@@ -124,6 +120,9 @@ terrain :42 dta 0
         sta data_ptr+1
         ldy encounter_seed
         lda (data_ptr),y
+        ldx difficulty
+        clc
+        adc difficulty_group_base,x
         tax
         lda enemy_ptr_lo,x
         sta data_ptr
@@ -184,7 +183,7 @@ add_cell dta 0
         sta unit_team,x
         lda add_cell
         sta unit_cell,x
-        jsr scaled_hp
+        lda type_hp,y
         sta unit_hp,x
         lda type_move,y
         sta unit_move_left,x
@@ -894,6 +893,54 @@ enemy_alive dta 0
 enemy_attacked dta 0
 enemy_busy dta 0
 
+; reward = this battle's victory purse, difficulty-scaled.
+.proc victory_reward
+        mwa #DUEL_REWARD reward
+        lda duel
+        bne ?scale
+        ldy contract
+        lda reward_lo,y
+        sta reward
+        lda reward_hi,y
+        sta reward+1
+?scale  jmp scale_reward
+.endp
+
+; Retreating costs a third of the victory purse; gold never goes negative.
+; reward holds the loss for the result screen.
+.proc retreat
+        lda #SFX_RETREAT
+        jsr sfx.play
+        mva #3 game_state
+        jsr victory_reward
+        mwa reward ?purse
+        mwa #0 reward
+?third  sec
+        lda ?purse
+        sbc #3
+        tax
+        lda ?purse+1
+        sbc #0
+        bcc ?pay
+        sta ?purse+1
+        stx ?purse
+        inc reward
+        bne ?third
+        inc reward+1
+        jmp ?third
+?pay    sec
+        lda gold
+        sbc reward
+        sta gold
+        lda gold+1
+        sbc reward+1
+        sta gold+1
+        bcs ?done
+        mwa #0 gold
+?done   rts
+?purse  dta a(0)
+.endp
+
 .proc award
         lda reward_committed
         bne ?done
@@ -909,28 +956,8 @@ enemy_busy dta 0
         beq ?reward
         inc region_wins,x
 ?reward jsr gallery.record_win
-        ldy contract
-        lda reward_lo,y
-        sta reward
-        lda reward_hi,y
-        sta reward+1
-        jsr scale_reward
-        ldx enemy_hp_bonus
-        beq ?pay
-?extra  clc
-        lda reward
-        adc #10
-        sta reward
-        lda reward+1
-        adc #0
-        sta reward+1
-        bcc ?next_bonus
-        mwa #65535 reward
-        jmp ?pay
-?next_bonus
-        dex
-        bne ?extra
-?pay    clc
+        jsr victory_reward
+        clc
         lda gold
         adc reward
         sta gold
@@ -1019,15 +1046,14 @@ enemy_busy dta 0
         jsr skip_hero
         jmp ?redraw
 ?retreat
-        lda #SFX_RETREAT
-        jsr sfx.play
-        mva #3 game_state
+        jsr retreat
         jmp ?redraw
 ?cell   lda cursor_cell
         cmp #42
         bcc ?select
         beq ?skip
-        jmp cancel
+        jsr retreat
+        jmp ?redraw
 ?skip   jsr skip_hero
         jmp ?redraw
 ?select jsr unit_at

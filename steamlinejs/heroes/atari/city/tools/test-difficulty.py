@@ -16,7 +16,7 @@ for mapping in (0xd600,0xd700):
   assert m.get('gold',2)==spec['startingGold'],(level,m.get('gold',2))
   for contract in (0,5,11):
    m.put('battle.reward_committed',0);m.put('battle.contract',contract);m.put('battle.region',0)
-   m.put('battle.enemy_hp_bonus',0);m.put('gold',0,2)
+   m.put('gold',0,2)
    m.call('battle.award')
    table=r.LABELS['battle.reward_lo'];reward=m.mem.ram[table+contract]+256*m.mem.ram[r.LABELS['battle.reward_hi']+contract]
    assert m.get('gold',2)==scaled(reward,spec['rewardShift']),(level,contract,m.get('gold',2),reward)

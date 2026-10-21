@@ -18,7 +18,7 @@ def event(m,key):
  m.run_until(r.LABELS['release_ui.show.loop'])
 for mapping in (0xd600,0xd700):
  m=r.Machine(mapping,menu=True);assert m.get('release_ui.page')==0
- assert m.get('difficulty')==1 and m.get('gold',2)==50,'Medium is the default'
+ assert m.get('difficulty')==1 and m.get('gold',2)==r.START_GOLD,'Medium is the default'
  if mapping==0xd600:screen(m,'prince-and-the-nymph-title.png')
  event(m,0x3e);assert m.get('release_ui.choice')==1
  levels=json.loads((Path(__file__).resolve().parents[3]/'difficulty.json').read_text())['levels']
@@ -31,9 +31,16 @@ for mapping in (0xd600,0xd700):
  if mapping==0xd600:screen(m,'prince-and-the-nymph-instructions.png')
  event(m,28);assert m.get('release_ui.page')==0
  event(m,0x3e);assert m.get('release_ui.choice')==3
+ front=lambda:bytes(m.mem.vram[m.get('front_bank')*65536:][:64000])
+ menu_screen=front()
  event(m,33);assert m.get('release_ui.page')==2
- if mapping==0xd600:screen(m,'prince-and-the-nymph-credits.png')
- event(m,12);assert m.get('release_ui.page')==0
+ if mapping==0xd600:screen(m,'prince-and-the-nymph-enemy-info.png')
+ # Six enemy sprites drawn over the panel; the hidden bank keeps the menu.
+ assert bytes(m.mem.vram[m.get('back_bank')*65536:][:64000])==menu_screen
+ info=list(zip(m.mem.ram[r.LABELS['release_ui.info_x']:][:6],m.mem.ram[r.LABELS['release_ui.info_y']:][:6]))
+ for x,y in info:assert len({m.mem.vram[m.get('front_bank')*65536+(y+j)*320+x+i] for j in range(28) for i in range(32)})>3
+ assert m.get('battle.animation_active')==0
+ event(m,12);assert m.get('release_ui.page')==0 and front()==menu_screen
  event(m,0x3e);assert m.get('release_ui.choice')==4
  event(m,12);assert m.get('release_ui.page')==0 and m.get('sfx.enabled')==0
  assert m.mem.ram[0xd203]==0 and m.mem.ram[0xd201]==0 and m.get('sfx.frames')==0
@@ -44,9 +51,8 @@ for mapping in (0xd600,0xd700):
  event(m,0x3e);assert m.get('release_ui.choice')==0
  # Hold the Start press during handoff; no city popup/purchase may occur.
  m.mem.ram[0xd010]=0;m.run_until(r.LABELS['main_loop'])
- assert m.get('army_count')==2 and m.get('gold',2)==50
+ assert m.get('army_count')==2 and m.get('gold',2)==r.START_GOLD
  m.idle(4);assert m.get('popup_open')==0
  m.release();m.fire();assert m.get('popup_open')==1
- assert b'PRINCE AND THE NYMPH\0' in m.mem.ram
  assert b'AUTHOR: ASTROFOR\0' in m.mem.ram
- print(f'PASS ${mapping:04X}: actual boot/title, level cycle, instructions, credits, sound on/off, menu wrap, Enter/Space/Escape, exact credit and safe held-Fire handoff.')
+ print(f'PASS ${mapping:04X}: actual boot/title, level cycle, instructions, enemy info, sound on/off, menu wrap, Enter/Space/Escape, exact credit and safe held-Fire handoff.')

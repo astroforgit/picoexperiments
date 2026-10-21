@@ -7,7 +7,7 @@ sh atari/city/build.sh
 node atari/city/tools/build-outro-full-quality.js
 cp atari/city/outro-full-quality-test.xex atari/heroes-outro-full-quality-test.xex
 node release/audit-balance.cjs
-for test in test-boot-atr test-gallery test-outro-full-quality test-chapel test-release-menu test-difficulty test-sfx test-release-campaign test-runtime test-story-intro test-story-streaming test-outro test-outro-shortcut test-game-over test-double-fire-turn test-encounter-popup test-hit-impact test-permanent-casualties; do
+for test in test-boot-atr test-endless-lairs test-retreat test-gallery test-outro-full-quality test-chapel test-release-menu test-difficulty test-sfx test-release-campaign test-runtime test-story-intro test-story-streaming test-outro test-outro-shortcut test-game-over test-double-fire-turn test-encounter-popup test-hit-impact test-permanent-casualties; do
     python3 "atari/city/tools/$test.py"
 done
 for test in tests/*.test.cjs; do node "$test"; done

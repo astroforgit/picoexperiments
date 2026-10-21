@@ -23,7 +23,7 @@ for page in [0xd600,0xd700]:
  m=r.Machine(page);m.put('selected_location',0);m.put('battle.encounter_seed',1);m.call('battle.start')
  assert preview(m,1,15,9)==2
  assert preview(m,2,15,1)==1 # Overkill shows actual HP lost.
- assert preview(m,4,18,9)==1 # Skeleton arrow resistance.
+ assert preview(m,4,18,9)==0 # Skeleton arrow immunity.
  assert preview(m,12,18,9)==2 # Magic ignores it.
  assert preview(m,21,1,9,2)==5 # Prepared Ogre.
  assert preview(m,22,18,3)==0 # Summoning is not damage.

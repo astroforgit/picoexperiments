@@ -31,7 +31,7 @@ for page in [0xd600,0xd700]:
   from PIL import Image
   out=Path(sys.argv[sys.argv.index('--screens')+1]);out.mkdir(parents=True,exist_ok=True)
   start=m.get('front_bank')*65536;im=Image.frombytes('P',(320,200),bytes(m.mem.vram[start:start+64000]));im.putpalette(m.mem.palette);im.save(out/'game-over.png')
- m.mem.ram[r.LABELS['region_wins']]=10;m.release();m.fire();assert m.get('screen_mode')==0 and m.get('gold',2)==50 and m.get('army_count')==2 and m.array('army_units')==[1,1,255,255,255]
+ m.mem.ram[r.LABELS['region_wins']]=10;m.release();m.fire();assert m.get('screen_mode')==0 and m.get('gold',2)==r.START_GOLD and m.get('army_count')==2 and m.array('army_units')==[0,0,255,255,255]
  assert bytes(m.mem.ram[r.LABELS['region_wins']:r.LABELS['region_wins']+4])==bytes(4)
  m.idle(3);assert m.get('popup_open')==0 # Held restart Fire cannot buy/open the next popup.
  m.release();m.fire();assert m.get('popup_open')==1;m.release()

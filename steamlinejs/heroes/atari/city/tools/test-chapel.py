@@ -3,9 +3,9 @@ import importlib.util,json
 from pathlib import Path
 sp=importlib.util.spec_from_file_location('r',Path(__file__).with_name('test-runtime.py'));r=importlib.util.module_from_spec(sp);sp.loader.exec_module(r)
 def check(page,capture=False):
- m=r.Machine(page);assert m.get('army_capacity')==3 and m.get('gold',2)==50
- assert m.array('army_paid_lo')==[25,25,0,0,0]
- m.put('selected_plot',0);m.call('recruit');assert m.array('army_units')==[1,1,1,255,255]
+ m=r.Machine(page);assert m.get('army_capacity')==3 and m.get('gold',2)==r.START_GOLD
+ assert m.array('army_paid_lo')==[15,15,0,0,0]
+ m.put('selected_plot',0);m.call('recruit');assert m.array('army_units')==[0,0,0,255,255]
  m.put('gold',2000,2);m.call('recruit');assert m.get('notice')==4 and m.get('gold',2)==2000
  content=json.loads((r.ROOT/'content.json').read_text())
  for level,cost in enumerate(content['buildings'][3]['costs'],1):
@@ -19,9 +19,9 @@ def check(page,capture=False):
   if level<3:
    m.put('selected_plot',0);m.call('recruit');assert m.get('army_count')==3+level
  # Existing troops retain their original purchase value.
- m.put('selected_plot',10);before=m.get('gold',2);m.call('dismiss_unit');assert m.get('gold',2)==before+12
- m.put('selected_plot',0);before=m.get('gold',2);m.call('recruit');assert m.get('gold',2)==before-15 and m.array('army_paid_lo')[4]==15
  m.put('selected_plot',10);before=m.get('gold',2);m.call('dismiss_unit');assert m.get('gold',2)==before+7
+ m.put('selected_plot',0);before=m.get('gold',2);m.call('recruit');assert m.get('gold',2)==before-5 and m.array('army_paid_lo')[4]==5
+ m.put('selected_plot',10);before=m.get('gold',2);m.call('dismiss_unit');assert m.get('gold',2)==before+2
  # Discounted recruit + upgrade retains its true investment for dismissal.
  m.put('selected_plot',0);m.call('purchase');m.mem.ram[r.LABELS['building_levels']]=2;m.call('recruit');m.mem.ram[r.LABELS['building_levels']]=3
  m.put('selected_plot',10);m.call('purchase');assert m.array('army_units')[4]==2 and m.array('army_paid_lo')[4]==50

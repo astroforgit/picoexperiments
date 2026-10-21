@@ -1,4 +1,4 @@
-; Release title, controls and credits. No save slot or development shortcuts.
+; Release title, controls and enemy info. No save slot or development shortcuts.
 release_ui_start
 .local release_ui
 .proc show
@@ -186,23 +186,10 @@ frame   jsr band
         lda page
         cmp #1
         beq help
-        mwa #s_credits text_src
+        mwa #s_info text_src
         jsr heading
-        mva #80 text_y
-        mwa #s_title text_src
-        jsr centered
-        mva #98 text_y
-        mwa #s_author text_src
-        jsr centered
-        mva #120 text_y
-        mwa #s_work text_src
-        jsr centered
-        mva #132 text_y
-        mwa #s_design text_src
-        jsr centered
-        mva #160 text_y
-        mwa #s_thanks text_src
-        jsr centered
+        jsr enemy_text
+        jsr enemies
         jmp back
 help    mwa #s_help text_src
         jsr heading
@@ -285,11 +272,101 @@ show_it jsr wait_blit
         jsr wait_blit
 done    rts
 .endp
+; Enemy info page: names and abilities beside each sprite cell.
+.proc enemy_text
+        mva #0 line
+next    ldx line
+        lda info_x,x
+        clc
+        adc #36
+        sta text_x
+        mva #0 text_x+1
+        lda info_y,x
+        sta text_y
+        mva battle.info_name_lo,x text_src
+        mva battle.info_name_hi,x text_src+1
+        jsr draw_text
+        ldx line
+        lda info_x,x
+        clc
+        adc #36
+        sta text_x
+        mva #0 text_x+1
+        lda info_y,x
+        clc
+        adc #11
+        sta text_y
+        mva info_a_lo,x text_src
+        mva info_a_hi,x text_src+1
+        jsr draw_text
+        ldx line
+        lda info_x,x
+        clc
+        adc #36
+        sta text_x
+        mva #0 text_x+1
+        lda info_y,x
+        clc
+        adc #20
+        sta text_y
+        mva info_b_lo,x text_src
+        mva info_b_hi,x text_src+1
+        jsr draw_text
+        inc line
+        lda line
+        cmp #6
+        bcc next
+        rts
+.endp
+; Enemy sprites (first walk frame) into render_bank.
+.proc enemies
+        mva #0 line
+next    ldx line
+        lda info_x,x
+        sta calc_x
+        mva #0 calc_x+1
+        lda info_y,x
+        sta calc_y
+        ; Borrow the battle walk-cycle path; it bypasses the idle cache.
+        mva #1 battle.animation_active
+        mva #0 battle.animation_unit
+        sta battle.draw_id
+        sta battle.attack_frame
+        sta battle.animation_step
+        ldx line
+        lda battle.info_type,x
+        jsr battle.hero_sprite
+        inc line
+        lda line
+        cmp #6
+        bcc next
+        mva #0 battle.animation_active
+        jmp wait_blit
+.endp
+info_x dta 20,20,20,160,160,160
+info_y dta 72,108,144,72,108,144
+info_a_lo dta <i0a,<i1a,<i2a,<i3a,<i4a,<i5a
+info_a_hi dta >i0a,>i1a,>i2a,>i3a,>i4a,>i5a
+info_b_lo dta <i0b,<i1b,<i2b,<i3b,<i4b,<i5b
+info_b_hi dta >i0b,>i1b,>i2b,>i3b,>i4b,>i5b
+i0a dta c'IMMUNE TO ARROWS',0
+i0b dta c'USE MAGIC/BLADES',0
+i1a dta c'ITS VICTIMS RISE',0
+i1b dta c'AS ZOMBIES',0
+i2a dta c'HEALS 1 HP WITH',0
+i2b dta c'EVERY BITE',0
+i3a dta c'WINDS UP A +2',0
+i3b dta c'BLOW: STEP AWAY',0
+i4a dta c'HOPS AWAY AFTER',0
+i4b dta c'EACH ATTACK',0
+i5a dta c'SUMMONS SKELETONS',0
+i5b dta c'SLAY HIM TO WIN',0
 ; Bottom bar, like the city HUD: dark band with a gold rule and the credit.
 .proc band
         rect 0,186,320,14,1
         rect 0,186,320,1,2
         labeltext 8,190,s_author
+        labeltext 148,190,s_version
         rts
 .endp
 ; Popup-style page frame below the logo.
@@ -331,8 +408,8 @@ measured
         jmp draw_text
 .endp
 row_y dta 109,123,137,151,165
-row_lo dta <s_start,<s_start,<s_help,<s_credits,<s_sound_on
-row_hi dta >s_start,>s_start,>s_help,>s_credits,>s_sound_on
+row_lo dta <s_start,<s_start,<s_help,<s_info,<s_sound_on
+row_hi dta >s_start,>s_start,>s_help,>s_info,>s_sound_on
 drawn_page dta 0
 page dta 0
 choice dta 0
@@ -343,17 +420,14 @@ menu_key dta 0
 line dta 0
 line_y dta 0
 mark_y dta 0
-s_title dta c'PRINCE AND THE NYMPH',0
 s_author dta c'AUTHOR: ASTROFOR',0
-s_work dta c'GAME, CODE, ART AND STORY',0
-s_design dta c'DESIGN AND BALANCE',0
+        icl 'generated/version.inc'
 s_start dta c'START GAME',0
 s_help dta c'HOW TO PLAY',0
-s_credits dta c'CREDITS',0
+s_info dta c'ENEMY INFO',0
 s_sound_on dta c'SOUND: ON',0
 s_sound_off dta c'SOUND: OFF',0
 s_controls dta c'FIRE: CHOOSE',0
-s_thanks dta c'THANK YOU FOR PLAYING!',0
 s_back dta c'FIRE/ESC: BACK',0
 help_lo dta <h0,<h1,<h2,<h3,<h4,<h5,<h6,<h7,<h8,<h9,<h10,<h11
 help_hi dta >h0,>h1,>h2,>h3,>h4,>h5,>h6,>h7,>h8,>h9,>h10,>h11
@@ -364,7 +438,7 @@ h3 dta c'ESC / SELECT: BACK OR RETREAT',0
 h4 dta c'PALACE: BUILD, RECRUIT AND UPGRADE',0
 h5 dta c'CHAPEL: UNLOCK MORE ARMY SLOTS',0
 h6 dta c'THREE WINS UNLOCK THE NEXT LAIR',0
-h7 dta c'IN BATTLE: MOVE, ATTACK OR SKIP',0
+h7 dta c'IN BATTLE: RETREAT COSTS 1/3 OF PRIZE',0
 h8 dta c'DOUBLE FIRE ON A SOLDIER: SKIP',0
 h9 dta c'DEAD SOLDIERS ARE LOST FOREVER',0
 h10 dta c'NO ARMY AND NO RECRUIT GOLD: GAME OVER',0

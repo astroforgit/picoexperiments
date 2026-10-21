@@ -962,4 +962,9 @@ text_screen
         :1024 dta 0
         org $A000
         icl 'release-ui.inc'
+        .local battle
+        icl 'generated/battle-groups.inc'
+        .endl
+battle_groups_end
+        ert battle_groups_end>$C000
         run main

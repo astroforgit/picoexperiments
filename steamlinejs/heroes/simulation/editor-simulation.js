@@ -8,11 +8,12 @@ function mount(getData,getErrors){
  const intro=make('p','Simulate buying, building upgrades, fighter upgrades, random encounters and tactical hex moves using a copy of the current editor values. Surviving fighters recover HP after battle. Killed or converted soldiers are permanently lost; replacements must be bought. This benchmark stops after three wins in every lair. In the native game, defeating the final necromancer plays the wedding ending. Purchases follow fixed strategies; these are bot outcomes, not measured human win rates.');intro.className='note';host.append(intro);
  const bar=make('div');bar.className='encounter-bar';
  const strategy=make('select');strategy.setAttribute('aria-label','Simulation strategy');for(const [id,v] of Object.entries(sim.strategies)){const o=make('option',v.name);o.value=id;strategy.append(o);}strategy.value='mixed';
+ const difficulty=make('select');difficulty.setAttribute('aria-label','Simulation difficulty');root.GreenhavenBalance.DIFFICULTIES.forEach((name,d)=>{const o=make('option',name);o.value=d;difficulty.append(o);});
  const seed=make('input');seed.type='number';seed.min=0;seed.max=4294967295;seed.step=1;seed.value=1;seed.setAttribute('aria-label','Simulation starting seed');
  const count=make('input');count.type='number';count.min=1;count.max=200;count.step=1;count.value=50;count.setAttribute('aria-label','Simulation seeds per strategy');
  const candidateLabel=make('label'),candidate=make('input');candidate.type='checkbox';candidateLabel.append(candidate,document.createTextNode(' Test without monster abilities'));
  const once=make('button','Run one campaign'),compare=make('button','Compare abilities on/off'),download=make('button','Export simulation JSON');download.disabled=true;
- bar.append(strategy,make('label','Seed'),seed,make('label','Seeds per strategy'),count,candidateLabel,once,compare,download);host.append(bar);
+ bar.append(strategy,difficulty,make('label','Seed'),seed,make('label','Seeds per strategy'),count,candidateLabel,once,compare,download);host.append(bar);
  const status=make('p','Ready. One campaign shows every purchase, encounter and tactical action. Comparison runs five shopping strategies against both configurations.');status.className='note';status.setAttribute('role','status');status.setAttribute('aria-live','polite');host.append(status);
  const result=make('div');result.className='note';host.append(result);let lastResult=null,running=false;
  const snapshot=()=>JSON.parse(JSON.stringify(getData()));
@@ -38,14 +39,14 @@ function mount(getData,getErrors){
  once.addEventListener('click',()=>{
   if(running)return;
   try{valid();busy(true);status.textContent='Simulating campaign…';const data=candidate.checked?modified(snapshot()):snapshot(),opts=candidate.checked?options():{};
-   const run=sim.simulateCampaign(data,{strategy:strategy.value,seed:Number(seed.value),trace:true,...opts});lastResult={model:'stats-only bot simulation',config:data,options:opts,run};showCampaign(run,data);status.textContent='Simulation complete. Active editor values were kept.';
+   const run=sim.simulateCampaign(data,{strategy:strategy.value,difficulty:Number(difficulty.value),seed:Number(seed.value),trace:true,...opts});lastResult={model:'stats-only bot simulation',config:data,options:opts,run};showCampaign(run,data);status.textContent='Simulation complete. Active editor values were kept.';
   }catch(error){status.textContent=error.message;}finally{busy(false);}
  });
  compare.addEventListener('click',async()=>{
   if(running)return;
   try{valid();busy(true);const data=snapshot(),n=Number(count.value),start=Number(seed.value),runs=[],total=n*10;let done=0;
    for(const variant of ['current','candidate'])for(const id of Object.keys(sim.strategies))for(let i=0;i<n;i++){
-    const run=sim.simulateCampaign(variant==='candidate'?modified(data):data,{strategy:id,seed:(start+i)>>>0,...(variant==='candidate'?options():{})});
+    const run=sim.simulateCampaign(variant==='candidate'?modified(data):data,{strategy:id,difficulty:Number(difficulty.value),seed:(start+i)>>>0,...(variant==='candidate'?options():{})});
     const {battles,events,...compact}=run;runs.push({variant,...compact});done++;
     if(done%5===0){status.textContent=`Simulated ${done} / ${total} campaigns…`;await new Promise(resolve=>setTimeout(resolve,0));}
    }

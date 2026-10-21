@@ -1,12 +1,12 @@
-START_GOLD = 50
+START_GOLD = 100
 SPRITE_W = 56
 SPRITE_H = 64
 FONT_OFFSET = 53760
 initial_army
-        dta 1,1,255,255,255
+        dta 0,0,255,255,255
 
 initial_levels
-        dta 2,0,0,0,0
+        dta 1,0,0,0,0
 
 plot_x
         dta 62,128,194,79,174
@@ -25,7 +25,7 @@ unit_name_hi
         dta >unit_0_0,>unit_0_1,>unit_0_2,>unit_1_0,>unit_1_1,>unit_1_2,>unit_2_0,>unit_2_1,>unit_2_2,>unit_3_0,>unit_3_1,>unit_3_2,>unit_4_0,>unit_4_1,>unit_4_2
 
 unit_price_lo
-        dta 15,25,60,25,50,80,20,45,70,20,45,85,25,50,85
+        dta 15,25,60,25,50,100,20,45,70,20,45,85,25,50,85
 
 unit_price_hi
         dta 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -43,10 +43,10 @@ cost_hi
         dta 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
 unit_hp
-        dta 3,4,6,3,4,5,3,4,6,2,3,4,3,4,5
+        dta 3,4,6,3,4,5,3,3,5,2,3,4,3,4,5
 
 unit_damage
-        dta 1,2,3,1,2,2,1,2,3,1,1,2,2,2,3
+        dta 2,2,3,1,1,2,1,3,4,1,1,2,2,2,3
 
 unit_range
         dta 1,1,1,4,5,6,1,1,1,1,1,1,2,3,4

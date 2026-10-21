@@ -10,6 +10,7 @@ from py65.devices.mpu6502 import MPU
 ROOT = Path(__file__).resolve().parents[1]
 LABELS = {p[2].lower(): int(p[1], 16) for line in (ROOT/'generated/city-vbxe.lab').read_text().splitlines() if len(p := line.split()) == 3}
 
+START_GOLD=json.loads((ROOT/'content.json').read_text())['startingGold']
 IDLE_CACHES=json.loads((ROOT/'generated/hero-animation-layout.json').read_text()).get('idleCaches',[])
 
 class Memory:
@@ -242,7 +243,7 @@ def check(page, capture=False):
     assert m.get('gold',2)==content['startingGold']
     if capture:m.screenshot('city-start.png')
     m.fire();assert m.get('popup_open')==1
-    m.idle(120);assert m.get('popup_open')==1 and m.get('gold',2)==50
+    m.idle(120);assert m.get('popup_open')==1 and m.get('gold',2)==START_GOLD
     m.release();m.call('close_popup')
     # Every building/unit tier: purchase, recruit, upgrade, dismiss and accounting.
     m.call('clear_army');m.put('gold',60000,2)
@@ -260,10 +261,10 @@ def check(page, capture=False):
             expected+=building['recruitCosts'][tier]//2
             assert m.array('army_units')==[255]*5 and m.get('army_count')==0
             assert m.get('gold',2)==expected
-    m.call('new_city');m.put('gold',content['buildings'][0]['costs'][2],2);m.put('selected_plot',0);m.call('purchase')
-    assert m.array('building_levels')[0]==3 and m.get('gold',2)==0
-    m.put('gold',content['buildings'][0]['recruitCosts'][2]-content['buildings'][0]['recruitCosts'][1],2);m.put('selected_plot',6);m.call('purchase')
-    assert m.array('army_units')==[2,1,255,255,255] and m.get('gold',2)==0
+    m.call('new_city');m.put('gold',content['buildings'][0]['costs'][1],2);m.put('selected_plot',0);m.call('purchase')
+    assert m.array('building_levels')[0]==2 and m.get('gold',2)==0
+    m.put('gold',content['buildings'][0]['recruitCosts'][1]-content['buildings'][0]['recruitCosts'][0],2);m.put('selected_plot',6);m.call('purchase')
+    assert m.array('army_units')==[1,0,255,255,255] and m.get('gold',2)==0
     # Insufficient funds is non-mutating.
     m.put('selected_plot',0);m.call('recruit');assert m.get('notice')==1
     before=(m.array('army_units'),m.get('gold',2));m.call('show_map');m.call('show_city')

@@ -6,7 +6,7 @@ actual_damage dta 0
 .proc compute_damage
         ldx attacker_unit
         ldy unit_type,x
-        jsr scaled_damage
+        lda type_damage,y
         clc
         adc attack_bonus
         sta attack_damage
@@ -21,10 +21,8 @@ actual_damage dta 0
         lda type_ability,y
         cmp #3
         bne ?damage
-        lda attack_damage
-        cmp #2
-        bcc ?damage
-        dec attack_damage
+        ; Skeletons are immune to arrows.
+        mva #0 attack_damage
 ?damage rts
 .endp
 
@@ -63,7 +61,7 @@ actual_damage dta 0
         bne ?imp
         lda actual_damage
         beq ?done
-        jsr scaled_hp
+        lda type_hp,y
         sta vampire_max_hp
         lda unit_hp,x
         cmp vampire_max_hp
@@ -191,62 +189,3 @@ hop_distance dta 0
 .endp
 
 vampire_max_hp dta 0
-; Unlimited entries, with a saturating counter to prevent late-game wraparound.
-.proc set_difficulty
-        mva #0 enemy_hp_bonus
-        sta enemy_damage_bonus
-        lda region_wins,x
-        sec
-        sbc wins_required,x
-        bcc ?done
-        cmp #89
-        bcc ?increase
-        lda #89
-?increase
-        clc
-        adc #1
-        sta enemy_hp_bonus
-?damage cmp #3
-        bcc ?done
-        sec
-        sbc #3
-        inc enemy_damage_bonus
-        ldy enemy_damage_bonus
-        cpy #8
-        bcc ?damage
-?done   rts
-.endp
-
-.proc scaled_hp
-        lda type_hp,y
-        pha
-        lda unit_team,x
-        beq ?base
-        pla
-        clc
-        adc enemy_hp_bonus
-        bcs ?cap
-        cmp #100
-        bcc ?done
-?cap    lda #99
-?done   rts
-?base   pla
-        rts
-.endp
-
-.proc scaled_damage
-        lda type_damage,y
-        pha
-        lda unit_team,x
-        beq ?base
-        pla
-        clc
-        adc enemy_damage_bonus
-        bcs ?cap
-        cmp #10
-        bcc ?done
-?cap    lda #9
-?done   rts
-?base   pla
-        rts
-.endp

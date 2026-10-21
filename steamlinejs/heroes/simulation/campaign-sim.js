@@ -33,7 +33,7 @@ function simulateBattle(data,army,encounter,options={}){
  const check=()=>{if(deadWarlock||!units.some(u=>u.team===1&&u.hp>0))winner='victory';else if(!units.some(u=>u.team===0&&u.hp>0))winner='defeat';return winner;};
  function hit(u,t,bonus=0){
   const before=t.hp;let damage=u.damage+bonus;
-  if(abilities&&u.family==='archery'&&t.id==='skeleton')damage=Math.max(1,damage-1);
+  if(abilities&&u.family==='archery'&&t.id==='skeleton')damage=0;
   t.hp=Math.max(0,t.hp-damage);attacks++;emit({action:'attack',actor:u.slot,unit:u.name,target:t.slot,targetName:t.name,damage:Math.min(before,damage),hpBefore:before,hpAfter:t.hp,from:u.cell,to:t.cell});
   if(t.hp===0&&t.id==='warlock')deadWarlock=true;
   if(abilities&&t.hp===0&&t.team===0&&u.id==='zombie'&&!u.raised&&conversions<2){
@@ -129,16 +129,17 @@ const STRATEGIES={
  casters:{name:'Casters',families:['tower','tower','tower']},
  mixed:{name:'Mixed army',families:['archery','lodge','tower']}
 };
+// Native start: Barracks at level 1 with two Militia; other buildings are bought from level 1.
+const START={army:['barracks-1','barracks-1'],levels:{barracks:1,chapel:0,archery:0,lodge:0,tower:0}};
 function shoppingPlan(strategy){
  const families=STRATEGIES[strategy].families,steps=[];
  for(let i=0;i<3;i++){
   if(i>0)steps.push({kind:'build',family:'chapel',level:i});
   if(families[i]!=='barracks'&&!families.slice(0,i).includes(families[i]))steps.push({kind:'build',family:families[i],level:1});
-  steps.push({kind:'recruit',id:families[i]+'-'+(families[i]==='barracks'?2:1)});
+  steps.push({kind:'recruit',id:families[i]+'-1'});
  }
  const specialized=[...new Set(families)];
  for(let tier=2;tier<=3;tier++)for(const family of [...specialized.filter(f=>f!=='barracks'),'barracks']){
-  if(family==='barracks'&&tier===2)continue;
   steps.push({kind:'build',family,level:tier});
   for(let slot=0;slot<5;slot++)if((slot<2?'barracks':families[slot-2])===family)steps.push({kind:'upgrade',slot,id:family+'-'+tier});
  }
@@ -179,12 +180,14 @@ function simulateCampaign(data,options={}){
  const strategy=options.strategy||'mixed',seed=options.seed===undefined?1:options.seed,maxFights=options.maxFights||45;
  if(!STRATEGIES[strategy])throw Error('Unknown strategy');
  const errors=rules.validate(data);if(errors.length)throw Error(errors[0]);
- let state=rules.createCampaign(data);state.seed=seed>>>0;
- let shop={gold:state.gold,army:['barracks-2','barracks-2'],levels:{barracks:2,chapel:0,archery:0,lodge:0,tower:0}},plan=shoppingPlan(strategy),planIndex=0;
+ let state=rules.createCampaign(data,options.difficulty||0);state.seed=seed>>>0;
+ let shop={gold:state.gold,...copy(START)},plan=shoppingPlan(strategy),planIndex=0;
  const ledger=[],battles=[],events=options.trace?[]:null,replacements=[];let farming=false,blockedReason=null;const failedArmies=new Set();
  const record=event=>{if(events)events.push(event);};
  for(let fight=0;fight<maxFights;fight++){
-  // Replace casualties in their original slots before continuing planned upgrades.
+  // Replace casualties in their original slots before continuing planned upgrades. The game
+  // recruits into the first free slot, so refill the lowest slot first to match it.
+  replacements.sort((a,b)=>a.slot-b.slot);
   while(replacements.length){
    const missing=replacements[0],tier=shop.levels[missing.family],id=missing.family+'-'+tier;
    const bought=purchase(data,shop,{kind:'recruit',id,slot:missing.slot});if(!bought)break;
@@ -204,7 +207,7 @@ function simulateCampaign(data,options={}){
    else if(region===0){blockedReason='Opening region cannot be cleared with this purchase path; no cleared region is available to farm.';break;}
    else attemptedRegion=region-1;
   }
-  if(practice){const e=rules.generate(data,0,0,state.seed);e.reward=options.practiceReward??20;e.replay=true;state.pending={regionIndex:0,encounter:e};}
+  if(practice){const e=rules.generate(data,0,0,state.seed,false,state.difficulty);e.reward=options.practiceReward??20;e.replay=true;state.pending={regionIndex:0,encounter:e};}
   else state=rules.beginEncounter(data,state,attemptedRegion);
   const encounter=copy(state.pending.encounter),before=copy(shop);
   const battle=simulateBattle(data,shop.army,encounter,{trace:options.trace,playerPolicy:options.playerPolicy,enemyPolicy:options.enemyPolicy,maxRounds:options.maxRounds});
@@ -237,6 +240,6 @@ function summarize(runs){
  const mean=k=>group.reduce((s,r)=>s+r[k],0)/n;
  return {strategy,name:STRATEGIES[strategy].name,runs:n,completed:group.filter(r=>r.completed).length,completionRate:group.filter(r=>r.completed).length/n,meanFights:mean('fights'),meanReplays:mean('replays'),meanDefeats:mean('defeats'),meanDraws:mean('draws'),meanRounds:mean('rounds'),meanGold:mean('gold'),meanSpent:mean('spent'),reached:group.reduce((out,r)=>out.map((v,i)=>v+(r.wins[i]>0?1:0)),[0,0,0,0]),failures:group.filter(r=>!r.completed).reduce((out,r)=>{out[r.blockedReason]=(out[r.blockedReason]||0)+1;return out;},{})};}).filter(Boolean);
 }
-const api={simulateBattle,simulateCampaign,summarize,purchase,canAffordRecruit,shoppingPlan,strategies:STRATEGIES,distance,clear,neighbours};
+const api={start:START,simulateBattle,simulateCampaign,summarize,purchase,canAffordRecruit,shoppingPlan,strategies:STRATEGIES,distance,clear,neighbours};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.GreenhavenSimulation=api;
 })(typeof window!=='undefined'?window:globalThis);

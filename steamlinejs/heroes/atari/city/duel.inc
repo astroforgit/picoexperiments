@@ -1,18 +1,10 @@
 ; Dark Forest duel (duel.json): a normal battle with the current army against
-; one weak enemy, any time. A small fixed purse; no lair escalation, region
+; one weak enemy, any time. A small fixed purse; no region
 ; progress or paintings. Also the map scout report with its three buttons.
 ; Resident with the release UI at $A000+, outside the full main code area.
 
         .local battle
 duel dta 0                      ; 1 while the current battle is a duel
-; After set_difficulty: a duel enemy never escalates.
-.proc duel_setup
-        lda duel
-        beq ?done
-        mva #0 enemy_hp_bonus
-        sta enemy_damage_bonus
-?done   rts
-.endp
 ; C set when the duel enemy was placed instead of the contract's group.
 .proc duel_enemy
         lda duel
@@ -30,8 +22,7 @@ duel dta 0                      ; 1 while the current battle is a duel
 .proc duel_award
         lda duel
         beq ?no
-        mwa #DUEL_REWARD reward
-        jsr scale_reward
+        jsr victory_reward
         clc
         lda gold
         adc reward

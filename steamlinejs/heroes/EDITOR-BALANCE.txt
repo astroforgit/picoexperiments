@@ -7,7 +7,8 @@ The balanced defaults also live in greenhaven-unit-balance.json.
 The preset adjusts all 12 player tiers and 13 enemy types. It retains individual
 fighters, duplicate recruits, fixed damage and the current native turn rules.
 Casters have ordinary ranged attacks; no unimplemented spells are assumed.
-Start remains 50 gold, two Spearmen, level-2 Barracks and three army slots.
+Start: 100 gold, two Militia, Barracks at level 1, other buildings unbuilt (each is
+bought at level 1), three army slots.
 Chapel costs are 40 / 50 / 30. Slot upgrades plus three extra Spearmen cost
 165 gold, matching all gold available before Forest stage 3 (50 + 50 + 65).
 The third Chapel upgrade discounts recruits by 10 gold, breaking even after

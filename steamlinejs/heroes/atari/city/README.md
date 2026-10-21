@@ -7,8 +7,8 @@ credits (art in `art/title-v1/`). It has short, soft POKEY sound cues, without m
 for the complete package and [native notes](../../NATIVE-V3.txt) for validation.
 
 A playable native city, encounter map and tactical battle game. The Lowrez-based
-preset starts with **50 gold, level-2 Barracks and two Spearmen**. Other buildings
-start empty. Each building has three appearances. Four buildings unlock stronger recruits;
+preset starts with **100 gold, a level-1 Barracks and two Militia**. Other buildings
+start empty and are bought at level 1. Each building has three appearances. Four buildings unlock stronger recruits;
 building upgrades do not alter troops already recruited. Chapel is a support building: level 1 unlocks slot 4, level 2 unlocks slot 5, and level 3 reduces every recruit price by 10 gold. Starting capacity is 3. See [NATIVE-V3.txt](../../NATIVE-V3.txt) for current balance, abilities, build instructions and validation. [LOWREZ-UPDATE.md](LOWREZ-UPDATE.md) describes the earlier fixed-encounter version.
 
 The city connects to a dark fantasy encounter map and an integrated native VBXE
@@ -54,7 +54,7 @@ The release removes the O preview shortcut. The separate
 Select the **dark gate in the top-center city wall**, then press Fire.
 Press Up from any top-row building to reach it. The original wall gate is
 slightly enlarged and shows the dark enemy territory inside, with no text sign.
-The large left-side portal has been removed. The city starts with two Spearmen and 50 gold.
+The large left-side portal has been removed. The city starts with two Militia and 100 gold.
 
 On the map, joystick or W/A/S/D moves between five fixed landmarks:
 

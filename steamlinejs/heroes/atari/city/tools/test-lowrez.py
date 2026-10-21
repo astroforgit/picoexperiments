@@ -12,13 +12,13 @@ def play_logic(m):
 
 def check(page,capture=False):
  m=r.Machine(page)
- assert m.get('gold',2)==50 and m.array('army_units')==[1,1,255,255,255]
- assert m.array('building_levels')==[2,0,0,0,0] and m.get('army_count')==2
+ assert m.get('gold',2)==r.START_GOLD and m.array('army_units')==[0,0,255,255,255]
+ assert m.array('building_levels')==[1,0,0,0,0] and m.get('army_count')==2
  assert m.mem.vram[0x20000:0x7f000]==(r.ROOT/'generated/vram.bin').read_bytes()
- m.fire();assert m.get('popup_open')==1;m.idle(60);assert m.get('gold',2)==50
+ m.fire();assert m.get('popup_open')==1;m.idle(60);assert m.get('gold',2)==r.START_GOLD
  m.release();m.call('close_popup')
  m.put('selected_location',0);m.call('battle.start');assert play_logic(m)==1
- assert m.get('gold',2)==100 and m.mem.ram[r.LABELS['region_wins']]==1
+ assert m.get('gold',2)==r.START_GOLD+50 and m.mem.ram[r.LABELS['region_wins']]==1
  m.call('battle.award');assert m.get('gold',2)==100
  if capture:m.screenshot('lowrez-first-victory.png')
  m.call('new_city');m.put('selected_plot',0);m.call('describe_selection')

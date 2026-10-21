@@ -39,7 +39,7 @@ for page in [0xd600,0xd700]:
  assert m.get('screen_mode')==2 and m.get('battle.duel')==1
  enemies=[i for i in range(m.get('battle.unit_count')) if m.mem.ram[r.LABELS['battle.unit_team']+i]==1]
  assert len(enemies)==1 and m.mem.ram[r.LABELS['battle.unit_type']+enemies[0]]==r.LABELS['battle.duel_type']
- assert m.get('battle.enemy_hp_bonus')==0 and m.mem.ram[r.LABELS['battle.unit_hp']+enemies[0]]==3
+ assert m.mem.ram[r.LABELS['battle.unit_hp']+enemies[0]]==3
  m.call('battle.title_pointer');assert m.get('text_src',2)==r.LABELS['battle.s_duel_title']
  wins=bytes(m.mem.ram[r.LABELS['region_wins']:r.LABELS['region_wins']+4]);m.put('gold',0,2);m.put('battle.reward_committed',0)
  m.call('battle.award');assert m.get('gold',2)==r.LABELS['battle.duel_reward'] and wins==bytes(m.mem.ram[r.LABELS['region_wins']:r.LABELS['region_wins']+4])

@@ -4,7 +4,11 @@ const a = require('../editor-balance.js');
 const d = require('../greenhaven-unit-balance.json');
 assert.deepEqual(a.validate(d), []);
 const bands = a.difficultyBands(d);
-for (let r = 1; r < 4; r++) assert(bands[r].min > bands[r - 1].max, JSON.stringify(bands));
+// Each region's weakest and strongest groups get stronger; Medium/Hard never weaken a group.
+for (let r = 1; r < 4; r++) assert(bands[r].min > bands[r - 1].min && bands[r].max > bands[r - 1].max, JSON.stringify(bands));
+const strength = list => list.reduce((sum, id) => sum + a.power(d.enemies.find(u => u.id === id)), 0);
+for (const region of d.encounterConfig.regions) for (const stage of region.stages) for (const v of stage.variants)
+ for (let k = 1; k < 3; k++) assert(strength(a.groupEnemies(v, k)) >= strength(a.groupEnemies(v, k - 1)), v.name);
 let state = a.createCampaign(d);
 assert(a.isUnlocked(d,state,0));
 for(let r=1;r<4;r++){assert(!a.isUnlocked(d,state,r));assert.throws(()=>a.beginEncounter(d,state,r));}
@@ -24,7 +28,7 @@ for(let r=0;r<4;r++){
  }
  const gold=state.gold, wins=structuredClone(state.wins);
  state=a.beginEncounter(d,state,r);assert(!state.pending.encounter.replay);assert.equal(state.pending.encounter.stage,3);
- state=a.recordResult(d,state,'victory');assert.equal(state.gold,gold+d.encounterConfig.regions[r].stages[2].reward+10);wins[r]++;assert.deepEqual(state.wins,wins);
+ state=a.recordResult(d,state,'victory');assert.equal(state.gold,gold+d.encounterConfig.regions[r].stages[2].reward);wins[r]++;assert.deepEqual(state.wins,wins);
 }
 assert.deepEqual(state.wins,[4,4,4,4]);
 const custom=structuredClone(d);custom.encounterConfig.progression.winsRequired=[6,4,5,3];
@@ -34,4 +38,4 @@ for(let i=0;i<6;i++){
 }
 state.gold=65530;state=a.beginEncounter(custom,state,0);state=a.recordResult(custom,state,'victory');assert.equal(state.gold,65535);
 custom.encounterConfig.progression.winsRequired[0]=0;assert(a.validate(custom).length);
-console.log('PASS: strictly increasing region strength bands, sequential locks, 12 campaign victories, defeat/retreat/retry, single rewards, replay limits, custom thresholds and gold saturation.');
+console.log('PASS: increasing region strength bands, sequential locks, 12 campaign victories, defeat/retreat/retry, single rewards, replay limits, custom thresholds and gold saturation.');

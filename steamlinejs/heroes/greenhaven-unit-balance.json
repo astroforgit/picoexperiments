@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "startingGold": 50,
+  "startingGold": 100,
   "players": [
     {
       "id": "barracks-1",
@@ -9,7 +9,7 @@
       "family": "barracks",
       "tier": 1,
       "hp": 3,
-      "damage": 1,
+      "damage": 2,
       "move": 2,
       "range": 1,
       "recruit": 15,
@@ -73,14 +73,14 @@
       "family": "archery",
       "tier": 2,
       "hp": 4,
-      "damage": 2,
+      "damage": 1,
       "move": 1,
       "range": 5,
       "recruit": 50,
       "buildingCost": 75,
       "shootRange": 5,
       "basis": "Balance v1 - playtest candidate",
-      "notes": "Stronger ranged damage."
+      "notes": "Long-range support; light arrows. Useless against skeletons."
     },
     {
       "id": "archery-3",
@@ -92,11 +92,11 @@
       "damage": 2,
       "move": 2,
       "range": 6,
-      "recruit": 80,
+      "recruit": 100,
       "buildingCost": 160,
       "shootRange": 6,
       "basis": "Balance v1 - playtest candidate",
-      "notes": "Mobile long-range support."
+      "notes": "Mobile long-range support; the most expensive recruit."
     },
     {
       "id": "lodge-1",
@@ -121,8 +121,8 @@
       "building": "Ranger Lodge",
       "family": "lodge",
       "tier": 2,
-      "hp": 4,
-      "damage": 2,
+      "hp": 3,
+      "damage": 3,
       "move": 4,
       "range": 1,
       "recruit": 45,
@@ -138,8 +138,8 @@
       "building": "Ranger Lodge",
       "family": "lodge",
       "tier": 3,
-      "hp": 6,
-      "damage": 3,
+      "hp": 5,
+      "damage": 4,
       "move": 5,
       "range": 1,
       "recruit": 70,
@@ -241,7 +241,7 @@
       "range": 4,
       "shootRange": 4,
       "basis": "Balance v1 - playtest candidate",
-      "notes": "Arrows deal 1 less damage, minimum 1. Magic and melee deal full damage."
+      "notes": "Immune to arrows: Archery Range fighters deal 0. Magic and melee deal full damage."
     },
     {
       "id": "zombie",
@@ -268,7 +268,7 @@
     {
       "id": "ogre",
       "name": "Ogre",
-      "hp": 7,
+      "hp": 8,
       "damage": 3,
       "move": 2,
       "range": 1,
@@ -324,7 +324,7 @@
       "id": "demon",
       "name": "Demon",
       "hp": 3,
-      "damage": 3,
+      "damage": 4,
       "move": 2,
       "range": 1,
       "shootRange": 0,
@@ -380,6 +380,17 @@
                 "enemies": [
                   "minibeast",
                   "minibeast"
+                ],
+                "mediumEnemies": [
+                  "wolf",
+                  "minibeast",
+                  "minibeast"
+                ],
+                "hardEnemies": [
+                  "wolf",
+                  "wolf",
+                  "minibeast",
+                  "minibeast"
                 ]
               },
               {
@@ -388,12 +399,34 @@
                 "enemies": [
                   "minibeast",
                   "bat"
+                ],
+                "mediumEnemies": [
+                  "minibeast",
+                  "minibeast",
+                  "bat"
+                ],
+                "hardEnemies": [
+                  "minibeast",
+                  "minibeast",
+                  "minibeast",
+                  "bat"
                 ]
               },
               {
                 "name": "Dark Forest 1 - 3",
                 "weight": 1,
                 "enemies": [
+                  "bat",
+                  "bat"
+                ],
+                "mediumEnemies": [
+                  "minibeast",
+                  "bat",
+                  "bat"
+                ],
+                "hardEnemies": [
+                  "minibeast",
+                  "minibeast",
                   "bat",
                   "bat"
                 ]
@@ -411,6 +444,19 @@
                   "wolf",
                   "minibeast",
                   "minibeast"
+                ],
+                "mediumEnemies": [
+                  "wolf",
+                  "wolf",
+                  "minibeast",
+                  "minibeast"
+                ],
+                "hardEnemies": [
+                  "wolf",
+                  "wolf",
+                  "wolf",
+                  "minibeast",
+                  "minibeast"
                 ]
               },
               {
@@ -418,6 +464,19 @@
                 "weight": 1,
                 "enemies": [
                   "beast",
+                  "minibeast",
+                  "bat"
+                ],
+                "mediumEnemies": [
+                  "beast",
+                  "minibeast",
+                  "minibeast",
+                  "bat"
+                ],
+                "hardEnemies": [
+                  "beast",
+                  "minibeast",
+                  "minibeast",
                   "minibeast",
                   "bat"
                 ]
@@ -428,6 +487,19 @@
                 "enemies": [
                   "wolf",
                   "wolf",
+                  "bat"
+                ],
+                "mediumEnemies": [
+                  "wolf",
+                  "wolf",
+                  "minibeast",
+                  "bat"
+                ],
+                "hardEnemies": [
+                  "wolf",
+                  "wolf",
+                  "minibeast",
+                  "minibeast",
                   "bat"
                 ]
               }
@@ -444,6 +516,19 @@
                   "beast",
                   "wolf",
                   "minibeast"
+                ],
+                "mediumEnemies": [
+                  "beast",
+                  "wolf",
+                  "wolf",
+                  "minibeast"
+                ],
+                "hardEnemies": [
+                  "beast",
+                  "wolf",
+                  "wolf",
+                  "wolf",
+                  "minibeast"
                 ]
               },
               {
@@ -452,7 +537,22 @@
                 "enemies": [
                   "beast",
                   "beast",
+                  "minibeast",
                   "minibeast"
+                ],
+                "mediumEnemies": [
+                  "beast",
+                  "beast",
+                  "wolf",
+                  "minibeast",
+                  "minibeast"
+                ],
+                "hardEnemies": [
+                  "beast",
+                  "beast",
+                  "wolf",
+                  "wolf",
+                  "wolf"
                 ]
               },
               {
@@ -460,6 +560,21 @@
                 "weight": 1,
                 "enemies": [
                   "wolf",
+                  "wolf",
+                  "wolf",
+                  "wolf"
+                ],
+                "mediumEnemies": [
+                  "beast",
+                  "wolf",
+                  "wolf",
+                  "wolf",
+                  "wolf"
+                ],
+                "hardEnemies": [
+                  "beast",
+                  "beast",
+                  "beast",
                   "wolf",
                   "wolf"
                 ]
@@ -484,12 +599,38 @@
                   "zombie",
                   "skeleton",
                   "zombie"
+                ],
+                "mediumEnemies": [
+                  "zombie",
+                  "bone-archer",
+                  "zombie",
+                  "skeleton"
+                ],
+                "hardEnemies": [
+                  "zombie",
+                  "bone-archer",
+                  "zombie",
+                  "bone-archer",
+                  "skeleton"
                 ]
               },
               {
                 "name": "Catacombs 1 - 2",
                 "weight": 1,
                 "enemies": [
+                  "zombie",
+                  "zombie",
+                  "zombie"
+                ],
+                "mediumEnemies": [
+                  "dark",
+                  "zombie",
+                  "zombie",
+                  "zombie"
+                ],
+                "hardEnemies": [
+                  "dark",
+                  "dark",
                   "zombie",
                   "zombie",
                   "zombie"
@@ -502,6 +643,19 @@
                   "dark",
                   "skeleton",
                   "zombie"
+                ],
+                "mediumEnemies": [
+                  "dark",
+                  "bone-archer",
+                  "zombie",
+                  "skeleton"
+                ],
+                "hardEnemies": [
+                  "dark",
+                  "bone-archer",
+                  "zombie",
+                  "bone-archer",
+                  "skeleton"
                 ]
               }
             ]
@@ -517,6 +671,19 @@
                   "dark",
                   "zombie",
                   "skeleton"
+                ],
+                "mediumEnemies": [
+                  "dark",
+                  "zombie",
+                  "bone-archer",
+                  "skeleton"
+                ],
+                "hardEnemies": [
+                  "dark",
+                  "zombie",
+                  "bone-archer",
+                  "bone-archer",
+                  "skeleton"
                 ]
               },
               {
@@ -527,6 +694,20 @@
                   "zombie",
                   "skeleton",
                   "skeleton"
+                ],
+                "mediumEnemies": [
+                  "zombie",
+                  "zombie",
+                  "bone-archer",
+                  "skeleton",
+                  "skeleton"
+                ],
+                "hardEnemies": [
+                  "zombie",
+                  "zombie",
+                  "bone-archer",
+                  "bone-archer",
+                  "bone-archer"
                 ]
               },
               {
@@ -535,6 +716,19 @@
                 "enemies": [
                   "dark",
                   "dark",
+                  "zombie"
+                ],
+                "mediumEnemies": [
+                  "dark",
+                  "dark",
+                  "dark",
+                  "zombie"
+                ],
+                "hardEnemies": [
+                  "dark",
+                  "dark",
+                  "dark",
+                  "zombie",
                   "zombie"
                 ]
               }
@@ -552,6 +746,20 @@
                   "dark",
                   "skeleton",
                   "zombie"
+                ],
+                "mediumEnemies": [
+                  "dark",
+                  "dark",
+                  "bone-archer",
+                  "zombie",
+                  "skeleton"
+                ],
+                "hardEnemies": [
+                  "dark",
+                  "dark",
+                  "bone-archer",
+                  "dark",
+                  "bone-archer"
                 ]
               },
               {
@@ -562,6 +770,20 @@
                   "bone-archer",
                   "zombie",
                   "skeleton"
+                ],
+                "mediumEnemies": [
+                  "dark",
+                  "bone-archer",
+                  "zombie",
+                  "bone-archer",
+                  "skeleton"
+                ],
+                "hardEnemies": [
+                  "dark",
+                  "bone-archer",
+                  "dark",
+                  "bone-archer",
+                  "bone-archer"
                 ]
               },
               {
@@ -572,6 +794,20 @@
                   "zombie",
                   "zombie",
                   "skeleton"
+                ],
+                "mediumEnemies": [
+                  "dark",
+                  "zombie",
+                  "zombie",
+                  "bone-archer",
+                  "skeleton"
+                ],
+                "hardEnemies": [
+                  "dark",
+                  "dark",
+                  "zombie",
+                  "bone-archer",
+                  "bone-archer"
                 ]
               }
             ]
@@ -595,6 +831,20 @@
                   "beast",
                   "beast",
                   "bat"
+                ],
+                "mediumEnemies": [
+                  "ogre",
+                  "beast",
+                  "beast",
+                  "beast",
+                  "bat"
+                ],
+                "hardEnemies": [
+                  "ogre",
+                  "ogre",
+                  "beast",
+                  "beast",
+                  "ogre"
                 ]
               },
               {
@@ -605,6 +855,20 @@
                   "beast",
                   "beast",
                   "beast"
+                ],
+                "mediumEnemies": [
+                  "ogre",
+                  "beast",
+                  "beast",
+                  "beast",
+                  "beast"
+                ],
+                "hardEnemies": [
+                  "ogre",
+                  "ogre",
+                  "ogre",
+                  "beast",
+                  "beast"
                 ]
               },
               {
@@ -613,6 +877,20 @@
                 "enemies": [
                   "ogre",
                   "beast",
+                  "beast",
+                  "beast"
+                ],
+                "mediumEnemies": [
+                  "ogre",
+                  "ogre",
+                  "beast",
+                  "beast",
+                  "beast"
+                ],
+                "hardEnemies": [
+                  "ogre",
+                  "ogre",
+                  "ogre",
                   "beast",
                   "beast"
                 ]
@@ -631,6 +909,20 @@
                   "ogre",
                   "beast",
                   "bat"
+                ],
+                "mediumEnemies": [
+                  "ogre",
+                  "ogre",
+                  "beast",
+                  "beast",
+                  "bat"
+                ],
+                "hardEnemies": [
+                  "ogre",
+                  "ogre",
+                  "ogre",
+                  "beast",
+                  "beast"
                 ]
               },
               {
@@ -639,6 +931,20 @@
                 "enemies": [
                   "ogre",
                   "beast",
+                  "beast",
+                  "beast"
+                ],
+                "mediumEnemies": [
+                  "ogre",
+                  "ogre",
+                  "beast",
+                  "beast",
+                  "beast"
+                ],
+                "hardEnemies": [
+                  "ogre",
+                  "ogre",
+                  "ogre",
                   "beast",
                   "beast"
                 ]
@@ -652,6 +958,20 @@
                   "beast",
                   "beast",
                   "bat"
+                ],
+                "mediumEnemies": [
+                  "ogre",
+                  "beast",
+                  "beast",
+                  "beast",
+                  "ogre"
+                ],
+                "hardEnemies": [
+                  "ogre",
+                  "ogre",
+                  "beast",
+                  "beast",
+                  "ogre"
                 ]
               }
             ]
@@ -668,6 +988,20 @@
                   "ogre",
                   "beast",
                   "beast"
+                ],
+                "mediumEnemies": [
+                  "ogre",
+                  "ogre",
+                  "ogre",
+                  "beast",
+                  "beast"
+                ],
+                "hardEnemies": [
+                  "ogre",
+                  "ogre",
+                  "ogre",
+                  "beast",
+                  "beast"
                 ]
               },
               {
@@ -678,6 +1012,20 @@
                   "ogre",
                   "beast",
                   "bat"
+                ],
+                "mediumEnemies": [
+                  "ogre",
+                  "ogre",
+                  "beast",
+                  "beast",
+                  "bat"
+                ],
+                "hardEnemies": [
+                  "ogre",
+                  "ogre",
+                  "ogre",
+                  "beast",
+                  "beast"
                 ]
               },
               {
@@ -689,6 +1037,20 @@
                   "beast",
                   "beast",
                   "bat"
+                ],
+                "mediumEnemies": [
+                  "ogre",
+                  "ogre",
+                  "beast",
+                  "beast",
+                  "ogre"
+                ],
+                "hardEnemies": [
+                  "ogre",
+                  "ogre",
+                  "beast",
+                  "beast",
+                  "ogre"
                 ]
               }
             ]
@@ -709,10 +1071,24 @@
                 "weight": 1,
                 "enemies": [
                   "dark",
-                  "dark",
                   "demon",
                   "bone-archer",
+                  "bone-archer",
                   "imp"
+                ],
+                "mediumEnemies": [
+                  "dark",
+                  "demon",
+                  "sniper",
+                  "sniper",
+                  "imp"
+                ],
+                "hardEnemies": [
+                  "demon",
+                  "demon",
+                  "sniper",
+                  "sniper",
+                  "demon"
                 ]
               },
               {
@@ -721,9 +1097,23 @@
                 "enemies": [
                   "dark",
                   "dark",
-                  "dark",
+                  "sniper",
                   "bone-archer",
                   "bone-archer"
+                ],
+                "mediumEnemies": [
+                  "dark",
+                  "dark",
+                  "sniper",
+                  "sniper",
+                  "sniper"
+                ],
+                "hardEnemies": [
+                  "demon",
+                  "demon",
+                  "sniper",
+                  "sniper",
+                  "sniper"
                 ]
               },
               {
@@ -731,10 +1121,24 @@
                 "weight": 1,
                 "enemies": [
                   "demon",
-                  "demon",
+                  "sniper",
                   "sniper",
                   "imp",
                   "dark"
+                ],
+                "mediumEnemies": [
+                  "demon",
+                  "sniper",
+                  "sniper",
+                  "demon",
+                  "demon"
+                ],
+                "hardEnemies": [
+                  "demon",
+                  "sniper",
+                  "sniper",
+                  "demon",
+                  "demon"
                 ]
               }
             ]
@@ -748,9 +1152,23 @@
                 "weight": 1,
                 "enemies": [
                   "dark",
-                  "dark",
                   "demon",
                   "demon",
+                  "sniper",
+                  "sniper"
+                ],
+                "mediumEnemies": [
+                  "demon",
+                  "demon",
+                  "demon",
+                  "sniper",
+                  "sniper"
+                ],
+                "hardEnemies": [
+                  "demon",
+                  "demon",
+                  "demon",
+                  "sniper",
                   "sniper"
                 ]
               },
@@ -760,9 +1178,23 @@
                 "enemies": [
                   "dark",
                   "dark",
+                  "demon",
+                  "imp",
+                  "bone-archer"
+                ],
+                "mediumEnemies": [
+                  "demon",
                   "dark",
                   "demon",
-                  "imp"
+                  "imp",
+                  "sniper"
+                ],
+                "hardEnemies": [
+                  "demon",
+                  "demon",
+                  "demon",
+                  "imp",
+                  "sniper"
                 ]
               },
               {
@@ -771,9 +1203,23 @@
                 "enemies": [
                   "demon",
                   "demon",
-                  "demon",
+                  "sniper",
                   "sniper",
                   "imp"
+                ],
+                "mediumEnemies": [
+                  "demon",
+                  "demon",
+                  "sniper",
+                  "sniper",
+                  "demon"
+                ],
+                "hardEnemies": [
+                  "demon",
+                  "demon",
+                  "sniper",
+                  "sniper",
+                  "demon"
                 ]
               }
             ]
@@ -789,7 +1235,21 @@
                   "dark",
                   "warlock",
                   "demon",
-                  "dark",
+                  "sniper",
+                  "demon"
+                ],
+                "mediumEnemies": [
+                  "demon",
+                  "warlock",
+                  "demon",
+                  "sniper",
+                  "demon"
+                ],
+                "hardEnemies": [
+                  "demon",
+                  "warlock",
+                  "demon",
+                  "sniper",
                   "demon"
                 ]
               }

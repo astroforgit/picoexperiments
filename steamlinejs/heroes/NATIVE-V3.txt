@@ -5,10 +5,12 @@ RELEASE
 Run ./atari/run-prince-and-the-nymph.sh or the Windows .cmd launcher.
 The old run-heroes-vbxe3 entry points remain compatible.
 A title menu follows the introduction: Start Game, Level, How to Play,
-Credits, Sound On/Off (Fire toggles; off silences every cue for the session).
-Level cycles EASY / MEDIUM / HARD; MEDIUM is the default and the unchanged
-release balance. Levels live in difficulty.json: EASY starts with 100 gold and
-+25% battle rewards, HARD with 30 gold and -12.5% rewards; enemies are the same.
+Enemy Info, Sound On/Off (Fire toggles; off silences every cue for the session).
+Level cycles EASY / MEDIUM / HARD; MEDIUM is the default. Every level has the
+same gold (100 start, normal rewards) and the same unit stats. Each encounter
+group lists its enemies per level in greenhaven-unit-balance.json: enemies
+(EASY, the playtested balance), mediumEnemies and hardEnemies (bigger groups
+of stronger enemy types). The seeded group choice is the same on every level.
 
 Dark Forest duel (duel.json): the Dark Forest scout report has FIGHT, DUEL
 and BACK. A duel is a normal battle with your current army against one
@@ -26,7 +28,7 @@ hex from which some hero can be hit, and steps along it. Only when no such hex
 is reachable does it fall back to stepping towards the nearest hero.
 Native: atari/city/enemy-path.inc; simulator: enemyPolicy 'search' (default).
 release/audit-balance.cjs simulates every level and fails the release build if
-EASY becomes automatic for every plan or HARD stops being winnable.
+a harder level gives the fixed bots a higher mean completion rate than an easier one.
 It sits on a painted 320x200 title picture (art/title-v1/) that loads into
 the spare back buffer straight after the intro; gameplay reuses that VRAM.
 Rebuild the picture with python3 art/tools/compose-title.py.
@@ -115,7 +117,7 @@ The viewer streams one page at a time using the existing framebuffers; it
 needs the companion disk and reserves no per-picture VRAM caches.
 
 Integrated balance
-Starts with 50 gold and two 4-HP Spearmen. The editor's current recruitment,
+Starts with 100 gold and two Militia (3 HP, 2 damage). The editor's current recruitment,
 individual upgrade and building prices are imported. Chapel costs 40/50/30,
 unlocking the fourth/fifth slots and then a 10-gold recruitment discount.
 Cavalry deals 3 damage; Demon has 3 HP, from the earlier simulation candidate.
@@ -167,7 +169,7 @@ play difficulty. No physical-hardware run has been performed.
 The editor simulator has the same special rules, with healing for survivors, purchases,
 upgrades and tactical logs. Its player uses fixed shopping plans and pathfinding;
 its default enemy follows the native greedy movement. Simulation is not native
-execution. Actual tactical choices can differ. Returning to earlier lairs is allowed, but each victory there also increases difficulty.
+execution. Actual tactical choices can differ. Returning to earlier lairs is allowed; replays keep the same enemies and reward.
 
 Benchmark
 node simulation/abilities-benchmark.cjs PATH_TO_OUTPUT_DIRECTORY

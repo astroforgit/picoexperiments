@@ -1,4 +1,4 @@
-PRINCE AND THE NYMPH
+PRINCE AND THE NYMPH - version 1.2
 Author: astrofor
 
 A humorous fantasy strategy game for Atari XL/XE with VBXE FX 1.2x.
@@ -8,6 +8,7 @@ and rescue the nymph. The story continues through a three-picture wedding ending
 START - SINGLE FILE
 prince-and-the-nymph-boot.atr holds the whole game, including all pictures.
 Mount it as D1: and boot (Altirra: File > Boot Image) on an XL/XE with VBXE.
+WSL: run ./run-prince-and-the-nymph-boot.sh.
 BASIC is switched off automatically. Loading at standard SIO speed takes a few
 minutes on real hardware; emulators with SIO acceleration load it instantly.
 The 256-byte-sector 1.4 MB ATR needs an SIO device that supports large images.
@@ -27,9 +28,11 @@ and game-over artwork need this disk. Additional extended CPU RAM is not needed.
 The introduction reclaims its picture/code memory after loading.
 
 MENU AND CONTROLS
-After the picture introduction, choose Start Game, How to Play, or Credits.
+After the picture introduction, choose Start Game, How to Play, or Enemy Info
+(special enemies and their abilities).
 Joystick, WASD or arrow keys navigate. Fire, Enter or Space chooses an action.
-Release between presses. Escape or SELECT goes back or opens the retreat menu.
+Release between presses. Escape or SELECT goes back or opens the battle menu.
+The RETREAT button ends a battle at once but costs a third of its victory gold.
 At the palace, inspect buildings to build/upgrade or recruit. Select soldiers
 in the lower army row to upgrade or dismiss them. The wall gate opens the map.
 In battle, select a soldier, then a highlighted destination or valid enemy.
@@ -37,9 +40,12 @@ Attacking ends that soldier's turn. Double-press Fire on the selected soldier,
 or choose Skip, to finish its turn. After all soldiers finish, enemies act.
 
 CAMPAIGN
-Start: 50 gold, two Spearmen, level-2 Barracks and three army slots.
-Three victories in each lair unlock the next. Cleared lairs remain available,
-but further victories make encounters stronger. Chapel upgrades unlock the
+Start: 100 gold, two Militia, three army slots. Level (title menu): EASY,
+MEDIUM or HARD changes only the enemy groups - Medium and Hard send bigger
+groups of stronger enemy types; gold and unit stats are the same. Only the Barracks stands at
+level 1; other buildings are bought at level 1. Upgrade them for stronger recruits.
+Three victories in each lair unlock the next. Cleared lairs remain available
+for farming gold: replays keep the same enemies and reward. Chapel upgrades unlock the
 fourth/fifth army slots and eventually reduce recruitment costs.
 Survivors recover HP; dead soldiers stay dead and replacements cost gold.
 Keep money for replacements, and avoid buying buildings you cannot afford

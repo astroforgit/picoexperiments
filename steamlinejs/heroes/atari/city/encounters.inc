@@ -212,14 +212,14 @@ s_caves dta c'MONSTER CAVES',0
 s_city_return dta c'BACK TO GREENHAVEN',0
 s_ruins dta c'NECROMANCER RUINS',0
 s_forest_desc dta c'EVIL EYES GLOW BENEATH BLACK ROOTS.',0
-s_forest_detail dta c'BEASTS HUNT AMONG THORNS AND WEBS.',0
+s_forest_detail dta c'FAST BEASTS - ARCHERS THIN THEM OUT.',0
 s_cemetery_desc dta c'A SKULL GATE DESCENDS INTO DARKNESS.',0
-s_cemetery_detail dta c'THE RESTLESS DEAD GUARD THE TUNNELS.',0
+s_cemetery_detail dta c'ARROWS PASS THROUGH BONES - BRING MAGES.',0
 s_caves_desc dta c'CLAW MARKS SCAR THE CAVERN MOUTH.',0
-s_caves_detail dta c'OGRES AND HUNGRY BATS LURK WITHIN.',0
+s_caves_detail dta c'SLOW OGRES - KEEP AWAY AND SHOOT.',0
 s_city_desc dta c'RETURN HOME TO BUILD AND UPGRADE.',0
 s_ruins_desc dta c'GREEN SOUL FIRE SPLITS THE RUINS.',0
-s_ruins_detail dta c'UNDEAD AND IMPS SERVE THE WARLOCK.',0
+s_ruins_detail dta c'SNIPERS HIDE BEHIND - SEND CAVALRY.',0
 
 
 s_disabled dta c'LOCKED',0

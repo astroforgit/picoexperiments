@@ -10,9 +10,12 @@ for name in ('heroes-vbxe3.xex','prince-and-the-nymph.xex'):shutil.copyfile(city
 for name in ('heroes-story.atr','prince-and-the-nymph.atr'):shutil.copyfile(city/'generated/heroes-story.atr',atari/name)
 # Single-file alternative: a bootable disk holding the same XEX and pictures.
 shutil.copyfile(city/'city-vbxe.atr',atari/'prince-and-the-nymph-boot.atr')
-files={name:atari/name for name in ('prince-and-the-nymph-boot.atr','prince-and-the-nymph.xex','prince-and-the-nymph.atr','run-prince-and-the-nymph.sh','run-prince-and-the-nymph.ps1','run-prince-and-the-nymph.cmd')}
+files={name:atari/name for name in ('prince-and-the-nymph-boot.atr','prince-and-the-nymph.xex','prince-and-the-nymph.atr','run-prince-and-the-nymph.sh','run-prince-and-the-nymph.ps1','run-prince-and-the-nymph.cmd','run-prince-and-the-nymph-boot.sh','run-prince-and-the-nymph-boot.ps1')}
 files['AltirraTools.psm1']=root.parents[1]/'atari-vbxe-toolkit/scripts/AltirraTools.psm1'
 files['README.txt']=root/'release/README.txt'
+files['VERSION']=root/'VERSION'
+version=(root/'VERSION').read_text().strip()
+assert f'version {version}' in (root/'release/README.txt').read_text().split('\n')[0],'README.txt title must name the VERSION'
 for name,src in files.items():
  if src.resolve()!=(out/name).resolve():shutil.copyfile(src,out/name)
 checks=''.join(f'{hashlib.sha256((out/name).read_bytes()).hexdigest()}  {name}\n' for name in sorted(files))

@@ -1,7 +1,7 @@
 'use strict';
 const fs=require('fs'),path=require('path');process.chdir(path.resolve(__dirname,'..'));
 const c=JSON.parse(fs.readFileSync('content.json'));
-const out=[];function bytes(n,a){out.push(n+' dta '+a.join(','));}
+let out=[];function bytes(n,a){out.push(n+' dta '+a.join(','));}
 function ptr(n,a){bytes(n+'_lo',a.map(s=>'<'+s));bytes(n+'_hi',a.map(s=>'>'+s));}
 const names=c.enemies.map(e=>e.name.toUpperCase());
 for(const k of ['hp','damage','range','move','shootRange'])bytes('type_'+(k==='shootRange'?'shoot_range':k),[...c.buildings.flatMap(b=>b[k]),...c.enemies.map(e=>e[k])]);
@@ -51,8 +51,15 @@ for(const [r,region] of config.regions.entries())for(const [stage,e] of region.s
 if(variants.length>255)throw Error('Too many variants');
 ptr('contract_name',contracts.map((_,i)=>'contract_name_'+i));contracts.forEach((e,i)=>out.push(`contract_name_${i} dta c'${e.name}',0`));
 ptr('seed_ptr',contracts.map((_,i)=>'seed_'+i));contracts.forEach((e,i)=>bytes('seed_'+i,e.picks));
-const encounters=variants.map(e=>e.enemies.flatMap((id,i)=>{const n=c.enemies.findIndex(u=>u.id===id);if(n<0||i>4)throw Error('Invalid encounter');return [15+n,[6,13,20,27,34][i]];}));
+// One enemy table per difficulty; the game adds difficulty_group_base[level] to the seeded group.
+const groupKeys=['enemies','mediumEnemies','hardEnemies'];
+if(variants.length*3>256)throw Error('Too many groups for three difficulty tables');
+const encounters=groupKeys.flatMap(key=>variants.map(v=>v[key]||v.enemies)).map(list=>list.flatMap((id,i)=>{const n=c.enemies.findIndex(u=>u.id===id);if(n<0||i>4)throw Error('Invalid encounter');return [15+n,[6,13,20,27,34][i]];}));
+// The three group tables live beside the release UI at $A000; $6000-$7FFF is full.
+const main=out;out=[];
+bytes('difficulty_group_base',[0,1,2].map(k=>k*variants.length));
 ptr('enemy_ptr',encounters.map((_,i)=>'enemies_'+i));encounters.forEach((a,i)=>bytes('enemies_'+i,[...a,255]));
+fs.writeFileSync('generated/battle-groups.inc',out.join('\n')+'\n');out=main;
 const rewards=contracts.map(e=>e.reward);
 bytes('reward_lo',rewards.map(v=>v&255));bytes('reward_hi',rewards.map(v=>v>>8));
 bytes('wins_required',config.progression.winsRequired);
@@ -62,6 +69,11 @@ const thresholds=config.progression.winsRequired;
 bytes('stage_for_win',thresholds.flatMap(n=>Array.from({length:10},(_,w)=>Math.min(2,Math.floor(w*3/n)))));
 // Ability IDs remain stable: Vampire uses the existing dark sprite set.
 bytes('type_ability',[...Array(15).fill(0),...c.enemies.map(e=>({dark:1,zombie:2,skeleton:3,ogre:4,imp:5,warlock:6}[e.id]||0))]);
+// Title ENEMY INFO page: one enemy per special ability, in campaign order.
+const info=['skeleton','zombie','dark','ogre','imp','warlock'].map(id=>{const n=c.enemies.findIndex(e=>e.id===id);if(n<0)throw Error('Missing enemy '+id);return n;});
+bytes('info_type',info.map(n=>15+n));
+ptr('info_name',info.map((_,i)=>'info_name_'+i));
+info.forEach((n,i)=>out.push(`info_name_${i} dta c'${c.enemies[n].name.toUpperCase()}',0`));
 // Difficulty levels shared with release/audit-balance.cjs; Medium is the release balance.
 const difficulty=JSON.parse(fs.readFileSync('../../difficulty.json'));
 if(difficulty.levels.length!==3||difficulty.levels[1].startingGold!==c.startingGold)throw Error('Medium difficulty must keep the release starting gold');
@@ -77,4 +89,8 @@ bytes('reward_cut_shift',difficulty.levels.map(l=>Math.max(0,-l.rewardShift)));
 ptr('difficulty_label',difficulty.levels.map((_,i)=>'difficulty_label_'+i));
 difficulty.levels.forEach((l,i)=>out.push(`difficulty_label_${i} dta c'LEVEL: ${l.name}',0`));
 fs.writeFileSync('generated/battle-content.inc',out.join('\n')+'\n');
+// Release version from ../../VERSION, shown on the title screen.
+const version=fs.readFileSync('../../VERSION','utf8').trim();
+if(!/^[0-9]+\.[0-9]+$/.test(version))throw Error('VERSION must look like 1.2');
+fs.writeFileSync('generated/version.inc',`s_version dta c'V${version}',0\n`);
 console.log(`Exported 28 fighter types, ${encounters.length} weighted encounters, seed tables and monster abilities.`);

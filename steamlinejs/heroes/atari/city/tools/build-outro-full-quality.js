@@ -14,7 +14,9 @@ const game=fs.readFileSync('city-vbxe.xex'),parts=[];
 for(let i=0;i<game.length;){const start=game.readUInt16LE(i);i+=2;if(start===65535)continue;const end=game.readUInt16LE(i);i+=2;const n=end-start+1;parts.push({start,end,data:game.subarray(i,i+n)});i+=n;}
 for(const [name,start,end] of [['core',0x2000,labels.code_end],['runtime',0x6000,labels.runtime_data_end],['ui',0xa000,labels.release_ui_end]]){
  const output=Buffer.alloc(end-start);let copied=0;
- for(const p of parts)if(p.start>=start&&p.end<end&&(name!=='runtime'||p.data.length===end-start)){p.data.copy(output,p.start-start);copied+=p.data.length;}
+ // The game's $A000 segment continues with battle group tables the viewer does not use.
+ for(const p of parts){const data=name==='ui'&&p.start===start?p.data.subarray(0,end-start):p.data;
+  if(p.start>=start&&p.start+data.length<=end&&(name!=='runtime'||data.length===end-start)){data.copy(output,p.start-start);copied+=data.length;}}
  assert.equal(copied,output.length,name);fs.writeFileSync(`generated/outro-full-quality-${name}.bin`,output);
 }
 assert(labels.release_ui_end<=0xb800,'Viewer overlaps release helpers');

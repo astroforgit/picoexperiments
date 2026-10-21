@@ -47,7 +47,7 @@ for register_page in (0xd600,0xd700):
   m.mem.ram[address]=up
   if page<2:at(m)
   else:m.run_until(r.LABELS['main_loop'])
- assert m.get('screen_mode')==0 and m.get('army_count')==2 and m.get('gold',2)==50
+ assert m.get('screen_mode')==0 and m.get('army_count')==2 and m.get('gold',2)==r.START_GOLD
  assert bytes(m.mem.ram[r.LABELS['region_wins']:r.LABELS['region_wins']+4])==bytes(4)
  m.idle(3);assert m.get('popup_open')==0
  m.release();m.fire();assert m.get('popup_open')==1

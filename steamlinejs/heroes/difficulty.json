@@ -2,22 +2,22 @@
   "format": "prince-and-the-nymph-difficulty",
   "version": 1,
   "default": 1,
-  "notes": "Medium is the unchanged release balance. rewardShift n>0 adds reward>>n, n<0 subtracts reward>>-n, applied to each battle's table reward before the endless-lair bonus. Enemy stats and AI are identical on every level. Validated by release/audit-balance.cjs.",
+  "notes": "Every level uses the same gold and unit stats. Medium and Hard use each encounter group's mediumEnemies/hardEnemies lists (bigger groups of stronger enemy types) from greenhaven-unit-balance.json; Easy uses enemies. rewardShift n>0 adds reward>>n, n<0 subtracts reward>>-n.",
   "levels": [
     {
       "name": "EASY",
       "startingGold": 100,
-      "rewardShift": 2
+      "rewardShift": 0
     },
     {
       "name": "MEDIUM",
-      "startingGold": 50,
+      "startingGold": 100,
       "rewardShift": 0
     },
     {
       "name": "HARD",
-      "startingGold": 30,
-      "rewardShift": -3
+      "startingGold": 100,
+      "rewardShift": 0
     }
   ]
 }

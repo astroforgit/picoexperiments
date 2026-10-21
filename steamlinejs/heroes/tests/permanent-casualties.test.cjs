@@ -1,11 +1,16 @@
 'use strict';
 const assert=require('node:assert/strict'),sim=require('../simulation/campaign-sim.js'),data=require('../greenhaven-unit-balance.json');
 assert.equal(data.permanentCasualties,true);
-const run=sim.simulateCampaign(data,{strategy:'ranged',seed:8,trace:true}); // ends in game over with the path-finding enemy AI
+// First deterministic bot campaign with a costly victory, a paid replacement and a game over;
+// searched so balance edits do not need a new hand-picked seed.
+const fits=r=>r.battles.some(b=>b.outcome==='victory'&&b.casualties.length)&&r.ledger.some(p=>p.replacement)&&!r.completed&&r.gameOver;
+let run=null;
+for(const strategy of Object.keys(sim.strategies))for(let seed=0;seed<256&&!run;seed++){const r=sim.simulateCampaign(data,{strategy,seed,trace:true});if(fits(r))run=r;}
+assert(run,'No bot campaign shows casualties after a victory');
 assert(run.battles.some(b=>b.outcome==='victory'&&b.casualties.length),'Victories must retain casualties');
 assert(run.battles.some(b=>b.casualties.length));assert(run.ledger.some(p=>p.replacement),'Replacements must be bought');
 assert.equal(run.gold,data.startingGold+run.earned-run.spent);
-let army=['barracks-2','barracks-2'];
+let army=sim.start.army.slice();
 for(const event of run.events){
  if(event.type==='purchase'){army=event.army.slice();if(event.replacement)assert(event.cost>0);}
  else {

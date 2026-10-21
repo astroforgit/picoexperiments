@@ -31,10 +31,10 @@ for page in [0xd600,0xd700]:
  hit(m,0,1);assert val(m,'unit_hp',1)==0 and val(m,'unit_team',1)==0
  arr(m,'unit_hp',[2,2,2,5]);hit(m,3,1);assert m.get('battle.conversions')==2
  hit(m,3,2);assert val(m,'unit_hp',2)==0 and val(m,'unit_team',2)==0
- # Skeleton resists physical arrows, not magic; minimum damage is 1.
- fixture(m,[4,18],[0,1],[0,1],[4,3]);hit(m,0,1);assert val(m,'unit_hp',1)==2
+ # Skeletons are immune to physical arrows, not magic.
+ fixture(m,[4,18],[0,1],[0,1],[4,3]);hit(m,0,1);assert val(m,'unit_hp',1)==3
  fixture(m,[12,18],[0,1],[0,1],[4,3]);hit(m,0,1);assert val(m,'unit_hp',1)==1
- fixture(m,[3,18],[0,1],[0,1],[4,3]);hit(m,0,1);assert val(m,'unit_hp',1)==2
+ fixture(m,[3,18],[0,1],[0,1],[4,3]);hit(m,0,1);assert val(m,'unit_hp',1)==3
  # Ogre prepares, attacks marked cell next phase, and loses attack if victim moved.
  fixture(m,[2,21],[0,1],[0,1],[6,7]);m.put('battle.enemy_id',1);m.call('battle.enemy_act')
  assert val(m,'unit_hp',0)==6 and val(m,'unit_charge',1)==1
@@ -54,22 +54,26 @@ for page in [0xd600,0xd700]:
   m.put('selected_location',location);m.call('can_enter_battle');assert bool(m.cpu.p&1)==(region==0)
   if region: m.mem.ram[r.LABELS['region_wins']+region-1]=3
   m.call('can_enter_battle');assert m.cpu.p&1
- for contract in range(12):
-  region,stage=divmod(contract,3)
-  for previous in range(region):m.mem.ram[r.LABELS['region_wins']+previous]=3
-  m.put('selected_location',[0,1,2,4][region]);m.mem.ram[r.LABELS['region_wins']+region]=stage
-  for seed in range(256):
-   m.put('battle.encounter_seed',seed);m.call('battle.start');assert m.get('battle.contract')==contract
-   lo=m.mem.ram[r.LABELS['battle.seed_ptr_lo']+contract];hi=m.mem.ram[r.LABELS['battle.seed_ptr_hi']+contract];variant=m.mem.ram[(hi<<8)+lo+seed]
-   lo=m.mem.ram[r.LABELS['battle.enemy_ptr_lo']+variant];hi=m.mem.ram[r.LABELS['battle.enemy_ptr_hi']+variant];p=(hi<<8)+lo
-   enemies=[]
-   while m.mem.ram[p]!=255:enemies.append(m.mem.ram[p]);p+=2
-   assert [val(m,'unit_type',i) for i in range(m.get('battle.hero_count'),m.get('battle.unit_count'))]==enemies
+ # Each difficulty spawns that level's list of the seeded group, exactly as in content.json.
+ content=json.loads((r.ROOT/'content.json').read_text());ids=[e['id'] for e in content['enemies']]
+ groups=[v for region in content['encounterConfig']['regions'] for stage in region['stages'] for v in stage['variants']]
+ for difficulty,key in enumerate(['enemies','mediumEnemies','hardEnemies']):
+  m.put('difficulty',difficulty)
+  for contract in range(12):
+   region,stage=divmod(contract,3)
+   for previous in range(region):m.mem.ram[r.LABELS['region_wins']+previous]=3
+   m.put('selected_location',[0,1,2,4][region]);m.mem.ram[r.LABELS['region_wins']+region]=stage
+   for seed in range(0,256,1 if difficulty==0 else 4):
+    m.put('battle.encounter_seed',seed);m.call('battle.start');assert m.get('battle.contract')==contract
+    lo=m.mem.ram[r.LABELS['battle.seed_ptr_lo']+contract];hi=m.mem.ram[r.LABELS['battle.seed_ptr_hi']+contract];variant=m.mem.ram[(hi<<8)+lo+seed]
+    expected=[15+ids.index(i) for i in groups[variant].get(key,groups[variant]['enemies'])]
+    assert [val(m,'unit_type',i) for i in range(m.get('battle.hero_count'),m.get('battle.unit_count'))]==expected,(difficulty,contract,seed)
+ m.put('difficulty',1)
  # Retry preserves seed and group; defeat/retreat award nothing.
  m.call('new_city');m.put('selected_location',0);m.put('battle.encounter_seed',13);m.call('battle.start');first=[val(m,'unit_type',i) for i in range(m.get('battle.unit_count'))];m.call('battle.start');assert first==[val(m,'unit_type',i) for i in range(m.get('battle.unit_count'))]
- m.put('battle.game_state',1);m.call('battle.award');gold=m.get('gold',2);assert gold==100 and m.get('battle.encounter_seed')==14
+ m.put('battle.game_state',1);m.call('battle.award');gold=m.get('gold',2);assert gold==r.START_GOLD+50 and m.get('battle.encounter_seed')==14
  m.call('battle.award');assert m.get('gold',2)==gold
- # The old Practice choice cannot be selected or confirmed.
- m.put('popup_open',1);m.put('popup_choice',2);m.call('show_map');m.put('popup_open',1);m.call('map_confirm');assert m.get('screen_mode')==1
- m.put('popup_choice',0);m.call('map_confirm');assert m.get('screen_mode')==2 and m.get('battle.contract')==1
- print(f'PASS ${page:04X}: all six abilities, conversion/summon caps and delays, 3072 native seed selections, region gates, retry, awards, and practice menu.')
+ # Choice 2 (formerly Practice) is the Dark Forest duel; choice 0 is the lair fight.
+ m.call('show_map');m.put('popup_open',1);m.put('popup_choice',2);m.call('map_confirm');assert m.get('screen_mode')==2 and m.get('battle.duel')==1
+ m.call('show_map');m.put('popup_open',1);m.put('popup_choice',0);m.call('map_confirm');assert m.get('screen_mode')==2 and m.get('battle.duel')==0 and m.get('battle.contract')==1
+ print(f'PASS ${page:04X}: all six abilities, conversion/summon caps and delays, Easy/Medium/Hard native group selections, region gates, retry, awards, and duel/fight menu.')

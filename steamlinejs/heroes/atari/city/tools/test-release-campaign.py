@@ -64,7 +64,7 @@ for scenario in ('native-campaign-plan','native-defeat-plan'):
     m.mem.ram[0xd010]=0;m.run_until(r.LABELS['outro.wait_action.finish'])
     m.mem.ram[0xd010]=1
     m.run_until(r.LABELS['outro.wait_action'] if page<2 else r.LABELS['main_loop'])
-   assert m.get('screen_mode')==0 and m.get('gold',2)==50 and m.get('army_count')==2
+   assert m.get('screen_mode')==0 and m.get('gold',2)==r.START_GOLD and m.get('army_count')==2
   else:
    assert run['gameOver'] and m.get('army_count')==0
    m.call('check_game_over');assert m.get('screen_mode')==3
