@@ -361,6 +361,17 @@ sj_c    lda #<t_cred1
         lda #114
         sta tx_y
         lda #13
+        jsr print
+        ; the version, in the top-right corner
+        lda #<t_ver
+        sta str_p
+        lda #>t_ver
+        sta str_p+1
+        lda #84
+        sta tx_x
+        lda #2
+        sta tx_y
+        lda #13
         jmp print
 sj_menu ; camera(0, nz.dy * 5)
         lda title_dy

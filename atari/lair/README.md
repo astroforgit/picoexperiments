@@ -3,7 +3,7 @@
 This is an Atari XL/XE + VBXE port of *The Lair* by Jakub Wasilewski (@krajzeg), with
 sound by Gruber (@gruber_music). The source is the PICO-8 cartridge `[BeatEmUp]/lair.p8.png`.
 
-The whole game is ported: the title and difficulty menu, the three stages (Old Petrel
+The whole game is ported (version 1.3, shown on the title screen): the title and difficulty menu, the three stages (Old Petrel
 Road, Shearwater Keep, The Lair) with their waves and mini-bosses, all monsters, the
 boss with its crystals, shield, summons and death sequence, pickups, combos, charged
 stabs, shield parries and dashes, the stage results with score and rank, the best rank
