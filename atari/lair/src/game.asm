@@ -304,7 +304,7 @@ dr_sj    sty sj_e
         ldy sj_e
         lda e_st,y
         cmp #S_MI
-        beq sj_menu
+        jeq sj_menu
         ; press [z] to start (after 60 t, blinking hr(60, 30))
         lda e_th,y
         bne sj_p
@@ -350,6 +350,17 @@ sj_c    lda #<t_cred1
         lda #108
         sta tx_y
         lda #1
+        jsr print
+        ; the port's credit, centred under the cart's
+        lda #<t_port
+        sta str_p
+        lda #>t_port
+        sta str_p+1
+        lda #4
+        sta tx_x
+        lda #114
+        sta tx_y
+        lda #13
         jmp print
 sj_menu ; camera(0, nz.dy * 5)
         lda title_dy

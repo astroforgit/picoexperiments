@@ -366,6 +366,7 @@ def emit_texts():
 text('t_press', 'press [z]to start')
 text('t_cred1', 'gfx,code,design        @krajzeg')
 text('t_cred2', 'music,sfx         @gruber_music')
+text('t_port', 'atari vbxe conversion astrofor')
 text('t_diff', ' difficulty')
 text('t_best', '       best')
 text('t_the', 'the')

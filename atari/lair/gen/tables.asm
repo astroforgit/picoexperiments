@@ -2506,6 +2506,7 @@ sfx_hi
 t_press dta c'press [z]to start',0
 t_cred1 dta c'gfx,code,design        @krajzeg',0
 t_cred2 dta c'music,sfx         @gruber_music',0
+t_port dta c'atari vbxe conversion astrofor',0
 t_diff dta c' difficulty',0
 t_best dta c'       best',0
 t_the dta c'the',0

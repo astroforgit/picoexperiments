@@ -28,18 +28,18 @@ The buttons work as in the Celeste port: fire is PICO-8's O, the second fire is 
 
 | PICO-8 button | Action | Joystick | Keyboard |
 | --- | --- | --- | --- |
-| arrows | move; double tap: dash | joystick 0 | W A S D or the arrow keys (`-` `=` `+` `*`) |
+| arrows | move; double tap: dash | joystick 0 | — |
 | [z] (O) | stab, hold: charge; start, menu | fire | Z, C, N, O |
 | [x] (X) | hold: shield | button 2 or 3 of a 2-button joystick (Joy2B+ style, pins 5/9), or joystick 1 fire | SHIFT, X, V, M, SPACE, RETURN |
+
+Keys are fire buttons only; the joystick moves.
 
 Buttons 2 and 3 arrive on the paddle lines (POT 0 / POT 1), whose resting level depends on
 the joystick (Altirra's two-button joystick reads high when pressed, Joy2B+ sticks read
 low), so a press is any change from the level the line had half a second after the game
-started. Don't hold these buttons while the game loads. Each input counts only after it
-has been seen released once (Altirra holds OPTION while booting).
-
-SHIFT can be held together with any other key, so the keyboard alone is playable. The
-Atari keyboard reports one other key at a time.
+started. The values are taken in the vertical blank, when a paddle scan has finished, as
+the OS does for Celeste. Don't hold these buttons while the game loads. Each input counts
+only after it has been seen released once (Altirra holds OPTION while booting).
 
 ## PICO-8 conversion
 
@@ -100,14 +100,19 @@ tables the game builds from the live Lua state, so they are exactly the cart's v
   VRAM caches only when they change and copied with one blit per frame. Text is
   rendered once per distinct string into a VRAM cache (glyph and outline masks), so the
   cart's outlined text costs two blits. Shadows, moons and puddles are pre-drawn images.
-- **Disintegration.** A dying monster is drawn by the blitter into a scratch buffer,
-  read back through MEMAC and turned into particles, as the cart does with `pget()`.
-- **Speed.** Normal fights run at full speed. Crowded boss fights with many
-  disintegrating monsters slow down to about 70-80%.
+- **Disintegration.** With `PARTICLES = 1` a dying monster is drawn by the blitter into a
+  scratch buffer, read back through MEMAC and turned into particles, as the cart does
+  with `pget()`.
+- **Speed.** Normal fights run at full speed. The boss fight with its shots and summons
+  slows down to about 65-85%.
 
 ### Differences from the cartridge
 
 - **Music** is not played.
+- **Particles.** The decorative particle effects are left out for speed (`PARTICLES = 0`
+  in `lair.asm`): monsters vanish instead of falling apart, and there are no hit debris,
+  pickup and summon sparks, charge sparks, stars, auras, fireball trails or boss death
+  rings. They have no effect on the game. The texts that rise and fade are kept.
 - **Random numbers** come from a 16-bit xorshift mixed with POKEY's `RANDOM`, with 8-bit
   fractions; the odds are the cart's, the sequences are not.
 - **Small rounding.** Speeds use 8 fraction bits, particle friction is applied every
