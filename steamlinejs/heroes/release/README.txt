@@ -5,7 +5,14 @@ A humorous fantasy strategy game for Atari XL/XE with VBXE FX 1.2x.
 Recruit an army in Greenhaven, clear the four lairs, defeat the necromancer,
 and rescue the nymph. The story continues through a three-picture wedding ending.
 
-START
+START - SINGLE FILE
+prince-and-the-nymph-boot.atr holds the whole game, including all pictures.
+Mount it as D1: and boot (Altirra: File > Boot Image) on an XL/XE with VBXE.
+BASIC is switched off automatically. Loading at standard SIO speed takes a few
+minutes on real hardware; emulators with SIO acceleration load it instantly.
+The 256-byte-sector 1.4 MB ATR needs an SIO device that supports large images.
+
+START - XEX AND STORY DISK (alternative)
 Windows: extract the complete package, then run run-prince-and-the-nymph.cmd.
 WSL: run ./run-prince-and-the-nymph.sh from the extracted directory.
 The launcher finds an existing Altirra installation and uses its persistent

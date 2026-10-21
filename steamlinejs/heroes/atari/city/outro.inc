@@ -102,7 +102,8 @@ s_retry dta c'FIRE: RETRY STORY DISK',0
         mva sector_lo,x sector
         mva sector_hi,x sector+1
         jsr wait_blit
-        lda #1
+        ; Sectors 1-2 hold the boot loader of the single-disk release.
+        lda #3
         sta read_sector
         lda #0
         sta read_sector+1

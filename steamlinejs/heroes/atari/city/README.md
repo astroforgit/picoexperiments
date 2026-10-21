@@ -25,6 +25,12 @@ fighting even with no gold.
 
 ## Play
 
+**Single file:** boot **[city-vbxe.atr](city-vbxe.atr)** in D1: (released as
+`prince-and-the-nymph-boot.atr`). The 170-byte loader in `boot.asm` occupies
+sectors 1-2, disables BASIC and streams the unchanged XEX stored after the
+pictures (from sector 3004); the story signature sits in sector 3.
+
+**XEX + story disk (alternative):**
 Run `../run-prince-and-the-nymph.sh` (WSL) or `../run-prince-and-the-nymph.cmd` (Windows)
 with VBXE enabled. The runner attaches `heroes-story.atr` to D1: before loading
 the game. For manual loading, mount `generated/heroes-story.atr` in D1: and open

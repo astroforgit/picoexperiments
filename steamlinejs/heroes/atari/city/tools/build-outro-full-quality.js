@@ -64,7 +64,7 @@ if(artist){
  const sectorCount=4+scenes.length*250,dataBytes=384+(sectorCount-3)*256;
  const disk=Buffer.alloc(16+dataBytes);
  const signature=Buffer.concat([Buffer.from('GHSTORY1'),crypto.createHash('sha256').update(palette).digest().subarray(0,4),crypto.createHash('sha256').update(Buffer.concat(rawPages)).digest().subarray(0,4)]);
- disk.writeUInt16LE(0x296,0);disk.writeUInt16LE((dataBytes/16)&65535,2);disk.writeUInt16LE(256,4);disk[6]=(dataBytes/16)>>16;signature.copy(disk,16);
+ disk.writeUInt16LE(0x296,0);disk.writeUInt16LE((dataBytes/16)&65535,2);disk.writeUInt16LE(256,4);disk[6]=(dataBytes/16)>>16;signature.copy(disk,16+256);
  sectors=rawPages.map((page,i)=>{const sector=4+i*250;page.copy(disk,16+384+i*64000);return sector;});
  fs.writeFileSync('generated/'+diskName,disk);
  // Only the standalone viewer's copied loader metadata changes. The game

@@ -8,7 +8,9 @@ out=args.output.resolve();out.mkdir(parents=True,exist_ok=True)
 atari=root/'atari';city=atari/'city'
 for name in ('heroes-vbxe3.xex','prince-and-the-nymph.xex'):shutil.copyfile(city/'city-vbxe.xex',atari/name)
 for name in ('heroes-story.atr','prince-and-the-nymph.atr'):shutil.copyfile(city/'generated/heroes-story.atr',atari/name)
-files={name:atari/name for name in ('prince-and-the-nymph.xex','prince-and-the-nymph.atr','run-prince-and-the-nymph.sh','run-prince-and-the-nymph.ps1','run-prince-and-the-nymph.cmd')}
+# Single-file alternative: a bootable disk holding the same XEX and pictures.
+shutil.copyfile(city/'city-vbxe.atr',atari/'prince-and-the-nymph-boot.atr')
+files={name:atari/name for name in ('prince-and-the-nymph-boot.atr','prince-and-the-nymph.xex','prince-and-the-nymph.atr','run-prince-and-the-nymph.sh','run-prince-and-the-nymph.ps1','run-prince-and-the-nymph.cmd')}
 files['AltirraTools.psm1']=root.parents[1]/'atari-vbxe-toolkit/scripts/AltirraTools.psm1'
 files['README.txt']=root/'release/README.txt'
 for name,src in files.items():

@@ -11,7 +11,7 @@ for page in (0xd600,0xd700):
   m.put('render_bank',m.get('back_bank'));m.cpu.a=picture
   m.mem.story_reads=[];m.call('story.load')
   assert m.cpu.p&1,'Valid disk rejected'
-  assert m.mem.story_reads==[(1,128)]+[(s,256) for s in range(start,start+250)]
+  assert m.mem.story_reads==[(3,128)]+[(s,256) for s in range(start,start+250)]
   bank=m.get('back_bank')*65536
   assert m.mem.vram[bank:bank+64000]==(r.ROOT/f'generated/story-{picture+1}.bin').read_bytes()
   assert bytes(m.mem.vram[0x20000:])==assets,'Story page changed gameplay graphics'

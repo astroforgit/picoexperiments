@@ -29,11 +29,14 @@ module.exports=function({convert,indexed,palette,font}) {
   Buffer.from('GHSTORY1'),crypto.createHash('sha256').update(Buffer.from(palette.flat())).digest().subarray(0,4),
   crypto.createHash('sha256').update(Buffer.concat(pages)).digest().subarray(0,4)]);
  disk.writeUInt16LE(0x296,0);disk.writeUInt16LE((dataBytes/16)&65535,2);disk.writeUInt16LE(256,4);disk[6]=(dataBytes/16)>>16;
- signature.copy(disk,16);
+ // Sector 3 keeps sectors 1-2 free for the single-disk boot loader.
+ signature.copy(disk,16+256);
  const sectors=pages.map((page,i)=>{const start=4+i*250;page.copy(disk,16+384+(start-4)*256);return start;});
+ const xexSector=sectors.at(-1)+250;
  fs.writeFileSync('generated/heroes-story.atr',disk);
  fs.writeFileSync('generated/story-content.inc',
   `signature dta ${[...signature].join(',')}\nsector_lo dta ${sectors.map(s=>s&255).join(',')}\nsector_hi dta ${sectors.map(s=>s>>8).join(',')}\n`);
- fs.writeFileSync('generated/story-layout.json',JSON.stringify({width:320,height:144,colors:256,pageBytes:64000,galleryPages:[4,5,6,7,8,9,10,11],sectorCount,sectors,signature:[...signature]},null,2)+'\n');
+ fs.writeFileSync('generated/boot-layout.inc',`XEX_SECTOR = ${xexSector}\n`);
+ fs.writeFileSync('generated/story-layout.json',JSON.stringify({width:320,height:144,colors:256,pageBytes:64000,galleryPages:[4,5,6,7,8,9,10,11],sectorCount,sectors,signatureSector:3,xexSector,signature:[...signature]},null,2)+'\n');
  console.log('Story disk: twelve full-resolution 320x144 pictures including the gallery; no resident picture data.');
 };

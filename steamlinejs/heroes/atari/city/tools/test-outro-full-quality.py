@@ -45,7 +45,7 @@ for register_page in (0xd600,0xd700):
   assert bytes(m.mem.vram[front:front+64000])==(r.ROOT/f'generated/outro-full-quality-{page+1}.bin').read_bytes()[:64000]
   assert bytes(m.mem.vram[0x20000:0x7f000])==immutable,'An image cache was allocated outside the screen buffers'
   sector=layout['sectors'][page+offset]
-  assert m.mem.story_reads[-251:]==[(1,128)]+[(s,256) for s in range(sector,sector+250)]
+  assert m.mem.story_reads[-251:]==[(3,128)]+[(s,256) for s in range(sector,sector+250)]
   if i<count:next_page(m,i)
  print(f'PASS ${register_page:04X}: {count} exact disk-streamed pages, full replay, Fire/Enter/Space and held-key handling, 256-byte staging, zero resident image caches.',flush=True)
 m=machine(0xd600,True);assert m.mem.ram[labels['full_outro.load_ok']]==0
