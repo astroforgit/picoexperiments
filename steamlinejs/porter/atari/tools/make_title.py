@@ -10,10 +10,46 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 
+# Shown in the bottom-right corner of the title screen.
+VERSION = "1.3"
 
-def convert(source_name, name, first_index):
+# 3x5 glyphs in the style of the PICO-8 font (from atari/lair/tools/font.py)
+FONT = {
+    'e': '###,#..,##.,#..,###', 'i': '###,.#.,.#.,.#.,###',
+    'n': '##.,#.#,#.#,#.#,#.#', 'o': '.##,#.#,#.#,#.#,##.',
+    'r': '###,#.#,##.,#.#,#.#', 's': '.##,#..,###,..#,##.',
+    'v': '#.#,#.#,#.#,###,.#.', ' ': '...,...,...,...,...',
+    '.': '...,...,...,...,.#.',
+    '0': '###,#.#,#.#,#.#,###', '1': '##.,.#.,.#.,.#.,###',
+    '2': '###,..#,###,#..,###', '3': '###,..#,.##,..#,###',
+    '4': '#.#,#.#,###,..#,..#', '5': '###,#..,###,..#,###',
+    '6': '#..,#..,###,#.#,###', '7': '###,..#,..#,..#,..#',
+    '8': '###,#.#,###,#.#,###', '9': '###,#.#,###,..#,..#',
+}
+
+
+def draw_text(image, text, right, top, colour):
+    """Draw text with its last column at x = right - 1 (4 pixels a glyph)."""
+    x = right - 4 * len(text) + 1
+    for ch in text:
+        for row, bits in enumerate(FONT[ch].split(',')):
+            for col, bit in enumerate(bits):
+                if bit == '#':
+                    image.putpixel((x + col, top + row), colour)
+        x += 4
+
+
+def convert(source_name, name, first_index, gamma=1.0, gain=1.0, version=False):
     source = Image.open(ROOT / "assets" / source_name).convert("RGB")
     screen = source.resize((320, 200), Image.Resampling.LANCZOS)
+    if version:
+        # level with the second credit line, in the credits' colour
+        draw_text(screen, "version " + VERSION, 316, 188, (195, 190, 173))
+    if gamma != 1.0 or gain != 1.0:
+        # tone curve before quantizing, so the 32 colours cover the brighter
+        # image instead of crowding near black
+        curve = [min(255, round(255 * gain * (v / 255) ** gamma)) for v in range(256)]
+        screen = screen.point(curve * 3)
     indexed = screen.quantize(colors=32, method=Image.Quantize.MEDIANCUT,
                               dither=Image.Dither.NONE)
     indexed.save(ROOT / f"assets/porter-{name}-preview.png")
@@ -35,8 +71,10 @@ def convert(source_name, name, first_index):
 
 
 def main():
-    convert("porter-title-credits.png", "title", 16)
-    convert("porter-background-source.png", "background", 48)
+    convert("porter-title-credits.png", "title", 16, version=True)
+    # the generated cavern is nearly black (mean 5/255): lift it so the cave
+    # reads behind the white game tiles while staying darker than them
+    convert("porter-background-source.png", "background", 48, gamma=0.6, gain=1.5)
 
 
 if __name__ == "__main__":
