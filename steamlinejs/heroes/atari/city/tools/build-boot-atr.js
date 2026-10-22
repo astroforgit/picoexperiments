@@ -1,6 +1,10 @@
 'use strict';
 // Single-file release: boot loader + story pictures + the game XEX on one ATR.
 const fs=require('fs'),assert=require('assert/strict'),cp=require('child_process');
+// The loader sets savegame.boot_disk, found in the game's label file.
+const labels=Object.fromEntries(fs.readFileSync('generated/city-vbxe.lab','utf8').split('\n').map(s=>s.trim().split(/\s+/)).filter(p=>p.length===3).map(p=>[p[2].toLowerCase(),parseInt(p[1],16)]));
+assert(labels['savegame.boot_disk'],'savegame.boot_disk missing from the label file');
+fs.writeFileSync('generated/boot-symbols.inc',`BOOT_FLAG = ${labels['savegame.boot_disk']}\n`);
 cp.execFileSync('mads',['boot.asm','-o:generated/boot.bin'],{stdio:'inherit'});
 const boot=fs.readFileSync('generated/boot.bin'),xex=fs.readFileSync('city-vbxe.xex');
 const story=fs.readFileSync('generated/heroes-story.atr');

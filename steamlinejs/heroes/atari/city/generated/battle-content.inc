@@ -91,9 +91,10 @@ info_name_3 dta c'OGRE',0
 info_name_4 dta c'IMP',0
 info_name_5 dta c'WARLOCK',0
 DEFAULT_DIFFICULTY = 1
-DUEL_TYPE = 15
 DUEL_CELL = 20
-DUEL_REWARD = 15
+duel_type dta 15,17,16,24,25
+duel_reward dta 15,12,20,25,50
+duel_pick dta 0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,2,2,2,2,2,2,3,3,3,3,3,4
 start_gold_lo dta 100,100,100
 start_gold_hi dta 0,0,0
 reward_bonus_shift dta 0,0,0

@@ -1,4 +1,4 @@
-; Release title, controls and enemy info. No save slot or development shortcuts.
+; Release title, controls and enemy info; LOAD GAME on the boot ATR. No development shortcuts.
 release_ui_start
 .local release_ui
 .proc show
@@ -20,6 +20,7 @@ loop    jsr wait_frame
         bne loop
         mva #1 latch
         jsr action_sound
+        mva #0 load_failed
         lda page
         jeq menu
         lda action
@@ -35,11 +36,13 @@ menu    lda action
         cmp #3
         bne loop
         lda choice
-        beq start
+        jeq start
         cmp #1
         beq level
         cmp #4
         beq sound
+        cmp #5
+        beq loadgame
         sec
         sbc #1                  ; rows 2/3 open pages 1/2
         sta page
@@ -53,16 +56,21 @@ relevel jsr starting_gold
         jmp redraw
 sound   jsr sfx.toggle
         jmp redraw
+loadgame
+        jsr savegame.load
+        bcs begin
+        mva #1 load_failed
+        jmp redraw
 previous
         lda choice
         bne decrease
-        mva #5 choice
+        mva rows choice
 decrease
         dec choice
         jmp redraw
 next    inc choice
         lda choice
-        cmp #5
+        cmp rows
         jcc redraw
         mva #0 choice
         jmp redraw
@@ -77,7 +85,7 @@ released
         mva #0 latch
         jmp loop
 start   jsr starting_gold
-        lda #SFX_MARCH
+begin   lda #SFX_MARCH
         jsr sfx.play
         mva #1 action_latched
         sta dirty
@@ -159,6 +167,23 @@ MENU_Y = 104
 ROW_X = 110
 ROW_W = 100
 .proc prepare
+        ; The boot ATR adds LOAD GAME: six rows, box 14 pixels taller.
+        lda savegame.boot_disk
+        clc
+        adc #5
+        sta rows
+        lda #1
+        sec
+        sbc savegame.boot_disk
+        sta row_base
+        lda savegame.boot_disk
+        beq ?short
+        mva #MENU_Y-14 menu_top
+        mva #94 menu_height
+        jmp ?sized
+?short  mva #MENU_Y menu_top
+        mva #80 menu_height
+?sized
         mva #1 background_bank
         mva #0 render_bank
         jsr copy_background_cache
@@ -168,12 +193,28 @@ ROW_W = 100
         mva #0 drawn_page
         rts
 frame   jsr band
-        rect MENU_X,MENU_Y,108,80,1
-        rect MENU_X+2,MENU_Y+2,104,76,7
         mwa #MENU_X calc_x
-        mva #MENU_Y calc_y
+        mva menu_top calc_y
         mwa #108 fr_w
-        mva #80 fr_h
+        mva menu_height fr_h
+        mva #1 fr_col
+        jsr fill_rect
+        mwa #MENU_X+2 calc_x
+        lda menu_top
+        clc
+        adc #2
+        sta calc_y
+        mwa #104 fr_w
+        lda menu_height
+        sec
+        sbc #4
+        sta fr_h
+        mva #7 fr_col
+        jsr fill_rect
+        mwa #MENU_X calc_x
+        mva menu_top calc_y
+        mwa #108 fr_w
+        mva menu_height fr_h
         mva #2 fr_col
         jmp outline
 .endp
@@ -213,8 +254,7 @@ back    labeltext 229,190,s_back
         jmp show_it
 menu    labeltext 241,190,s_controls
         mva #0 line
-row     ldx line
-        lda row_y,x
+row     jsr row_top
         sta calc_y
         mwa #ROW_X calc_x
         mwa #ROW_W fr_w
@@ -224,16 +264,14 @@ row     ldx line
         lda line
         cmp choice
         bne label
-        ldx line
-        lda row_y,x
+        jsr row_top
         sta calc_y
         mwa #ROW_X calc_x
         mwa #ROW_W fr_w
         mva #13 fr_h
         mva #2 fr_col
         jsr outline
-label   ldx line
-        lda row_y,x
+label   jsr row_top
         clc
         adc #3
         sta text_y
@@ -254,7 +292,7 @@ sound   cpx #4
 say     jsr centered
         inc line
         lda line
-        cmp #5
+        cmp rows
         jcc row
 show_it jsr wait_blit
         jsr present_back_buffer
@@ -366,7 +404,11 @@ i5b dta c'SLAY HIM TO WIN',0
         rect 0,186,320,14,1
         rect 0,186,320,1,2
         labeltext 8,190,s_author
+        lda load_failed
+        bne ?failed
         labeltext 148,190,s_version
+        rts
+?failed labeltext 122,190,s_no_save
         rts
 .endp
 ; Popup-style page frame below the logo.
@@ -407,9 +449,24 @@ measured
         mva #0 text_x+1
         jmp draw_text
 .endp
-row_y dta 109,123,137,151,165
-row_lo dta <s_start,<s_start,<s_help,<s_info,<s_sound_on
-row_hi dta >s_start,>s_start,>s_help,>s_info,>s_sound_on
+; A = top of menu row `line` (X keeps the row number).
+.proc row_top
+        lda line
+        clc
+        adc row_base
+        tax
+        lda row_y,x
+        ldx line
+        rts
+.endp
+row_y dta 95,109,123,137,151,165     ; six rows; five start at row_base 1
+row_lo dta <s_start,<s_start,<s_help,<s_info,<s_sound_on,<s_load_game
+row_hi dta >s_start,>s_start,>s_help,>s_info,>s_sound_on,>s_load_game
+rows dta 5
+row_base dta 1
+menu_top dta MENU_Y
+menu_height dta 80
+load_failed dta 0
 drawn_page dta 0
 page dta 0
 choice dta 0
@@ -425,6 +482,8 @@ s_author dta c'AUTHOR: ASTROFOR',0
 s_start dta c'START GAME',0
 s_help dta c'HOW TO PLAY',0
 s_info dta c'ENEMY INFO',0
+s_load_game dta c'LOAD GAME',0
+s_no_save dta c'NO SAVED GAME',0
 s_sound_on dta c'SOUND: ON',0
 s_sound_off dta c'SOUND: OFF',0
 s_controls dta c'FIRE: CHOOSE',0

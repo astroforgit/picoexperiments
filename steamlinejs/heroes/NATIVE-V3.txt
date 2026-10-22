@@ -13,10 +13,17 @@ group lists its enemies per level in greenhaven-unit-balance.json: enemies
 of stronger enemy types). The seeded group choice is the same on every level.
 
 Dark Forest duel (duel.json): the Dark Forest scout report has FIGHT, DUEL
-and BACK. A duel is a normal battle with your current army against one
-Minibeast, without lair escalation. Winning pays 15 gold (difficulty-scaled),
-the price of the cheapest recruit, and gives no region progress or paintings;
-losses and casualties follow the usual rules. It is always available.
+and BACK. A duel is a normal battle with your current army against one random
+enemy from duel.json (weights out of 32: Minibeast 12, Bat 8, Wolf 6, Beast 5,
+Vampire 1). Each pays its own purse (15/12/20/25/50 gold, difficulty-scaled)
+and gives no region progress or paintings; losses and casualties follow the
+usual rules. It is always available.
+
+Save/load (single-file boot ATR only): the boot loader sets savegame.boot_disk.
+Escape/SELECT in the city opens GAME MENU (SAVE GAME, LOAD GAME, BACK); the
+title menu gains LOAD GAME. One slot in the disk sector between the pictures
+and the game: 'NYS1', length, 42 campaign bytes, checksum. The XEX version
+never shows these options.
 
 Building prices: the highest level costs 140 (Barracks), 160 (Archery Range,
 Ranger Lodge, Wizard Tower) and 70 (Chapel discount level); previously 90/100/30.
@@ -33,7 +40,7 @@ It sits on a painted 320x200 title picture (art/title-v1/) that loads into
 the spare back buffer straight after the intro; gameplay reuses that VRAM.
 Rebuild the picture with python3 art/tools/compose-title.py.
 Short, soft POKEY cues (coin chime, fanfare, falling defeat phrase, muffled
-hits) play on channel 2; music and saves are omitted.
+hits) play on channel 2; music is omitted.
 The development O shortcut is removed.
 Release README, checks, balance review and packaging: release/.
 Repeat the complete build/check/package flow with sh release/build.sh.

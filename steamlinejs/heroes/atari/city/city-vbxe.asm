@@ -313,8 +313,11 @@ main_loop
         lda popup_open
         bne ?dismiss
         lda screen_mode
-        beq ?dismiss
+        beq ?city
         jmp show_city
+?city   lda savegame.boot_disk  ; game menu (save/load) only on the boot ATR
+        beq ?dismiss
+        jmp savegame.menu
 ?dismiss
         mva #0 popup_open
         sta notice
@@ -962,6 +965,8 @@ text_screen
         :1024 dta 0
         org $A000
         icl 'release-ui.inc'
+        ; Outside release_ui_end: the gallery viewer reuses the block above.
+        icl 'savegame.inc'
         .local battle
         icl 'generated/battle-groups.inc'
         .endl

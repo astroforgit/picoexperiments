@@ -80,9 +80,12 @@ if(difficulty.levels.length!==3||difficulty.levels[1].startingGold!==c.startingG
 for(const l of difficulty.levels)if(!Number.isInteger(l.startingGold)||l.startingGold<0||l.startingGold>65535||!Number.isInteger(l.rewardShift)||Math.abs(l.rewardShift)>7||!/^[A-Z]{1,6}$/.test(l.name))throw Error('Invalid difficulty level');
 out.push(`DEFAULT_DIFFICULTY = ${difficulty.default}`);
 const duel=JSON.parse(fs.readFileSync('../../duel.json'));
-const duelType=c.enemies.findIndex(e=>e.id===duel.enemy);
-if(duelType<0||![6,13,20,27,34].includes(duel.cell)||!Number.isInteger(duel.reward)||duel.reward<1||duel.reward>255)throw Error('Invalid duel.json');
-out.push(`DUEL_TYPE = ${15+duelType}`,`DUEL_CELL = ${duel.cell}`,`DUEL_REWARD = ${duel.reward}`);
+// Duel: one random enemy; 32 weighted slots so the game indexes them with RANDOM & 31.
+const duelTypes=duel.enemies.map(e=>c.enemies.findIndex(u=>u.id===e.enemy));
+if(duelTypes.some(n=>n<0)||![6,13,20,27,34].includes(duel.cell)||duel.enemies.some(e=>!Number.isInteger(e.weight)||e.weight<1||!Number.isInteger(e.reward)||e.reward<1||e.reward>255)||duel.enemies.reduce((n,e)=>n+e.weight,0)!==32||duel.enemies.some(e=>e.enemy==='warlock'))throw Error('Invalid duel.json');
+out.push(`DUEL_CELL = ${duel.cell}`);
+bytes('duel_type',duelTypes.map(n=>15+n));bytes('duel_reward',duel.enemies.map(e=>e.reward));
+bytes('duel_pick',duel.enemies.flatMap((e,i)=>Array(e.weight).fill(i)));
 bytes('start_gold_lo',difficulty.levels.map(l=>l.startingGold&255));bytes('start_gold_hi',difficulty.levels.map(l=>l.startingGold>>8));
 bytes('reward_bonus_shift',difficulty.levels.map(l=>Math.max(0,l.rewardShift)));
 bytes('reward_cut_shift',difficulty.levels.map(l=>Math.max(0,-l.rewardShift)));

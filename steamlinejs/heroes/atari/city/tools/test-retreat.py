@@ -19,7 +19,8 @@ for page in (0xd600,0xd700):
   m.call('battle.victory_reward');assert m.get('battle.reward',2)==purse,(difficulty,m.get('battle.reward',2))
  m=battle(page,100);assert m.get('battle.reward',2)==16 and m.get('gold',2)==84  # 50 // 3
  m=battle(page,10);assert m.get('gold',2)==0                                      # never negative
- m=battle(page,100,duel=1);assert m.get('battle.reward',2)==5 and m.get('gold',2)==95  # duel purse 15
+ m=battle(page,100,duel=1);purse=m.mem.ram[r.LABELS['battle.duel_reward']+m.get('battle.duel_kind')]
+ assert m.get('battle.reward',2)==purse//3 and m.get('gold',2)==100-purse//3  # a third of this duel's purse
  # Escape menu retreat costs the same.
  m=r.Machine(page);m.put('gold',100,2);m.put('selected_location',0);m.put('battle.encounter_seed',1);m.call('battle.start')
  m.call('battle.cancel');m.put('popup_choice',1);m.call('battle.confirm')

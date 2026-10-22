@@ -2,6 +2,7 @@
 ; stored after the story pictures, using the same OS SIO reads as story.load.
         opt h-
         icl 'generated/boot-layout.inc'
+        icl 'generated/boot-symbols.inc'
 PORTB=$D301
 SDMCTL=$022F
 SOUNDR=$41
@@ -56,7 +57,10 @@ advanced
         jsr init
         jmp segment
 init    jmp (INITAD)
-run     jmp (RUNAD)
+; Tell the game it runs from this disk, which enables save/load.
+run     lda #1
+        sta BOOT_FLAG
+        jmp (RUNAD)
 
 get     ldx pos
         bne have

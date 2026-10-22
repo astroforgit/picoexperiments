@@ -1,15 +1,22 @@
 ; Dark Forest duel (duel.json): a normal battle with the current army against
-; one weak enemy, any time. A small fixed purse; no region
+; one random enemy (duel.json weights), any time. A small purse; no region
 ; progress or paintings. Also the map scout report with its three buttons.
 ; Resident with the release UI at $A000+, outside the full main code area.
 
         .local battle
 duel dta 0                      ; 1 while the current battle is a duel
+duel_kind dta 0                 ; duel.json enemy picked for this duel
 ; C set when the duel enemy was placed instead of the contract's group.
 .proc duel_enemy
         lda duel
         beq ?no
-        lda #DUEL_TYPE
+        lda $D20A               ; RANDOM
+        and #31
+        tax
+        lda duel_pick,x
+        sta duel_kind
+        tax
+        lda duel_type,x
         ldy #DUEL_CELL
         ldx #1
         jsr add_unit
@@ -140,4 +147,4 @@ s_duel_title dta c'DARK FOREST DUEL',0
 .endp
 map_button_x dta 32,208,120     ; choices: 0 fight, 1 back, 2 duel
 s_duel dta c'DUEL',0
-s_duel_hint dta c'DUEL: ONE MINIBEAST FOR A SMALL PURSE.',0
+s_duel_hint dta c'DUEL: ONE RANDOM BEAST, RARELY A VAMPIRE.',0

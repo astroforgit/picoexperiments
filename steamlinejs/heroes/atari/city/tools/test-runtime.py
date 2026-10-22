@@ -21,6 +21,8 @@ class Memory:
         self.page, self.bank, self.color = page, 0, 0
         self.story_disk = (ROOT/'generated/heroes-story.atr').read_bytes()
         self.story_reads = []
+        self.story_writes = []
+        self.disk_locked = False
         self.audio_writes = []
         self.blits = 0
         self.portrait_blits = []
@@ -163,13 +165,19 @@ class Machine:
         sector=int.from_bytes(ram[0x30a:0x30c],'little')
         size=int.from_bytes(ram[0x308:0x30a],'little')
         ptr=int.from_bytes(ram[0x304:0x306],'little')
-        self.mem.story_reads.append((sector,size))
-        assert ram[0x300:0x304]==bytes([0x31,1,0x52,0x40])
+        write=ram[0x302]==0x57
+        (self.mem.story_writes if write else self.mem.story_reads).append((sector,size))
+        assert ram[0x300:0x304]==bytes([0x31,1,0x57,0x80] if write else [0x31,1,0x52,0x40])
         assert size==(128 if sector<=3 else 256)
         offset=16+(sector-1)*128 if sector<=3 else 16+384+(sector-4)*256
         disk=self.mem.story_disk
         if disk is None or sector<1 or offset+size>len(disk):
             self.cpu.y=138
+        elif write and self.mem.disk_locked:
+            self.cpu.y=144
+        elif write:
+            disk=bytearray(disk);disk[offset:offset+size]=ram[ptr:ptr+size];self.mem.story_disk=bytes(disk)
+            self.cpu.y=1
         else:
             ram[ptr:ptr+size]=disk[offset:offset+size]
             self.cpu.y=1

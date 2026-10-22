@@ -1,4 +1,4 @@
-PRINCE AND THE NYMPH - version 1.2
+PRINCE AND THE NYMPH - version 1.3
 Author: astrofor
 
 A humorous fantasy strategy game for Atari XL/XE with VBXE FX 1.2x.
@@ -53,15 +53,21 @@ soldiers for. Different purchasing routes carry different risks.
 Killing the final Warlock wins immediately and plays the wedding ending.
 Losing every soldier without enough gold for any available recruit is game over.
 Fire starts a fresh campaign after defeat or after the final ending page.
-There are no saves; restarting starts over. The Chapel has a free ART GALLERY action after it is built. After two
+DUEL: the Dark Forest scout report also offers a duel against one random enemy
+(rarely a Vampire, which pays more) for a small purse and no lair progress.
+SAVE/LOAD (single-file ATR only): in the city press Escape or SELECT for the
+GAME MENU (Save Game, Load Game, Back); the title menu also has Load Game.
+There is one save slot on the disk, so the disk must be writable. Altirra keeps
+writes only in memory by default: set File > Disk drives > write mode to
+Read/Write, or start it with: Altirra64.exe /bootrw prince-and-the-nymph-boot.atr
+The XEX version has no saves. The Chapel has a free ART GALLERY action after it is built. After two
 victories, scouts find the notes of goblin master painter Grubbrush, whose
 portraits of the nymph were scattered by bandits. Later victories recover eight
 unique paintings, two hidden in each lair, with locations shuffled each campaign.
 The Forest yields its paintings on the third and fourth wins; each other lair
 yields one on its first win and another on its second. Revisit the Forest once
 for the full collection. All eight can be recovered before the final boss. Viewing the
-collection changes no gold or troops. A new campaign clears the collection;
-there are still no saves. Short sound effects are included,
+collection changes no gold or troops. A new campaign clears the collection. Short sound effects are included,
 without music. The development O shortcut is removed from the release game.
 For direct picture inspection, the separate story-test XEX now shows ONLY
 the eight new gallery paintings. It now also streams from the companion ATR; its runner mounts the disk

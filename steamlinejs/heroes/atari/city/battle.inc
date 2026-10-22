@@ -895,9 +895,14 @@ enemy_busy dta 0
 
 ; reward = this battle's victory purse, difficulty-scaled.
 .proc victory_reward
-        mwa #DUEL_REWARD reward
         lda duel
-        bne ?scale
+        beq ?contract
+        ldx duel_kind
+        lda duel_reward,x
+        sta reward
+        mva #0 reward+1
+        jmp ?scale
+?contract
         ldy contract
         lda reward_lo,y
         sta reward

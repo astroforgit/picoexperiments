@@ -1,8 +1,33 @@
 {
   "format": "prince-and-the-nymph-duel",
-  "version": 1,
-  "notes": "Dark Forest duel: always available with any army; one weak enemy, no lair escalation, no region progress and no paintings. Reward: a Dark Forest outskirts fight pays 50 for two enemies (25 each); a duel pays less, matching the cheapest recruit. Difficulty reward scaling applies.",
-  "enemy": "minibeast",
+  "version": 2,
+  "notes": "Dark Forest duel: always available with any army; one random enemy, no region progress and no paintings. Weights must add up to 32; the game picks one of 32 slots at random. A rare Vampire pays more. Difficulty reward scaling applies.",
   "cell": 20,
-  "reward": 15
+  "enemies": [
+    {
+      "enemy": "minibeast",
+      "weight": 12,
+      "reward": 15
+    },
+    {
+      "enemy": "bat",
+      "weight": 8,
+      "reward": 12
+    },
+    {
+      "enemy": "wolf",
+      "weight": 6,
+      "reward": 20
+    },
+    {
+      "enemy": "beast",
+      "weight": 5,
+      "reward": 25
+    },
+    {
+      "enemy": "dark",
+      "weight": 1,
+      "reward": 50
+    }
+  ]
 }

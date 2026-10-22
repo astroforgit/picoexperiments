@@ -47,6 +47,8 @@ for page in (0xd600,0xd700,None):
     got,got_inits=boot(page,set(want_inits))
     assert got_inits==want_inits,'INIT sequence differs'
     assert got.mem.ram[0xd301]&2,'BASIC left enabled'
+    flag=r.LABELS['savegame.boot_disk'];assert got.mem.ram[flag]==1 and want.mem.ram[flag]==0,'Boot loader must flag the boot disk'
+    want.mem.ram[flag]=1
     assert got.mem.ram[0x2000:0xc000]==want.mem.ram[0x2000:0xc000],'Loaded RAM differs'
     assert got.mem.vram==want.mem.vram,'Uploaded VRAM differs'
     reads=got.mem.story_reads
@@ -56,4 +58,4 @@ for page in (0xd600,0xd700,None):
         got.put('render_bank',got.get('back_bank'));got.cpu.a=3;got.call('story.load')
         assert got.cpu.p&1,'Game-over picture not found on the single disk'
         assert got.mem.story_reads[0]==(3,128)
-    print(f'PASS {"$%04X"%page if page else "no VBXE"}: {len(reads)} sectors booted, {len(got_inits)} INITs, RAM/VRAM identical to the XEX, pictures load from the same disk.')
+    print(f'PASS {"$%04X"%page if page else "no VBXE"}: {len(reads)} sectors booted, {len(got_inits)} INITs, RAM/VRAM identical to the XEX, pictures load from the same disk, save/load enabled.')

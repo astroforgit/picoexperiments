@@ -15,15 +15,19 @@ if ($Check) {
 Import-Module $module -Force
 $emulator = Get-AltirraPath -ExplicitPath $AltirraPath
 # Altirra cannot boot an image from the \\wsl.localhost share; boot a local copy.
+# The copy holds the save slot, so refresh it only when the build is newer.
 if ($disk.StartsWith('\\')) {
     $local = Join-Path $env:TEMP 'prince-and-the-nymph-boot.atr'
-    Copy-Item -LiteralPath $disk -Destination $local -Force
+    if (-not (Test-Path -LiteralPath $local) -or
+        (Get-Item -LiteralPath $disk).LastWriteTimeUtc -gt (Get-Item -LiteralPath $local).LastWriteTimeUtc) {
+        Copy-Item -LiteralPath $disk -Destination $local -Force
+    }
     $disk = $local
 }
 # Preserve the user's configured hardware and persistent VBXE profile.
-# A bare image path mounts the disk in D1 and cold-boots it; the disk's own
-# loader switches BASIC off and loads the game and its pictures.
-$arguments = @('/nosi', '/w', '/noautoprofile', ('"' + $disk + '"'))
+# /bootrw mounts the disk in D1 read/write (so the save slot persists) and
+# cold-boots it; the disk's own loader switches BASIC off and loads the game.
+$arguments = @('/nosi', '/w', '/noautoprofile', '/bootrw', ('"' + $disk + '"'))
 $process = Start-Process -FilePath $emulator -ArgumentList $arguments -PassThru
 Write-Output ('Started Altirra PID ' + $process.Id)
 Write-Output ('Boot disk D1: ' + $disk)
