@@ -58,3 +58,48 @@ canvas.px { image-rendering: pixelated; image-rendering: crisp-edges; background
 .mapwrap { overflow: auto; max-height: 70vh; border: 1px solid var(--line); background: #000; }
 .chk { display: inline-flex; gap: 3px; align-items: center; margin-right: 6px; font-size: 12px; }
 textarea { width: 100%; min-height: 60px; }
+
+/* Level inspection and balance workbench. */
+.lab-controls { margin: 14px 0; }
+.lab-field { display: inline-flex; flex-direction: column; gap: 5px; }
+.lab-field > span { color: var(--dim); font-size: 12px; }
+.lab-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 16px 0; }
+.lab-card { display: flex; flex-direction: column; gap: 8px; padding: 16px; }
+.lab-card > span { color: var(--dim); font-size: 12px; }
+.lab-card strong { font-size: 26px; color: var(--accent2); }
+.lab-map { margin: 14px 0; max-height: 55vh; }
+.lab-detail { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; min-height: 64px; }
+.lab-table { width: 100%; }
+.lab-table td { padding: 9px 8px; }
+.lab-table td canvas { vertical-align: middle; }
+.lab-table button.small { margin: 2px; }
+button[aria-pressed=true] { border-color: var(--accent2); background: #183b52; }
+.lab-bar-row { display: grid; grid-template-columns: 65px 1fr 40px; gap: 12px; align-items: center; margin: 8px 0; }
+.lab-bar-track { background: var(--panel2); border-radius: 3px; overflow: hidden; }
+.lab-bar { min-height: 12px; background: var(--accent2); }
+.lab-roster, .lab-arena { display: flex; flex-wrap: wrap; gap: 12px; margin: 16px 0; }
+.lab-roster canvas { vertical-align: middle; }
+.lab-fighter { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 110px; padding: 12px 4px; }
+.lab-fighter meter { width: 90px; }
+.lab-dead { opacity: .3; }
+.lab-log { max-height: 340px; overflow: auto; line-height: 1.8; }
+.lab-warning { color: #ffccaa; border-left: 3px solid #ffa300; padding: 10px 14px; background: #30251e; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent2); outline-offset: 3px; }
+@media (max-width: 600px) { main { padding: 10px 8px 60px; } .lab-cards { grid-template-columns: 1fr 1fr; } }
+
+.play-layout { display: grid; grid-template-columns: minmax(300px, 580px) minmax(290px, 1fr); gap: 24px; max-width: 1200px; }
+.play-display { display: flex; flex-direction: column; align-items: center; }
+.play-screen { display:block; width: min(100%, 512px); aspect-ratio: 1; height:auto; border: 4px solid var(--line); border-radius: 4px; outline-offset: 4px; }
+.play-screen:focus { border-color: var(--accent2); outline: none; }
+.play-screen:fullscreen { width: min(100vw,100vh); height: min(100vw,100vh); object-fit: contain; background: #000; border:0; }
+.play-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; border-bottom:1px solid var(--line); padding-bottom:16px; }
+.play-stats > div { display:flex; flex-direction:column; gap:4px; }
+.play-stats strong { font-size:22px; color:var(--accent2); }
+.play-item { display:flex; gap:8px; align-items:center; min-height:35px; border-bottom:1px solid var(--line); }
+.play-item > span:nth-child(2) { flex:1; }
+.play-log { max-height:180px; overflow:auto; line-height:1.65; font-size:12px; }
+.play-pad { display:flex; flex-wrap:wrap; justify-content:center; gap:6px; }
+.play-pad button { min-width:42px; min-height:38px; touch-action:manipulation; }
+.play-details { max-width:1200px; margin-top:16px; }
+.play-details summary { cursor:pointer; color:var(--dim); }
+@media(max-width:800px) { .play-layout { grid-template-columns:1fr; } .play-sidebar { width:100%; } }

@@ -45,6 +45,78 @@ Put the exported file into `data/game.json` and run `./build.sh`. Without change
 original game: `tools/regress.py` compares the generated floors 1-8 (map, fog and every entity)
 with another build, and they are identical.
 
+### Level inspector, balance and encounters
+
+The editor opens on **Level inspector**. Select a floor to see its saved map or a
+seeded design layout. Enemy outlines and the roster show positions, counts, HP,
+attack and abilities. Select enemies on the map or with coordinate buttons, then
+choose **Simulate selected**. Save a design as a custom floor before painting
+placements; it is assigned to that floor and included in the existing JSON export.
+The full map editor remains available for terrain, starts, stairs and props.
+
+**Balance** compares eligible enemy types and budgets across floors. HP, attack,
+first floor and budgets can be edited directly. Hero level and weapon controls
+provide baseline hits-to-kill and HP-loss comparisons.
+
+**Encounters** supports custom enemy groups, sequential fights, deterministic seeds,
+up to 1,000 trial seeds, a turn slider, HP replay and combat log. It uses the game's
+fixed damage, weapon bonuses, XP thresholds and level-up gains. Poison, paralysis,
+stun, slow, vampire, weapon theft and boss melee healing are modeled. Changes to
+inputs invalidate earlier results.
+
+The level inspector now uses the same JavaScript generator as Play, including room
+drift, furniture, loot, traps and special rooms. **Play this floor** starts the
+selected floor with the same seed. Browser RNG replaces Atari POKEY entropy, so it
+does not reproduce an Atari seed byte for byte. Save a generated layout as a custom
+floor to export its exact starting placements.
+
+The separate **Encounters** tab remains an adjacent-combat estimate. It excludes
+movement, range, consumables, enchantments and post-combat poison; unsupported
+abilities are listed. Use **Play** to test the full spatial behavior.
+
+Run the planning model's regression tests with Node.js 18 or newer:
+
+```sh
+node --test editor/encounter.test.cjs
+```
+
+### Playable JavaScript port
+
+Open **▶ Play** in the offline editor and press **Embark**. It runs a snapshot of
+current editor data. **Apply edits & restart** takes a fresh snapshot; a running
+session is retained when visiting other editor tabs. Reloading the page ends the
+play session, while editor data still uses its existing local save.
+
+- Arrow keys / WASD: move, bump enemies to attack, bump props to interact.
+- X / Enter / Space: backpack and select; C / Escape: close. Backpack arrows select.
+- P: pause / resume. On-screen buttons also work on touch screens.
+- Period: wait one turn (an editor convenience). Paralysis advances automatically.
+- Seed, starting floor and hero level provide repeatable test runs. Normal play
+  starts on floor 1 at level 1. Fullscreen and optional sound are available.
+
+The pure engine in `editor/play-engine.js` follows `src/level.asm`, `src/entity.asm`,
+`src/items.asm`, `src/game.asm` and the reference cartridge. It implements procedural
+and custom floors, auto-tiling, fog and line of sight, awareness/chase/flee AI, all
+19 ability flags, combat and status effects, inventory and enchantments, shrines,
+traps, XP, floor transitions, death and victory. The inspector and Play share the
+generator. **Save starting layout as custom floor** captures the initial floor,
+not the already-consumed loot and defeated enemies.
+
+Sprites, sprite flags, stats, items, rules and game texts come from the editor
+snapshot. The cartridge font, title map and sound notes are generated with:
+
+```sh
+python3 tools/make_play_assets.py
+node --test editor/play-engine.test.cjs editor/encounter.test.cjs
+```
+
+This is a source-based JavaScript port, not a 6502/VBXE emulator. RNG, animation,
+camera interpolation, dialog timing and browser sound timbres differ. Sound uses
+cartridge pitches/timing with Web Audio oscillators rather than POKEY emulation;
+music remains off, matching the Atari port. Gates and levers retain their original
+blocking behavior. Excess entities respect the source's 224-slot limit. Invalid
+room settings and exhausted generation attempts produce an error instead of hanging.
+
 ### Monster abilities
 
 | Ability | Effect | From |
