@@ -38,6 +38,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if path in ('/', '/index.html'):
             body = open(os.path.join(HERE, 'index.html'), 'rb').read()
             self.send(200, body, 'text/html; charset=utf-8')
+        elif path in ('/mch.js', '/g2f.js', '/vendor/recoil.js'):
+            self.send(200, open(os.path.join(HERE, path[1:]), 'rb').read(),
+                      'text/javascript; charset=utf-8')
         elif path == '/game.xex':
             edited = os.path.exists(EDITED)
             body = open(EDITED if edited else ORIGINAL, 'rb').read()

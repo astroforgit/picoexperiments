@@ -128,6 +128,8 @@ footer.status.ok { color: var(--ok); }
     <span class="chip" id="fileChip">no file</span>
     <span class="spacer"></span>
     <label class="btn" for="fileInput">Open XEX<input type="file" id="fileInput" accept=".xex,.XEX,.com,.obx"></label>
+    <button class="btn" id="importMchBtn" disabled>Import Graph2Font</button>
+    <input type="file" id="mchInput" accept=".mch,.MCH,.g2f,.G2F" hidden>
     <button class="btn" id="undoBtn" disabled title="Ctrl+Z">Undo</button>
     <button class="btn" id="redoBtn" disabled title="Ctrl+Y">Redo</button>
     <button class="btn" id="saveBtn" disabled>Save XEX</button>
@@ -179,6 +181,9 @@ footer.status.ok { color: var(--ok); }
   <footer class="status" id="status" role="status"></footer>
 </div>
 
+<script src="vendor/recoil.js"></script>
+<script src="g2f.js"></script>
+<script src="mch.js"></script>
 <script>
 'use strict';
 // ------------------------------------------------------------ game layout
@@ -817,13 +822,102 @@ function setHint() {
   }[mode] || '';
 }
 
+// ------------------------------------------------------------ Graph2Font import
+function planMch(image, x, y, keepPalette, targetRoom) {
+  const result = MCH.convert(image, x, y, keepPalette ? roomColors(targetRoom) : null, atariRGB);
+  const target = roomTiles(targetRoom), capacity = mapCapacity(targetRoom);
+  // Literal map bytes >= $80 are commands, so tile indices must stay below 128.
+  const limit = Math.min(target.count, 128);
+  const packed = encodeMap(result.cells);
+  const errors = [];
+  if (result.tiles.length > limit) errors.push(`${result.tiles.length} unique tiles; this room allows ${limit}. Simplify the image.`);
+  if (packed.length > capacity) errors.push(`Map needs ${packed.length} bytes; only ${capacity} fit. Use larger areas of repeated tiles.`);
+  const writes = [];
+  result.tiles.forEach((bytes, i) => bytes.forEach((b, k) => writes.push([target.addr + i * 8 + k, b])));
+  packed.forEach((b, k) => writes.push([roomMapAddr(targetRoom) + k, b]));
+  if (!keepPalette) result.palette.forEach((b, k) => writes.push([A.palettes + ram[A.roomPal + targetRoom] + k, b]));
+  if (writes.some(([a]) => a >= off.length || off[a] < 0)) errors.push('The target data is not writable in this XEX.');
+  return { ...result, writes, errors, packedSize: packed.length, capacity, limit };
+}
+async function openMch(input) {
+  if (!file) { say('Open the Zorro XEX before importing an image.', 'error'); return; }
+  try {
+    const bytes = new Uint8Array(await input.arrayBuffer());
+    const native = /\.g2f$/i.test(input.name);
+    const nativeImage = native ? G2F.decode(bytes) : null;
+    const targetRoom = room;
+    const dialog = el('dialog', { id: 'mchDialog', 'aria-label': 'Import Graph2Font image' });
+    dialog.style.cssText = 'background:var(--panel);color:var(--text);border:1px solid var(--line);max-width:720px;width:90%;';
+    const width = el('select', { id: 'mchWidth' }, ...[40, 32, 48].map(n => el('option', { value: n }, `${n} columns (${n * 8} screen pixels)`)));
+    // Standard bmp2mch output is 30 character rows, which identifies its width.
+    const detected = (bytes.length - 1200) / (30 * 9);
+    if ([32, 40, 48].includes(detected)) width.value = String(detected);
+    if (native) { width.append(el('option', { value: 42 }, '42 columns (rendered screen)')); width.value = '42'; width.disabled = true; }
+    const x = el('input', { id: 'mchX', type: 'number', min: 0, value: native ? 1 : 0, step: 1 });
+    const y = el('input', { id: 'mchY', type: 'number', min: 0, value: 0, step: 1 });
+    const keep = el('input', { id: 'mchKeep', type: 'checkbox' });
+    const preview = el('canvas', { width: 320, height: 176, 'aria-label': 'Converted room preview' });
+    preview.style.cssText = 'display:block;width:100%;image-rendering:pixelated;margin:12px 0';
+    const status = el('p', { role: 'status' });
+    const apply = el('button', { class: 'btn primary', disabled: true }, 'Apply to room');
+    const cancel = el('button', { class: 'btn', onclick: () => dialog.close() }, 'Cancel');
+    const sharing = [
+      ['tile set', sharedWith(targetRoom, r => roomTiles(r).addr)],
+      ['map', sharedWith(targetRoom, roomMapAddr)],
+      ['palette', sharedWith(targetRoom, r => ram[A.roomPal + r])],
+    ].filter(([, rooms]) => rooms.length).map(([kind, rooms]) => `${kind}: rooms ${rooms.join(', ')}`).join('; ');
+    dialog.append(el('h2', {}, `Import into room ${targetRoom}`), el('p', {}, input.name),
+      el('p', { class: 'note' }, 'Imports native .g2f projects and mode-5 .mch files. The crop is 40 × 22 characters. Smaller images are padded; extra pixels are cropped. Colours are reduced to four.'),
+      native ? el('p', { class: 'note' }, 'G2F sprites and supported colour effects are flattened into the picture. High-resolution detail is sampled to double-width pixels. The rendered 336-pixel screen includes borders; column 1 selects the central 320 pixels.') : null,
+      el('label', { for: 'mchWidth' }, 'Source width '), width,
+      el('p', {}, el('label', { for: 'mchX' }, 'Crop column '), x, el('label', { for: 'mchY' }, ' Crop row '), y),
+      el('label', { for: 'mchKeep' }, keep, ' Match current room colours'), preview, status,
+      el('p', { class: 'warn' }, `Replaces this room’s map and used tile slots${sharing ? '. Shared data also changes: ' + sharing : ''}. Collision, objects and exits need to be adjusted separately.`), apply, ' ', cancel);
+    let plan = null;
+    const update = () => {
+      apply.disabled = true; plan = null;
+      preview.getContext('2d').clearRect(0, 0, 320, 176);
+      try {
+        const image = nativeImage || MCH.decode(bytes, Number(width.value));
+        x.max = image.width / 4 - 1; y.max = image.height / 8 - 1;
+        plan = planMch(image, Number(x.value), Number(y.value), keep.checked, targetRoom);
+        const ctx = preview.getContext('2d');
+        plan.cells.forEach((id, cell) => {
+          for (let row = 0; row < 8; row++) for (let k = 0; k < 4; k++) {
+            ctx.fillStyle = css(plan.palette[(plan.tiles[id][row] >> (6 - k * 2)) & 3]);
+            ctx.fillRect((cell % 40) * 8 + k * 2, Math.floor(cell / 40) * 8 + row, 2, 1);
+          }
+        });
+        status.textContent = `${plan.sourceColors} source colours → 4 room colours; ${plan.tiles.length}/${plan.limit} tiles; ${plan.packedSize}/${plan.capacity} map bytes. ${plan.errors.join(' ')}`;
+        apply.disabled = plan.errors.length > 0;
+      } catch (err) { status.textContent = err.message; }
+    };
+    [width, x, y, keep].forEach(control => control.addEventListener('input', update));
+    apply.addEventListener('click', () => {
+      if (!plan || plan.errors.length) return;
+      checkpoint();
+      plan.writes.forEach(([a, b]) => poke(a, b));
+      tile = 0; setMode('tiles'); refreshAll(); refreshThumbs(); updateButtons();
+      say(`Imported ${input.name} into room ${targetRoom}. Undo restores the previous graphics.`, 'ok');
+      dialog.close();
+    });
+    dialog.addEventListener('close', () => dialog.remove());
+    document.body.append(dialog); dialog.showModal(); update();
+  } catch (err) { say(err.message, 'error'); }
+}
+$('importMchBtn').addEventListener('click', () => $('mchInput').click());
+$('mchInput').addEventListener('change', async e => {
+  const input = e.target.files[0]; e.target.value = '';
+  if (input) await openMch(input);
+});
+
 // ------------------------------------------------------------ file handling
 async function openBytes(bytes, name, src) {
   try {
     loadXex(new Uint8Array(bytes));
     fileName = name; source = src; undoStack = []; redoStack = [];
     $('emptyState').hidden = true; $('work').hidden = false;
-    $('saveBtn').disabled = false; $('runBtn').disabled = !serverMode;
+    $('saveBtn').disabled = false; $('importMchBtn').disabled = false; $('runBtn').disabled = !serverMode;
     buildRoomList();
     const tab = location.hash.slice(1);
     if (['tiles', 'objects', 'collision', 'exits', 'sprites'].includes(tab)) setMode(tab);
@@ -840,7 +934,10 @@ document.addEventListener('dragover', e => { e.preventDefault(); dz.classList.ad
 document.addEventListener('dragleave', () => dz.classList.remove('over'));
 document.addEventListener('drop', async e => {
   e.preventDefault(); dz.classList.remove('over');
-  const f = e.dataTransfer.files[0]; if (f) await openBytes(await f.arrayBuffer(), f.name, 'file');
+  if ($('mchDialog')) return;
+  const f = e.dataTransfer.files[0]; if (!f) return;
+  if (/\.(mch|g2f)$/i.test(f.name)) await openMch(f);
+  else await openBytes(await f.arrayBuffer(), f.name, 'file');
 });
 $('saveBtn').addEventListener('click', async () => {
   if (serverMode) {
@@ -862,7 +959,7 @@ $('runBtn').addEventListener('click', async () => {
 $('undoBtn').addEventListener('click', () => restore(undoStack, redoStack));
 $('redoBtn').addEventListener('click', () => restore(redoStack, undoStack));
 document.addEventListener('keydown', e => {
-  if (!(e.ctrlKey || e.metaKey) || e.target.tagName === 'INPUT') return;
+  if ($('mchDialog') || !(e.ctrlKey || e.metaKey) || e.target.tagName === 'INPUT') return;
   if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); restore(undoStack, redoStack); }
   else if (e.key === 'y' || (e.key === 'z' && e.shiftKey)) { e.preventDefault(); restore(redoStack, undoStack); }
 });
