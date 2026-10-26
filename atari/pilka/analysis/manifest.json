@@ -1,0 +1,23 @@
+{
+  "disk_sha256": "16c9c6774bb0ca8f4b9254e735644b168e1484cdc7434d3ef28f4175e4657187",
+  "files": [
+    {
+      "name": "ARLASOC",
+      "type": 130,
+      "bytes": 33734,
+      "sha256": "9bd126ab0d815d768a448cba124193f4fa7aa50f703b80fe844655990eae3f8e"
+    }
+  ],
+  "entry": 38747,
+  "instructions_to_entry": 1993262,
+  "cpu": {
+    "pc": 38747,
+    "a": 27,
+    "x": 17,
+    "y": 131,
+    "sp": 255,
+    "p": 49
+  },
+  "ram_sha256": "4e4a6608bc4ff2a3e86a02129235173612a94c6cf746a547c150dcc6e94d861d",
+  "note": "RAM captured after decompression, before game initialization. Not an emulator save state or Atari executable."
+}
