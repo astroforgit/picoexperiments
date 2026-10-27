@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Write editor/assets.js: the default game (built from the cartridge), the
+"""Write editor/assets.js: the bundled game (from data/game.json), the
 glyphs the font can draw, and the bundled library of .p8 carts (games built
 on the Lazy Devs roguelike engine, whose monsters and maps convert well).
 
@@ -15,7 +15,7 @@ HERE = LD.HERE
 ROOT = HERE.parent.parent
 LIBRARY = ['Porklike', 'BulbaRogue', 'Crocolike', 'The Demon Within (v1.0.0b)']
 
-game = LD.default_game()
+game = LD.load_game()
 glyphs = [k for k, _, _ in LD.parse_font(LD.lua_source())]
 lib = []
 for name in LIBRARY:

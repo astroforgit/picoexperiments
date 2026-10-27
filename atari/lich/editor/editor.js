@@ -1,7 +1,7 @@
 'use strict';
 /* Lich King Editor — edits the game description (game.json) of the Atari
- * VBXE port.  The default is the original cartridge; exporting it unchanged
- * rebuilds exactly the original game (tools/make_data.py).
+ * VBXE port. The bundled data comes from data/game.json; exported artwork
+ * and rules are rebuilt by tools/make_data.py.
  * Library carts (.p8) are parsed here: their monsters (stats, 4 animation
  * frames) and maps can be converted into the Lich King format. */
 
@@ -181,7 +181,7 @@ function codeToEntity() {
 }
 function newGame(g) {
   G = g;
-  for (const k of Object.keys(DEFAULT_GAME)) if (!(k in G)) G[k] = clone(DEFAULT_GAME[k]);
+  for (const k of Object.keys(DEFAULT_GAME)) if (!(k in G) && !['art_style', 'art_revision', 'monster_art_style', 'monster_art_revision'].includes(k)) G[k] = clone(DEFAULT_GAME[k]);
   for (const k of Object.keys(DEFAULT_GAME.params)) if (!(k in G.params)) G.params[k] = DEFAULT_GAME.params[k];
   loadSheets();
   document.getElementById('gamename').textContent = G.name || '';
@@ -1014,13 +1014,13 @@ VIEWS.export = () => {
     errs.length ? h('ul', { class: 'err' }, ...errs.map(e => h('li', {}, e))) : h('p', { class: 'okc' }, 'No errors.'),
     warns.length ? h('ul', { class: 'note' }, ...warns.map(e => h('li', {}, e))) : null);
   box.append(h('h2', {}, 'Build'), h('p', { class: 'note' },
-    'Export game.json, put it into atari/lich/data/ and run ./build.sh (or ./run.sh). Without changes it builds ' +
-    'exactly the original game.'), h('p', {}, h('button', { class: 'primary', onclick: exportGame }, 'Export game.json')));
+    'Export game.json, put it into atari/lich/data/, run python3 tools/make_data.py, then ./build.sh. ' +
+    'The exported sprite artwork is included in the Atari build.'), h('p', {}, h('button', { class: 'primary', onclick: exportGame }, 'Export game.json')));
   const diff = [];
   for (const k of Object.keys(G.params)) if (G.params[k] !== DEFAULT_GAME.params[k]) diff.push(`${k}: ${DEFAULT_GAME.params[k]} → ${G.params[k]}`);
   if (G.monsters.length !== DEFAULT_GAME.monsters.length) diff.push(`${G.monsters.length - DEFAULT_GAME.monsters.length} new monsters`);
   if (G.floors.length) diff.push(`${G.floors.length} hand-made maps`);
-  box.append(h('h2', {}, 'Changes from the original'), diff.length ? h('ul', {}, ...diff.map(d => h('li', {}, d))) : h('p', { class: 'note' }, 'none (other than possibly sprites, texts and tables)'));
+  box.append(h('h2', {}, 'Changes from the bundled game'), diff.length ? h('ul', {}, ...diff.map(d => h('li', {}, d))) : h('p', { class: 'note' }, 'none (other than possibly sprites, texts and tables)'));
   return box;
 };
 function exportGame() {
@@ -1035,8 +1035,8 @@ function exportGame() {
 // ------------------------------------------------------------------ start
 document.getElementById('btn-export').addEventListener('click', exportGame);
 document.getElementById('btn-reset').addEventListener('click', () => {
-  if (!confirm('Discard all changes and start from the original game?')) return;
-  newGame(clone(DEFAULT_GAME)); render(); status('reset to the original game');
+  if (!confirm('Discard all changes and start from the bundled game?')) return;
+  newGame(clone(DEFAULT_GAME)); render(); status('reset to the bundled game');
 });
 document.getElementById('openfile').addEventListener('change', e => {
   const file = e.target.files[0];
@@ -1056,4 +1056,4 @@ try { saved = JSON.parse(localStorage.getItem(STORE_KEY)); } catch (e) { saved =
 newGame(saved && saved.format === DEFAULT_GAME.format ? saved : clone(DEFAULT_GAME));
 if (TABS.some(([id]) => '#' + id === location.hash)) tab = location.hash.slice(1);
 render();
-status(saved ? 'restored your last session (Reset to original to start over)' : 'original game loaded');
+status(saved ? 'restored your last session (Reset to bundled game to start over)' : 'bundled game loaded');

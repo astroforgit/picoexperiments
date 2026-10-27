@@ -158,7 +158,7 @@ function hElementRow(it,i,g){
 }
 VIEWS.play=()=>{
   const box=h('div',{class:'play-page'});play.ui=box;
-  box.append(h('div',{class:'play-heading'},h('div',{},h('h2',{},'Play Curse of the Lich King'),h('p',{class:'note'},'Test the current game data. Edits take effect when you restart; switching tabs pauses this view.'))));
+  box.append(h('div',{class:'play-heading'},h('div',{},h('h2',{},'Play Curse of the Lich King'),h('p',{class:'note'},'Test the current game data. Use Live artwork to change walls and objects instantly. Other edits take effect when you restart.'))));
   const controls=h('div',{class:'actions lab-controls'},
     labField('Seed',numInput(play,'seed',{min:0,max:4294967295})),
     labField('Starting floor (test)',numInput(play,'depth',{min:1,max:G.params.last_floor})),
@@ -184,7 +184,7 @@ VIEWS.play=()=>{
   for(const [label,cmd] of [['↑','up'],['←','left'],['↓','down'],['→','right'],['X · backpack / select','select'],['C · close','close'],['Wait · .','wait']])pad.append(h('button',{onclick:()=>{playCommand(cmd);play.canvas?.focus();}},label));
   const view=h('div',{class:'play-display'},canvas,message,pad,h('p',{class:'note'},'Move into enemies to attack and into props to interact. Collect supplies, equip weapons, descend eight floors and defeat Raq’zul. Waiting with “.” is an editor convenience.'));
   const side=h('aside',{class:'play-sidebar panel'},summary,h('h3',{},'Backpack'),bag,h('h3',{},'Recent events'),log);
-  box.append(h('div',{class:'play-layout'},view,side));
+  box.append(h('div',{class:'play-layout'},view,playArtPanel(),side));
   box.append(h('details',{class:'panel play-details'},h('summary',{},'Port fidelity and testing'),
     h('p',{class:'note'},'Gameplay follows the VBXE assembly and original cartridge: room drift and doors, furniture, floor budgets, fog, enemy awareness and pursuit, all 19 abilities, fixed damage, status timing, XP, cursed and enchanted items, altar, anvil, well, traps, floor transitions and victory. Custom maps, sprites, stats, texts and rules use the editor data snapshot.'),
     h('p',{class:'note'},'Differences: seeded browser RNG replaces POKEY entropy, so layouts and random outcomes are not byte-identical. Browser animation, camera, sound timbres and modal timing approximate VBXE. Sound uses the cartridge notes with browser oscillators; music is omitted as in the Atari port. Gates/levers retain the source’s blocking behavior.'),

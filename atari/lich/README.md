@@ -41,9 +41,84 @@ from the file system. It edits a game description (`game.json`):
   3×3 furniture pieces of the rooms, and every text of the game (checked against the font).
 - **Export:** checks the data and downloads `game.json`.
 
-Put the exported file into `data/game.json` and run `./build.sh`. Without changes it builds the
-original game: `tools/regress.py` compares the generated floors 1-8 (map, fog and every entity)
-with another build, and they are identical.
+Put the exported file into `data/game.json`, run `python3 tools/make_data.py`, then
+`./build.sh`. The bundled game uses the Diabolic Crypt environment style; gameplay
+rules, sprite flags, entity types and furniture placement remain unchanged.
+
+### Dungeon artwork
+
+The **Sprites** tab offers **Use Diabolic Crypt**, **Use The Demon Within**, **Use Crocolike Dungeon**,
+**Use Verdigris Crypt**, and **Use original artwork**.
+
+Diabolic Crypt starts from the original Lich King walls, stairs and furniture.
+Charcoal masonry, charred brown oak, a blood-red altar, a horned idol and engraved
+tombs give revision 2 a darker look. The previous subtle revision remains selectable.
+Guest monster sprites and all gameplay data are preserved.
+
+The Demon Within style imports its actual wall tiles and stairs (source 14/15)
+from `allgames/[RPG]/The Demon Within (v1.0.0b).p8`. It restores Lich King's original
+furniture shapes. Selected stone, metal, ceramic and cloth colors become charcoal
+and cyan; all 21 wooden tile variants, including tables, chairs, doors, chests and
+shelves, remain pixel-identical to the original Lich cartridge. Floor wall shadows
+match the imported masonry. Mappings and preserved wood IDs are recorded in
+`editor/demon-art.js`. Crocolike Dungeon imports the actual wall pixels
+and stairs from `allgames/[RPG]/Crocolike.p8`: 16 wall variants are selected using
+Crocolike's wall signature table, and source tiles 14/15 become the exit/start.
+Source floors, doors, chests and pottery are also used. The furniture is adapted
+to its rust/plum masonry and emerald/lime props. Tile mappings and the source
+cartridge hash are recorded in `editor/crocolike-art.js`.
+
+Saved sessions upgrade once to the current art revision while preserving custom
+pixel edits. Selecting any of the six styles persists across reloads.
+
+The earlier Verdigris Crypt style redraws 82 environment tiles: the 16 connected wall shapes, floor
+patterns, stairs, doors, pottery, chests, shelves, furniture, shrine, anvil, well
+and their spent/broken states. Slate, moss green, oak, brass and cyan accents use
+the existing PICO-8/VBXE palette. Heroes, enemies, weapons and HUD are preserved.
+
+The Verdigris artwork was drawn for this game after inspecting the local Porklike,
+Crocolike, BulbaRogue and The Demon Within sprite sheets; reference sprites were
+not copied. Existing saved sessions receive the new art only on tiles that still
+match the original artwork. Hand-edited tiles and game settings are retained.
+Use **Apply edits & restart** in Play to refresh an already-running game snapshot.
+
+The tile definitions and reversible art packs can be regenerated with:
+
+```sh
+python3 tools/make_crypt_art.py       # regenerate the Verdigris pack
+python3 tools/make_crocolike_art.py   # regenerate the Crocolike pack
+python3 tools/make_demon_art.py       # select Demon walls + original furniture
+python3 tools/make_diabolic_art.py    # select subtly diabolic original artwork
+python3 tools/make_editor_assets.py
+python3 tools/make_data.py
+./build.sh
+```
+
+`make_crypt_art.py`, `make_crocolike_art.py` `make_demon_art.py` and `make_diabolic_art.py` deliberately replace the environment
+tile set in `data/game.json`; edit their definitions to change the bundled style. The pre-artwork
+checkpoint is commit `01484800`.
+
+### Guest monster sprites
+
+The **Monsters** tab offers **Use guest monster sprites** and **Use original
+monster sprites**, independently of the environment style. Ten existing enemies
+receive animation frames from the bundled Crocolike, The Demon Within, BulbaRogue
+and Porklike cartridges. These are visual replacements: the entire monster table
+(names, HP, attack, range, sight, color, abilities, map codes and floor eligibility)
+and every game rule remain unchanged. No new entity types are added.
+
+The imported pixels occupy the original enemies' 40 animation tiles, so the hero,
+weapons, HUD, props and sprite page 2 are unaffected. Automatic upgrades preserve
+hand-painted monster art, relocated monsters and shared sprite slots. Apply edits
+and restart Play to refresh an existing run. The source mapping and cartridge hashes
+are stored in `editor/monster-art-pack.js`; regenerate with:
+
+```sh
+python3 tools/make_monster_art.py
+python3 tools/make_editor_assets.py
+python3 tools/make_data.py
+./build.sh
+```
 
 ### Level inspector, balance and encounters
 
@@ -84,7 +159,12 @@ node --test editor/encounter.test.cjs
 
 Open **▶ Play** in the offline editor and press **Embark**. It runs a snapshot of
 current editor data. **Apply edits & restart** takes a fresh snapshot; a running
-session is retained when visiting other editor tabs. Reloading the page ends the
+session is retained when visiting other editor tabs. The **Live artwork** pane beside
+the game applies walls, stairs and individual object categories immediately, without
+restarting or changing position, health, inventory or enemy state. Pick a category,
+then click a style thumbnail; categories can use different styles. These choices
+are saved to the editor and exported with the game. Open/broken object states and
+all wall connections are updated together. Reloading the page ends the
 play session, while editor data still uses its existing local save.
 
 - Arrow keys / WASD: move, bump enemies to attack, bump props to interact.
@@ -180,7 +260,7 @@ and writes:
 - `gen/strings.asm`: every text of the game, encoded as glyph numbers of the cart's own
   proportional font.
 
-`tools/make_editor_assets.py` writes `editor/assets.js` (the default game and the bundled
+`tools/make_editor_assets.py` writes `editor/assets.js` (the current `data/game.json` and the bundled
 library carts).
 
 ## How it works

@@ -103,3 +103,23 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px s
 .play-details { max-width:1200px; margin-top:16px; }
 .play-details summary { cursor:pointer; color:var(--dim); }
 @media(max-width:800px) { .play-layout { grid-template-columns:1fr; } .play-sidebar { width:100%; } }
+
+.art-panel { margin-bottom: 18px; }
+.art-panel h2 { margin-top: 0; }
+.art-samples { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.art-samples strong { width:130px; color:var(--dim); font-size:12px; }
+.art-samples canvas { border:1px solid var(--line); }
+
+/* Live art picker beside the game, with the backpack below on smaller screens. */
+.play-layout { grid-template-columns:minmax(300px,512px) minmax(260px,340px) minmax(260px,1fr); max-width:1500px; gap:18px; align-items:start; }
+.play-art-panel h3 { margin-top:0; }
+.play-art-panel select { width:100%; margin-bottom:12px; }
+.play-art-current { display:flex; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+.play-art-current > span { width:100%; color:var(--dim); font-size:12px; }
+.play-art-choices { display:grid; gap:8px; max-height:480px; overflow:auto; }
+.play-art-choice { display:grid; grid-template-columns:1fr auto; text-align:left; gap:6px; width:100%; padding:10px; }
+.play-art-thumbs { display:flex; gap:6px; grid-column:1 / -1; }
+.play-art-choice.selected { border-color:var(--accent2); background:#24313a; }
+.play-art-choice:focus-visible { outline:2px solid var(--accent2); outline-offset:2px; }
+@media(max-width:1200px) { .play-layout { grid-template-columns:minmax(300px,512px) minmax(260px,1fr); } .play-sidebar { grid-column:1 / -1; } }
+@media(max-width:700px) { .play-layout { grid-template-columns:minmax(0,1fr); } .play-art-choices { max-height:360px; } }
