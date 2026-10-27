@@ -23,7 +23,7 @@ function generate(g, depth, rng) {
   const set=(x,y,v) => { if(x>=0 && x<128 && y>=0 && y<32) map[y*128+x]=v; };
   const onFloor=(x,y,v) => { if(!floorTile(at(x,y))) return false; set(x,y,v); return true; };
   const code=id => g.monsters[id-1]?.code || 0;
-  const mobs=g.monsters.filter((m,i)=>i && !m.prop && m.depth<=depth);
+  const mobs=g.monsters.filter((m,i)=>i && !m.prop && m.enabled!==false && m.depth<=depth);
   const placeMob=(x,y,c) => { c = c || rng.pick(mobs)?.code; if(c && onFloor(x,y,c)) placed++; };
   const pot=()=>code(rng.int(2) ? 4 : 18);
   const make=(type,w,h) => {
@@ -118,7 +118,7 @@ function generate(g, depth, rng) {
     if(placed<=target) throw new Error('Monster budget exceeds available floor space (or no eligible monsters).');
   }
   if(mobs.length) fill(g.budget[depth-1]||0);
-  fill(placed+(g.mimic_offset[depth-1]||0),code(p.mimic_id));
+  if(g.monsters[p.mimic_id-1]?.enabled!==false)fill(placed+(g.mimic_offset[depth-1]||0),code(p.mimic_id));
   return {name:`Generated floor ${depth}`,tiles:Array.from({length:32},(_,y)=>Array.from(map.slice(y*128,y*128+128),n=>n.toString(16).padStart(2,'0')).join(''))};
 }
 class Game {
@@ -165,7 +165,7 @@ class Game {
     for(let x=0;x<128;x++)for(let y=0;y<32;y++) {
       const t=this.tile(x,y);
       if(t===this.p.tile_start) {this.hero.x=x;this.hero.y=y;this.hero.oldX=x;this.hero.oldY=y;this.entities.push(this.hero);starts++;}
-      else {const i=this.g.monsters.findIndex(m=>m.code===t);if(i>=0) {if(i===0)throw new Error('Use the start tile, not a hero entity code, in custom maps.');if(this.entities.filter(e=>e!==this.hero).length>=223){this.droppedEntities=(this.droppedEntities||0)+1;continue;}this.entities.push(this.makeEntity(i+1,x,y));this.map[y*128+x]=1;}}
+      else {const i=this.g.monsters.findIndex(m=>m.code===t);if(i>=0) {if(this.g.monsters[i].enabled===false&&i+1!==this.p.boss_id){this.map[y*128+x]=1;continue;}if(i===0)throw new Error('Use the start tile, not a hero entity code, in custom maps.');if(this.entities.filter(e=>e!==this.hero).length>=223){this.droppedEntities=(this.droppedEntities||0)+1;continue;}this.entities.push(this.makeEntity(i+1,x,y));this.map[y*128+x]=1;}}
     }
     if(starts!==1)throw new Error('A playable floor needs exactly one start tile.');
     if(this.droppedEntities)this.say('Entity capacity reached: excess map codes remain as tiles, as in VBXE.');
@@ -261,7 +261,7 @@ class Game {
       if(!this.los(e,h,e.sight)){e.logic='wait';return;}
       if(e.cooldown){e.cooldown--;this.flee(e);e.logic='chase';return;}
       const spot=DIR.map(([dx,dy])=>[e.x+dx,e.y+dy]).find(([x,y])=>this.walkable(x,y));
-      if(spot){if(this.entities.length<224)this.entities.push(this.makeEntity(this.p.summon_id,...spot));e.cooldown=this.p.summon_wait;}return;
+      if(spot){if(this.entities.length<224&&this.g.monsters[this.p.summon_id-1]?.enabled!==false)this.entities.push(this.makeEntity(this.p.summon_id,...spot));e.cooldown=this.p.summon_wait;}return;
     }
     const aligned=e.x===h.x||e.y===h.y;
     if(see&&aligned&&dist(e,h)<=e.range*e.range) {
@@ -344,7 +344,7 @@ class Game {
     if([4,5,6,18,21].includes(e.id)) {
       const found=e.id===5?'chest':e.id===6?'shelves':'pot';let id;
       if(e.id===5||e.hasitem){const pool=this.g.items.map((it,i)=>({it,id:i+1})).filter(v=>v.it.found===found&&v.it.depth<=this.depth);id=this.rng.pick(pool)?.id;}
-      else if(e.id!==6&&this.rng.chance(this.p.pot_mob_chance)&&this.entities.length<224)this.entities.push(this.makeEntity(this.rng.chance(this.p.pot_mob_a_chance)?this.p.pot_mob_a:this.p.pot_mob_b,x,y));
+      else if(e.id!==6&&this.rng.chance(this.p.pot_mob_chance)&&this.entities.length<224){const id=this.rng.chance(this.p.pot_mob_a_chance)?this.p.pot_mob_a:this.p.pot_mob_b;if(this.g.monsters[id-1]?.enabled!==false)this.entities.push(this.makeEntity(id,x,y));}
       if(id&&!this.giveItem(this.makeItem(id)))return false;
       e.used=true;e.anim--;if([4,18,21].includes(e.id))e.walkable=true;return true;
     }

@@ -1,48 +1,43 @@
 'use strict';
-// Enemy skins are independent of the environment art style and never import stats.
-function setMonsterArtwork(style,keepCustom=false) {
-  if(!['original',MONSTER_ART.id].includes(style))throw new Error('Unknown monster artwork.');
-  const tiles=style==='original'?MONSTER_ART.original:MONSTER_ART.tiles;
-  let replaced=0,kept=0;
-  for(const entry of MONSTER_ART.entries) {
-    const monster=G.monsters[entry.id-1],targets=Array.from({length:4},(_,i)=>entry.base+i);
-    // Preserve relocated monsters and any other entities reusing these slots.
-    const shared=G.monsters.some((m,i)=>i!==entry.id-1&&entFrames(m).some(n=>targets.includes(n)));
-    if(!monster||monster.prop||monster.anim!==entry.base||shared){kept++;continue;}
-    if(keepCustom&&targets.some(n=>{
-      const current=artTile(G.sheet,n).join('');
-      return current!==MONSTER_ART.original[n].join('')&&current!==MONSTER_ART.tiles[n].join('');
-    })){kept++;continue;}
-    for(const n of targets)artPut(G.sheet,n,tiles[n]);replaced++;
+function installBestiary() {
+  if(G.bestiary_revision==='additive-v1')return;
+  for(const [key,rows] of Object.entries(MONSTER_ART.original)) {
+    const n=Number(key);
+    if(artTile(G.sheet,n).join('')===MONSTER_ART.tiles[key].join(''))artPut(G.sheet,n,rows);
   }
-  G.monster_art_style=style;G.monster_art_revision=MONSTER_ART.id;
-  loadSheets();changed(`${style==='original'?'Original':'Guest'} monster sprites applied to ${replaced} enemies${kept?`; ${kept} customized enemies kept`:''}. Stats and abilities unchanged. Apply edits & restart in Play.`);
-  return {replaced,kept};
+  let missing=0;
+  for(const entry of BESTIARY_PACK) {
+    if(G.monsters.some(m=>m.catalog_key===entry.key))continue;
+    const slot=freePage2Slot(),code=freeCodes()[0];
+    if(G.monsters.length>=META.maxEntities||slot<0||code===undefined){missing++;continue;}
+    entry.frames.forEach((rows,k)=>artPut(G.sheet2,slot+k-256,rows));
+    const {frames,key, ...stats}=clone(entry);
+    G.monsters.push({...stats,anim:slot,code,prop:false,itemchance:0,enabled:true,catalog_key:key});
+  }
+  G.monster_art_style='original';G.monster_art_revision='additive-v1';
+  if(!missing)G.bestiary_revision='additive-v1';
+  loadSheets();save();
+  if(missing)status(`${missing} bestiary entries could not fit. Existing custom monsters and sprites were kept.`,true);
 }
-function monsterArtPreview(entry,original=false) {
-  const canvas=h('canvas',{class:'px',width:32,height:32}),ctx=canvas.getContext('2d');
-  const tiles=original?MONSTER_ART.original:MONSTER_ART.tiles;
-  const draw=frame=>{
-    const rows=tiles[entry.base+frame%4];ctx.clearRect(0,0,32,32);
-    rows.forEach((r,y)=>[...r].forEach((c,x)=>{if(c!=='0'){ctx.fillStyle=PAL_CSS[parseInt(c,16)];ctx.fillRect(x*4,y*4,4,4);}}));
-  };
-  draw(0);animated.push({canvas,draw});return canvas;
+// Estimate for sorting, not a combat guarantee: health, damage and ability threat.
+function monsterPower(m) {
+  const weights={poison:8,paralyze:10,bolt:10,blink:4,stun:6,curse:5,vampire:8,steal_item:3,steal_weapon:6,slow:-3,still:-3,pounce:5,summon:12,hunter:4,blind:5,invisible:5,boss:20,flee:-4,treasure:-4};
+  return Math.max(1,m.hp+5*m.atk+Math.max(0,m.range-1)*2+m.abilities.reduce((n,a)=>n+(weights[a]||0),0));
 }
-const monstersViewBeforeSkins=VIEWS.monsters;
+const monsterAdvancedView=VIEWS.monsters;
 VIEWS.monsters=()=>{
-  const panel=h('section',{class:'panel art-panel'},h('h2',{},'Monster appearance'),
-    h('p',{class:'note'},'Guest animations from Crocolike, The Demon Within, BulbaRogue and Porklike. These replace existing Lich King sprites only: names, HP, attack, range, sight, abilities, XP and spawning stay unchanged. The role names below still identify their Lich King behavior.'),
-    h('div',{class:'actions'},
-      h('button',{class:G.monster_art_style===MONSTER_ART.id?'primary':'',onclick:()=>{setMonsterArtwork(MONSTER_ART.id);render();}},'Use guest monster sprites'),
-      h('button',{class:G.monster_art_style==='original'?'on':'',onclick:()=>{setMonsterArtwork('original');render();}},'Use original monster sprites')),
-    h('p',{class:'note'},'Applies independently of the dungeon artwork. Custom or relocated enemy art is kept during automatic upgrades. In Play, use “Apply edits & restart”.'));
-  const table=h('table',{class:'lab-table'},h('tr',{},...['Lich King role','Original','Guest','Sprite source','HP','Attack','Abilities'].map(t=>h('th',{},t))));
-  for(const entry of MONSTER_ART.entries){
-    const m=G.monsters[entry.id-1];if(!m)continue;
-    table.append(h('tr',{},h('td',{},m.name.replace(/\^([a-z])/g,(_,c)=>c.toUpperCase())),h('td',{},monsterArtPreview(entry,true)),h('td',{},monsterArtPreview(entry)),
-      h('td',{},`${entry.cart} · ${entry.name}`),h('td',{},m.hp),h('td',{},m.atk),h('td',{},m.abilities.join(', ')||'—')));
-  }
-  panel.append(h('div',{class:'scroll'},table));return h('div',{},panel,monstersViewBeforeSkins());
+  const box=h('div',{},h('h2',{},'Monster roster — weakest to strongest'),
+    h('p',{class:'note'},'Original Lich King creatures and additional monsters coexist. Use in game controls spawning, including custom maps and summons; apply edits & restart in Play. The final boss is required.'));
+  const table=h('table',{class:'lab-table bestiary-table'},h('thead',{},h('tr',{},...['Use in game','Rank','Sprite','Monster','Source','Power','HP','Attack','First floor','Abilities'].map(x=>h('th',{},x)))));
+  const body=h('tbody');table.append(body);
+  const rows=G.monsters.map((m,i)=>({m,id:i+1})).filter(({m,id})=>id!==1&&!m.prop).sort((a,b)=>monsterPower(a.m)-monsterPower(b.m)||a.id-b.id);
+  rows.forEach(({m,id},rank)=>{
+    const required=id===G.params.boss_id;
+    const input=(key,min,max)=>{const el=numInput(m,key,{min,max,width:64});el.addEventListener('change',()=>render());return el;};
+    const cb=h('input',{type:'checkbox',checked:required||m.enabled!==false,disabled:required,'aria-label':`Use ${m.name} in game`,onchange:e=>{m.enabled=e.target.checked;changed(`${m.name}: ${m.enabled?'enabled':'disabled'}. Apply edits & restart in Play.`);}});
+    body.append(h('tr',{'data-monster-id':id},h('td',{},cb,required?h('span',{class:'note'},'Required boss'):null),h('td',{},rank+1),h('td',{},animCanvas(()=>entFrames(m),4)),h('td',{},m.name.replace(/\^([a-z])/g,(_,c)=>c.toUpperCase())),h('td',{},m.from_source||m.from||'Lich King'),h('td',{},monsterPower(m)),h('td',{},input('hp',1,127)),h('td',{},input('atk',0,99)),h('td',{},input('depth',1,99)),h('td',{},m.abilities.join(', ')||'—')));
+  });
+  box.append(h('div',{class:'scroll'},table),h('p',{class:'note'},'Power = HP + 5 × attack + range and ability weights. This is a sorting estimate; use Encounters and Play for actual combat. Floor 99 means no random spawning (the original box and final boss have special placement).'));
+  box.append(h('details',{},h('summary',{},'Advanced entity settings and cartridge library'),monsterAdvancedView()));return box;
 };
-if(G.monster_art_revision!==MONSTER_ART.id)setMonsterArtwork(MONSTER_ART.id,true);
-render();
+installBestiary();render();

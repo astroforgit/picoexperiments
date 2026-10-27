@@ -7,7 +7,7 @@
       t ^= t + Math.imul(t ^ t >>> 7, 61 | t); return ((t ^ t >>> 14) >>> 0) / 4294967296; };
   }
   const enemies = g => g.monsters.map((m, i) => ({ ...m, id: i + 1 })).filter(m => m.id !== 1 && !m.prop);
-  const eligible = (g, depth) => enemies(g).filter(m => m.depth <= depth);
+  const eligible = (g, depth) => enemies(g).filter(m => m.enabled !== false && m.depth <= depth);
   function roster(g, floor) {
     const codes = new Map();
     for (let i = g.monsters.length - 1; i >= 0; i--) {

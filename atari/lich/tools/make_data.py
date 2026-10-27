@@ -162,6 +162,7 @@ out.append(dta('m_atk', col('atk')))
 out.append(dta('m_range', col('range')))
 out.append(dta('m_sight', col('sight')))
 out.append(dta('m_depth', col('depth')))
+out.append(dta('m_enabled', [0]+[int(m.get('enabled', True) or i+1==P['boss_id'] or m['prop'] or i==0) for i,m in enumerate(mons)]))
 out.append(dta('m_itemchance', col('itemchance')))
 abil = col('abilities', lambda l: sum(AB[a] for a in l))
 for k, lab in enumerate(('m_abil', 'm_abil2', 'm_abil3')):

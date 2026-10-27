@@ -96,3 +96,31 @@ test('matches captured VBXE entities, HP, map and fog over five joystick moves',
    if(i<ref.directions.length)g.act(ref.directions[i]);
  });
 });
+
+test('disabled roster excludes procedural, custom-map, pot and summoned enemies',()=>{
+ const data0=data();
+ data0.monsters.forEach((m,i)=>{if(i&&!m.prop)m.enabled=false;});
+ for(const depth of [1,4,8]){
+  const run=new Game(data0,{seed:1,depth});
+  assert.ok(run.entities.every(e=>e.id===1||e.prop||e.id===data0.params.boss_id));
+ }
+ const custom=fixture([[2,6,5]],g=>{g.monsters[1].enabled=false;});
+ assert.equal(mob(custom,2),undefined);assert.equal(custom.tile(6,5),1);
+ const pot=fixture([[4,6,5]],g=>{g.monsters[1].enabled=false;g.monsters[2].enabled=false;g.params.pot_mob_chance=1;g.monsters[3].itemchance=0;});
+ pot.act(1);assert.equal(mob(pot,2),undefined);assert.equal(mob(pot,3),undefined);
+ const summon=fixture([[3,7,5]],g=>{g.monsters[2].abilities=['summon'];g.monsters[g.params.summon_id-1].enabled=false;});
+ for(let i=0;i<8;i++)summon.act(4);
+ assert.equal(mob(summon,summon.p.summon_id),undefined);
+});
+
+test('additive bestiary preserves original definitions and has unique new slots and codes',()=>{
+ const g=data();assert.equal(g.monsters.length,40);
+ assert.equal(new Set(g.monsters.map(m=>m.code)).size,40);
+ const added=g.monsters.filter(m=>m.catalog_key);assert.equal(added.length,15);
+ assert.equal(new Set(added.flatMap(m=>[m.anim,m.anim+1,m.anim+2,m.anim+3])).size,60);
+ assert.ok(added.every(m=>m.anim>=256&&m.anim+3<384&&!m.abilities.includes('boss')));
+ const seen=new Set();for(let depth=1;depth<=8;depth++)for(let seed=1;seed<=15;seed++){
+   const run=new Game(g,{depth,seed});run.entities.forEach(e=>seen.add(e.id));
+ }
+ added.forEach(m=>assert.ok(seen.has(g.monsters.indexOf(m)+1),m.name+' must be spawnable'));
+});
