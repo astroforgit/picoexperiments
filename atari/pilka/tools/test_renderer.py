@@ -40,7 +40,9 @@ pitch=expected_pitch();cases=0
 # Cover all four edges, both X high-bit values, both teams, non-player sprites,
 # all fine-scroll values, movement over unchanged pitch, and tile changes.
 positions=[(12,100),(13,100),(27,100),(28,100),(255,100),(256,100),(316,100),(331,100),(332,100),
-           (120,41),(120,42),(120,56),(120,57),(120,225),(120,240),(120,241),(120,130)]
+           (120,41),(120,42),(120,56),(120,57),(120,225),(120,240),(120,241),(120,130),
+           (0,100),(8,100),(9,100),(31,100),(32,100),(334,100),(335,100),(336,100),(500,100),
+           (120,0),(120,37),(120,38),(120,57),(120,58),(120,221),(120,222),(120,242),(120,250)]
 for k,(rawx,rawy) in enumerate(positions*2):
  sx=k%8;sy=(k*3)%8;color=7 if k%2 else 15;frame=32+k%32
  if k==len(positions)*2-1:frame=85
@@ -58,12 +60,14 @@ for k,(rawx,rawy) in enumerate(positions*2):
  expected=np.zeros((200,320),dtype=np.uint8)
  expected[8:192,8:312]=pitch[11-sy:195-sy,8-sx:312-sx]
  expected[:8]=pitch[:8]
- if frame<64:
-  spr=sprites[((frame-32)+(32 if color==7 else 0))*256:((frame-32)+(32 if color==7 else 0))*256+256].reshape(16,16)
-  dx=rawx-23;dy=rawy-49
-  for y in range(16):
-   for x in range(16):
-    if 8<=dx+x<312 and 8<=dy+y<192 and spr[y,x]:expected[dy+y,dx+x]=spr[y,x]
+ if 32<=frame<128:
+  # C64 sprite 24x21 at (X-24, Y-50); $FF pixels take colour $60+C64 colour.
+  spr=sprites[(frame-32)*512:(frame-32)*512+504].reshape(21,24)
+  dx=rawx-24;dy=rawy-50
+  for y in range(21):
+   for x in range(24):
+    v=int(spr[y,x])
+    if 8<=dx+x<312 and 8<=dy+y<192 and v:expected[dy+y,dx+x]=0x60+color if v==0xff else v
  back=a.mem.ram[r['BACK']];actual=a.vram[back*65536:back*65536+64000].reshape(200,320)
  if not np.array_equal(actual,expected):
   diff=np.argwhere(actual!=expected);raise AssertionError(f'Composite case {k} at {(rawx,rawy)}: {len(diff)} pixels, first {diff[:5].tolist()}')

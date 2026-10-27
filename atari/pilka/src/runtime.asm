@@ -36,6 +36,12 @@ ptrsave .ds 2
 sstep .ds 1
 colbase .ds 1
 colleft .ds 1
+sframe .ds 1
+scol .ds 1
+sand .ds 1
+skip .ds 1
+skiplo .ds 1
+skiphi .ds 1
 scrhi .ds 1
 scanblk .ds 1
 scanx .ds 1
@@ -299,6 +305,13 @@ vbrel_10
         inx
         cpx #3
         bne shared_pal
+        ; Sprite multicolours 0 and 1 ($D025/$D026) at palette $40 and $20.
+        lda #$40
+        ldx $de25
+        jsr set_c64_colour
+        lda #$20
+        ldx $de26
+        jsr set_c64_colour
         lda $de18
         and #$10
         lsr
@@ -850,6 +863,24 @@ inv_store
 inv_skip
         rts
 
+; Palette entry A := C64 colour X.
+set_c64_colour
+vbrel_19
+        sta $d644
+        txa
+        and #15
+        tax
+        lda c64_r,x
+vbrel_20
+        sta $d646
+        lda c64_g,x
+vbrel_21
+        sta $d647
+        lda c64_b,x
+vbrel_22
+        sta $d648
+        rts
+
 ; Point the row routines at character row rowno.
 setup_row
         ldy rowno
@@ -939,8 +970,8 @@ compose_list
         rts
 
 ; Append a sprite BCB: source lo/mid in srcskip/idx (bank 6), width-1
-; in clipx, height-1 in clipy, source row step in sstep, destination in
-; destrow (in the back buffer).
+; in clipx, height-1 in clipy, source row step in sstep, AND mask in sand,
+; destination in destrow (in the back buffer).
 add_sprite
         ldy #0
         lda srcskip
@@ -967,7 +998,7 @@ add_sprite
         lda clipy
         sta (ptr),y
         iny
-        lda #$ff
+        lda sand
         sta (ptr),y
         ldy #20
         lda #9
@@ -996,39 +1027,39 @@ start_list
         lda #1
         sta (ptr),y
         lda #0
-vbrel_19
+vbrel_23
         sta $d650
         lda #$f2
-vbrel_20
+vbrel_24
         sta $d651
         lda #6
-vbrel_21
+vbrel_25
         sta $d652
         lda #1
-vbrel_22
+vbrel_26
         sta $d653
         rts
 
 
 
 wait_blit
-vbrel_23
+vbrel_27
         lda $d653
         bne wait_blit
         rts
 blit
         jsr wait_blit
         lda #0
-vbrel_24
+vbrel_28
         sta $d650
         lda #$f1
-vbrel_25
+vbrel_29
         sta $d651
         lda #6
-vbrel_26
+vbrel_30
         sta $d652
         lda #1
-vbrel_27
+vbrel_31
         sta $d653
         ; Wait before the next operation edits this shared BCB.
         jmp wait_blit
@@ -1037,7 +1068,7 @@ vbrel_27
 ; boot-only part occupied (staged at VRAM $5F000), then start the game.
 finish_boot
         lda #$80|$17
-vbrel_28
+vbrel_32
         sta $d65d
         ldx #0
 fb_copy
@@ -1060,7 +1091,7 @@ fb_copy
         inx
         bne fb_copy
         lda #0
-vbrel_29
+vbrel_33
         sta $d65d
         lda #<nmi
         sta $fffa
@@ -1079,188 +1110,176 @@ vbrel_29
 ; Sprite list building and its tables live in unused C64 sprite-pattern RAM.
         org $cc40
 players
-        lda #16
-        sta sstep
         lda #0
         sta sprno
 player_loop
         ldx sprno
-        lda $cd,x
-        cmp #32
-        jcc player_next
-        cmp #64
-        jcs player_next
-        ; Clip the real 16x16 rectangle against the visible field.
-        lda #15
-        sta clipx
-        sta clipy
-        lda #0
-        sta srcskip
-        lda $e4,x
-        cmp #42
-        jcc player_next
-        cmp #241
-        jcs player_next
-        cmp #57
-        bcs player_yinside
-        sta yy
-        lda #57
-        sec
-        sbc yy
-        sta idx
-        lda #15
-        sec
-        sbc idx
-        sta clipy
-        lda idx
-        asl
-        asl
-        asl
-        asl
-        sta srcskip
-        lda #8
-        bne player_ystore
-player_yinside
-        sec
-        sbc #49
-        cmp #177
-        bcc player_ystore
-        sta yy
-        lda #191
-        sec
-        sbc yy
-        sta clipy
-        lda yy
-player_ystore
-        sta yy
         lda $9f,x
         sta xx
+        lda $e4,x
+        sta yy
+        lda $cd,x
+        sta sframe
         lda $b6,x
+        sta scol
         and #$80
         beq player_low
         lda #1
 player_low
         sta xx+1
-        ; C64 figures span x 0-13 of the sprite box, SWOS ones 0-11.
-        sec
-        lda xx
-        sbc #23
-        sta xx
-        lda xx+1
-        sbc #0
-        sta xx+1
-        bmi player_clipleft
-        bne player_clipright
-        lda xx
-        cmp #8
-        bcs player_xok
-player_clipleft
-        lda #8
-        sec
-        sbc xx
-        cmp #16
-        jcs player_next
-        sta idx
-        clc
-        adc srcskip
-        sta srcskip
-        lda #15
-        sec
-        sbc idx
-        sta clipx
-        lda #8
-        sta xx
-        lda #0
-        sta xx+1
-        beq player_xok
-player_clipright
-        lda xx
-        cmp #56
-        jcs player_next
-        cmp #41
-        bcc player_xok
-        lda #55
-        sec
-        sbc xx
-        sta clipx
-player_xok
-        lda $cd,x
-        sec
-        sbc #32
-        and #31
-        sta idx
-        ; C64 colour chooses team tint; light-blue uses second bank.
-        lda $b6,x
-        and #15
-        cmp #7
-        bne player_team
-        lda idx
-        ora #$20
-        sta idx
-player_team
-        ; dest = yy*320 + xx
-        ldy yy
-        clc
-        lda pixel_y_lo,y
-        adc xx
-        sta destrow
-        lda pixel_y_hi,y
-        adc xx+1
-        sta destrow+1
-        jsr add_sprite
-
-player_next
+        jsr draw_sprite
         inc sprno
         lda sprno
         cmp #23
-        jne player_loop
+        bne player_loop
         rts
+
+; VIC sprite 7 is the ball; its frame is the pointer of the shown screen.
 ball
         lda $de15
         and #$80
-        jeq ball_end
-        ; The C64 ball sprite's pixels sit at (4-9, 11-14) inside its
-        ; 24x21 box (first line Y+1); centre the 4x4 SWOS ball on them.
-        ; Skip it when it would cross the border.
-        lda $de0f
-        cmp #47
-        jcc ball_end
-        cmp #224
-        jcs ball_end
-        sec
-        sbc #39
-        sta yy
+        beq ball_end
         lda $de0e
-        sec
-        sbc #19
         sta xx
         lda $de10
         and #$80
         beq ball_low
         lda #1
 ball_low
-        sbc #0
-        bmi ball_end
         sta xx+1
-        bne ball_high
-        lda xx
-        cmp #8
-        jcc ball_end
-        bcs ball_xok
-ball_high
-        lda xx
-        cmp #48
-        jcs ball_end
-ball_xok
+        lda $de0f
+        sta yy
+        lda $de2e
+        sta scol
+        lda $de18
+        and #$10
+        beq ball_screen0
+        lda $c7ff
+        jmp ball_frame
+ball_screen0
+        lda $c3ff
+ball_frame
+        sta sframe
+        jmp draw_sprite
+ball_end
+        rts
+
+; Queue C64 sprite frame sframe (32-127, stored as 24x21 bytes per 512 at
+; VRAM $60000) at C64 position xx (9 bits), yy in colour scol, clipped to
+; the visible field x 8-311, y 8-191. The first sprite line is Y+1, so the
+; framebuffer position is (X-24, Y-50). Sprite-colour pixels are stored as
+; $FF and become $60+colour through the AND mask; multicolours are fixed
+; palette entries $40 and $20.
+draw_sprite
+        lda sframe
+        sec
+        sbc #32
+        bcc ds_out
+        cmp #96
+        bcs ds_out
+        asl
+        sta idx
         lda #0
         sta srcskip
-        lda #$ff
+        lda #20
+        sta clipy
+        lda #23
+        sta clipx
+        lda yy
+        sec
+        sbc #50
+        sta yy
+        bcc ds_top
+        cmp #8
+        bcc ds_top
+        cmp #192
+        bcs ds_out
+        cmp #172
+        bcc ds_x
+        lda #191
+        sec
+        sbc yy
+        sta clipy
+        jmp ds_x
+ds_out
+        rts
+ds_top
+        ; Hide 8-y lines: skip that many 24-byte source rows.
+        lda #8
+        sec
+        sbc yy
+        cmp #21
+        bcs ds_out
+        sta skip
+        lda #20
+        sec
+        sbc skip
+        sta clipy
+        lda skip
+        asl
+        asl
+        asl
+        sta skiplo
+        asl
+        sta srcskip
+        lda #0
+        rol
+        sta skiphi
+        clc
+        lda srcskip
+        adc skiplo
+        sta srcskip
+        lda idx
+        adc skiphi
         sta idx
         lda #8
-        sta sstep
-        lda #7
+        sta yy
+ds_x
+        sec
+        lda xx
+        sbc #24
+        sta xx
+        lda xx+1
+        sbc #0
+        sta xx+1
+        bmi ds_left
+        bne ds_right
+        lda xx
+        cmp #8
+        bcs ds_xin
+ds_left
+        lda #8
+        sec
+        sbc xx
+        cmp #24
+        bcs ds_out
+        sta skip
+        clc
+        adc srcskip
+        sta srcskip
+        bcc ds_left_mid
+        inc idx
+ds_left_mid
+        lda #23
+        sec
+        sbc skip
         sta clipx
-        sta clipy
+        lda #8
+        sta xx
+        lda #0
+        sta xx+1
+        beq ds_xin
+ds_right
+        lda xx
+        cmp #56
+        jcs ds_out
+        cmp #33
+        bcc ds_xin
+        lda #55
+        sec
+        sbc xx
+        sta clipx
+ds_xin
         ldy yy
         clc
         lda pixel_y_lo,y
@@ -1269,10 +1288,13 @@ ball_xok
         lda pixel_y_hi,y
         adc xx+1
         sta destrow+1
-        jsr add_sprite
-
-ball_end
-        rts
+        lda scol
+        and #15
+        ora #$60
+        sta sand
+        lda #24
+        sta sstep
+        jmp add_sprite
 
 pixel_y_lo ins '../gen/y-lo.bin',0,208
 pixel_y_hi ins '../gen/y-hi.bin',0,208
@@ -1317,7 +1339,7 @@ restore_page
         lsr
         lsr
         ora #$9c
-vbrel_30
+vbrel_34
         sta $d65d
         ldy #0
 restore_src
@@ -1326,7 +1348,7 @@ restore_src
         iny
         bne restore_src
         lda #0
-vbrel_31
+vbrel_35
         sta $d65d
 restore_copy
         lda $dd00,y
@@ -1387,13 +1409,13 @@ silence_pokey
         lda #$f8 ; map 4K window $F000? renderer needs own code so use C800? use B window
         ; Keep MEMAC-A disabled.
         lda #0
-vbrel_32
+vbrel_36
         sta $d65e
         lda #$a8
-vbrel_33
+vbrel_37
         sta $d65e
         lda #$f4
-vbrel_34
+vbrel_38
         sta $d65f
         ldx #0
         lda #$ff
@@ -1417,10 +1439,10 @@ clear_cache
         inx
         bne clear_cache
         lda #0
-vbrel_35
+vbrel_39
         sta $d65f
         lda #$9b
-vbrel_36
+vbrel_40
         sta $d65d
         ldx #xdl_end-xdl_data-1
 setup_xdl
@@ -1438,13 +1460,13 @@ setup_bcb
         dex
         bpl setup_bcb
         lda #0
-vbrel_37
+vbrel_41
         sta $d650
         lda #$f1
-vbrel_38
+vbrel_42
         sta $d651
         lda #6
-vbrel_39
+vbrel_43
         sta $d652
         ; Copy banner tiles from temporary FB1 storage to $78000.
         lda #0
@@ -1479,41 +1501,50 @@ reset_bcb
         dex
         bpl reset_bcb
         lda #1
-vbrel_40
+vbrel_44
         sta $d645
         lda #0
-vbrel_41
+vbrel_45
         sta $d644
         ldx #0
 pal_loop
         lda palette,x
-vbrel_42
+vbrel_46
         sta $d646
         inx
         lda palette,x
-vbrel_43
+vbrel_47
         sta $d647
         inx
         lda palette,x
-vbrel_44
+vbrel_48
         sta $d648
         inx
         cpx #192
         bne pal_loop
-        lda #0
-vbrel_45
-        sta $d641
-        lda #$f0
-vbrel_46
-        sta $d642
-        lda #6
-vbrel_47
-        sta $d643
-        lda #3
-vbrel_48
-        sta $d640
+        ; C64 colours for sprite pixels: $60 + colour (AND-masked $FF).
+        ldx #0
+sprite_pal
+        txa
+        ora #$60
+        jsr set_c64_colour
+        inx
+        cpx #16
+        bne sprite_pal
         lda #0
 vbrel_49
+        sta $d641
+        lda #$f0
+vbrel_50
+        sta $d642
+        lda #6
+vbrel_51
+        sta $d643
+        lda #3
+vbrel_52
+        sta $d640
+        lda #0
+vbrel_53
         sta $d65d
         ; C64 reset-state register shadows.
         ldx #63

@@ -2,7 +2,7 @@
   "vbxe_page": "0xd7",
   "pal": true,
   "frames": 200,
-  "xex_sha256": "d0ee0f9c5c47d616e601a65f9fe8de73db9870acd7c80ffd68d227f9e0f512fd",
+  "xex_sha256": "9f50da70778549a3216b5236fe9ee196eb84f5f6a45ca435101f0a66a8b51f44",
   "snapshots": [
     {
       "frame": 79,
@@ -108,7 +108,7 @@
     {
       "frame": 199,
       "game_tick": 199,
-      "blits": 1658,
+      "blits": 1662,
       "sprite_state": [
         40,
         40,

@@ -41,31 +41,17 @@ def build():
  assert len(packed)<=0x30000
  (ROOT/'gen/tiles.bin').write_bytes(packed)
  (ROOT/'gen/tile-addresses.bin').write_bytes(bytes((a>>shift)&255 for shift in (0,8,16) for a in addresses))
- # C64 player frames are 32+4*direction+phase, directions clockwise from
- # up (measured from movement in play); phase 0 stands, 1 and 3 are strides
- # (2 is unused). SWOS keeps three running frames per direction on 16x16
- # cells of CJCTEAM1: row 0 up, down, right, left; row 1 down-left,
- # down-right, up-left, up-right (sprites 227-250 in SWOS2/Data.c), cycled
- # as neutral, stride, neutral, other stride.
- swos_cell=[(0,0),(9,1),(6,0),(3,1),(3,0),(0,1),(9,0),(6,1)]
- sheet=Image.open(ROOT/'assets/swos/indexed/CJCTEAM1.png')
+ # Original C64 multicolour sprites, frames 32-127 (players, goalkeepers,
+ # tackles, falls, ball) from VIC bank $C000: 24x21 bytes per 512-byte slot.
+ # Pixel pairs 01/10/11 become $40 (multicolour 0), $FF (sprite colour,
+ # AND-masked to $60+colour by the runtime) and $20 (multicolour 1).
  spr=bytearray(65536)
- for team in range(2):
-  for frame in range(32):
-   col,row=swos_cell[frame//4];col+=(0,1,0,2)[frame%4]
-   crop=sheet.crop((col*16,row*16,col*16+16,row*16+16))
-   for y in range(16):
-    for x in range(16):
-     v=crop.getpixel((x,y))
-     # The source sheet uses palette indices as kit masks, recolored at runtime in SWOS.
-     v={10:10 if team==0 else 11,11:2,15:2,13:4}.get(v,v)
-     if v:spr[(team*32+frame)*256+y*16+x]=32+v
- bits=(ROOT/'assets/swos/unpacked/CJCBITS.RAW').read_bytes()
- for y in range(8):
-  for x in range(8):
-   v=sum(((bits[(48+y)*160+p*40+x//8]>>(7-x%8))&1)<<p for p in range(4))
-   spr[0xff00+y*8+x]=32+v if v else 0
+ for frame in range(32,128):
+  base=0xc000+frame*64;slot=(frame-32)*512
+  for y in range(21):
+   for x in range(12):
+    q=(ram[base+y*3+x//4]>>(6-(x%4)*2))&3
+    spr[slot+y*24+2*x]=spr[slot+y*24+2*x+1]=(0,0x40,0xff,0x20)[q]
  (ROOT/'gen/sprites.bin').write_bytes(spr)
- # Ball uses its own small opaque white shape, from the original C64 pointer later.
  return atlas,spr
 if __name__=='__main__':build()

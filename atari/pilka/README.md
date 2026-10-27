@@ -1,9 +1,9 @@
 # Pilka — Arlasoft Soccer / Atari XL/XE + VBXE
 
-Work-in-progress native 6502 conversion of the supplied `arlasoc.d64`, using
-player and ball graphics extracted from the supplied Amiga SWOS 25/26 archive.
-Pitch geometry and match rules come from the C64 game. Grass pixels come from
-SWOS. Pitch advertising is replaced by pixel-art flowers and Atari Fuji symbols.
+Work-in-progress native 6502 conversion of the supplied `arlasoc.d64`.
+Players, goalkeepers and the ball use the original C64 sprites. Pitch geometry
+and match rules come from the C64 game. Grass pixels come from the supplied
+Amiga SWOS 25/26 archive. Pitch advertising is replaced by pixel-art flowers and Atari Fuji symbols.
 **Music and sound playback are disabled.**
 
 ## Build and launch
@@ -35,22 +35,24 @@ drawing. Its resident code is in the C64's VIC-only charset RAM
 `$F800` and is then replaced by the game's own `$F800-$FFFF` code, staged in
 VRAM at `$5F000`. The hidden-I/O menu table is relocated to `$C900`.
 
-The renderer uses double buffers, cached character cells, transparent SWOS
-player/ball blits and a separate advertising strip. Compose and sprite blits
+The renderer uses double buffers, cached character cells, transparent C64
+sprite blits and a separate advertising strip. Compose and sprite blits
 run as one chained BCB list while the CPU continues; the VBI shows a picture
 only when the blitter has finished. When the game loop is late, drawing is
 skipped so the C64 logic keeps its 50 Hz rate. Each picture compares a
-quarter of the screen (colour RAM: five rows). The C64 game scrolls by
+quarter of the screen (colour RAM: three rows). The C64 game scrolls by
 copying its screen shifted by one character and flipping `$D018`. The NMI
 records that copy's direction (`$11DB`, index into the game's offset table
 at `$1471`). The renderer then moves the char layer and caches by one cell
 with precomputed BCB lists and compares all cells.
-C64 player frames 32-63 (32 + 4 x direction + phase, directions clockwise
-from up) map to the SWOS running frames for the same direction. SWOS
-sprites are anchored so that figures and the ball line up with the C64
-sprite pixels, putting the ball at the player's feet. Frames above 63
-(tackles, falls, goalkeeper poses) are not drawn yet. Kit and goalkeeper
-presentation still need refinement.
+
+C64 sprite frames 32-127 are converted at build time to 24x21 VRAM images
+(one per 512 bytes at `$60000`). The 23 multiplexed sprites come from the
+game's tables (`$9F`, `$E4`, `$CD`, `$B6`); the ball is VIC sprite 7. Each
+is drawn at the C64 position (X-24, Y-50). Sprite-colour pixels are stored
+as `$FF`, and the blit's AND mask turns them into palette entry `$60` + the
+sprite's C64 colour. Multicolours `$D025`/`$D026` are palette entries `$40`
+and `$20`, updated each picture.
 
 ## Reproducing analysis and asset extraction
 
@@ -81,7 +83,7 @@ its results are not display-performance measurements.
 ## Sources
 
 - C64 game: the user-supplied `arlasoc.d64` (Arlasoft Soccer).
-- Amiga graphics: the user-supplied `SensibleWorldOfSoccer2526_v2.3.lha`.
+- Amiga grass pixels: the user-supplied `SensibleWorldOfSoccer2526_v2.3.lha`.
 - SWOS layouts and palette: `SWOS-RE-main/SWOS-RE-main`.
 - VBXE bridge/loader and headless model references: sibling `../gg` project.
 - RNC decoder adaptations: ScummVM, GPL-3.0-or-later; see decoder file headers.
