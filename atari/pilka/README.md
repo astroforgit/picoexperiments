@@ -45,7 +45,11 @@ copying its screen shifted by one character and flipping `$D018`. The NMI
 records that copy's direction (`$11DB`, index into the game's offset table
 at `$1471`). The renderer then moves the char layer and caches by one cell
 with precomputed BCB lists and compares all cells.
-SWOS direction/run-frame mapping is provisional; kit and goalkeeper
+C64 player frames 32-63 (32 + 4 x direction + phase, directions clockwise
+from up) map to the SWOS running frames for the same direction. SWOS
+sprites are anchored so that figures and the ball line up with the C64
+sprite pixels, putting the ball at the player's feet. Frames above 63
+(tackles, falls, goalkeeper poses) are not drawn yet. Kit and goalkeeper
 presentation still need refinement.
 
 ## Reproducing analysis and asset extraction

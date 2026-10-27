@@ -60,7 +60,7 @@ for k,(rawx,rawy) in enumerate(positions*2):
  expected[:8]=pitch[:8]
  if frame<64:
   spr=sprites[((frame-32)+(32 if color==7 else 0))*256:((frame-32)+(32 if color==7 else 0))*256+256].reshape(16,16)
-  dx=rawx-20;dy=rawy-49
+  dx=rawx-23;dy=rawy-49
   for y in range(16):
    for x in range(16):
     if 8<=dx+x<312 and 8<=dy+y<192 and spr[y,x]:expected[dy+y,dx+x]=spr[y,x]

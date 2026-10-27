@@ -1141,9 +1141,10 @@ player_ystore
         lda #1
 player_low
         sta xx+1
+        ; C64 figures span x 0-13 of the sprite box, SWOS ones 0-11.
         sec
         lda xx
-        sbc #20
+        sbc #23
         sta xx
         lda xx+1
         sbc #0
@@ -1218,17 +1219,20 @@ ball
         lda $de15
         and #$80
         jeq ball_end
+        ; The C64 ball sprite's pixels sit at (4-9, 11-14) inside its
+        ; 24x21 box (first line Y+1); centre the 4x4 SWOS ball on them.
+        ; Skip it when it would cross the border.
         lda $de0f
-        cmp #51
+        cmp #47
         jcc ball_end
-        cmp #244
+        cmp #224
         jcs ball_end
         sec
-        sbc #51
+        sbc #39
         sta yy
         lda $de0e
         sec
-        sbc #24
+        sbc #19
         sta xx
         lda $de10
         and #$80
@@ -1238,10 +1242,15 @@ ball_low
         sbc #0
         bmi ball_end
         sta xx+1
-        beq ball_xok
+        bne ball_high
         lda xx
-        cmp #56
-        bcs ball_end
+        cmp #8
+        jcc ball_end
+        bcs ball_xok
+ball_high
+        lda xx
+        cmp #48
+        jcs ball_end
 ball_xok
         lda #0
         sta srcskip

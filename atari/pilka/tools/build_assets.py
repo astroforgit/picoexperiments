@@ -41,13 +41,19 @@ def build():
  assert len(packed)<=0x30000
  (ROOT/'gen/tiles.bin').write_bytes(packed)
  (ROOT/'gen/tile-addresses.bin').write_bytes(bytes((a>>shift)&255 for shift in (0,8,16) for a in addresses))
- # 64 padded 32x32 frames: direction/run-phase mapping remains provisional.
+ # C64 player frames are 32+4*direction+phase, directions clockwise from
+ # up (measured from movement in play); phase 0 stands, 1 and 3 are strides
+ # (2 is unused). SWOS keeps three running frames per direction on 16x16
+ # cells of CJCTEAM1: row 0 up, down, right, left; row 1 down-left,
+ # down-right, up-left, up-right (sprites 227-250 in SWOS2/Data.c), cycled
+ # as neutral, stride, neutral, other stride.
+ swos_cell=[(0,0),(9,1),(6,0),(3,1),(3,0),(0,1),(9,0),(6,1)]
  sheet=Image.open(ROOT/'assets/swos/indexed/CJCTEAM1.png')
  spr=bytearray(65536)
  for team in range(2):
   for frame in range(32):
-   direction=frame//4;phase=frame%2
-   crop=sheet.crop((direction*16,phase*16,direction*16+16,phase*16+16))
+   col,row=swos_cell[frame//4];col+=(0,1,0,2)[frame%4]
+   crop=sheet.crop((col*16,row*16,col*16+16,row*16+16))
    for y in range(16):
     for x in range(16):
      v=crop.getpixel((x,y))
