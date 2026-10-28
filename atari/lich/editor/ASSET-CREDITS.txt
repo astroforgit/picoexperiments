@@ -1,0 +1,7 @@
+OPTIONAL IMPORTED ARTWORK
+
+Mystic Acid and Mystic Chroma: supplied PetricakeGames atlases.
+Minifantasy: Krishna Palacio. Non-commercial use only under the included Minifantasy-FreeLicense.txt. That license requires attribution and sending the creator a project link upon completion.
+Alchemy Workshop: adapted from the supplied Farm Sim Asset Pack potion and poison artwork.
+
+All imports are reduced to the existing PICO palette and 8x8 game tiles. Exact source paths, crop regions and SHA-256 hashes are stored in the generated artwork packs. Current game selections are not changed automatically.

@@ -52,7 +52,7 @@ function playStart() {
     if(play.level>1){const h=game.hero;h.level=play.level;h.xp=game.g.xp_req[h.level]||0;h.atk+=(h.level-1)*game.p.lvl_atk;h.maxHp+=(h.level-1)*game.p.lvl_hp;h.hp=h.maxHp;}
     if(play.depth===1&&play.level===1)game.modal=game.g.windows.ml_intro;
     play.game=game;play.sprites=playSprites(game.g);play.inventory=play.menu=false;play.paused=false;play.camera={x:game.hero.x,y:game.hero.y};play.started=performance.now();play.moveAt=0;
-    playSound(53);render();play.canvas?.focus();status('Play mode uses a snapshot of your edits. Apply edits & restart to reload them.');
+    playSound(53);render();play.canvas?.focus();status('Artwork stays in sync with the editor. Apply edits & restart to reload rules and level settings.');
   } catch(e){status(`Cannot start: ${e.message}`,true);}
 }
 function playAfterAction(oldTurn) {
@@ -98,10 +98,21 @@ function playDraw(now) {
   if(h.x<camera.x-2)camera.x=h.x+2;else if(h.x>camera.x+2)camera.x=h.x-2;
   if(h.y<camera.y-2)camera.y=h.y+2;else if(h.y>camera.y+2)camera.y=h.y-2;
   const ox=(camera.x-8)*8+4,oy=(camera.y-8)*8+4;
+  play.viewportOrigin={ox,oy};
   for(let y=Math.max(0,Math.floor(oy/8));y<Math.min(32,Math.ceil((oy+128)/8));y++)for(let x=Math.max(0,Math.floor(ox/8));x<Math.min(128,Math.ceil((ox+128)/8));x++) {
-    const i=y*128+x;if(g.fog[i]!==2&&g.map[i])ctx.drawImage(spr(g.map[i],g.fog[i]===1?PLAY_DARK:LIT),x*8-ox,y*8-oy);
+    const i=y*128+x;if(g.fog[i]!==2&&g.map[i])drawTerrainTile(ctx,g.map[i],x*8-ox,y*8-oy,8,spr,g.fog[i]===1?PLAY_DARK:LIT);
   }
-  for(const e of g.entities) {
+  drawWallDecorations(ctx,g.map,g.g,1,ox,oy,g.fog);
+  const drawObjects=g.entities.map(e=>({e,foot:e.oldY+(e.y-e.oldY)*progress}));
+  for(let y=Math.max(0,Math.floor(oy/8));y<Math.min(32,Math.ceil((oy+136)/8));y++)for(let x=Math.max(0,Math.floor(ox/8));x<Math.min(128,Math.ceil((ox+128)/8));x++){
+    const n=g.map[y*128+x],p=overhangFor(g.g,n);
+    if(p&&g.fog[y*128+x]!==2)drawObjects.push({x,y,n,p,foot:y});
+  }
+  drawObjects.sort((a,b)=>a.foot-b.foot||Number(!!a.e)-Number(!!b.e));
+  for(const object of drawObjects) {
+    if(!object.e){const {x,y,n,p}=object,pal=g.fog[y*128+x]===1?PLAY_DARK:LIT;
+      ctx.drawImage(spr(n,pal),x*8-ox,y*8-oy);ctx.drawImage(spr(p.top,pal),x*8-ox,y*8-oy-8);continue;}
+    const e=object.e;
     if(g.fog[e.y*128+e.x]===2)continue;
     if(e!==h&&g.has(e,'invisible')&&((e.x-h.x)**2+(e.y-h.y)**2)>1)continue;
     const px=Math.round((e.oldX+(e.x-e.oldX)*progress)*8-ox),py=Math.round((e.oldY+(e.y-e.oldY)*progress)*8-oy);
@@ -110,6 +121,7 @@ function playDraw(now) {
     let n=e.anim+frame;if(g.state==='won'&&g.has(e,'boss'))n=g.p.boss_dead_sprite;if(e===h&&g.state==='dead')n=g.p.death_sprite+Math.min(3,Math.floor((now-play.moveAt)/250));
     const pal=g.fog[e.y*128+e.x]===1?PLAY_DARK:null;
     ctx.save();ctx.translate(px+(e.dir===-1?8:0),py);if(e.dir===-1)ctx.scale(-1,1);ctx.drawImage(spr(n,pal),0,0);
+    const tall=e.prop?overhangFor(g.g,n):null;if(tall)ctx.drawImage(spr(tall.top,pal),0,-8);
     if(e.weapon&&e.hp>0)ctx.drawImage(spr(e.weapon.spr+frame),1,0);ctx.restore();
     if(e.paralysis)playFont(ctx,'...',px+1,py-6,10);else if(e.confusion)playFont(ctx,'?',px+4,py-6,10);
   }
@@ -156,7 +168,22 @@ function hElementRow(it,i,g){
   const command=it.type===1?(it===g.hero.weapon?'unequip':'equip'):'use';
   for(const action of [command,'discard'])row.append(h('button',{class:'small',disabled:g.state!=='playing'||!!g.modal||play.paused,onclick:()=>{const before=g.turn;g.itemAction(i,action);playAfterAction(before);play.canvas?.focus();}},action));return row;
 }
+function playSyncArtwork(){
+  if(!play.game)return;
+  const live=play.game.g;
+  for(const key of new Set([...Object.keys(CRYPT_ART.original),...Object.keys(G.reference_matches||{})])){const n=+key,page=n>=256?'sheet2':'sheet';artPut(live[page],n&255,artTile(G[page],n&255));}
+  live.overhangs=clone(G.overhangs||{});
+  live.wall_decorations=G.wall_decorations;
+  for(const def of Object.values(live.overhangs)){
+    const target=def.top>=256?live.sheet2:live.sheet,source=def.top>=256?G.sheet2:G.sheet;
+    if(live.monsters.some(m=>entFrames(m).includes(def.top))){def.enabled=false;continue;}
+    artPut(target,def.top&255,artTile(source,def.top&255));
+  }
+  live.art_style=G.art_style;live.art_revision=G.art_revision;
+  play.sprites=playSprites(live);
+}
 VIEWS.play=()=>{
+  playSyncArtwork();
   const box=h('div',{class:'play-page'});play.ui=box;
   box.append(h('div',{class:'play-heading'},h('div',{},h('h2',{},'Play Curse of the Lich King'),h('p',{class:'note'},'Test the current game data. Use Live artwork to change walls and objects instantly. Other edits take effect when you restart.'))));
   const controls=h('div',{class:'actions lab-controls'},
@@ -165,10 +192,11 @@ VIEWS.play=()=>{
     labField('Hero level (test)',numInput(play,'level',{min:1,max:50})),
     h('button',{class:'primary',onclick:playStart},play.game?'Apply edits & restart':'Embark'),
     h('button',{onclick:()=>{play.seed=(play.seed+1)>>>0;playStart();}},'New seed & restart'),
+    h('button',{onclick:()=>{restoreBundledArtwork();render();}},'Use latest dungeon artwork'),
     h('button',{onclick:()=>{playCommand('pause');play.canvas?.focus();}},'Pause / resume'),
     h('label',{class:'chk'},h('input',{type:'checkbox',checked:play.sound,onchange:e=>{play.sound=e.target.checked;if(play.sound)playSound(34);}}),'Sound'),
     h('button',{onclick:()=>play.canvas?.requestFullscreen?.()},'Fullscreen'));
-  box.append(controls);
+  box.append(controls,h('p',{class:'note','data-art-status':'true'},`Artwork: ${ART_STYLES.find(p=>p.id===G.art_style)?.name||'Mixed / custom'} · Tall props: ${Object.values(G.overhangs||{}).filter(p=>p.enabled).length}. Artwork syncs when you open Play; rule changes need a restart.`));
   const canvas=h('canvas',{width:128,height:128,class:'px play-screen',tabindex:0,'aria-label':'Playable game. Arrow keys or WASD move, X backpack, C close, P pause.'});play.canvas=canvas;
   if(!play.game)play.titleSprites=playSprites(G);
   canvas.addEventListener('keydown',e=>{
@@ -177,14 +205,15 @@ VIEWS.play=()=>{
     e.preventDefault();if(e.repeat&&(!['left','right','up','down','wait'].includes(cmd)||performance.now()-play.lastInput<135))return;
     playCommand(cmd);
   });
-  canvas.addEventListener('pointerdown',()=>canvas.focus());
+  canvas.addEventListener('pointerdown',e=>{canvas.focus();});
   const message=h('p',{class:'note',role:'status'}),summary=h('div',{class:'play-stats'}),bag=h('div'),log=h('div',{class:'play-log',tabindex:0,'aria-label':'Game event log'});
   play.panels={summary,bag,log,message};
   const pad=h('div',{class:'play-pad'});
   for(const [label,cmd] of [['↑','up'],['←','left'],['↓','down'],['→','right'],['X · backpack / select','select'],['C · close','close'],['Wait · .','wait']])pad.append(h('button',{onclick:()=>{playCommand(cmd);play.canvas?.focus();}},label));
   const view=h('div',{class:'play-display'},canvas,message,pad,h('p',{class:'note'},'Move into enemies to attack and into props to interact. Collect supplies, equip weapons, descend eight floors and defeat Raq’zul. Waiting with “.” is an editor convenience.'));
   const side=h('aside',{class:'play-sidebar panel'},summary,h('h3',{},'Backpack'),bag,h('h3',{},'Recent events'),log);
-  box.append(h('div',{class:'play-layout'},view,playArtPanel(),side));
+  box.append(h('div',{class:'play-layout'},view,side));
+  box.append(h('div',{class:'play-tools-row'},playArtPanel()));
   box.append(h('details',{class:'panel play-details'},h('summary',{},'Port fidelity and testing'),
     h('p',{class:'note'},'Gameplay follows the VBXE assembly and original cartridge: room drift and doors, furniture, floor budgets, fog, enemy awareness and pursuit, all 19 abilities, fixed damage, status timing, XP, cursed and enchanted items, altar, anvil, well, traps, floor transitions and victory. Custom maps, sprites, stats, texts and rules use the editor data snapshot.'),
     h('p',{class:'note'},'Differences: seeded browser RNG replaces POKEY entropy, so layouts and random outcomes are not byte-identical. Browser animation, camera, sound timbres and modal timing approximate VBXE. Sound uses the cartridge notes with browser oscillators; music is omitted as in the Atari port. Gates/levers retain the source’s blocking behavior.'),

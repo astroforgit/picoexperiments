@@ -42,8 +42,47 @@ from the file system. It edits a game description (`game.json`):
 - **Export:** checks the data and downloads `game.json`.
 
 Put the exported file into `data/game.json`, run `python3 tools/make_data.py`, then
-`./build.sh`. The bundled game uses the Diabolic Crypt environment style; gameplay
+`./build.sh`. The bundled game uses the Imported Dungeon environment style; gameplay
 rules, sprite flags, entity types and furniture placement remain unchanged.
+
+### Mystic Acid alternative
+
+**Mystic Acid** is an optional environment pack adapted from the supplied
+`MysticAcid_basics_PetricakeGames.png` atlas. Its brick texture and two furniture
+objects are sampled and converted to the fixed PICO palette; other Lich props use
+matching slate, green and plum colors. All 16 wall connections retain their Lich
+shapes. Source coordinates and hash are recorded in `editor/mystic-art.js`.
+
+Choose **Use Mystic Acid** in Sprites, or pick **Mystic Acid** for individual
+categories in Play's **Live artwork** pane. The pack does not automatically replace
+existing selections. Regenerate it with `python3 tools/make_mystic_art.py`.
+
+### Active imported environment
+
+**Imported Dungeon** is the bundled default, combining Mystic Chroma walls,
+stairs and themed furniture, Minifantasy wooden/stone props and alchemy jars,
+well and altar. The complete 82-tile environment is available in Sprites and
+Play's Live artwork. Saved sessions upgrade once, preserving hand-painted tiles;
+explicit selection of any older style continues to persist. Monster artwork,
+monster selections and gameplay data are unchanged. Regenerate/select this
+combination with `python3 tools/make_imported_dungeon.py`, then regenerate editor
+assets and build data normally. Minifantasy's non-commercial license applies.
+
+### Additional local asset imports
+
+Three optional styles from `assets/` are available in Sprites and Live artwork:
+**Mystic Chroma**, **Minifantasy Dungeon**, and **Alchemy Workshop**. Minifantasy
+adds wooden furniture, containers, statues and lamps with sampled masonry;
+Alchemy Workshop adds jars, a cabinet, cauldron, ritual lamp and alchemy equipment
+as cosmetic versions of existing props. Matching spent/broken states retain the
+original interactions. These packs never replace the selected style automatically.
+
+Minifantasy is by Krishna Palacio and its included free license permits only
+non-commercial projects, requires attribution and a project link sent to its
+creator upon completion. See `editor/Minifantasy-FreeLicense.txt` and
+`editor/ASSET-CREDITS.txt`. Rebuild these optional packs with
+`python3 tools/make_asset_packs.py`; each pack records source paths, hashes and
+extracted regions. Larger buildings and weapon icons were not imported in this pass.
 
 ### Dungeon artwork
 
@@ -69,7 +108,7 @@ to its rust/plum masonry and emerald/lime props. Tile mappings and the source
 cartridge hash are recorded in `editor/crocolike-art.js`.
 
 Saved sessions upgrade once to the current art revision while preserving custom
-pixel edits. Selecting any of the six styles persists across reloads.
+pixel edits. Selecting any of the eleven styles persists across reloads.
 
 The earlier Verdigris Crypt style redraws 82 environment tiles: the 16 connected wall shapes, floor
 patterns, stairs, doors, pottery, chests, shelves, furniture, shrine, anvil, well
@@ -100,21 +139,31 @@ checkpoint is commit `01484800`.
 
 ### Additive monster bestiary
 
-The **Monsters** tab lists 25 enemies from weakest to strongest using an estimated
+The **Monsters** tab lists 40 enemies from weakest to strongest using an estimated
 power score (HP + 5 × attack + range and ability weights). Sorting never changes
 entity IDs. Editable HP, attack and first floor update the ranking. **Use in game**
 controls spawning in procedural floors, custom maps, pot surprises and summons;
 apply edits and restart Play after changing the roster. Raq'zul remains required
 for the final encounter. Encounters can still explicitly simulate disabled types.
 
-All ten original Lich enemies retain their original sprites and stats. Ten imported
-creatures are independent additions with Lich-scale stats and staged floor access:
-marsh/carrion slimes, fallen mage, lesser demon, thornling, berserker, bone dancer,
-scorpion, night haunter and dread reaper. Imported creatures never carry the boss
-victory ability. Five original animated fantasy designs add an ash bat, grave goblin,
-bone hound, blood knight and ember drake. These use 60 separate animation tiles on
-sprite page 2. The resulting 40 entity types fill the Atari type limit; advanced
-library imports require removing an added type first.
+All ten original Lich enemies retain their original sprites and stats. All 12
+Crocolike and all 8 BulbaRogue enemies coexist with four Demon Within creatures,
+one Porklike creature and five original fantasy designs. Crocolike sprites use
+individual shaded green, bone, violet, cyan, amber and brown palettes; all four
+animation frames are retained. Names match their source cartridges.
+
+HP, attack and first floors are adapted to Lich King's eight-floor scale, rather
+than copied literally (Crocolike Death is not an instant-kill enemy). Supported
+specials use Lich abilities: curse, stun, poison, slow, flee, vampire and theft.
+BulbaRogue's ghost/fast/spawn behavior is approximated with the supported combat
+rules, not a full recreation of its engine. No imported creature can trigger the
+boss victory condition.
+
+The roster uses 55 entity types and 120 of the 128 extra sprite tiles. The entity
+limit is now 64; the actual remaining import capacity also depends on free sprite
+slots and map codes. Entity map markers may reuse the numeric IDs of title-only
+sprites (128–175), without altering those sprites. Existing custom-map tile IDs
+are reserved when allocating markers.
 
 Existing saved sessions migrate recognized guest replacements back to the original
 pixels, then add the independent creatures without changing edited original stats.
@@ -132,6 +181,43 @@ python3 tools/make_data.py
 ./build.sh
 node --test editor/play-engine.test.cjs editor/encounter.test.cjs
 ```
+
+### Alternate monster artwork
+
+Every one of the 40 enemies has an optional four-frame alternate in the Monsters
+table. Click **Original** or the named variant beside its animated preview. The
+selection writes only sprite pixels, is saved/exported with the game, and updates
+a running Play session when its monster slots still match. Stats and enabled
+choices are unaffected. Custom-painted art is saved as **My custom art** before
+replacement; shared animation slots are protected. Alternatives reuse the chosen
+monster's existing slots, so they need no extra Atari sprite memory.
+
+Regenerate the optional art catalog with `python3 tools/make_monster_variants.py`.
+The selected sprite sheet is not changed by this command. Export `game.json` and
+rebuild the Atari game to use selected alternatives there.
+
+### Tall props with depth overlap
+
+The Furniture tab now supports **1×2-tile artwork with a 1×1 solid base**.
+Four Minifantasy statue/monument variants are active by default (base tiles
+68, 70, 84, 86; upper sprites 376–379). Their upper tiles are transparent artwork,
+not map occupancy: a character can walk underneath, behind the visible object.
+Static props and characters are drawn in depth order using their base/foot row.
+Characters behind a prop are partially hidden; characters in front draw over it.
+This is supported in Play, Floors & maps, the level inspector and the VBXE build.
+
+In **Furniture → Tall props and depth overlap**, toggle tall rendering, select an
+upper sprite, or add a base/upper pair. The preview shows behind, underneath and
+in-front positions. Paint only the base tile in Floors & maps. A new static base
+is made solid; existing interactive props retain their collision and interactions.
+Apply edits and restart Play to refresh the settings. Export/build includes the
+same definitions. Existing walls or another object in the upper cell still block
+movement normally—the artwork itself does not make that cell solid.
+
+The first implementation is one cell wide and two cells tall, not arbitrary-width
+models or a general lighting system. Minifantasy attribution and non-commercial
+license still apply. Upper artwork consumes four of the remaining extra sprite
+tiles. Regenerate the bundled examples with `python3 tools/make_tall_props.py`.
 
 ### Level inspector, balance and encounters
 
@@ -167,6 +253,16 @@ Run the planning model's regression tests with Node.js 18 or newer:
 ```sh
 node --test editor/encounter.test.cjs
 ```
+
+### Keeping Play artwork current
+
+Opening Play now synchronizes environment pixels and tall-prop definitions from
+the editor into the existing run, rebuilding its sprite cache without resetting
+position, health, inventory, enemies or turns. **Use latest dungeon artwork**
+restores the bundled imported environment and tall props immediately. An artwork
+status line identifies the active preset and number of enabled tall props. Older
+saved art revisions migrate once; later explicit style choices persist. Rules,
+collision flags and map edits still require Apply edits & restart.
 
 ### Playable JavaScript port
 
@@ -358,3 +454,55 @@ from the Celeste port.
 
 The game has also been run in Altirra 4.40 (NTSC, VBXE at `$D600`). It shows the title,
 starts the game and plays there.
+
+### Match scenery from the Minifantasy mockup
+
+In Level inspector, the reference image sits to the right of the map. Click an
+8×8 tile in the reference image (80×80 pixels in the 10× enlarged mockup), then
+click scenery on the level map and press **Match**. No running game is needed.
+The selected sprite changes everywhere it is used, including Play. Zoom and the
+optional grid help select precise source cells. Match the upper and bottom tiles
+of tall furniture separately; collision and depth rules are retained.
+**Undo last match** restores the previous artwork; **Exit matching** restores
+normal map clicks for enemy selection and placement edits.
+
+Matches save automatically in the editor, including source crop coordinates in
+`reference_matches`, and are included in exported game JSON. Colors are converted
+to the game's palette. The mockup is bundled offline by
+`tools/make_reference_assets.py`; its Minifantasy non-commercial license and credit
+remain applicable (see `editor/Minifantasy-FreeLicense.txt`).
+
+### Matched Minifantasy masonry
+
+`tools/make_matched_masonry.py` builds a connected scenery preset from the saved
+matching session in `data/matched-floor-source.json`. Front-facing wall connections use a large capstone band above small staggered
+Minifantasy bricks; corners and T-junctions carry the capstone band through;
+left/right wall runs use the larger side-wall stones sampled from the mockup. Tiles 2, 35, 39 and 43 combine
+a four-pixel brick face with a four-pixel paving strip; tile 3 has void below the
+wall. Additional paving variants reuse the user's chosen floor patterns. Rules,
+flags, maps, furniture and monsters are unchanged. Existing matching sessions
+receive the changes only where pixels still match that saved export; later
+custom pixels are preserved. The preset is also available in Dungeon artwork
+and Live artwork. The original reference match for tile 35 is marked adapted.
+
+### Wall decorations in the browser editor
+
+`editor/wall-decorations.js` draws occasional torches and red hanging banners in
+Level inspector, floor previews and JavaScript Play. Placement is deterministic
+from wall coordinates and shared by both views. Only front wall faces above a
+wall-foot tile are eligible; side walls, corners and doors stay clear. Ornaments
+end above the paving strip, respect fog and render behind actors. The Level
+inspector checkbox saves `wall_decorations` in game.json. This is a browser
+rendering feature; it does not modify maps, collision, entities or Atari sprites,
+and is not currently rendered by the native Atari build.
+
+### Consistent floor and furniture previews
+
+Browser terrain rendering places the current base paving under transparent
+scenery tiles (candles, tables, statues, pots, doors, traps and related worn
+states). Sprite transparency is retained; void, wall mortar and stairs are not
+filled. Level inspector now uses the gameplay engine's initial map and entity
+snapshot, including furniture, hero, enabled-enemy filtering and tall prop depth.
+It shows the complete initial floor without gameplay fog, plus inspection rings
+and grid. Play and inspection share the scenery-underlay renderer. These are
+browser rendering changes, not changes to native Atari drawing or sprite pixels.

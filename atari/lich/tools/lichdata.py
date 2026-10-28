@@ -19,7 +19,7 @@ FORMAT = 'lich-game'
 VERSION = 1
 
 MAXFLOORS = 15          # floors the tables are built for
-MAXENT_IDS = 40         # entity types (hero, monsters, props)
+MAXENT_IDS = 64         # entity types (hero, monsters, props)
 MAXITEMS = 31
 SHEET2_ROWS = 64        # second sprite page: 128 x 64 pixels (sprites 256..383)
 FLOOR_BYTES = 0x2000    # VRAM for hand-made floors (RLE)

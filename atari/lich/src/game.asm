@@ -557,10 +557,25 @@ ua_e    dta 0
 
 ; draw the entities within the map window
 draw_all
+        lda camty
+        sec
+        sbc #9
+        bcs da_row_ok
+        lda #0
+da_row_ok
+        sta ot_row
         ldy #0
 da_l    cpy ent_n
-        bcs ua_r
+        bcc da_has_entity
+        lda #31
+        jsr overhang_rows
+        rts
+da_has_entity
         sty ua_i
+        ldx ent_list,y
+        lda e_ty,x
+        jsr overhang_rows
+        ldy ua_i
         ldx ent_list,y
         lda e_tx,x
         sec
@@ -997,7 +1012,30 @@ de_fn   lda e_pg,x
         lda e_fbase,x
         clc
         adc e_frame,x
-de_fs   jsr spr_draw
+de_fs   sta de_sprite
+        jsr spr_draw
+        ldx de_e
+        lda e_fl,x
+        and #F_PROP
+        beq de_no_top
+        lda de_sprite
+        jsr find_overhang
+        bcc de_no_top
+        lda tall_page,x
+        sec
+        sbc #1
+        sta spr_page
+        mwa de_x bx
+        lda de_y
+        sec
+        sbc #8
+        sta by
+        lda de_y+1
+        sbc #0
+        sta by+1
+        lda tall_top,x
+        jsr spr_draw
+de_no_top
         lda #0
         sta spr_page
         ldx de_e
@@ -1060,6 +1098,7 @@ de_i2   clc
         jsr text_draw
 de_r    ldx de_e
         rts
+de_sprite dta 0
 de_e    dta 0
 de_fog  dta 0
 de_x    dta a(0)
@@ -1179,3 +1218,102 @@ df_n    inx
 df_i    dta 0
 df_hw   dta 0
 df_oy   dta 0
+
+; Merge static overhang rows into the existing entity depth order. A = last row.
+; Only the upper tile is drawn here; its base already exists in the baked map.
+overhang_rows
+        sta ot_until
+ot_row_loop
+        lda ot_row
+        cmp #32
+        jcs ot_done
+        cmp ot_until
+        beq ot_scan
+        jcs ot_done
+ot_scan
+        lda camtx
+        sec
+        sbc #9
+        bcs ot_x_ok
+        lda #0
+ot_x_ok sta ot_x
+        lda #19
+        sta ot_count
+ot_x_loop
+        ldy ot_x
+        ldx ot_row
+        jsr mget
+        jsr find_overhang
+        bcc ot_next
+        lda tall_page,x
+        sec
+        sbc #1
+        sta spr_page
+        lda tall_top,x
+        sta ot_sprite
+        ldy ot_x
+        ldx ot_row
+        jsr fog_get
+        cmp #2
+        beq ot_next
+        clc
+        adc #1
+        sta spr_var
+        lda #1
+        sta spr_tw
+        sta spr_th
+        lda #0
+        sta spr_flip
+        lda ot_x
+        jsr times8
+        lda pt_x
+        sec
+        sbc camx
+        sta bx
+        lda pt_x+1
+        sbc camx+1
+        sta bx+1
+        lda ot_row
+        sec
+        sbc #1
+        jsr times8
+        lda pt_x
+        sec
+        sbc camy
+        sta by
+        lda pt_x+1
+        sbc camy+1
+        sta by+1
+        lda ot_sprite
+        jsr spr_draw
+ot_next
+        inc ot_x
+        lda ot_x
+        cmp #128
+        bcs ot_row_next
+        dec ot_count
+        jne ot_x_loop
+ot_row_next
+        inc ot_row
+        jmp ot_row_loop
+ot_done
+        lda #0
+        sta spr_page
+        rts
+ot_row dta 0
+ot_until dta 0
+ot_x dta 0
+ot_count dta 0
+ot_sprite dta 0
+
+; A = base tile; carry set and X = definition index when enabled.
+find_overhang
+        ldx #NTALL
+fo_loop dex
+        bmi fo_none
+        cmp tall_base,x
+        bne fo_loop
+        sec
+        rts
+fo_none clc
+        rts

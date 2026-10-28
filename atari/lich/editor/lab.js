@@ -30,10 +30,10 @@ function labOpenEncounter(ids) {
 VIEWS.levels = () => {
   lab.depth = Math.min(lab.depth, G.params.last_floor);
   const assigned = G.floor_plan[lab.depth - 1], custom = G.floors[assigned];
-  let floor;
-  try { floor = custom || (typeof LichPlay !== 'undefined' ? new LichPlay.Game(G, {depth:lab.depth, seed:lab.seed}).rawFloor : LichLab.sampleFloor(G, lab.depth, lab.seed)); }
+  let floor,previewGame;
+  try { previewGame=typeof LichPlay!=='undefined'?new LichPlay.Game(G,{depth:lab.depth,seed:lab.seed}):null;floor = custom || (typeof LichPlay !== 'undefined' ? previewGame.rawFloor : LichLab.sampleFloor(G, lab.depth, lab.seed)); }
   catch (error) { return h('div', {}, h('p', {class:'err'}, error.message), labField('Seed', labNumber('seed', 0, 4294967295)), h('p', {class:'note'}, 'Try another seed or adjust room sizes and budgets in Rules.')); }
-  const roster = LichLab.roster(G, floor), grouped = new Map();
+  const roster = previewGame?previewGame.entities.filter(e=>!e.prop&&e!==previewGame.hero).map(e=>({id:e.id,x:e.x,y:e.y})):LichLab.roster(G, floor), grouped = new Map();
   roster.forEach(e => grouped.set(e.id, (grouped.get(e.id) || 0) + 1));
   const box = h('div');
   box.append(h('h2', {}, 'Level inspector'), h('p', { class: 'note' },
@@ -66,6 +66,7 @@ VIEWS.levels = () => {
       if (!ids.length) return status('Select at least one enemy on the map.', true);
       labOpenEncounter(ids);
     } }, 'Simulate selected'), selectionText);
+  controls.append(h('label',{class:'chk'},h('input',{type:'checkbox',checked:G.wall_decorations!==false,onchange:e=>{G.wall_decorations=e.target.checked;changed('Wall decorations saved.');if(typeof playSyncArtwork==='function')playSyncArtwork();redraw();}}),'Wall torches & banners'));
   box.append(controls);
   let mapWidth = 16, mapHeight = 8;
   for (let y = 0; y < 32; y++) for (let x = 0; x < 128; x++) {
@@ -74,11 +75,12 @@ VIEWS.levels = () => {
   const size = 8 * lab.zoom, canvas = h('canvas', { class: 'px', width: mapWidth * size, height: mapHeight * size, 'aria-label': 'Level map; enemy list below provides keyboard selection' });
   const detail = h('div', { class: 'panel lab-detail' }, 'Click an enemy to inspect it.');
   const redraw = () => {
-    const ctx = canvas.getContext('2d'); drawFloor(ctx, floor, lab.zoom, { grid: lab.zoom > 1 });
+    const ctx = canvas.getContext('2d'); drawFloor(ctx, floor, lab.zoom, { grid: lab.zoom > 1, game:previewGame });
     for (const e of roster) {
       ctx.strokeStyle = lab.selected.has(e.y * 128 + e.x) ? '#29adff' : '#ff77a8';
       ctx.lineWidth = lab.zoom; ctx.strokeRect(e.x * size + 1, e.y * size + 1, size - 2, size - 2);
     }
+    matchDrawOverlay(ctx,size);
     selectionText.textContent = `${roster.filter(e => lab.selected.has(e.y * 128 + e.x)).length} selected`;
     box.querySelectorAll('[data-enemy-cell]').forEach(b => b.setAttribute('aria-pressed', String(lab.selected.has(Number(b.dataset.enemyCell)))));
   };
@@ -91,6 +93,7 @@ VIEWS.levels = () => {
   };
   const toggle = e => { const key = e.y * 128 + e.x; lab.selected.has(key) ? lab.selected.delete(key) : lab.selected.add(key); inspect(e); redraw(); };
   canvas.addEventListener('click', event => {
+    if(tileMatch.active){matchTarget(event);return;}
     const r = canvas.getBoundingClientRect();
     const x = Math.floor((event.clientX - r.left) * canvas.width / r.width / size), y = Math.floor((event.clientY - r.top) * canvas.height / r.height / size);
     if (x < 0 || y < 0 || x > 127 || y > 31) return;
@@ -101,7 +104,8 @@ VIEWS.levels = () => {
       floorSet(custom, x, y, lab.brush); lab.selected.clear(); changed('Placement saved.'); render();
     } else { const e = roster.find(e => e.x === x && e.y === y); if (e) toggle(e); }
   });
-  box.append(h('div', { class: 'mapwrap lab-map' }, canvas), detail, h('h2', {}, 'Enemy roster'));
+  tileMatch.context={canvas,floor,size,previewGame};tileMatch.redraw=redraw;tileMatch.target=null;
+  box.append(h('div',{class:'inspector-match-layout'},h('div',{class:'inspector-map-pane'},h('div', { class: 'mapwrap lab-map' }, canvas),detail),levelMatchPanel()),h('h2', {}, 'Enemy roster'));
   const table = h('table', { class: 'lab-table' }, h('tr', {}, ...['Enemy', 'Count', 'HP / each', 'ATK / each', 'Abilities', 'Positions'].map(t => h('th', {}, t))));
   for (const [id, count] of grouped) {
     const m = G.monsters[id - 1];

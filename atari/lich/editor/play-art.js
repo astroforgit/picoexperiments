@@ -27,7 +27,7 @@ function playArtApply(pack,group) {
     if(play.game)artPut(play.game.g.sheet,n,rows);
   }
   G.art_style=group[0]==='all'?pack.id:'mixed';
-  G.art_revision=DIABOLIC_ART.id;
+  G.art_revision=CURRENT_ART_REVISION;
   if(play.game){play.game.g.art_style=G.art_style;play.game.g.art_revision=G.art_revision;play.sprites=playSprites(play.game.g);}
   play.titleSprites=playSprites(G);loadSheets();
   changed(`${group[1]}: ${pack.name}. Artwork saved and applied live; your run continues.`);
@@ -46,7 +46,7 @@ function playArtPanel() {
       return h('button',{class:'play-art-choice'+(selected?' selected':''),'aria-pressed':String(selected),
         'aria-label':`${group[1]}: ${pack.name}`,onclick:()=>{playArtApply(pack,group);refresh();}},
         h('span',{class:'play-art-thumbs'},...group[3].map(n=>artPreview(pack.tiles[n]))),
-        h('span',{},pack.name),h('span',{class:'note'},selected?'Active':'Apply live'));
+        h('span',{},pack.name),h('span',{class:'note'},selected?'Active':'Apply live'),pack.credit?h('small',{class:'note',style:'grid-column:1 / -1'},pack.credit):null);
     }));
   }
   select.addEventListener('change',()=>{playArtGroup=select.value;refresh();});

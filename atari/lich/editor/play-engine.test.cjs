@@ -114,10 +114,10 @@ test('disabled roster excludes procedural, custom-map, pot and summoned enemies'
 });
 
 test('additive bestiary preserves original definitions and has unique new slots and codes',()=>{
- const g=data();assert.equal(g.monsters.length,40);
- assert.equal(new Set(g.monsters.map(m=>m.code)).size,40);
- const added=g.monsters.filter(m=>m.catalog_key);assert.equal(added.length,15);
- assert.equal(new Set(added.flatMap(m=>[m.anim,m.anim+1,m.anim+2,m.anim+3])).size,60);
+ const g=data();assert.equal(g.monsters.length,55);
+ assert.equal(new Set(g.monsters.map(m=>m.code)).size,55);
+ const added=g.monsters.filter(m=>m.catalog_key);assert.equal(added.length,30);
+ assert.equal(new Set(added.flatMap(m=>[m.anim,m.anim+1,m.anim+2,m.anim+3])).size,120);
  assert.ok(added.every(m=>m.anim>=256&&m.anim+3<384&&!m.abilities.includes('boss')));
  const seen=new Set();for(let depth=1;depth<=8;depth++)for(let seed=1;seed<=15;seed++){
    const run=new Game(g,{depth,seed});run.entities.forEach(e=>seen.add(e.id));

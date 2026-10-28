@@ -181,9 +181,10 @@ function codeToEntity() {
 }
 function newGame(g) {
   G = g;
-  for (const k of Object.keys(DEFAULT_GAME)) if (!(k in G) && !['art_style', 'art_revision', 'monster_art_style', 'monster_art_revision', 'bestiary_revision'].includes(k)) G[k] = clone(DEFAULT_GAME[k]);
+  for (const k of Object.keys(DEFAULT_GAME)) if (!(k in G) && !['art_style', 'art_revision', 'monster_art_style', 'monster_art_revision', 'bestiary_revision', 'overhang_revision', 'overhangs', 'matched_masonry_revision', 'reference_matches'].includes(k)) G[k] = clone(DEFAULT_GAME[k]);
   for (const k of Object.keys(DEFAULT_GAME.params)) if (!(k in G.params)) G.params[k] = DEFAULT_GAME.params[k];
   if(typeof installBestiary==='function')installBestiary();
+  if(typeof installTallProps==='function')installTallProps();
   loadSheets();
   document.getElementById('gamename').textContent = G.name || '';
   save();
@@ -193,8 +194,9 @@ function freeCodes() {
   const used = new Set(G.monsters.map(m => m.code));
   G.monsters.forEach(m => { if (m.anim < 256) for (const f of entFrames(m)) used.add(f); });
   [G.params.tile_start, G.params.tile_exit, 0].forEach(t => used.add(t));
+  G.floors.forEach(f=>f.tiles.forEach(row=>row.match(/../g).forEach(v=>used.add(parseInt(v,16)))));
   const out = [];
-  for (let n = 1; n < 256; n++) if (!used.has(n) && spriteBlank(n)) out.push(n);
+  for (let n = 1; n < 256; n++) if (!used.has(n) && !G.flags[n] && (spriteBlank(n)||(n>=128&&n<176))) out.push(n);
   return out;
 }
 // a free run of 4 cells on page 2 (sprite numbers 256..383)
@@ -431,8 +433,15 @@ function bakeFloor(f) {
   return { tiles: out, ents };
 }
 const LIT = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 1, 15];
+// Scenery cutouts sit on the active paving; black remains transparent in sprites.
+const FLOOR_BACKED_SCENERY=new Set([...Array.from({length:12},(_,i)=>4+i),...Array.from({length:11},(_,i)=>21+i),46,47,...Array.from({length:12},(_,i)=>64+i),...Array.from({length:12},(_,i)=>80+i)]);
+function drawTerrainTile(ctx,n,x,y,size,getSprite,pal){
+ if(FLOOR_BACKED_SCENERY.has(n))ctx.drawImage(getSprite(1,pal),x,y,size,size);
+ ctx.drawImage(getSprite(n,pal),x,y,size,size);
+}
+function bakedGamePreview(game){return {tiles:game.map,ents:game.entities.map(e=>({i:e.y*128+e.x,id:e.id,actor:e}))};}
 function drawFloor(ctx, f, scale, opts = {}) {
-  const { tiles, ents } = bakeFloor(f);
+  const { tiles, ents } = opts.game?bakedGamePreview(opts.game):bakeFloor(f);
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   ctx.imageSmoothingEnabled = false;
@@ -440,11 +449,18 @@ function drawFloor(ctx, f, scale, opts = {}) {
   for (let i = 0; i < tiles.length; i++) {
     const v = tiles[i];
     if (!v) continue;
-    ctx.drawImage(sprite(v, LIT), (i % 128) * s, (i >> 7) * s, s, s);
+    drawTerrainTile(ctx,v,(i % 128)*s,(i >> 7)*s,s,sprite,LIT);
   }
-  for (const e of ents) {
-    const m = G.monsters[e.id - 1];
-    ctx.drawImage(sprite(m.anim), (e.i % 128) * s, (e.i >> 7) * s, s, s);
+  drawWallDecorations(ctx,tiles,G,scale);
+  const objects=tiles.map((n,i)=>({n,i,entity:false})).filter(o=>G.overhangs?.[o.n]?.enabled);
+  objects.push(...ents.map(e=>({...e,n:e.actor?.anim??G.monsters[e.id-1].anim,entity:true})));
+  objects.sort((a,b)=>(a.i>>7)-(b.i>>7)||Number(a.entity)-Number(b.entity));
+  for(const o of objects){
+    const x=o.i%128*s,y=(o.i>>7)*s,p=G.overhangs?.[o.n];
+    ctx.save();ctx.translate(x+(o.actor?.dir===-1?s:0),y);if(o.actor?.dir===-1)ctx.scale(-1,1);
+    ctx.drawImage(sprite(o.n,o.entity?null:LIT),0,0,s,s);
+    if(p?.enabled)ctx.drawImage(sprite(p.top,o.entity?null:LIT),0,-s,s,s);
+    if(o.actor?.weapon&&o.actor.hp>0)ctx.drawImage(sprite(o.actor.weapon.spr),scale,0,s,s);ctx.restore();
   }
   if (opts.grid) {
     ctx.strokeStyle = 'rgba(255,255,255,.06)';
@@ -467,7 +483,7 @@ function addLibraryMonster(lm, cart) {
   const slot = freePage2Slot();
   if (slot < 0) return status('the second sprite page is full', true);
   const codes = freeCodes();
-  if (!codes.length) return status('no free map code left (an empty cell of sprite page 1 is needed)', true);
+  if (!codes.length) return status('no unused map code left', true);
   for (let i = 0; i < 4; i++) {
     const n = slot + i - 256, sx = (n % 16) * 8, sy = (n >> 4) * 8;
     for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) setPixel(2, sx + x, sy + y, cartPixel(cart, lm.frames[i], x, y));
@@ -996,7 +1012,7 @@ function validate() {
     if (k == null || k < 0) continue;
     const f = G.floors[k];
     if (!f) { errs.push(`floor ${i + 1}: map ${k} missing`); continue; }
-    const { tiles, ents } = bakeFloor(f);
+    const { tiles, ents } = opts.game?bakedGamePreview(opts.game):bakeFloor(f);
     const starts = tiles.filter(v => v === G.params.tile_start).length;
     if (starts !== 1) errs.push(`floor ${i + 1} (${f.name}): ${starts} start tiles, exactly 1 needed`);
     const isLast = i + 1 === G.params.last_floor;

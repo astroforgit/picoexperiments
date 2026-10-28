@@ -397,7 +397,7 @@ pm_d    rts
 pm_id   dta 0
 pm_x    dta 0
 pm_y    dta 0
-pm_list :40 dta 0
+pm_list :NENT dta 0
 
 ; x, y = get_rnd_pos(room u7) -> Y, X
 get_rnd_pos
