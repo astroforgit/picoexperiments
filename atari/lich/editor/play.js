@@ -1,7 +1,7 @@
 'use strict';
 const play = { game:null, seed:1, depth:1, level:1, inventory:false, cursor:0, menu:false, action:0, started:0, moveAt:0, camera:null, sound:false, audio:null, canvas:null, ui:null, lastInput:0, paused:false };
 const PLAY_DARK=[0,0,1,5,1,1,13,6,4,4,9,3,13,5,1,1];
-const playClean=s=>String(s).replace(/\^([a-z])/g,(_,c)=>c.toUpperCase()).replace(/\^\*/g,'★');
+const playClean=s=>String(s).replace(/\^([a-ząćęłńóśźż])/g,(_,c)=>c.toUpperCase()).replace(/\^\*/g,'★');
 function playFont(ctx,text,x,y,color=7,shadow=null) {
   const x0=x;
   for(let i=0;i<String(text).length;i++) {
@@ -89,7 +89,7 @@ function playDraw(now) {
   if(!g){
     const spr=play.titleSprites;
     for(let y=0;y<16;y++)for(let x=0;x<16;x++)ctx.drawImage(spr(PLAY_TITLE[y][x]),x*8,y*8);
-    for(let y=0;y<2;y++)for(let x=0;x<5;x++)ctx.drawImage(spr(139+x+y*16),44+x*8,27+y*8);
+    if(G.language==='pl')playWindow(ctx,['^klątwa ^króla ^licza'],12,27,104);else for(let y=0;y<2;y++)for(let x=0;x<5;x++)ctx.drawImage(spr(139+x+y*16),44+x*8,27+y*8);
     ctx.save();ctx.beginPath();ctx.rect(0,50,128,33);ctx.clip();playFont(ctx,G.windows.ml_story.join('\n'),16,86-Math.floor(now/230)%150,6,2);ctx.restore();
     playFont(ctx,G.texts.s_embark,46,104,12,5);playFont(ctx,G.texts.s_credit1,26,115,5,1);playFont(ctx,G.texts.s_credit2,26,122,5,1);return;
   }
@@ -143,17 +143,18 @@ function playDraw(now) {
     if(play.menu){const it=g.inventory[play.cursor];const command=it?.type===1?(h.weapon===it?'s_unequip':'s_equip'):'s_use';playWindow(ctx,[g.text(command),g.text('s_discard')],35,25+play.cursor*6,70,play.action);}
   }
   if(g.modal)playWindow(ctx,g.modal,5,12,118);
-  if(play.paused)playWindow(ctx,['^paused','','^press ^p to resume'],18,46,92);
-  if(g.state==='dead')playWindow(ctx,['^you died','',...wrapPlayText(`Killed by ${g.killer}`,25),`on floor ${g.depth}.`,'','^x / ^enter: retry'],14,30,100);
-  if(g.state==='won')playWindow(ctx,[...g.g.windows.ml_win,'','^x / ^enter: new run'],4,15,120);
+  if(play.paused)playWindow(ctx,g.g.language==='pl'?['^pauza','','^p: wróć do gry']:['^paused','','^press ^p to resume'],18,46,92);
+  if(g.state==='dead')playWindow(ctx,g.g.language==='pl'?['^śmierć','',...wrapPlayText(`^zabójca: ${g.killer}`,25),`piętro ${g.depth}.`,'','^x / ^enter: ponów']:['^you died','',...wrapPlayText(`Killed by ${g.killer}`,25),`on floor ${g.depth}.`,'','^x / ^enter: retry'],14,30,100);
+  if(g.state==='won')playWindow(ctx,[...g.g.windows.ml_win,'',g.g.language==='pl'?'^x / ^enter: nowa gra':'^x / ^enter: new run'],4,15,120);
 }
 function wrapPlayText(s,n) {const lines=[];let line='';for(const word of s.split(' ')){if((line+' '+word).length>n){lines.push(line);line=word;}else line+=(line?' ':'')+word;}if(line)lines.push(line);return lines;}
 function playRefresh() {
   if(!play.ui?.isConnected)return;
   const {summary,bag,log,message}=play.panels,g=play.game;
   if(!g){summary.textContent='A JavaScript port using the current game data.';bag.replaceChildren();log.replaceChildren();message.textContent='Press Enter or click Embark.';return;}
-  const h=g.hero;summary.replaceChildren(...[['Floor',g.depth],['HP',`${h.hp} / ${h.maxHp}`],['Attack',g.damage(h)],['Level',h.level],['XP',`${h.xp} / ${g.g.xp_req[h.level+1]??'max'}`],['Turns',g.turn]].map(([k,v])=>hElementStat(k,v)));
+  const h=g.hero;summary.replaceChildren(...[['Floor',g.depth],['HP',`${h.hp} / ${h.maxHp}`],['Attack',g.damage(h)],['Level',h.level],['XP',`${h.xp} / ${g.g.xp_req[h.level+1]??'max'}`],['Turns',g.turn]].map(([k,v])=>hElementStat(g.g.language==='pl'?({Floor:'Piętro',Attack:'Atak',Level:'Poziom',Turns:'Tury'}[k]||k):k,v)));
   message.textContent=play.paused?'Paused.':g.modal?'Read the message on the game screen; press Enter to close.':play.inventory?'Backpack: ↑↓ select, Enter use/equip, C close.':g.state==='dead'?'You died. Press Enter to retry this seed.':g.state==='won'?'Victory! Press Enter for a new run.':'Arrow keys / WASD move and interact. X opens backpack.';
+  if(g.g.language==='pl')message.textContent=play.paused?'Pauza.':g.modal?'Naciśnij Enter, aby zamknąć wiadomość.':play.inventory?'Plecak: ↑↓ wybór, Enter użyj/załóż, C zamknij.':g.state==='dead'?'Śmierć. Enter: spróbuj ponownie.':g.state==='won'?'Zwycięstwo! Enter: nowa gra.':'Strzałki / WASD: ruch i interakcja. X: plecak.';
   bag.replaceChildren(...g.inventory.map((it,i)=>{
     const row=hElementRow(it,i,g);return row;
   }));
@@ -163,10 +164,10 @@ function hElementStat(k,v){return h('div',{},h('span',{class:'note'},k),h('stron
 function hElementLog(e){return h('div',{},h('span',{class:'note'},`${e.turn} · `),playClean(e.message));}
 function hElementRow(it,i,g){
   const row=h('div',{class:'play-item'},h('span',{class:'note'},i+1));
-  if(!it){row.append(h('span',{class:'note'},'Empty'));return row;}
+  if(!it){row.append(h('span',{class:'note'},g.g.language==='pl'?'Pusto':'Empty'));return row;}
   row.append(h('span',{},(it===g.hero.weapon?'⚔ ':'')+playClean(g.itemName(it))));
   const command=it.type===1?(it===g.hero.weapon?'unequip':'equip'):'use';
-  for(const action of [command,'discard'])row.append(h('button',{class:'small',disabled:g.state!=='playing'||!!g.modal||play.paused,onclick:()=>{const before=g.turn;g.itemAction(i,action);playAfterAction(before);play.canvas?.focus();}},action));return row;
+  for(const action of [command,'discard'])row.append(h('button',{class:'small',disabled:g.state!=='playing'||!!g.modal||play.paused,onclick:()=>{const before=g.turn;g.itemAction(i,action);playAfterAction(before);play.canvas?.focus();}},playClean(g.text('s_'+action,action))));return row;
 }
 function playSyncArtwork(){
   if(!play.game)return;
@@ -185,7 +186,7 @@ function playSyncArtwork(){
 VIEWS.play=()=>{
   playSyncArtwork();
   const box=h('div',{class:'play-page'});play.ui=box;
-  box.append(h('div',{class:'play-heading'},h('div',{},h('h2',{},'Play Curse of the Lich King'),h('p',{class:'note'},'Test the current game data. Use Live artwork to change walls and objects instantly. Other edits take effect when you restart.'))));
+  box.append(h('div',{class:'play-heading'},h('div',{},h('h2',{},G.language==='pl'?'Graj: Klątwa Króla Licza':'Play Curse of the Lich King'),h('p',{class:'note'},'Test the current game data. Use Live artwork to change walls and objects instantly. Other edits take effect when you restart.'))));
   const controls=h('div',{class:'actions lab-controls'},
     labField('Seed',numInput(play,'seed',{min:0,max:4294967295})),
     labField('Starting floor (test)',numInput(play,'depth',{min:1,max:G.params.last_floor})),
@@ -211,7 +212,7 @@ VIEWS.play=()=>{
   const pad=h('div',{class:'play-pad'});
   for(const [label,cmd] of [['↑','up'],['←','left'],['↓','down'],['→','right'],['X · backpack / select','select'],['C · close','close'],['Wait · .','wait']])pad.append(h('button',{onclick:()=>{playCommand(cmd);play.canvas?.focus();}},label));
   const view=h('div',{class:'play-display'},canvas,message,pad,h('p',{class:'note'},'Move into enemies to attack and into props to interact. Collect supplies, equip weapons, descend eight floors and defeat Raq’zul. Waiting with “.” is an editor convenience.'));
-  const side=h('aside',{class:'play-sidebar panel'},summary,h('h3',{},'Backpack'),bag,h('h3',{},'Recent events'),log);
+  const side=h('aside',{class:'play-sidebar panel'},summary,h('h3',{},G.language==='pl'?'Plecak':'Backpack'),bag,h('h3',{},G.language==='pl'?'Ostatnie zdarzenia':'Recent events'),log);
   box.append(h('div',{class:'play-layout'},view,side));
   box.append(h('div',{class:'play-tools-row'},playArtPanel()));
   box.append(h('details',{class:'panel play-details'},h('summary',{},'Port fidelity and testing'),

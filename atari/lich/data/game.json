@@ -1,7 +1,7 @@
 {
   "format": "lich-game",
   "version": 1,
-  "name": "Curse of the Lich King",
+  "name": "Klątwa Króla Licza",
   "params": {
     "last_floor": 8,
     "rooms_base": 2,
@@ -66,7 +66,7 @@
   },
   "monsters": [
     {
-      "name": "hero",
+      "name": "bohater",
       "anim": 240,
       "code": 240,
       "col": 8,
@@ -81,7 +81,7 @@
       "role": "hero"
     },
     {
-      "name": "a rat",
+      "name": "szczur",
       "anim": 192,
       "code": 192,
       "col": 8,
@@ -95,7 +95,7 @@
       "abilities": []
     },
     {
-      "name": "a ghoul",
+      "name": "ghul",
       "anim": 224,
       "code": 224,
       "col": 12,
@@ -109,7 +109,7 @@
       "abilities": []
     },
     {
-      "name": "pot",
+      "name": "dzban",
       "anim": 29,
       "code": 29,
       "col": 7,
@@ -124,7 +124,7 @@
       "role": "pot"
     },
     {
-      "name": "chest",
+      "name": "skrzynia",
       "anim": 13,
       "code": 13,
       "col": 7,
@@ -139,7 +139,7 @@
       "role": "chest"
     },
     {
-      "name": "shelves",
+      "name": "regał",
       "anim": 15,
       "code": 15,
       "col": 7,
@@ -154,7 +154,7 @@
       "role": "shelves"
     },
     {
-      "name": "door",
+      "name": "drzwi",
       "anim": 4,
       "code": 4,
       "col": 7,
@@ -169,7 +169,7 @@
       "role": "door (horizontal)"
     },
     {
-      "name": "door",
+      "name": "drzwi",
       "anim": 5,
       "code": 5,
       "col": 7,
@@ -184,7 +184,7 @@
       "role": "door (vertical)"
     },
     {
-      "name": "altar",
+      "name": "ołtarz",
       "anim": 25,
       "code": 25,
       "col": 7,
@@ -199,7 +199,7 @@
       "role": "altar"
     },
     {
-      "name": "gate",
+      "name": "krata",
       "anim": 7,
       "code": 7,
       "col": 7,
@@ -214,7 +214,7 @@
       "role": "gate"
     },
     {
-      "name": "lever",
+      "name": "dźwignia",
       "anim": 31,
       "code": 31,
       "col": 7,
@@ -229,7 +229,7 @@
       "role": "lever"
     },
     {
-      "name": "gate",
+      "name": "krata",
       "anim": 9,
       "code": 9,
       "col": 7,
@@ -244,7 +244,7 @@
       "role": "gate"
     },
     {
-      "name": "spikes",
+      "name": "kolce",
       "anim": 47,
       "code": 47,
       "col": 7,
@@ -259,7 +259,7 @@
       "role": "spikes"
     },
     {
-      "name": "an eyeball",
+      "name": "gałka oczna",
       "anim": 228,
       "code": 228,
       "col": 14,
@@ -275,7 +275,7 @@
       ]
     },
     {
-      "name": "an imp",
+      "name": "chochlik",
       "anim": 244,
       "code": 244,
       "col": 14,
@@ -291,7 +291,7 @@
       ]
     },
     {
-      "name": "box",
+      "name": "mimik",
       "anim": 212,
       "code": 212,
       "col": 9,
@@ -308,7 +308,7 @@
       ]
     },
     {
-      "name": "a troll",
+      "name": "troll",
       "anim": 208,
       "code": 208,
       "col": 3,
@@ -322,7 +322,7 @@
       "abilities": []
     },
     {
-      "name": "pot",
+      "name": "dzban",
       "anim": 27,
       "code": 27,
       "col": 7,
@@ -337,7 +337,7 @@
       "role": "pot"
     },
     {
-      "name": "a skeleton",
+      "name": "szkielet",
       "anim": 196,
       "code": 196,
       "col": 7,
@@ -351,7 +351,7 @@
       "abilities": []
     },
     {
-      "name": "anvil",
+      "name": "kowadło",
       "anim": 24,
       "code": 24,
       "col": 7,
@@ -366,7 +366,7 @@
       "role": "anvil"
     },
     {
-      "name": "body",
+      "name": "zwłoki",
       "anim": 11,
       "code": 11,
       "col": 7,
@@ -381,7 +381,7 @@
       "role": "body"
     },
     {
-      "name": "a toxic rat",
+      "name": "jadowity szczur",
       "anim": 216,
       "code": 216,
       "col": 11,
@@ -397,7 +397,7 @@
       ]
     },
     {
-      "name": "a ghost",
+      "name": "duch",
       "anim": 200,
       "code": 200,
       "col": 7,
@@ -431,7 +431,7 @@
       ]
     },
     {
-      "name": "well",
+      "name": "sadzawka",
       "anim": 22,
       "code": 22,
       "col": 7,
@@ -446,7 +446,7 @@
       "role": "well"
     },
     {
-      "name": "slaim",
+      "name": "szlam",
       "hp": 2,
       "atk": 1,
       "depth": 1,
@@ -463,7 +463,7 @@
       "from_source": "Crocolike / slaim"
     },
     {
-      "name": "a carrion slime",
+      "name": "ścierwowy szlam",
       "hp": 7,
       "atk": 1,
       "depth": 2,
@@ -480,7 +480,7 @@
       "from_source": "The Demon Within (v1.0.0b) / carnivorous slime"
     },
     {
-      "name": "a fallen mage",
+      "name": "upadły mag",
       "hp": 10,
       "atk": 0,
       "depth": 5,
@@ -499,7 +499,7 @@
       "from_source": "The Demon Within (v1.0.0b) / corrupt wizard"
     },
     {
-      "name": "a lesser demon",
+      "name": "pomniejszy demon",
       "hp": 11,
       "atk": 1,
       "depth": 3,
@@ -518,7 +518,7 @@
       "from_source": "The Demon Within (v1.0.0b) / lesser demon"
     },
     {
-      "name": "a thornling",
+      "name": "cierniak",
       "hp": 5,
       "atk": 1,
       "depth": 2,
@@ -535,7 +535,7 @@
       "from_source": "Porklike / creature 5"
     },
     {
-      "name": "a berserker",
+      "name": "berserker",
       "hp": 20,
       "atk": 3,
       "depth": 6,
@@ -552,7 +552,7 @@
       "from_source": "The Demon Within (v1.0.0b) / berserker"
     },
     {
-      "name": "danser",
+      "name": "tancerz",
       "hp": 10,
       "atk": 2,
       "depth": 4,
@@ -569,7 +569,7 @@
       "from_source": "Crocolike / danser"
     },
     {
-      "name": "skorpy",
+      "name": "skorpion",
       "hp": 5,
       "atk": 1,
       "depth": 3,
@@ -588,7 +588,7 @@
       "from_source": "Crocolike / skorpy"
     },
     {
-      "name": "haunter",
+      "name": "widmo",
       "hp": 11,
       "atk": 1,
       "depth": 6,
@@ -607,7 +607,7 @@
       "from_source": "BulbaRogue / haunter"
     },
     {
-      "name": "death",
+      "name": "śmierć",
       "hp": 26,
       "atk": 3,
       "depth": 8,
@@ -626,7 +626,7 @@
       "from_source": "Crocolike / death"
     },
     {
-      "name": "an ash bat",
+      "name": "popielny nietoperz",
       "hp": 3,
       "atk": 1,
       "depth": 1,
@@ -643,7 +643,7 @@
       "from_source": "Original design / fantasy bestiary"
     },
     {
-      "name": "a grave goblin",
+      "name": "grobowy goblin",
       "hp": 8,
       "atk": 2,
       "depth": 3,
@@ -660,7 +660,7 @@
       "from_source": "Original design / fantasy bestiary"
     },
     {
-      "name": "a bone hound",
+      "name": "kościany ogar",
       "hp": 14,
       "atk": 2,
       "depth": 5,
@@ -679,7 +679,7 @@
       "from_source": "Original design / fantasy bestiary"
     },
     {
-      "name": "a blood knight",
+      "name": "krwawy rycerz",
       "hp": 24,
       "atk": 3,
       "depth": 7,
@@ -696,7 +696,7 @@
       "from_source": "Original design / fantasy bestiary"
     },
     {
-      "name": "an ember drake",
+      "name": "żarowy smok",
       "hp": 30,
       "atk": 3,
       "depth": 8,
@@ -840,7 +840,7 @@
       "from_source": "BulbaRogue / gengar"
     },
     {
-      "name": "goast",
+      "name": "zjawa",
       "hp": 9,
       "atk": 1,
       "depth": 4,
@@ -859,7 +859,7 @@
       "from_source": "Crocolike / goast"
     },
     {
-      "name": "snek",
+      "name": "wąż",
       "hp": 5,
       "atk": 1,
       "depth": 2,
@@ -878,7 +878,7 @@
       "from_source": "Crocolike / snek"
     },
     {
-      "name": "zombus",
+      "name": "zombi",
       "hp": 19,
       "atk": 3,
       "depth": 6,
@@ -897,7 +897,7 @@
       "from_source": "Crocolike / zombus"
     },
     {
-      "name": "squid",
+      "name": "kałamarnica",
       "hp": 12,
       "atk": 2,
       "depth": 5,
@@ -916,7 +916,7 @@
       "from_source": "Crocolike / squid"
     },
     {
-      "name": "bads",
+      "name": "nietoperz",
       "hp": 8,
       "atk": 1,
       "depth": 3,
@@ -935,7 +935,7 @@
       "from_source": "Crocolike / bads"
     },
     {
-      "name": "ssief",
+      "name": "złodziej",
       "hp": 13,
       "atk": 2,
       "depth": 5,
@@ -954,7 +954,7 @@
       "from_source": "Crocolike / ssief"
     },
     {
-      "name": "manki",
+      "name": "małpa",
       "hp": 20,
       "atk": 2,
       "depth": 7,
@@ -973,7 +973,7 @@
       "from_source": "Crocolike / manki"
     },
     {
-      "name": "croco",
+      "name": "krokodyl",
       "hp": 25,
       "atk": 3,
       "depth": 8,
@@ -998,7 +998,7 @@
       "heal": 1,
       "hpmax": 0,
       "depth": 1,
-      "name": "apple",
+      "name": "jabłko",
       "found": "pot"
     },
     {
@@ -1008,7 +1008,7 @@
       "heal": 2,
       "hpmax": 0,
       "depth": 2,
-      "name": "carrot",
+      "name": "marchew",
       "found": "pot"
     },
     {
@@ -1018,7 +1018,7 @@
       "heal": 5,
       "hpmax": 0,
       "depth": 3,
-      "name": "bread",
+      "name": "chleb",
       "found": "pot"
     },
     {
@@ -1028,7 +1028,7 @@
       "heal": 10,
       "hpmax": 0,
       "depth": 4,
-      "name": "soup",
+      "name": "zupa",
       "found": "pot"
     },
     {
@@ -1038,7 +1038,7 @@
       "heal": 15,
       "hpmax": 0,
       "depth": 5,
-      "name": "steak",
+      "name": "stek",
       "found": "pot"
     },
     {
@@ -1048,7 +1048,7 @@
       "heal": 0,
       "hpmax": 1,
       "depth": 2,
-      "name": "vial",
+      "name": "fiolka",
       "found": "shelves"
     },
     {
@@ -1058,7 +1058,7 @@
       "heal": 0,
       "hpmax": 3,
       "depth": 4,
-      "name": "potion",
+      "name": "mikstura",
       "found": "shelves"
     },
     {
@@ -1068,7 +1068,7 @@
       "heal": 0,
       "hpmax": 0,
       "depth": 1,
-      "name": "stick",
+      "name": "kij",
       "found": "chest"
     },
     {
@@ -1078,7 +1078,7 @@
       "heal": 0,
       "hpmax": 0,
       "depth": 2,
-      "name": "dagger",
+      "name": "sztylet",
       "found": "chest"
     },
     {
@@ -1088,7 +1088,7 @@
       "heal": 0,
       "hpmax": 0,
       "depth": 6,
-      "name": "scimitar",
+      "name": "bułat",
       "found": "chest"
     },
     {
@@ -1098,7 +1098,7 @@
       "heal": 0,
       "hpmax": 0,
       "depth": 3,
-      "name": "battleaxe",
+      "name": "topór",
       "found": "chest"
     },
     {
@@ -1108,7 +1108,7 @@
       "heal": 0,
       "hpmax": 0,
       "depth": 7,
-      "name": "spear",
+      "name": "włócznia",
       "found": "chest"
     },
     {
@@ -1118,7 +1118,7 @@
       "heal": 0,
       "hpmax": 0,
       "depth": 8,
-      "name": "broadsword",
+      "name": "pałasz",
       "found": "chest"
     },
     {
@@ -1128,7 +1128,7 @@
       "heal": 0,
       "hpmax": 0,
       "depth": 5,
-      "name": "club",
+      "name": "maczuga",
       "found": "chest"
     },
     {
@@ -1138,7 +1138,7 @@
       "heal": 0,
       "hpmax": 0,
       "depth": 4,
-      "name": "sword",
+      "name": "miecz",
       "found": "chest"
     }
   ],
@@ -2068,124 +2068,119 @@
   ],
   "texts": {
     "tr_1": "",
-    "tr_2": "cursed ",
-    "tr_3": "holy ",
+    "tr_2": "klątwa: ",
+    "tr_3": "łaska: ",
     "st_1": "",
-    "st_2": " of blight",
-    "st_3": " of confusion",
-    "st_4": " of the basilisk",
-    "st_5": " of the leech",
-    "s_embark": "(*) ^embark",
-    "s_credit1": "^created by @^johan^peitz",
-    "s_credit2": "^audio by @^gruber_^music      v1.2",
+    "st_2": " zarazy",
+    "st_3": " zamętu",
+    "st_4": " bazyliszka",
+    "st_5": " pijawki",
+    "s_embark": "(*) ^wyrusz",
+    "s_credit1": "^autor: @^johan^peitz",
+    "s_credit2": "^dźwięk: @^gruber_^music  v1.2",
     "s_btn": "[*]",
-    "s_close": "^close (c)",
-    "s_backpack": "^b^a^c^k^p^a^c^k",
+    "s_close": "^zamknij (c)",
+    "s_backpack": "^p^l^e^c^a^k",
     "s_empty": "###",
     "s_equipmark": "$ ",
-    "s_mysterious": "mysterious ",
-    "s_use": "use",
-    "s_discard": "discard",
-    "s_equip": "equip",
-    "s_unequip": "unequip",
+    "s_mysterious": "niezn.: ",
+    "s_use": "użyj",
+    "s_discard": "wyrzuć",
+    "s_equip": "załóż",
+    "s_unequip": "zdejmij",
     "s_space": " ",
     "s_none": "",
     "s_quest": "?",
     "s_excl": "!",
     "s_dots": "...",
-    "s_floor": "^floor ",
-    "s_killedby": "^killed by ",
-    "s_onfloor": "on floor ",
-    "s_poison": "poison",
-    "s_lvlup": "^level up",
+    "s_floor": "^piętro ",
+    "s_killedby": "^zabójca: ",
+    "s_onfloor": "piętro ",
+    "s_poison": "trucizna",
+    "s_lvlup": "^awans",
     "s_atkup": "^a^t^k +1",
     "s_hpup": "^max ^h^p &+3",
-    "s_refill": "^h^p refilled!",
+    "s_refill": "^h^p odnowione!",
     "s_heartplus": "&+",
-    "s_a_equip": "^equip weapon to alter...",
-    "s_a_untampered": "^weapon must be untampered...",
-    "s_a_food": "^cursed food required...",
-    "s_a_shattererd": " shattererd!",
-    "s_a_shattered": " shattered!",
-    "s_a_dip": "^dip a cursed weapon in the pool...",
-    "s_a_nocurse": " is no longer cursed!",
-    "s_a_noident": "^nothing to identify...",
-    "s_a_carry": "^can't carry any more...",
-    "s_a_poison": "^b^l^e^h! ^poisonous!",
-    "s_a_dizzy": "^feeling dizzy...",
-    "s_a_glup": "^g^l^u^p! ^can't move!",
-    "s_a_rotten": "^ouf... ^it's rotten!",
-    "s_a_stuck": " is stuck!",
-    "s_stun": "stun",
-    "s_curse": "curse",
-    "s_steal": "steal",
-    "s_blind": "blind"
+    "s_a_equip": "^najpierw załóż broń...",
+    "s_a_untampered": "^broń nie może być zaklęta...",
+    "s_a_food": "^potrzebny przeklęty pokarm...",
+    "s_a_shattererd": ": rozbita!",
+    "s_a_shattered": ": rozbita!",
+    "s_a_dip": "^zanurz przeklętą broń...",
+    "s_a_nocurse": ": bez klątwy!",
+    "s_a_noident": "^brak rzeczy do zbadania...",
+    "s_a_carry": "^plecak jest pełny...",
+    "s_a_poison": "^fuj! ^trucizna!",
+    "s_a_dizzy": "^kręci ci się w głowie...",
+    "s_a_glup": "^gulp! ^nie możesz się ruszyć!",
+    "s_a_rotten": "^fuj... ^zepsute!",
+    "s_a_stuck": ": nie da się zdjąć!",
+    "s_stun": "ogłuszenie",
+    "s_curse": "klątwa",
+    "s_steal": "kradzież",
+    "s_blind": "ślepota"
   },
   "windows": {
     "ml_intro": [
-      "^chills run down your spine as",
-      "you enter the ^lich ^king's lair.",
+      "^dreszcz przebiega ci po plecach.",
+      "^wchodzisz do siedziby licza.",
       "",
-      "^you have travelled light but",
-      "hopefully you will find more",
-      "supplies hidden down here.",
+      "^masz niewiele zapasów.",
+      "^szukaj ukrytego jedzenia",
+      "i broni w tych lochach.",
       "",
-      "^rumor has it ^raq'zul resides on",
-      "the 8th floor. ^descend his lair",
-      "and destroy him!"
+      "^raq'zul czeka na piętrze 8.",
+      "^zejdź w głąb jego siedziby",
+      "i pokonaj go!"
     ],
     "ml_anvil": [
-      "^a mighty anvil...",
+      "^potężne kowadło...",
       "",
-      "^spend a turn on this",
-      "hefty piece to bestow",
-      "a wepaon with special",
-      "powers - if you have",
-      "the right items."
+      "^poświęć turę, by nadać",
+      "broni niezwykłą moc.",
+      "^potrzebujesz zwykłej broni",
+      "i przeklętego jedzenia."
     ],
     "ml_well": [
-      "^a shallow pool...",
+      "^płytka sadzawka...",
       "",
-      "^the strangely clear water",
-      "has the power to free",
-      "a weapon from its curse.",
-      "^it only costs a turn"
+      "^ta niezwykle czysta woda",
+      "zdejmuje klątwę z broni.",
+      "^wystarczy jedna tura."
     ],
     "ml_altar": [
-      "^a holy altar...",
+      "^święty ołtarz...",
       "",
-      "^the book on the table has",
-      "the answers you need.",
-      "^spend a turn here to",
-      "identify a mysterious item."
+      "^księga kryje odpowiedzi.",
+      "^poświęć turę, by rozpoznać",
+      "nieznany przedmiot."
     ],
     "ml_win": [
-      "^as the ^lich king lets out a final",
-      "scream, something shifts in the",
-      "air. ^you feel lighter, as if an",
-      "invisible burden has lifted.",
+      "^licz wydaje ostatni krzyk.",
+      "^czujesz, jak znika ciężar",
+      "spoczywający na świecie.",
       "",
-      "^raq'zul is defeated and you",
-      "return to the surface knowing",
-      "that the world has become",
-      "a better place."
+      "^raq'zul został pokonany.",
+      "^wracasz na powierzchnię.",
+      "^świat jest znów bezpieczny."
     ],
     "ml_story": [
-      "  ^to become immortal, the lich",
-      " king ^raq'zul casts a powerful",
-      "   spell. ^draining the world",
-      "     of life and happiness.",
+      "  ^pragnąc nieśmiertelności,",
+      "  król licz ^raq'zul rzuca",
+      "     potężne zaklęcie.",
+      "  ^świat traci życie i radość.",
       "",
-      "  ^brave souls descend into his",
-      "     lair, but none return.",
+      "  ^śmiałkowie schodzą do lochu,",
+      "    lecz żaden nie wraca.",
       "",
-      "  ^now it is your turn. ^defeat",
-      " ^raq'zul, break the curse, and",
-      "       end the suffering!"
+      "   ^teraz twoja kolej.",
+      " ^pokonaj ^raq'zula, złam klątwę",
+      "      i zakończ cierpienie!"
     ],
     "ml_submenu": [
-      "use",
-      "discard"
+      "użyj",
+      "wyrzuć"
     ]
   },
   "floors": [],
@@ -2302,5 +2297,6 @@
       "adaptation": "Top four rows replaced with brick face; bottom four use matched paving."
     }
   },
-  "matched_masonry_revision": "matched-masonry-v4"
+  "matched_masonry_revision": "matched-masonry-v4",
+  "language": "pl"
 }

@@ -53,5 +53,11 @@ for n,r in tiles.items():put(n,r)
 # without claiming its current pixels are an unmodified reference match.
 g['reference_matches']['35']['adaptation']='Top four rows replaced with brick face; bottom four use matched paving.'
 g['art_style']=pack['id'];g['matched_masonry_revision']=pack['id']
+# Artwork regeneration must not reset the selected translation.
+current=json.loads((H/'data/game.json').read_text())
+if current.get('language'):
+ for key in ['language','name','texts','windows']:g[key]=current[key]
+ for kind in ['monsters','items']:
+  for target,existing in zip(g[kind],current[kind]):target['name']=existing['name']
 (H/'data/game.json').write_text(json.dumps(g,indent=2)+'\n')
 print('Updated',len(changed),'scenery sprites; preserved rules, maps, entities and flags.')

@@ -199,7 +199,7 @@ class Game {
     if(killed&&a===this.hero) {
       a.xp++;
       while(a.level+1<this.g.xp_req.length&&a.xp>=this.g.xp_req[a.level+1]) {
-        a.level++;a.atk+=this.p.lvl_atk;a.maxHp+=this.p.lvl_hp;a.hp=a.maxHp;this.say(`${this.text('s_lvlup','Level up')} ${a.level}! HP restored.`);
+        a.level++;a.atk+=this.p.lvl_atk;a.maxHp+=this.p.lvl_hp;a.hp=a.maxHp;this.say(`${this.text('s_lvlup','Level up')} ${a.level}! ${this.g.language==='pl'?'Zdrowie odnowione.':'HP restored.'}`);
       }
       if(this.has(d,'treasure')) {
         const pool=this.g.items.map((it,i)=>({it,id:i+1})).filter(v=>v.it.found==='pot');
@@ -233,7 +233,7 @@ class Game {
     this.turn++;
     if(this.state!=='playing')return;
     if(this.tile(this.hero.x,this.hero.y)===this.p.tile_exit) {
-      if(this.depth<this.p.last_floor){this.depth++;this.newFloor();}else this.say('Defeat the boss to win.');return;
+      if(this.depth<this.p.last_floor){this.depth++;this.newFloor();}else this.say(this.g.language==='pl'?'Pokonaj bossa, by wygrać.':'Defeat the boss to win.');return;
     }
     for(const e of [...this.entities]) {
       if(e===this.hero||e.prop||e.hp<=0)continue;this.status(e);if(e.hp>0)this.ai(e);if(this.state!=='playing')break;

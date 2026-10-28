@@ -181,7 +181,7 @@ function codeToEntity() {
 }
 function newGame(g) {
   G = g;
-  for (const k of Object.keys(DEFAULT_GAME)) if (!(k in G) && !['art_style', 'art_revision', 'monster_art_style', 'monster_art_revision', 'bestiary_revision', 'overhang_revision', 'overhangs', 'matched_masonry_revision', 'reference_matches'].includes(k)) G[k] = clone(DEFAULT_GAME[k]);
+  for (const k of Object.keys(DEFAULT_GAME)) if (!(k in G) && !['art_style', 'art_revision', 'monster_art_style', 'monster_art_revision', 'bestiary_revision', 'overhang_revision', 'overhangs', 'matched_masonry_revision', 'reference_matches', 'language'].includes(k)) G[k] = clone(DEFAULT_GAME[k]);
   for (const k of Object.keys(DEFAULT_GAME.params)) if (!(k in G.params)) G.params[k] = DEFAULT_GAME.params[k];
   if(typeof installBestiary==='function')installBestiary();
   if(typeof installTallProps==='function')installTallProps();

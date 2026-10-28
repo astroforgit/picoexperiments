@@ -506,3 +506,15 @@ snapshot, including furniture, hero, enabled-enemy filtering and tall prop depth
 It shows the complete initial floor without gameplay fog, plus inspection rings
 and grid. Play and inspection share the scenery-underlay renderer. These are
 browser rendering changes, not changes to native Atari drawing or sprite pixels.
+
+### Polish game text
+
+The bundled game now uses Polish (`language: "pl"`). Texts → Polski / English
+switches story windows, messages and entity/item names; restart a running Play
+session afterward. Older English saves upgrade once, retaining custom text and
+all artwork/rules. Language JSON sources are in `data/locales/`; rebuilding editor
+assets also regenerates the browser language packs. The game font includes
+ąćęłńóśźż and their capital forms in its existing 3×6-pixel/128-glyph budget.
+The Atari build encodes the same Polish text. The original bitmap title logo and
+editor authoring controls are not part of the text translation. Imported Pokémon
+proper names and original creator credits are retained.
