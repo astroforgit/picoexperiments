@@ -16,17 +16,26 @@ assert a.vregs[0x40]==3
 # The banner upload must survive loading/restoration and match the generated art.
 assert bytes(a.vram[0x78000:0x78a00])==(ROOT/'gen/banners.bin').read_bytes()
 original_step=a.cpu.step
+menu_calls=match_calls=0
 
 def checked_step():
+ global menu_calls,match_calls
  pc=a.cpu.pc;op=a.mem[pc]
+ if pc==r['MENU_FRAME']:menu_calls+=1
+ if pc==0x972c:match_calls+=1
  assert a.cpu.disassemble[op][0]!='???', f'Unsupported opcode ${op:02x} at ${pc:04x}'
  assert op!=0, f'Unexpected BRK at ${pc:04x}'
  return original_step()
 a.cpu.step=checked_step
 snapshots=[]
 for f in range(args.frames):
- a.set_input(trig=100<=f<125 or (f>750 and f%160<12),stick=([7,14,11,13][(f//140)%4] if f>600 else 15))
+ a.set_input(trig=100<=f<125 or (f>750 and f%160<12),stick=(13 if 40<=f<50 else [7,14,11,13][(f//140)%4] if f>600 else 15))
  a.run_frames(1)
+ if f==39:menu_selection=a.mem.ram[0x92c2]
+ if f==79:
+  assert a.mem.ram[0x92c2]!=menu_selection, 'Joystick did not move menu selection'
+  assert menu_calls>0 and a.blits>1000, 'Original options menu was not rendered'
+  assert a.mem.ram[0x97dd]!=0, 'Regression must cover a pending disabled SID request'
  if f in (79,299,599,899,args.frames-1):
   tag=f'{args.page:02x}-{f}'
   a.screenshot(ROOT/f'analysis/atari-{tag}.png',scale=2)
@@ -38,6 +47,7 @@ for f in range(args.frames):
 assert a.blits>1000
 assert a.nmi_count>=args.frames-1
 if args.frames>=900:
+ assert match_calls>0, 'Fire did not start a match from the menu'
  assert len({bytes(s['sprite_state']) for s in snapshots})>1
 report={'vbxe_page':hex(args.page),'pal':True,'frames':args.frames,
         'xex_sha256':hashlib.sha256((ROOT/'pilka.xex').read_bytes()).hexdigest(),

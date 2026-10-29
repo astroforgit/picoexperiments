@@ -38,17 +38,24 @@ VRAM at `$5F000`. The hidden-I/O menu table is relocated to `$C900`.
 The renderer uses double buffers, cached character cells, transparent C64
 sprite blits and a separate advertising strip. Compose and sprite blits
 run as one chained BCB list while the CPU continues; the VBI shows a picture
-only when the blitter has finished. When the game loop is late, drawing is
-skipped so the C64 logic keeps its 50 Hz rate. Each picture compares a
-quarter of the screen (colour RAM: three rows). The C64 game scrolls by
-copying its screen shifted by one character and flipping `$D018`. The NMI
-records that copy's direction (`$11DB`, index into the game's offset table
-at `$1471`). The renderer then moves the char layer and caches by one cell
-with precomputed BCB lists and compares all cells.
+only when the blitter has finished. Rendering runs at the match frame wait
+and at the original menu's input-loop boundary, never from an interrupt in
+partially updated game code. While rendering, the VBI still samples joysticks
+and publishes completed pictures, but defers the C64 IRQ's video-state updates.
+This keeps the screen base, fine scroll and ball position stable during composition.
+Each picture compares all 1,000 characters and colours and blits only dirty cells;
+colour-only menu changes and updates across multiple screen quarters appear together.
+The C64 game scrolls by copying its screen shifted by one character and flipping
+`$D018`. The NMI records that copy's direction (`$11DB`, index into the game's
+offset table at `$1471`). The renderer moves the char layer and caches by one
+cell with precomputed BCB lists before comparing all cells. Frame pacing remains
+limited by CPU rendering cost; this does not guarantee 50 Hz game logic.
 
 C64 sprite frames 32-127 are converted at build time to 24x21 VRAM images
 (one per 512 bytes at `$60000`). The 23 multiplexed sprites come from the
-game's tables (`$9F`, `$E4`, `$CD`, `$B6`); the ball is VIC sprite 7. Each
+game's tables (`$9F`, `$E4`, `$CD`, `$B6`). The first `$FF` Y entry terminates
+the list: subsequent slots contain stale data and must not be drawn. The ball
+is VIC sprite 7. Each
 is drawn at the C64 position (X-24, Y-50). Sprite-colour pixels are stored
 as `$FF`, and the blit's AND mask turns them into palette entry `$60` + the
 sprite's C64 colour. Multicolours `$D025`/`$D026` are palette entries `$40`
@@ -91,20 +98,30 @@ its results are not display-performance measurements.
 
 No source archives or sibling projects are modified by the build.
 
-## Latest smoke run
+## Renderer fixes and validation
 
-The current build passed 900 PAL frames at `$D600` and 200 at `$D700`.
-Checks cover startup, exact banner upload, execution without unexpected BRK or
-unsupported opcodes, VBXE drawing, and silent POKEY output. These are headless
-smoke tests, not full-match or real-machine validation.
+The original options menu now renders from its own loop, independently of the
+pending SID sound request (`$97DD`). The menu keeps the original title/credits,
+and palette entry 3 follows the C64 background colour used by the tile atlas.
+The renderer stops at the sprite-list terminator, restores the pitch before
+sprites on each picture, and compares all character and colour cells per picture.
+Player images use the full original 24x21 sprite, clipped at the viewport edges.
 
-## Renderer correction
+Regression tests cover stale visible sprites after the terminator, simultaneous
+character changes in different screen quarters, colour-only changes on all rows,
+menu advertising preservation, fine scrolling, edge clipping and VBI-only
+publication. Integration tests exercise visible menu startup with a pending
+sound request, joystick menu navigation and fire-to-start. They also reject
+unexpected opcodes, shared BCB writes during a blit, OS ROM re-enabling under
+runtime code, and non-silent POKEY output.
 
-The renderer now waits for blitter completion before modifying its shared BCB,
-uses table-based tile addresses, avoids computing destinations for unchanged cells,
-and blits only the visible 16x16 player area. The unused C64 sound update is skipped.
-The 400-frame headless profile averaged 114,288 CPU cycles per render versus
-142,907 before these changes (about 20% less); this is not a real-machine FPS claim.
-The emulator checks reject shared BCB writes during a blit and OS ROM re-enabling
-while executing the runtime underneath it. Fine scrolling and frame pacing remain
-unfinished, so the game is still an early conversion.
+These are headless checks, not full-machine validation. Sprite expansion in the
+menu previews, full matches, every menu mode and real-hardware frame pacing
+still need further work or validation. Sound remains disabled.
+
+Latest validation: 1,000 PAL frames at `$D600`, 300 at `$D700`, and 70 exact
+pixel comparisons. A 1,200-frame layer check exercised 452 pictures and 183
+scroll moves with zero cache/layer mismatches. The 400-frame measured portion
+of `python3 tools/speed.py 800` completed 375 game-loop iterations and 168
+renders (about 46.9 logic iterations/s and 21 pictures/s in this PAL headless
+model); these figures are not a real-hardware benchmark.

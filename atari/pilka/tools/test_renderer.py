@@ -21,7 +21,7 @@ colors[0]=np.arange(40)%16
 def expected_pitch():
  out=np.zeros((200,320),dtype=np.uint8)
  for y in range(25):
-  banner=any(list(chars[y,x:x+4])==[217,234,228,217] for x in range(37))
+  banner=not a.mem.ram[r['MENU_MODE']] and any(list(chars[y,x:x+4])==[217,234,228,217] for x in range(37))
   for x in range(40):
    char=int(chars[y,x]);color=int(colors[y,x]);tile=np.zeros((8,8),dtype=np.uint8)
    if banner:tile=banners[x]
@@ -44,6 +44,14 @@ positions=[(12,100),(13,100),(27,100),(28,100),(255,100),(256,100),(316,100),(33
            (0,100),(8,100),(9,100),(31,100),(32,100),(334,100),(335,100),(336,100),(500,100),
            (120,0),(120,37),(120,38),(120,57),(120,58),(120,221),(120,222),(120,242),(120,250)]
 for k,(rawx,rawy) in enumerate(positions*2):
+ a.mem.ram[r['MENU_MODE']]=int(k==len(positions)*2-1)
+ # Change characters in every scan quarter and colours on every row. A
+ # picture must contain this entire update, even when D018 is unchanged.
+ chars[4,4]=(int(chars[4,4])+1)%203
+ chars[12,20]=(int(chars[12,20])+3)%203
+ chars[24,30]=(int(chars[24,30])+5)%203
+ colors[1:,0]=(k%7)+1
+ pitch=expected_pitch()
  sx=k%8;sy=(k*3)%8;color=7 if k%2 else 15;frame=32+k%32
  if k==len(positions)*2-1:frame=85
  a.mem.ram[0xc000:0xc3e8]=chars.tobytes();a.mem.ram[0xd800:0xdbe8]=colors.tobytes()
@@ -52,6 +60,10 @@ for k,(rawx,rawy) in enumerate(positions*2):
  a.mem.ram[0xe4:0xfb]=bytes([255]*23);a.mem.ram[0xcd:0xe4]=bytes(23)
  a.mem.ram[0x9f]=rawx&255;a.mem.ram[0xb6]=color|(128 if rawx>=256 else 0)
  a.mem.ram[0xcd]=frame;a.mem.ram[0xe4]=rawy
+ # Index 1 is the C64 $FF terminator. Later entries deliberately contain
+ # old visible players: they must never enter the composited picture.
+ a.mem.ram[0x9f+2]=160;a.mem.ram[0xe4+2]=130
+ a.mem.ram[0xcd+2]=48;a.mem.ram[0xb6+2]=7
  previous_xdl=a.vregs[0x41]
  a.call(r['RENDER'])
  assert a.vregs[0x41]==previous_xdl,'Frame published outside VBI'
@@ -82,3 +94,21 @@ for k,(rawx,rawy) in enumerate(positions*2):
  assert a.vregs[0x41]==back*32 and a.mem.ram[r['PENDING']]==0
  cases+=1
 print(f'PASS: {cases} exact pixel comparisons, clean pitch caching, fine scroll, HUD, teams, edge clipping, VBI-only publication.')
+
+# An Atari NMI can arrive anywhere in a multi-frame render. It must sample
+# input without running the C64 video IRQ or starting a nested render.
+a.mem.ram[r['BUSY']]=1
+a.mem.ram[0xde1a]=1
+a.mem.ram[0x11d9]=0x10  # IRQ would replace the current screen base
+before=bytes(a.mem.ram[0xde00:0xde40])
+a.cpu.pc=0x0200;a.cpu.p&=~4;a.nmien=0x40
+a.set_input(stick=13)
+a.vblank()
+for _ in range(1000):
+ if a.cpu.pc==0x0200:break
+ assert a.cpu.pc!=r['RENDER'], 'NMI started a render on unfinished game state'
+ a.cpu.step()
+else:raise AssertionError('NMI did not return while renderer was busy')
+assert bytes(a.mem.ram[0xde00:0xde40])==before, 'IRQ changed video state during composition'
+assert a.mem.ram[r['JOY1']]&15==13, 'Input sampling stalled during rendering'
+print('PASS: NMI keeps video state stable and input responsive during rendering.')

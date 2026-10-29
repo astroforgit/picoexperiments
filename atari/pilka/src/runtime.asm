@@ -56,6 +56,7 @@ flipdir .ds 1
 flipseq .ds 1
 lastseq .ds 1
 render_full .ds 1
+menu_mode .ds 1
 rowbanner .ds 25
         org $dd80
 irqvec  .ds 2
@@ -127,6 +128,9 @@ input1  sta joy1
         bne input2
         and #$ef
 input2  sta joy2
+        lda busy
+        bne skip_tick
+        ; Keep VIC screen/scroll/ball shadows stable throughout composition.
         ; Respect the interrupted game's SEI critical sections.
         tsx
         lda $0104,x
@@ -154,26 +158,6 @@ skip_tick
         sta flipdir
         inc flipseq
 no_flip
-        lda busy
-        bne nmi_done
-        inc busy
-        lda $97dd
-        bne skip_draw
-        inc render_phase
-        lda render_phase
-        and #7
-        bne skip_draw
-        ; Draw one coherent snapshot with the game paused. Double buffered.
-        lda $de11
-        and #$10
-        beq skip_draw
-        lda pending
-        bne skip_draw
-        lda #1
-        sta render_full
-        jsr render
-skip_draw
-        dec busy
 nmi_done
         pla
         tay
@@ -194,6 +178,15 @@ tick
 tick_return
         rts
 
+; Menu input/update is called from its own loop, without the match wait.
+menu_frame
+        lda #1
+        sta menu_mode
+        jsr frame_wait
+        lda #0
+        sta menu_mode
+        jmp $9524
+
 ; Replacement for the game's raster-dependent frame wait.
 frame_wait
         php
@@ -203,7 +196,7 @@ frame_wait
         tya
         pha
         ; Draw only when the game loop is on time and the previous picture
-        ; has been shown; otherwise keep the C64 logic at 50 Hz.
+        ; has been shown; skip late pictures to reduce game-loop stalls.
         lda pending
         bne fw_wait
         lda frames
@@ -305,6 +298,9 @@ vbrel_10
         inx
         cpx #3
         bne shared_pal
+        lda #3
+        ldx $de21
+        jsr set_c64_colour
         ; Sprite multicolours 0 and 1 ($D025/$D026) at palette $40 and $20.
         lda #$40
         ldx $de25
@@ -335,7 +331,7 @@ vbrel_10
         sta $7108
         ; After one C64 screen flip, move the existing picture by the copy
         ; offset with the blitter and then check every cell. Otherwise check
-        ; a quarter of the screen per picture (all of it for NMI drawing).
+        ; every character and colour for a complete, coherent picture.
         ldx flipseq
         lda flipdir
         sta charid
@@ -354,27 +350,16 @@ vbrel_10
         jsr shift_picture
         jmp full_scan
 same_screen
-        lda render_full
-        bne full_scan
-        lda scanrot
-        sta scanblk
-        clc
-        adc #1
-        sta scanend
-        and #3
-        sta scanrot
-        jmp scan_chosen
 full_scan
         lda #0
         sta scanblk
         lda #4
         sta scanend
 scan_chosen
-        ; Colour RAM rarely changes: compare it on three rows per picture.
-        ; (Characters are covered by the scan below.)
-        lda colbase
+        ; Compare every colour row, including colour-only menu highlights.
+        lda #0
         sta rowno
-        lda #3
+        lda #25
         sta colleft
 colour_rows
         jsr setup_row
@@ -634,10 +619,9 @@ raw_save_color
         lda #0
         sta bannerrow
         ; Recognize ARLA in the original advertising text at any scroll column.
-        ; Menu uses a white background and retains its original title/credits.
-        lda $de21
-        cmp #1
-        beq banner_checked
+        ; The menu retains its original title/credits, regardless of colours.
+        lda menu_mode
+        bne banner_checked
         lda get_char+1
         sta banner_probe+1
         lda get_char+2
@@ -1117,6 +1101,8 @@ player_loop
         lda $9f,x
         sta xx
         lda $e4,x
+        cmp #$ff
+        beq players_done
         sta yy
         lda $cd,x
         sta sframe
@@ -1132,6 +1118,7 @@ player_low
         lda sprno
         cmp #23
         bne player_loop
+players_done
         rts
 
 ; VIC sprite 7 is the ball; its frame is the pointer of the shown screen.
@@ -1371,6 +1358,7 @@ restore_not_vars
         txs
         lda #0
         sta busy
+        sta menu_mode
         sta frames
         sta render_phase
         sta front

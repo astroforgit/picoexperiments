@@ -91,6 +91,7 @@ def main():
    ram[pc+1:pc+3]=struct.pack('<H',new);patches.append({'pc':pc,'original':txt,'target':new})
  # Replace raster-dependent frame synchronisation, and SID oscillator wait.
  for pc,target in [(0x97b7,labels['FRAME_WAIT'])]:ram[pc:pc+3]=b'\x4c'+struct.pack('<H',target)
+ ram[0x93b3:0x93b6]=b'\x20'+struct.pack('<H',labels['MENU_FRAME'])
  ram[0x9289:0x928c]=b'\xea\xea\xea' # Omit C64 sound update while audio is disabled.
  ram[0x9a44]=0x60 # SID envelope synchronisation has no Atari counterpart.
  # The C64 menu copies 768 bytes hidden beneath I/O into BD00. Atari has
