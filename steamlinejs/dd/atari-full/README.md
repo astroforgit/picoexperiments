@@ -29,10 +29,14 @@ keyboard.
 |---|---|---|---|
 | D-pad | walk (depth too), climb | joystick 1 | W A S D |
 | B | punch | fire | O, Z, C, N |
-| A | kick | button 2 or 3 of a 2-button joystick, or joystick 2's fire (one-player games) | P, X, V, M, SPACE, SHIFT |
+| A | kick | button 2 or 3 of a 2-button joystick, or joystick 2's fire (one-player games) | P, X, V, SPACE, SHIFT |
 | A+B | jump | fire + second button | punch key + kick key |
 | Start | start, pause | START | RETURN |
 | Select | choose the mode | SELECT | |
+| | music on/off | | M |
+
+The music starts muted; press M at any time to turn it on or off. The
+sound effects always play.
 
 On the title screen fire (or START/RETURN) opens the mode menu. On the
 menu, joystick up/down (or SELECT) moves the heart and fire (or

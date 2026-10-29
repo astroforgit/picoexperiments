@@ -149,6 +149,7 @@ ticks_owed .ds 1
 nmi_depth .ds 1
 memb_save .ds 8
 vbxe_hi .ds 1
+music_on .ds 1         ; M toggles; 0 = music muted (default)
         .print 'variables end: ', *
         ert * > $0C00
 nt_page   = $0B00        ; 64: shadow page for each PPU address high byte
@@ -171,6 +172,7 @@ start   sei
         txs
         sta vbxe_hi
         lda #0
+        sta music_on
         sta NMIEN
         sta DMACTL
         sta IRQEN

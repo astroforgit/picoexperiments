@@ -1637,8 +1637,9 @@ ti_clear
 ; ------------------------------------------------------------------
 ; keyboard, as in the Celeste port: the keyboard IRQ queues every press.
 ; W/A/S/D stay held until the keyboard is idle or the opposite direction
-; is pressed; punch (O Z C N), kick (P X V M SPACE) and Start (RETURN)
-; give a short press. SHIFT, held, is kick (read above).
+; is pressed; punch (O Z C N), kick (P X V SPACE) and Start (RETURN)
+; give a short press. SHIFT, held, is kick (read above). M turns the
+; music on and off.
 ; ------------------------------------------------------------------
 irq     pha
         lda IRQST
@@ -1676,7 +1677,13 @@ kr_ev   ldy kb_tail
         sta kb_tail
         lda kb_ring-1,y
         and #$3F
-        ldx #key_bits-key_codes-1
+        cmp #KEY_M
+        bne kr_k
+        lda music_on
+        eor #1
+        sta music_on
+        jmp kr_ev
+kr_k    ldx #key_bits-key_codes-1
 kr_f    cmp key_codes,x
         beq kr_found
         dex
@@ -1710,9 +1717,10 @@ kr_held lda kpulse_t
 kr_np   sta kpulse
         lda kdir
         rts
-; W S A D, then punch O Z C N, kick P X V M SPACE, Start RETURN
-key_codes dta $2E,$3E,$3F,$3A, $08,$17,$12,$23, $0A,$16,$10,$25,$21, $0C
-key_bits  dta $08,$04,$02,$01, $40,$40,$40,$40, $80,$80,$80,$80,$80, $10
+; W S A D, then punch O Z C N, kick P X V SPACE, Start RETURN
+key_codes dta $2E,$3E,$3F,$3A, $08,$17,$12,$23, $0A,$16,$10,$21, $0C
+key_bits  dta $08,$04,$02,$01, $40,$40,$40,$40, $80,$80,$80,$80, $10
+KEY_M   = $25
 key_clear dta $FF^$04,$FF^$08,$FF^$01,$FF^$02
 
 ; C = 0: source X pressed (raw). Returns C = 1 when pressed and the source

@@ -5,6 +5,7 @@
 ; means a new note (the converter clears them, as the SNES port's did).
 ; Pulse 1/2 -> POKEY 1/2, triangle -> 3, noise -> 4; 8-bit, 64 kHz clock.
 ; Length counters, envelopes and the linear counter are stepped per call.
+; The music is muted until M is pressed (see mute).
 ; ------------------------------------------------------------------
 APU     = $0A00
 
@@ -91,6 +92,9 @@ pu_2    lda APU,y
 pu_3    lda #0
         sta s_oct               ; pulse: f = CPU / (16 (t+1))
         jsr timer_audf
+        lda s_vol
+        jsr mute
+        sta s_vol
         txa
         asl
         tay
@@ -222,6 +226,7 @@ tr_4    lda APU+$0A
         lda s_audf
         sta AUDF1+4
         lda s_vol
+        jsr mute
         ora #$A0
         sta AUDC1+4
         rts
@@ -246,6 +251,7 @@ no_1    lda APU+$15
         sta s_len+3
 no_2    lda APU+$0C
         jsr envelope
+        jsr mute
         ora #$80                ; noise
         sta AUDC1+6
         lda APU+$0E
@@ -254,6 +260,18 @@ no_2    lda APU+$0C
         lda noise_tab,y
         sta AUDF1+6
         rts
+
+; A = volume of channel X -> A, 0 while the music is off and no sound
+; effect owns the channel. The driver's tracks 0-3 are the music, 4-7 the
+; sound effects; an active effect track (SFX_TRACK+X <> 0) takes the
+; channel over from the music.
+SFX_TRACK = $0711
+mute    ldy music_on
+        bne mu_x
+        ldy SFX_TRACK,x
+        bne mu_x
+        lda #0
+mu_x    rts
 
 ; s_t = 11-bit timer, s_oct = 0 pulse / 1 triangle -> s_audf for POKEY's
 ; 64 kHz clock: AUDF+1 = (t+1) * pitch_k / 512 (* 2 for the triangle),
