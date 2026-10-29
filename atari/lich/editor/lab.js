@@ -94,6 +94,7 @@ VIEWS.levels = () => {
   const toggle = e => { const key = e.y * 128 + e.x; lab.selected.has(key) ? lab.selected.delete(key) : lab.selected.add(key); inspect(e); redraw(); };
   canvas.addEventListener('click', event => {
     if(tileMatch.active){matchTarget(event);return;}
+    matchTarget(event,true);
     const r = canvas.getBoundingClientRect();
     const x = Math.floor((event.clientX - r.left) * canvas.width / r.width / size), y = Math.floor((event.clientY - r.top) * canvas.height / r.height / size);
     if (x < 0 || y < 0 || x > 127 || y > 31) return;

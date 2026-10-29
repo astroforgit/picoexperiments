@@ -60,6 +60,7 @@ P_TILE_START = 17        ; Tile: hero start (up stairs)
 P_TILE_EXIT = 16        ; Tile: stairs down
 P_TILE_ANVIL_DECO = 23        ; Tile next to the anvil
 P_TILE_ALTAR_DECO = 71        ; Tile next to the altar
+WALL_DECOR = 1
 NENT = 55
 NITEM = 15
 P_MOVE_T1 = 43

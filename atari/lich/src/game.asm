@@ -1231,6 +1231,9 @@ ot_row_loop
         beq ot_scan
         jcs ot_done
 ot_scan
+        ldx ot_row
+        lda $fa80,x
+        jeq ot_row_next
         lda camtx
         sec
         sbc #9

@@ -20,6 +20,7 @@ Writes:
 """
 from pathlib import Path
 import math
+import json
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import lichdata as LD
@@ -68,7 +69,17 @@ def enc(s, what=''):
 
 # ---------------------------------------------------------------- graphics
 sheet = game['sheet']
-sheet2 = game['sheet2']
+sheet2 = list(game['sheet2'])
+wall_decor = game.get('wall_decorations', True)
+if wall_decor:
+    art=json.loads((HERE/'data/wall-decorations.json').read_text())
+    occupied={n for m in game['monsters'] for n in range(m['anim'],m['anim']+4)} | {p['top'] for p in game.get('overhangs',{}).values()}
+    for k,kind in enumerate(['torch','banner']):
+        rows=art[kind]+['00000000']*4
+        for part in range(2):
+            n=380+2*k+part;x=(n&15)*8;y=((n-256)//16)*8
+            if n in occupied or any(int(row[x:x+8],16) for row in sheet2[y:y+8]):fail('wall decorations need free sprites 380..383; disable wall_decorations or free those slots')
+            for dy,row in enumerate(rows[part*8:part*8+8]):sheet2[y+dy]=sheet2[y+dy][:x]+row+sheet2[y+dy][x+8:]
 if len(sheet) != 128 or len(sheet2) != LD.SHEET2_ROWS:
     fail('sheet must have 128 rows, sheet2 64 rows')
 (HERE / 'data' / 'gfx.bin').write_bytes(LD.rows_to_packed(sheet))
@@ -121,6 +132,7 @@ for key, default, kind, desc in LD.PARAMS:
         prm.append(f'{name} = {LD.chance16(v)}        ; {desc} ({v})')
     else:
         prm.append(f'{name} = {int(v)}        ; {desc}')
+prm.append(f'WALL_DECOR = {int(wall_decor)}')
 prm.append(f'NENT = {NENT}')
 prm.append(f'NITEM = {NITEM}')
 # room drift: rnd_hi thresholds for left / right / up / down

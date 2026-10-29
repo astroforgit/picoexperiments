@@ -6,7 +6,7 @@ import lichdata as LD
 H=LD.HERE
 source=H/'data/matched-floor-source.json'
 g=json.loads(source.read_text())
-ref=json.loads((H/'editor/reference-assets.js').read_text().split('const MATCH_REFERENCE = ')[1].rstrip(';\n'))
+ref=json.loads((H/'editor/reference-assets.js').read_text().split('const MATCH_REFERENCE = ')[1].split(';\n',1)[0])
 original=json.loads((H/'editor/art-packs.js').read_text().split('const CRYPT_ART = ')[1].rstrip(';\n'))['original']
 def tile(n):return [r[n%16*8:n%16*8+8] for r in g['sheet'][n//16*8:n//16*8+8]]
 def put(n,rows):

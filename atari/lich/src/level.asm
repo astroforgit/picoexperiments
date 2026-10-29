@@ -1247,7 +1247,7 @@ wf_n    iny
         inx
         cpx #31
         bne wf_y
-        rts
+        jmp index_overhangs
 
 ; ---------------------------------------------------------- hand-made floors
 ; load_floor(A = floor map): RLE ($fe count value) from VRAM $3e000 into

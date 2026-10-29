@@ -39,3 +39,7 @@ print(f'editor/assets.js: {len(js) // 1024} KB, {len(lib)} library carts')
 locales = {p.stem: json.loads(p.read_text()) for p in (HERE / 'data/locales').glob('*.json')}
 if locales:
     (HERE / 'editor/locales.js').write_text('const GAME_LANGUAGES = ' + json.dumps(locales, ensure_ascii=False) + ';\n')
+
+# Share the exact decoration pixels with the native map baker.
+decor = json.loads((HERE / 'data/wall-decorations.json').read_text())
+(HERE / 'editor/wall-decoration-art.js').write_text('const WALL_DECOR_ART = ' + json.dumps(decor) + ';\n')

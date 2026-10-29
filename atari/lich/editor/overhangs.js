@@ -1,16 +1,16 @@
 'use strict';
 function overhangFor(g,n){const p=g.overhangs?.[n];return p?.enabled?p:null;}
 function installTallProps(){
- if(G.overhang_revision==='tall-v1')return;
+ if(G.overhang_revision==='tall-v2')return;
  G.overhangs||={};
  for(const [key,p] of Object.entries(TALL_PROPS_PACK)){
-  const busy=G.monsters.some(m=>entFrames(m).includes(p.top))||artTile(G.sheet2,p.top-256).some(row=>/[1-9a-f]/.test(row));
+  const busy=G.monsters.some(m=>entFrames(m).includes(p.top))||artTile(p.top>=256?G.sheet2:G.sheet,p.top&255).some(row=>/[1-9a-f]/.test(row));
   const known=ART_STYLES.some(pack=>pack.tiles[key]?.join('')===artTile(G.sheet,+key).join(''));
   if(busy||G.overhangs[key]||!known)continue;
-  artPut(G.sheet2,p.top-256,p.topRows);artPut(G.sheet,+key,p.baseRows);
+  artPut(p.top>=256?G.sheet2:G.sheet,p.top&255,p.topRows);artPut(G.sheet,+key,p.baseRows);
   G.overhangs[key]={top:p.top,enabled:true,name:p.name};
  }
- G.overhang_revision='tall-v1';loadSheets();save();
+ G.overhang_revision='tall-v2';loadSheets();save();
 }
 const furnitureBeforeOverhang=VIEWS.pieces;
 VIEWS.pieces=()=>{
@@ -32,7 +32,8 @@ VIEWS.pieces=()=>{
  for(const [key,p] of Object.entries(G.overhangs||{})){
   const cb=h('input',{type:'checkbox',checked:p.enabled,onchange:e=>{p.enabled=e.target.checked;changed();preview();}});
   const top=numInput(p,'top',{min:0,max:383,width:70});top.addEventListener('change',preview);
-  rows.append(h('div',{class:'panel'},h('button',{onclick:()=>{previewKey=key;preview();}},p.name||`Tile ${key}`),h('label',{class:'chk'},cb,'Tall'),h('p',{class:'note'},`Solid base tile ${key} · footprint 1×1`),h('label',{},'Upper sprite ',top)));
+  const thumb=h('canvas',{width:48,height:96,class:'px','aria-label':p.name+' preview'}),tc=thumb.getContext('2d');tc.imageSmoothingEnabled=false;tc.drawImage(sprite(+key),0,48,48,48);if(p.enabled)tc.drawImage(sprite(p.top),0,0,48,48);
+  rows.append(h('div',{class:'panel'},thumb,h('button',{onclick:()=>{previewKey=key;preview();}},p.name||`Tile ${key}`),h('label',{class:'chk'},cb,'Tall'),h('p',{class:'note'},`Solid base tile ${key} · footprint 1×1`),h('label',{},'Upper sprite ',top),h('div',{class:'actions'},h('button',{onclick:()=>editObjectSprite(+key,p.name+' base')},'Edit base'),h('button',{onclick:()=>editObjectSprite(p.top,p.name+' upper')},'Edit upper'))));
  }
  const pos=h('select',{'aria-label':'Preview character position'},...['Behind','Under upper tile','In front'].map((s,i)=>h('option',{value:i},s)));pos.addEventListener('change',()=>{position=+pos.value;preview();});
  box.append(rows,h('div',{class:'row'},cv,pos));preview();return h('div',{},box,furnitureBeforeOverhang());

@@ -181,7 +181,7 @@ function codeToEntity() {
 }
 function newGame(g) {
   G = g;
-  for (const k of Object.keys(DEFAULT_GAME)) if (!(k in G) && !['art_style', 'art_revision', 'monster_art_style', 'monster_art_revision', 'bestiary_revision', 'overhang_revision', 'overhangs', 'matched_masonry_revision', 'reference_matches', 'language'].includes(k)) G[k] = clone(DEFAULT_GAME[k]);
+  for (const k of Object.keys(DEFAULT_GAME)) if (!(k in G) && !['art_style', 'art_revision', 'monster_art_style', 'monster_art_revision', 'bestiary_revision', 'overhang_revision', 'overhangs', 'matched_masonry_revision', 'door_trap_art_revision', 'reference_matches', 'language'].includes(k)) G[k] = clone(DEFAULT_GAME[k]);
   for (const k of Object.keys(DEFAULT_GAME.params)) if (!(k in G.params)) G.params[k] = DEFAULT_GAME.params[k];
   if(typeof installBestiary==='function')installBestiary();
   if(typeof installTallProps==='function')installTallProps();
@@ -201,7 +201,7 @@ function freeCodes() {
 }
 // a free run of 4 cells on page 2 (sprite numbers 256..383)
 function freePage2Slot() {
-  const used = new Set();
+  const used = new Set(G.wall_decorations===false?[]:[380,381,382,383]);
   G.monsters.forEach(m => { if (m.anim >= 256) for (let i = 0; i < 4; i++) used.add(m.anim + i); });
   for (let n = 256; n <= 256 + 124; n += 4) {
     let ok = true;

@@ -492,9 +492,10 @@ Level inspector, floor previews and JavaScript Play. Placement is deterministic
 from wall coordinates and shared by both views. Only front wall faces above a
 wall-foot tile are eligible; side walls, corners and doors stay clear. Ornaments
 end above the paving strip, respect fog and render behind actors. The Level
-inspector checkbox saves `wall_decorations` in game.json. This is a browser
-rendering feature; it does not modify maps, collision, entities or Atari sprites,
-and is not currently rendered by the native Atari build.
+inspector checkbox saves `wall_decorations` in game.json. The native Atari map baker uses the same pixels and placement rule. It reserves
+sprites 380–383 at build time (disable wall_decorations to release them). It does
+not change maps, collision or entities. Decoration pixels live in
+`data/wall-decorations.json`; regenerate browser assets after editing them.
 
 ### Consistent floor and furniture previews
 
@@ -504,8 +505,8 @@ states). Sprite transparency is retained; void, wall mortar and stairs are not
 filled. Level inspector now uses the gameplay engine's initial map and entity
 snapshot, including furniture, hero, enabled-enemy filtering and tall prop depth.
 It shows the complete initial floor without gameplay fog, plus inspection rings
-and grid. Play and inspection share the scenery-underlay renderer. These are
-browser rendering changes, not changes to native Atari drawing or sprite pixels.
+and grid. Play and inspection share the scenery-underlay renderer. The native Atari map baker also composites the active floor under scenery,
+including dark tiles, while keeping actor sprites transparent.
 
 ### Polish game text
 
@@ -518,3 +519,61 @@ assets also regenerates the browser language packs. The game font includes
 The Atari build encodes the same Polish text. The original bitmap title logo and
 editor authoring controls are not part of the text translation. Imported Pokémon
 proper names and original creator credits are retained.
+
+### Native rendering parity and speed
+
+The native renderer now bakes scenery floor backgrounds and wall ornaments into
+the map buffer, rather than redrawing them every frame. Static tall-object rows
+are indexed once per level, avoiding full-width scans of empty rows each frame.
+The same headless PAL sequence (`80,f,300,c,90`) measured 114 updates per 300
+frames before this change and 180 afterward (19 to 30 updates/second).
+Helpers occupy $bdc0–$bfff, above the entity arrays; startup clearing preserves
+them. The overhang row index occupies $fa80–$fa9f. Assembly guards check bounds.
+
+`./run.sh` regenerates data before building, so changes to data/game.json are
+included. To play the exact state exported from the browser:
+
+```bash
+./run.sh --game /mnt/c/Users/grzeg/Downloads/game.json
+```
+
+This builds the export without replacing data/game.json. Browser-local edits
+are only available to the native build after export. A shared custom floor
+keeps the layout identical; procedural RNG still differs between platforms.
+
+### Additional two-tile furniture
+
+Furniture now includes five additional 8×16 designs: Tall bookcase (base 15),
+Oak cabinet (65), Crimson throne (69), Grand candelabrum (71), and Ceremonial urn
+(72). Their upper sprites use previously blank primary-sheet slots 18, 45, 20,
+19 and 44, leaving monsters and native wall decorations untouched. Existing
+shelf interactions and solid furniture footprints are retained. The Furniture
+cards show individual full-height thumbnails and an overlap preview. Known
+older saves gain the new options automatically; custom-painted bases or occupied
+upper slots are preserved. Existing room furniture patterns use the taller art
+where these bases already occur. Rebuild with tools/make_tall_props.py.
+
+### Editing interactive-object artwork
+
+Furniture → Interactive objects — graphics shows unused/used states side by side
+for both pots, chest, bookcase, corpse, pool and spikes, plus altar and anvil.
+Each Edit button opens an inline 8×8 pixel painter with the game palette,
+transparent color 0, automatic saving and one-stroke Undo. Upper tiles of tall
+objects can be edited separately. All tall-furniture cards also offer Edit base
+and Edit upper. Edits update shared sprite pixels and export with game.json;
+interaction rules, loot tables and collision are unchanged. Rebuild an exported
+JSON to use the edited art in Atari.
+
+### Reference and map IDs
+
+Click a map cell in Level inspector to display `SPR-nnn` plus a location ID
+`LEVEL-depth-layoutHash-Xx-Yy`. The layout hash identifies the raw map, while
+sprite IDs identify shared artwork. Entity IDs and raw map codes are included
+in the copyable details. Character cells can be identified but cannot be replaced
+through matching. Source IDs use one-based columns/rows, for example
+`MF-MOCKUP-C9-R10`, `MF-TILESET-C7-R3` and `MF-PROPS-C4-R6`.
+
+Below the mockup, the complete original Minifantasy dungeon and furniture atlases
+provide additional selectable 8×8 cells. Match/Undo work for every source; exports
+record the exact source file, SHA256, ID and crop (80×80 for the enlarged mockup,
+8×8 for native atlases). “Copy selection IDs” supplies the details for discussion.
