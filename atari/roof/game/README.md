@@ -108,6 +108,7 @@ through the existing `../../lair/tools/emu.py`.
 python3 tools/test_game.py
 python3 tools/test_windows.py
 python3 tools/test_stars.py
+python3 tools/test_display.py
 ```
 
 - `star-fisher.asm`: native 6502 game, controls, states, VBXE drawing and tones.
@@ -117,6 +118,9 @@ python3 tools/test_stars.py
 - `assets/background-320x240.png`: indexed background with interface strips.
 - `screenshots/float-fishing-demo.gif`: recording from the running XEX.
 - `screenshots/window-lights-demo.gif`: animated city-light preview.
+- `tools/test_display.py`: actual XDL palette selection for both buffers and VBXE
+  register addresses, plus exact agreement with editor RGB colours. This checks
+  the attribute bits explicitly because the shared screenshot emulator assumes palette 1.
 - `tools/test_stars.py`: five-point glyph shape, pixel bounds and slow drifting motion.
 - `tools/test_windows.py`: window placement, full framebuffer addresses, dim/on/off
   states, clean restoration, and independent lighting timers.

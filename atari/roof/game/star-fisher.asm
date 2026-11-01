@@ -930,10 +930,12 @@ digit_blank
         sta py
         rts
 
+; XDLC_ATT: bits 5:4 select overlay palette 1; bits 1:0 select 320px.
+; $01 would select the default Atari palette 0 instead of our RGB colours.
 xdl_data
-        dta $62,$88,239,0,0,2,$40,$01,$01,$ff
+        dta $62,$88,239,0,0,2,$40,$01,$11,$ff
         :6 dta 0
-        dta $62,$88,239,0,0,4,$40,$01,$01,$ff
+        dta $62,$88,239,0,0,4,$40,$01,$11,$ff
         :6 dta 0
 blit_data
         dta 0,0,0,a(320),1,0,0,2,a(320),1,a(319),239,$ff,0,0,0,0,0
