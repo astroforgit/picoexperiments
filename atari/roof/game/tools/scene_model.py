@@ -3,10 +3,6 @@ from pathlib import Path
 import json, math, re
 ROOT=Path(__file__).resolve().parents[1]
 PROJECT=ROOT/'editor-scene.json'
-DEFAULT_WINDOWS=[
- [[x,y] for x in (265,267) for y in (214,215,216,217,220,221,222,223)],
- [[x,y] for x in (107,109) for y in (204,205,206,208,209,210)],
- [[98,185],[98,186]],[[134,189],[134,190]],[[122,194],[122,195]],[[161,193],[161,194]]]
 def library(palette):
  def nearest(rgb):return min(range(1,247),key=lambda i:sum((palette[i*3+j]-rgb[j])**2 for j in range(3)))
  blue=nearest((56,68,100));dust=nearest((88,86,112));shadow=nearest((12,16,26))
@@ -14,9 +10,7 @@ def library(palette):
  def add(id,name,category,rows,colors):
   w=max(map(len,rows));pixels=[colors.get(c,0) for row in rows for c in row.ljust(w,'.')]
   result.append(dict(id=id,name=name,category=category,width=w,height=len(rows),pixels=pixels))
- add('star-petite','Petite five-point','stars',['..a..','aaaaa','.aaa.','.a.a.','a...a'],{'a':250})
- add('star-fine','Fine seven-pixel','stars',['...a...','...a...','aaaaaaa','.aaaaa.','..aaa..','.aa.aa.','.a...a.'],{'a':252})
- add('star-pin','Two-pixel glint','stars',['ab','b.'],{'a':252,'b':250})
+ add('star-pin','Two-pixel glint','stars',['ab'],{'a':252,'b':250})
  add('star-dust','Single starlight','stars',['a'],{'a':252})
  add('comet-silver','Silver traveller','comets',['b............','..b..........','....bb.......','......bbbb...','........bbwaa','..........aaa'],{'b':blue,'w':251,'a':252})
  add('comet-gold','Golden trail','comets',['b.....................','..b...................','....b.b...............','.......bbbb...........','.........bbbbbbb......','.............bbwwaaa..','................aaaaa.','.................aaa..'],{'b':dust,'w':250,'a':252})
@@ -47,7 +41,8 @@ def library(palette):
  return result
 
 def default_scene(palette):
- return dict(version=1,assets=library(palette),gameStar='star-petite',stamps=[],windows=[dict(name=['Near dormer','Left dormer','Far window 1','Far window 2','Far window 3','Far window 4'][i],pixels=p,mode='candle' if i==0 else 'blink',initial=i in (0,1,3,5),delay=[80,132,45,190,112,160][i]) for i,p in enumerate(DEFAULT_WINDOWS)])
+ windows=json.loads((ROOT/'assets/default-windows.json').read_text())
+ return dict(version=1,assets=library(palette),gameStar='star-pin',stamps=[],windows=windows)
 
 def integer(n,lo,hi,label):
  if type(n)!=int or not lo<=n<=hi:raise ValueError(f'{label} must be an integer from {lo} to {hi}')

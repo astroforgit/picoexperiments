@@ -26,7 +26,7 @@ def cast(a,charge,mode='key',record=None):
  until(a,lambda:get(a,'STATE')==5,record=record)
 
 a=Atari(ROOT/'star-fisher.xex');a.boot()
-assert bytes(a.vram[:0x13000])==(ROOT/'assets/vram.bin').read_bytes()
+assert bytes(a.vram[:len((ROOT/'assets/vram.bin').read_bytes())])==(ROOT/'assets/vram.bin').read_bytes()
 a.run_frames(15)
 assert get(a,'STATE')==0 and a.screenshot(scale=1).size==(320,240)
 a.screenshot(ROOT/'screenshots/float-idle.png',scale=3)
@@ -81,5 +81,5 @@ frames[0].save(ROOT/'screenshots/float-fishing-demo.gif',save_all=True,append_im
 # Both register bases remain supported.
 b=Atari(ROOT/'star-fisher.xex',vbxe_page=0xd7);b.boot();b.run_frames(15)
 assert get(b,'TICKS')>0 and b.blits>1
-assert bytes(b.vram[:0x13000])==(ROOT/'assets/vram.bin').read_bytes()
+assert bytes(b.vram[:len((ROOT/'assets/vram.bin').read_bytes())])==(ROOT/'assets/vram.bin').read_bytes()
 print('PASS five-star win, held-key debounce, D640/D740; saved gameplay GIF',flush=True)

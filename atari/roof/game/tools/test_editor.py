@@ -11,7 +11,7 @@ with tempfile.TemporaryDirectory(prefix='star-fisher-editor-') as tmp:
  for name in ['tools','gen','assets']:
   shutil.copytree(ROOT/name,work/name,ignore=shutil.ignore_patterns('__pycache__'))
  (work/'screenshots').mkdir()
- for name in ['build.sh','star-fisher.asm','star-fisher.xex']:shutil.copy2(ROOT/name,work/name)
+ for name in ['build.sh','star-fisher.asm','sky.asm','star-fisher.xex']:shutil.copy2(ROOT/name,work/name)
  env=dict(os.environ,STAR_FISHER_ROOT=str(work),EDITOR_URL='http://127.0.0.1:8792',SCREENSHOT_PATH=str(ROOT/'screenshots/editor-library.png'))
  server=subprocess.Popen([sys.executable,str(ROOT/'editor/serve.py'),'8792'],env=env,stdout=subprocess.DEVNULL,stderr=subprocess.STDOUT)
  try:

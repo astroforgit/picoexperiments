@@ -26,9 +26,9 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  await page.click('#duplicateStamp');assert.equal((await page.evaluate(()=>StarEditor.getScene())).stamps.length,2);await page.click('#undo');assert.equal((await page.evaluate(()=>StarEditor.getScene())).stamps.length,1);
  await page.click('[data-tab="library"]');await page.click('[data-category="stars"]');await page.locator('[data-asset="star-pin"]').dblclick();await page.waitForSelector('#spriteDialog[open]');
  await page.click('#copySprite');const editedId=await page.evaluate(()=>StarEditor.getScene().assets.at(-1).id);
- const sprite=page.locator('#spriteCanvas'),r=await sprite.boundingBox();await page.mouse.click(r.x+r.width*.75,r.y+r.height*.75);let edited=(await page.evaluate(()=>StarEditor.getScene())).assets.at(-1);assert.equal(edited.pixels[3],250);
- await page.keyboard.press('Control+z');assert.equal((await page.evaluate(()=>StarEditor.getScene())).assets.at(-1).pixels[3],0);
- await page.keyboard.press('Control+Shift+z');assert.equal((await page.evaluate(()=>StarEditor.getScene())).assets.at(-1).pixels[3],250);
+ const sprite=page.locator('#spriteCanvas'),r=await sprite.boundingBox();await page.mouse.click(r.x+r.width*.25,r.y+r.height*.5);let edited=(await page.evaluate(()=>StarEditor.getScene())).assets.at(-1);assert.equal(edited.pixels[0],250);
+ await page.keyboard.press('Control+z');assert.equal((await page.evaluate(()=>StarEditor.getScene())).assets.at(-1).pixels[0],252);
+ await page.keyboard.press('Control+Shift+z');assert.equal((await page.evaluate(()=>StarEditor.getScene())).assets.at(-1).pixels[0],250);
  await page.click('#closeSprite');await page.selectOption('#gameStar',editedId);
  // Export and import are round trips, not a lossy screenshot format.
  const project=await page.evaluate(()=>StarEditor.getScene());

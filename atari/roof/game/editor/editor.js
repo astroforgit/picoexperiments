@@ -1,6 +1,6 @@
 import {clone,compose,rgba,spriteById,linePoints,validateProject,newLights,stepLights} from './core.js';
 const $=id=>document.getElementById(id),screen=$('screen'),ctx=screen.getContext('2d',{willReadFrequently:true}),overlay=$('overlay'),oc=overlay.getContext('2d');
-let scene,base,palette,savedJSON='',tab='lights',tool='brush',zoom=2,selectedWindow=0,selectedAsset='star-petite',selectedStamp=null,category='stars',undo=[],redo=[],gesture=null,hover={x:265,y:216},native=false,nativeImage=null,animate=false,lights,indices,spriteColor=250,spriteDrag=false,lastTick=0;
+let scene,base,palette,savedJSON='',tab='lights',tool='brush',zoom=2,selectedWindow=0,selectedAsset='star-pin',selectedStamp=null,category='stars',undo=[],redo=[],gesture=null,hover={x:265,y:216},native=false,nativeImage=null,animate=false,lights,indices,spriteColor=250,spriteDrag=false,lastTick=0;
 const DRAFT='star-fisher-pixel-workshop-v1';
 const draftOnLoad=localStorage.getItem(DRAFT);
 function status(text,error=false){$('status').textContent=text;$('status').classList.toggle('error',error);}

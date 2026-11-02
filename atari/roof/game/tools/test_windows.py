@@ -26,7 +26,7 @@ for i,panes in enumerate(windows):
 r[L['LIGHT_ON']:L['LIGHT_ON']+len(windows)]=bytes(len(windows))
 a.call(L['RENDER'])
 assert bytes(a.vram[base:base+76800])==unlit, 'Unlit windows restore cleanly'
-assert bytes(a.vram[:0x13000])==(ROOT/'assets/vram.bin').read_bytes()
+assert bytes(a.vram[:len((ROOT/'assets/vram.bin').read_bytes())])==(ROOT/'assets/vram.bin').read_bytes()
 print('PASS all window masks, warm/dim colours, >64K addressing, off restoration',flush=True)
 # Lighting must not advance gameplay randomness.
 seed=r[L['RANDOM_SEED']]

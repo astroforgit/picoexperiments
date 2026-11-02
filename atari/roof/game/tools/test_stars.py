@@ -1,4 +1,4 @@
-"""Check the native five-point glyph and slow star motion."""
+"""Check the editor-selected tiny star mask and slow star motion."""
 from pathlib import Path
 import sys
 ROOT=Path(__file__).resolve().parents[1]

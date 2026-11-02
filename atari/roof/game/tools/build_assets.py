@@ -4,7 +4,7 @@ import math
 from scene_model import load_scene, apply_stamps
 ROOT=Path(__file__).resolve().parents[1]
 # Static art is generated separately. Only palette/resolution conversion here.
-im=Image.open(ROOT/'assets/background-float-art.png').convert('RGB').resize((320,240),Image.Resampling.LANCZOS)
+im=Image.open(ROOT/'assets/background-night-art.png').convert('RGB').resize((320,240),Image.Resampling.LANCZOS)
 q=im.quantize(colors=246,method=Image.Quantize.MEDIANCUT)
 palette=[0,0,0]+[v&254 for v in q.getpalette()[:246*3]]
 # Reserve two warm window colours without changing the existing sprite indices.
@@ -25,7 +25,18 @@ bg.save(ROOT/'assets/editor-base.png')
 scene=load_scene(palette)
 apply_stamps(bg,scene)
 bg.save(ROOT/'assets/background-320x240.png')
-vram=bytearray(0x13000);vram[:76800]=bg.tobytes()
+vram=bytearray(0x15000);vram[:76800]=bg.tobytes()
+# Native transparent cloud sprite, 96x24, at VRAM $14000. Opaque centre
+# hides stars; ragged transparent edges keep the grainy night-art style.
+def nearest(rgb):return min(range(1,247),key=lambda i:sum((palette[i*3+j]-rgb[j])**2 for j in range(3)))
+cloud_colors=[nearest(rgb) for rgb in [(8,11,19),(11,15,25),(14,19,31)]]
+for y in range(24):
+ for x in range(96):
+  density=max(1-((x-cx)/rx)**2-((y-cy)/ry)**2 for cx,cy,rx,ry in [(22,15,22,7),(44,11,29,10),(69,14,26,8)])
+  density += .12*math.sin(x*.37+y*.6)+.09*math.sin(x*.81-y*.4)
+  grain=(x*17+y*29)%11
+  if density>0 and (density>.55 or grain<density*18):
+   vram[0x14000+y*96+x]=cloud_colors[0 if density>.55 else 1 if grain<7 else 2]
 (ROOT/'assets/vram.bin').write_bytes(vram)
 (ROOT/'gen/loads.asm').write_text(''.join(f"        org $a000\n        ins 'assets/vram.bin',{i},4096\n        ini upload_bank\n" for i in range(0,len(vram),4096)))
 lines=[]

@@ -192,6 +192,7 @@ reset_game
         lda $d20a
         ora #1
         sta random_seed
+        jsr reset_sky
         ldx #2
 reset_stars
         jsr spawn_star
@@ -293,6 +294,7 @@ new_wait
         rts
 
 update
+        jsr update_sky
         jsr update_lights
         lda tone
         beq sound_off
@@ -575,6 +577,8 @@ skip_star
         ldx star_index
         dex
         bpl render_stars
+        jsr draw_meteor
+        jsr draw_clouds
         lda state
         cmp #2
         beq draw_cast
@@ -707,7 +711,7 @@ draw_float
         lda ticks
         and #2
         beq float_done
-        ; Flashing expanding cross signals a bite; no automatic retrieval.
+        ; Flashing pixel glint signals a bite; no automatic retrieval.
         inc py
         jsr star
 float_done
@@ -1056,6 +1060,7 @@ basic_off
         lda #0
         sta $022f
         rts
+        icl 'sky.asm'
         icl 'gen/tables.asm'
         .if * > $9000
         .error "Code overlaps MEMAC window"

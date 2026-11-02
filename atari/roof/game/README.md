@@ -36,7 +36,10 @@ when moving an object or editing a light mask.
   headless emulator. **Built game** shows that framebuffer, not a web recreation.
 
 Placed sky decorations (including cloud stamps) are currently static in the
-native game. Gameplay stars still blink and drift. The editor's light-animation
+native game. Three separate native clouds drift slowly across the sky and mask
+stars. A short meteor falls occasionally, with long random pauses. These moving
+effects appear in Built game; the composition canvas edits the static scene.
+Gameplay stars blink and drift. The editor's light-animation
 preview follows the native lighting rules; its wall-clock pace is approximate
 because native game updates follow rendering cadence. The indexed scene pixels
 and saved masks themselves are shared exactly with the native build.
@@ -83,7 +86,7 @@ Five landed stars → NIGHT COMPLETE
 ```
 
 The float is a small coral-and-ivory marker attached to the longer charcoal
-line. During a bite, its lower end flashes. Filled five-point gold/ivory stars
+line. During a bite, its lower end flashes. One- or two-pixel gold/ivory glints
 appear at random sky positions, fade out, and relocate; there are at most three
 at once. Two of the three stars slowly fly in opposite directions between
 appearances. No animated stars use the old cross-shaped glyph. A star appears at the float after a random waiting interval. Cast
@@ -93,9 +96,10 @@ Six small windows add warm amber light to the houses. Distant windows switch
 on and off on independent slow timers; the nearest dormer stays lit and briefly
 flickers. Lights use their own random seed so they do not change bite timing.
 
-The moon, comet, and sparse background stars are brighter, while the buildings
-and sky retain the dark gothic lighting. These celestial background features
-and the seated character body are static. The rod, line, float, gameplay stars,
+The moon and galaxy remain in the dark gothic background. The permanent comet
+and painted stars have been removed; stars and the occasional downward meteor
+are now drawn by the game. Three dark, grainy clouds pass in front of them.
+The seated character body is static. The rod, line, float, gameplay stars,
 bite feedback, and retrieval are animated separately by the game.
 
 ## Build and test
@@ -109,19 +113,24 @@ python3 tools/test_game.py
 python3 tools/test_windows.py
 python3 tools/test_stars.py
 python3 tools/test_display.py
+python3 tools/test_sky.py
 ```
 
 - `star-fisher.asm`: native 6502 game, controls, states, VBXE drawing and tones.
 - `star-fisher.xex`: current executable.
+- `sky.asm`: slow cloud motion, occlusion and occasional falling meteor.
+- `tools/test_sky.py`: motion, masking, restoration, meteor lifetime and independent RNG.
 - `tools/build_assets.py`: image conversion, palette, interface and rod poses.
-- `assets/background-float-art.png`: current bright-celestial/dark-city plate.
+- `assets/background-night-art.png`: clean night plate without a permanent comet or stars.
 - `assets/background-320x240.png`: indexed background with interface strips.
+- `assets/default-windows.json`: default window masks and lighting settings, imported
+  from `star-fisher-project (2).json`; used for new editor projects and default builds.
 - `screenshots/float-fishing-demo.gif`: recording from the running XEX.
 - `screenshots/window-lights-demo.gif`: animated city-light preview.
 - `tools/test_display.py`: actual XDL palette selection for both buffers and VBXE
   register addresses, plus exact agreement with editor RGB colours. This checks
   the attribute bits explicitly because the shared screenshot emulator assumes palette 1.
-- `tools/test_stars.py`: five-point glyph shape, pixel bounds and slow drifting motion.
+- `tools/test_stars.py`: editor-selected tiny star mask, pixel bounds and slow drifting motion.
 - `tools/test_windows.py`: window placement, full framebuffer addresses, dim/on/off
   states, clean restoration, and independent lighting timers.
 - `tools/test_game.py`: upload, blink/relocation, wait, missed bite, manual reel,
@@ -134,15 +143,15 @@ comes from a small LFSR seeded from POKEY on reset. Waiting and bite durations
 are counted in game updates; the current prototype follows render cadence,
 not a tuned 50 Hz simulation. A bite lasts 48 updates; waiting lasts 60–123.
 
-The background occupies VRAM $00000. The blitter restores hidden framebuffers
+The background occupies VRAM $00000; the 96×24 transparent cloud sprite is at $14000. The blitter restores hidden framebuffers
 at $20000/$40000; the game draws dynamic graphics, then swaps XDLs at $7e000.
 The blitter command resides at $7f000. Palette zero is unused; reserved colours
 provide the black rod, charcoal line, coral float, bright stars, amber window
 lights and interface.
 The boot and bank-upload scheme is reused from the adjacent Lich slideshow.
 
-The background was edited with the built-in image tool: brighten only the
-existing moon, comet, and sparse stars, retaining the dark city and character
+The background was edited with the built-in image tool to remove the permanent
+comet and painted stars, retaining the moon, galaxy, dark city and character
 geometry. Earlier art and game packages remain available in the parent folder.
 
 Validation uses the local headless emulator. Physical Atari hardware and desktop
