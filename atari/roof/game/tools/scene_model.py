@@ -3,6 +3,43 @@ from pathlib import Path
 import json, math, re
 ROOT=Path(__file__).resolve().parents[1]
 PROJECT=ROOT/'editor-scene.json'
+SKY_DEFAULTS=dict(onePixelStars=48,twoPixelStars=16,twinklePercent=25,meteorProbability=30)
+
+def sky_settings(value):
+ if value is None:value={}
+ if not isinstance(value,dict):raise ValueError('Sky settings must be an object')
+ return {k:integer(value.get(k,v),0,96 if k in ('onePixelStars','twoPixelStars') else 100,k) for k,v in SKY_DEFAULTS.items()}
+
+def starfield(scene):
+ settings=sky_settings(scene.get('sky'));state=271828;points=[];used=set()
+ assets={a['id']:a for a in scene.get('assets',[])}
+ for stamp in scene.get('stamps',[]):
+  a=assets[stamp['assetId']]
+  used.update((stamp['x']+i%a['width'],stamp['y']+i//a['width']) for i,c in enumerate(a['pixels']) if c)
+ def rand():
+  nonlocal state
+  state=(state*1664525+1013904223)&0xffffffff
+  return state>>8
+ for size,key in [(1,'onePixelStars'),(2,'twoPixelStars')]:
+  for _ in range(settings[key]):
+   for attempt in range(10000):
+    x=8+rand()%303;y=32+rand()%102
+    if 81<=x<=104 and y<=46:continue
+    cells={(xx,yy) for xx in range(x-1,x+size+1) for yy in range(y-1,y+2)}
+    if not cells&used:break
+   else:raise ValueError('Not enough clear sky for this many stars; reduce counts or remove sky objects')
+   used.update((x+j,y) for j in range(size))
+   points.append(dict(x=x,y=y,size=size,phase=rand()%8,twinkle=False))
+ order=list(range(len(points)))
+ for i in range(len(order)-1,0,-1):
+  j=rand()%(i+1);order[i],order[j]=order[j],order[i]
+ for i in order[:(len(points)*settings['twinklePercent']+50)//100]:points[i]['twinkle']=True
+ return points
+
+def apply_starfield(image,scene):
+ for p in starfield(scene):
+  for j in range(p['size']):image.putpixel((p['x']+j,p['y']),252)
+
 def library(palette):
  def nearest(rgb):return min(range(1,247),key=lambda i:sum((palette[i*3+j]-rgb[j])**2 for j in range(3)))
  blue=nearest((56,68,100));dust=nearest((88,86,112));shadow=nearest((12,16,26))
@@ -42,7 +79,7 @@ def library(palette):
 
 def default_scene(palette):
  windows=json.loads((ROOT/'assets/default-windows.json').read_text())
- return dict(version=1,assets=library(palette),gameStar='star-pin',stamps=[],windows=windows)
+ return dict(version=1,assets=library(palette),gameStar='star-pin',stamps=[],windows=windows,sky=SKY_DEFAULTS.copy())
 
 def integer(n,lo,hi,label):
  if type(n)!=int or not lo<=n<=hi:raise ValueError(f'{label} must be an integer from {lo} to {hi}')
@@ -89,7 +126,7 @@ def validate(scene):
   if not isinstance(id,str) or len(id)>64 or id in stamp_ids:raise ValueError('Placed object IDs must be unique')
   stamp_ids.add(id)
   clean_stamps.append(dict(id=id,assetId=a['id'],x=integer(stamp.get('x'),0,320-a['width'],'Object X'),y=integer(stamp.get('y'),13,226-a['height'],'Object Y')))
- return dict(version=1,assets=clean_assets,windows=clean_windows,stamps=clean_stamps,gameStar=star['id'])
+ return dict(version=1,assets=clean_assets,windows=clean_windows,stamps=clean_stamps,gameStar=star['id'],sky=sky_settings(scene.get('sky')))
 
 def load_scene(palette):
  return validate(json.loads(PROJECT.read_text()) if PROJECT.exists() else default_scene(palette))

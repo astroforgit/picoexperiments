@@ -18,15 +18,5 @@ scene=load_scene(Image.open(ROOT/'assets/editor-base.png').getpalette())
 asset=next(a for a in scene['assets'] if a['id']==scene['gameStar'])
 expected={(i%asset['width']-asset['width']//2,i//asset['width']-asset['height']//2) for i,c in enumerate(asset['pixels']) if c}
 assert points==expected, 'Native sprite must exactly match the editor-selected mask'
-r[L['TICKS']]=16
-r[L['STARS_X']:L['STARS_X']+3]=bytes([100,100,100])
-r[L['STARS_LIFE']:L['STARS_LIFE']+3]=bytes([60,60,60])
-a.call(L['UPDATE_STARS'])
-assert list(r[L['STARS_X']:L['STARS_X']+3])==[100,101,99]
-r[L['STARS_X']+1]=239;r[L['STARS_X']+2]=16
-a.call(L['UPDATE_STARS'])
-assert list(r[L['STARS_X']+1:L['STARS_X']+3])==[16,239]
-r[L['TICKS']]=17
-before=bytes(r[L['STARS_X']:L['STARS_X']+3]);a.call(L['UPDATE_STARS'])
-assert bytes(r[L['STARS_X']:L['STARS_X']+3])==before
-print('PASS editor-selected star mask, draw bounds, preserved anchor, slow opposite drift and wrap')
+assert 1<=len(points)<=2
+print('PASS editor-selected caught-star mask, pixel bounds and preserved anchor')

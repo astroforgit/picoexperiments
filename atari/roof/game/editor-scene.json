@@ -3181,5 +3181,11 @@
     }
   ],
   "stamps": [],
-  "gameStar": "star-pin"
+  "gameStar": "star-pin",
+  "sky": {
+    "onePixelStars": 48,
+    "twoPixelStars": 16,
+    "twinklePercent": 25,
+    "meteorProbability": 30
+  }
 }

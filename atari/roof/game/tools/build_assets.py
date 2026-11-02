@@ -1,12 +1,13 @@
 from pathlib import Path
 from PIL import Image,ImageDraw,ImageFont
 import math
-from scene_model import load_scene, apply_stamps
+from scene_model import load_scene, apply_stamps, apply_starfield, starfield
 ROOT=Path(__file__).resolve().parents[1]
 # Static art is generated separately. Only palette/resolution conversion here.
 im=Image.open(ROOT/'assets/background-night-art.png').convert('RGB').resize((320,240),Image.Resampling.LANCZOS)
-q=im.quantize(colors=246,method=Image.Quantize.MEDIANCUT)
+q=im.quantize(colors=245,method=Image.Quantize.MEDIANCUT)
 palette=[0,0,0]+[v&254 for v in q.getpalette()[:246*3]]
+palette[246*3:247*3]=[216,210,184] # gentle ivory twinkle shade
 # Reserve two warm window colours without changing the existing sprite indices.
 palette += [106,62,26, 218,158,74]
 palette += [12,18,36, 246,218,138, 152,174,214, 250,244,210, 6,8,14, 46,52,70, 230,100,92]
@@ -23,23 +24,30 @@ d.text((183,2),'CASTS',font=font,fill=251)
 d.text((241,2),'POWER',font=font,fill=251)
 bg.save(ROOT/'assets/editor-base.png')
 scene=load_scene(palette)
+apply_starfield(bg,scene)
 apply_stamps(bg,scene)
 bg.save(ROOT/'assets/background-320x240.png')
-vram=bytearray(0x15000);vram[:76800]=bg.tobytes()
-# Native transparent cloud sprite, 96x24, at VRAM $14000. Opaque centre
+vram=bytearray(0x16000);vram[:76800]=bg.tobytes()
+# Native transparent cloud sprite, 160x40, at VRAM $14000. Opaque centre
 # hides stars; ragged transparent edges keep the grainy night-art style.
 def nearest(rgb):return min(range(1,247),key=lambda i:sum((palette[i*3+j]-rgb[j])**2 for j in range(3)))
 cloud_colors=[nearest(rgb) for rgb in [(8,11,19),(11,15,25),(14,19,31)]]
-for y in range(24):
- for x in range(96):
-  density=max(1-((x-cx)/rx)**2-((y-cy)/ry)**2 for cx,cy,rx,ry in [(22,15,22,7),(44,11,29,10),(69,14,26,8)])
-  density += .12*math.sin(x*.37+y*.6)+.09*math.sin(x*.81-y*.4)
+for y in range(40):
+ for x in range(160):
+  xx=x*.6;yy=y*.6
+  density=max(1-((xx-cx)/rx)**2-((yy-cy)/ry)**2 for cx,cy,rx,ry in [(22,15,22,7),(44,11,29,10),(69,14,26,8)])
+  density += .12*math.sin(xx*.37+yy*.6)+.09*math.sin(xx*.81-yy*.4)
   grain=(x*17+y*29)%11
   if density>0 and (density>.55 or grain<density*18):
-   vram[0x14000+y*96+x]=cloud_colors[0 if density>.55 else 1 if grain<7 else 2]
+   vram[0x14000+y*160+x]=cloud_colors[0 if density>.55 else 1 if grain<7 else 2]
 (ROOT/'assets/vram.bin').write_bytes(vram)
 (ROOT/'gen/loads.asm').write_text(''.join(f"        org $a000\n        ins 'assets/vram.bin',{i},4096\n        ini upload_bank\n" for i in range(0,len(vram),4096)))
 lines=[]
+field=starfield(scene)
+lines.append(f'STARFIELD_COUNT = {len(field)}')
+lines.append(f'METEOR_THRESHOLD = {scene["sky"]["meteorProbability"]*255//100}')
+for label,values in [('field_lo',[(p['y']*320+p['x'])&255 for p in field]),('field_hi',[(p['y']*320+p['x'])>>8 for p in field]),('field_flags',[(p['size']-1)|(2 if p['twinkle'] else 0) for p in field]),('field_phase',[p['phase'] for p in field])]:
+ lines.append(label+'\n        dta '+','.join(map(str,values or [0])))
 for k in range(3):lines.append(f'palette_{k}\n        dta '+','.join(map(str,palette[k::3])))
 # Bresenham points for three cast strengths, 24 poses each, all coordinates <256.
 def line(a,b):

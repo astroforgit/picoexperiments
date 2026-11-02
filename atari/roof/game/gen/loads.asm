@@ -61,3 +61,6 @@
         org $a000
         ins 'assets/vram.bin',81920,4096
         ini upload_bank
+        org $a000
+        ins 'assets/vram.bin',86016,4096
+        ini upload_bank

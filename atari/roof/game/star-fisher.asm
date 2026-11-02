@@ -134,6 +134,7 @@ nmi
         lda #0
         sta $d40f
         inc frame
+        jsr sky_vblank
         pla
         rti
 irq     rti
@@ -180,7 +181,6 @@ reset_game
         sta score
         sta casts
         sta ticks
-        sta tone
         sta $d201
         lda #$ff
         sta caught
@@ -193,11 +193,6 @@ reset_game
         ora #1
         sta random_seed
         jsr reset_sky
-        ldx #2
-reset_stars
-        jsr spawn_star
-        dex
-        bpl reset_stars
         lda random_seed
         eor #$a5
         ora #1
@@ -222,65 +217,6 @@ random_byte
 random_ready
         sta random_seed
         rts
-spawn_star
-        jsr random_byte
-        cmp #224
-        bcs spawn_star
-        clc
-        adc #16
-        sta stars_x,x
-spawn_y
-        jsr random_byte
-        and #$7f
-        cmp #96
-        bcs spawn_y
-        clc
-        adc #32
-        sta stars_y,x
-        jsr random_byte
-        and #63
-        clc
-        adc #28
-        sta stars_life,x
-        lda #1
-        sta stars_active,x
-        rts
-update_stars
-        ldx #2
-star_life_loop
-        dec stars_life,x
-        bne star_life_next
-        jsr spawn_star
-star_life_next
-        ; Two of the three stars drift slowly between their random appearances.
-        cpx #0
-        beq star_motion_done
-        lda ticks
-        and #15
-        bne star_motion_done
-        lda stars_life,x
-        cmp #12
-        bcc star_motion_done
-        cpx #1
-        bne star_fly_left
-        inc stars_x,x
-        lda stars_x,x
-        cmp #240
-        bcc star_motion_done
-        lda #16
-        sta stars_x,x
-        bne star_motion_done
-star_fly_left
-        dec stars_x,x
-        lda stars_x,x
-        cmp #16
-        bcs star_motion_done
-        lda #239
-        sta stars_x,x
-star_motion_done
-        dex
-        bpl star_life_loop
-        rts
 new_wait
         lda #5
         sta state
@@ -296,20 +232,11 @@ new_wait
 update
         jsr update_sky
         jsr update_lights
-        lda tone
-        beq sound_off
-        dec tone
-        bne sound_done
-sound_off
-        lda #0
-        sta $d201
-sound_done
         lda state
         cmp #4
         bne not_won
         rts
 not_won
-        jsr update_stars
         lda state
         bne state_not_idle
         jmp idle
@@ -367,12 +294,6 @@ power_ready
         inc casts
         lda #$ff
         sta caught
-        lda #90
-        sta $d200
-        lda #$a3
-        sta $d201
-        lda #3
-        sta tone
         rts
 casting
         inc phase
@@ -397,40 +318,23 @@ keep_waiting
         beq start_bite
         rts
 start_bite
-; One of the blinking stars appears at the bait, then the float dips.
-        lda hook_x
-        sta stars_x
-        lda hook_y
-        sta stars_y
-        lda #1
-        sta stars_active
-        lda #80
-        sta stars_life
+; The float glints during a bite; ambient stars remain fixed.
         lda #6
         sta state
         lda #48
         sta bite_timer
-        lda #55
-        sta $d200
-        lda #$a5
-        sta $d201
-        lda #4
-        sta tone
         rts
 biting
         lda press_edge
         beq bite_wait
         lda #0
         sta caught
-        sta stars_active
         lda #3
         sta state
         rts
 bite_wait
         dec bite_timer
         bne bite_done
-        ldx #0
-        jsr spawn_star
         jmp new_wait
 bite_done
         rts
@@ -446,14 +350,6 @@ landed
         cmp #$ff
         beq empty_cast
         inc score
-        ldx #0
-        jsr spawn_star
-        lda #35
-        sta $d200
-        lda #$a7
-        sta $d201
-        lda #6
-        sta tone
 empty_cast
         lda #$ff
         sta caught
@@ -550,33 +446,18 @@ charge_bar
         dex
         bne charge_bar
 no_charge
-; Three stars blink, disappear and reappear at new random sky positions.
-        ldx #2
-render_stars
-        stx star_index
-        lda stars_active,x
-        beq skip_star
-        lda stars_life,x
-        cmp #12
-        bcc skip_star
-        lda stars_x,x
+        jsr draw_starfield
+        lda state
+        cmp #6
+        bne no_bite_star
+        lda hook_x
         sta px
-        lda stars_y,x
+        lda hook_y
         sta py
-        lda stars_life,x
-        and #4
-        beq star_gold
         lda #252
-        bne star_color
-star_gold
-        lda #250
-star_color
         sta color
         jsr star
-skip_star
-        ldx star_index
-        dex
-        bpl render_stars
+no_bite_star
         jsr draw_meteor
         jsr draw_clouds
         lda state
@@ -953,12 +834,10 @@ phase dta 0
 score dta 0
 casts dta 0
 ticks dta 0
-tone dta 0
 pressed dta 0
 caught dta $ff
 hook_x dta 0
 hook_y dta 0
-star_index dta 0
 star_origin_x dta 0
 star_origin_y dta 0
 previous_pressed dta 0
@@ -973,10 +852,6 @@ color dta 250
 offset dta a(0)
 pose_base dta 0,24,48
 times64 dta 0,64,128,192
-stars_x :3 dta 0
-stars_y :3 dta 0
-stars_active :3 dta 1
-stars_life :3 dta 0
 digit_value dta 0
 digit_index dta 0
 digit_bits dta 0

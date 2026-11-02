@@ -12,7 +12,6 @@ def key(a,down=True,code=0x3f):
 def until(a,predicate,limit=700,record=None):
  for i in range(limit):
   a.run_frames(1)
-  assert sum(a.mem.ram[L['STARS_ACTIVE']:L['STARS_ACTIVE']+3])<=3
   if record is not None and i%6==0:record.append(a.screenshot(scale=2))
   if predicate():return
  raise AssertionError('Timed out: '+str({n:get(a,n) for n in ['STATE','PHASE','CHARGE','SCORE','WAIT_TIMER']}))
@@ -30,15 +29,7 @@ assert bytes(a.vram[:len((ROOT/'assets/vram.bin').read_bytes())])==(ROOT/'assets
 a.run_frames(15)
 assert get(a,'STATE')==0 and a.screenshot(scale=1).size==(320,240)
 a.screenshot(ROOT/'screenshots/float-idle.png',scale=3)
-# Blinking stars relocate, rather than drift in a fixed row.
-seen=set();hidden=False
-for _ in range(110):
- a.run_frames(3)
- for i in range(3):
-  seen.add((a.mem.ram[L['STARS_X']+i],a.mem.ram[L['STARS_Y']+i]))
-  hidden |= a.mem.ram[L['STARS_LIFE']+i]<12
-assert len(seen)>6 and hidden
-print('PASS upload, boot, random star positions and blink-off intervals',flush=True)
+print('PASS upload and boot',flush=True)
 # Charged A must not auto-cast; casting must stop with a stationary float.
 key(a);until(a,lambda:get(a,'CHARGE')==60);a.run_frames(18)
 assert get(a,'STATE')==1 and get(a,'CASTS')==0
@@ -83,3 +74,6 @@ b=Atari(ROOT/'star-fisher.xex',vbxe_page=0xd7);b.boot();b.run_frames(15)
 assert get(b,'TICKS')>0 and b.blits>1
 assert bytes(b.vram[:len((ROOT/'assets/vram.bin').read_bytes())])==(ROOT/'assets/vram.bin').read_bytes()
 print('PASS five-star win, held-key debounce, D640/D740; saved gameplay GIF',flush=True)
+
+assert all(not any(frame[i]&15 for i in (1,3,5,7)) for frame in a.pokey_log), 'All sound channels must remain silent'
+print('PASS silent boot, casting, bites, catches and win')

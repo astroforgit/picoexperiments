@@ -1,8 +1,8 @@
 # Star Fisher — VBXE game and pixel workshop
 
 A quiet fishing game above dark nineteenth-century Paris. Cast a long black rod
-into the sky and leave the float there. Stars blink into view at random places.
-Eventually one appears at the bait: the float flashes and a bite tone sounds.
+into the sky and leave the float there. Stars stay at fixed random positions, with gentle changes in brightness.
+Eventually a bite makes the float flash. The game is silent.
 Tap A or fire to strike and reel it home. Collect five stars to finish the night.
 
 ## Pixel editor
@@ -28,7 +28,10 @@ when moving an object or editing a light mask.
   pixel; Shift moves ten. The original painting remains a fixed backdrop.
 - **Edit selected sprite pixels:** alter a proposal with the native palette or
   make a copy. Palette index 0 is transparent. Right-click erases.
-- **Gameplay star:** choose the actual native blinking/flying/caught star mask.
+- **Sky settings:** set one-pixel and two-pixel star counts (0–96 each), the
+  percentage that gently twinkle (0–100), and meteor chance per ten seconds
+  (0–100%). Star positions remain fixed. Save/Build and JSON export retain all settings.
+- **Caught star:** choose the native float/caught-star mask.
   The game uses its gold/ivory pulse colours; placed sprites retain their colours.
 - **Save project:** writes `editor-scene.json`, retaining the previous save as
   `editor-scene.previous.json`. JSON import/export and a local draft are available.
@@ -39,7 +42,7 @@ Placed sky decorations (including cloud stamps) are currently static in the
 native game. Three separate native clouds drift slowly across the sky and mask
 stars. A short meteor falls occasionally, with long random pauses. These moving
 effects appear in Built game; the composition canvas edits the static scene.
-Gameplay stars blink and drift. The editor's light-animation
+Sky stars remain fixed; a selected fraction gently change between two ivory shades. The editor's light-animation
 preview follows the native lighting rules; its wall-clock pace is approximate
 because native game updates follow rendering cadence. The indexed scene pixels
 and saved masks themselves are shared exactly with the native build.
@@ -61,8 +64,8 @@ register bases are detected. The adjacent projects' Altirra launcher works with:
 - **Hold A, Space, or joystick fire**, then **release** to cast.
 - Holding longer chooses a farther spot: short, medium, or long reach.
 - The float stays in that spot. Casting no longer triggers automatic reeling.
-- **WAIT FOR A BITE** means leave the float out. Three stars blink and relocate.
-- **BITE! TAP A / FIRE**, the flashing float, and a tone signal a bite.
+- **WAIT FOR A BITE** means leave the float out. The sky stars keep their positions.
+- **BITE! TAP A / FIRE**, the flashing float signal a bite.
 - **Tap A, Space, or fire during the bite** to hook the star and reel it home.
 - Tapping while waiting retrieves an empty float so you can cast elsewhere.
 - Ignoring a bite loses that opportunity, but leaves the float in the sky.
@@ -86,11 +89,18 @@ Five landed stars → NIGHT COMPLETE
 ```
 
 The float is a small coral-and-ivory marker attached to the longer charcoal
-line. During a bite, its lower end flashes. One- or two-pixel gold/ivory glints
-appear at random sky positions, fade out, and relocate; there are at most three
-at once. Two of the three stars slowly fly in opposite directions between
-appearances. No animated stars use the old cross-shaped glyph. A star appears at the float after a random waiting interval. Cast
-strength currently changes the location, not the bite probability.
+line. During a bite, its lower end flashes. The sky uses one- and two-pixel
+ivory stars in fixed random positions. By default, there are 48 single-pixel
+stars and 16 double-pixel stars, with 25% gently twinkling. The editor changes
+these counts immediately in the composition preview. The caught star appears
+at the float after a random waiting interval. Cast strength changes location,
+not bite probability.
+
+Three 160×40 dark clouds mask stars as they pass, moving one pixel per 64 PAL
+VBIs (about 1.28 seconds). Every 500 PAL VBIs (ten seconds), the game makes one
+meteor probability check; the default is 30%. 0% disables meteors, while 100%
+always produces a meteor at each check. These clocks are independent of render
+speed. Sound effects are disabled in all game states.
 
 Six small windows add warm amber light to the houses. Distant windows switch
 on and off on independent slow timers; the nearest dormer stays lit and briefly
@@ -116,7 +126,7 @@ python3 tools/test_display.py
 python3 tools/test_sky.py
 ```
 
-- `star-fisher.asm`: native 6502 game, controls, states, VBXE drawing and tones.
+- `star-fisher.asm`: native 6502 game, controls, states, VBXE drawing.
 - `star-fisher.xex`: current executable.
 - `sky.asm`: slow cloud motion, occlusion and occasional falling meteor.
 - `tools/test_sky.py`: motion, masking, restoration, meteor lifetime and independent RNG.
@@ -130,10 +140,10 @@ python3 tools/test_sky.py
 - `tools/test_display.py`: actual XDL palette selection for both buffers and VBXE
   register addresses, plus exact agreement with editor RGB colours. This checks
   the attribute bits explicitly because the shared screenshot emulator assumes palette 1.
-- `tools/test_stars.py`: editor-selected tiny star mask, pixel bounds and slow drifting motion.
+- `tools/test_stars.py`: editor-selected tiny star mask, pixel bounds and preserved drawing anchor.
 - `tools/test_windows.py`: window placement, full framebuffer addresses, dim/on/off
   states, clean restoration, and independent lighting timers.
-- `tools/test_game.py`: upload, blink/relocation, wait, missed bite, manual reel,
+- `tools/test_game.py`: upload, silence, wait, missed bite, manual reel,
   held-input handling, all three distances, five catches, and register-base tests.
 
 ## Implementation
@@ -143,7 +153,7 @@ comes from a small LFSR seeded from POKEY on reset. Waiting and bite durations
 are counted in game updates; the current prototype follows render cadence,
 not a tuned 50 Hz simulation. A bite lasts 48 updates; waiting lasts 60–123.
 
-The background occupies VRAM $00000; the 96×24 transparent cloud sprite is at $14000. The blitter restores hidden framebuffers
+The background occupies VRAM $00000; the 160×40 transparent cloud sprite is at $14000. The blitter restores hidden framebuffers
 at $20000/$40000; the game draws dynamic graphics, then swaps XDLs at $7e000.
 The blitter command resides at $7f000. Palette zero is unused; reserved colours
 provide the black rod, charcoal line, coral float, bright stars, amber window

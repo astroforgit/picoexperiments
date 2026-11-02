@@ -4,7 +4,7 @@ import tempfile,shutil,subprocess,os,sys,time,json,urllib.request,urllib.error
 from PIL import Image
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'tools'))
-from scene_model import validate,default_scene,apply_stamps
+from scene_model import validate,default_scene,apply_stamps,apply_starfield
 node=os.environ.get('NODE_BINARY','node')
 with tempfile.TemporaryDirectory(prefix='star-fisher-editor-') as tmp:
  work=Path(tmp)/'game';work.mkdir()
@@ -28,7 +28,7 @@ with tempfile.TemporaryDirectory(prefix='star-fisher-editor-') as tmp:
   subprocess.run([node,str(ROOT/'editor/browser.test.cjs')],env=env,check=True,timeout=180)
   scene=validate(json.loads((work/'editor-scene.json').read_text()))
   assert len(scene['windows'])==7 and scene['windows'][-1]['pixels']==[[200,200]]
-  base=Image.open(work/'assets/editor-base.png');expected=base.copy();apply_stamps(expected,scene)
+  base=Image.open(work/'assets/editor-base.png');expected=base.copy();apply_starfield(expected,scene);apply_stamps(expected,scene)
   actual=Image.open(work/'assets/background-320x240.png')
   assert expected.tobytes()==actual.tobytes() and expected.getpalette()==actual.getpalette(),'Native build must match exact editor scene pixels'
   assert json.loads((work/'assets/windows.json').read_text())==[w['pixels'] for w in scene['windows']]
@@ -37,9 +37,21 @@ with tempfile.TemporaryDirectory(prefix='star-fisher-editor-') as tmp:
   from emu import Atari,load_labels
   L=load_labels(work/'star-fisher.lab');a=Atari(work/'star-fisher.xex');a.boot();a.run_frames(15)
   assert L['WINDOW_COUNT']==7
+  assert L['STARFIELD_COUNT']==19 and L['METEOR_THRESHOLD']==255
+  assert sum(bool(a.mem.ram[L['FIELD_FLAGS']+i]&2) for i in range(19))==11
   a.mem.ram[L['LIGHT_ON']:L['LIGHT_ON']+7]=bytes([0]*6+[2])
   a.call(L['RENDER']);addr=(a.mem.ram[L['BUFFER']]<<16)+200*320+200
   assert a.vram[addr]==248,'Painted window pixel must reach actual VBXE framebuffer'
+  # Compile the empty and maximum sky to catch 6502 loop/count boundaries.
+  for count in (0,96):
+   scene['sky'].update(onePixelStars=count,twoPixelStars=count,twinklePercent=100,meteorProbability=0)
+   (work/'editor-scene.json').write_text(json.dumps(scene))
+   subprocess.run(['bash','build.sh'],cwd=work,check=True,stdout=subprocess.DEVNULL)
+   labels=load_labels(work/'star-fisher.lab');edge=Atari(work/'star-fisher.xex');edge.boot();edge.run_frames(15)
+   assert labels['STARFIELD_COUNT']==2*count and labels['METEOR_THRESHOLD']==0
+   edge.mem.ram[labels['BUFFER']]=2;edge.mem.ram[labels['DRAW_BANK']]=0xa0
+   edge.vram[0x20000:0x20000+76800]=0;edge.call(labels['DRAW_STARFIELD'])
+   assert sum(edge.vram[0x20000:0x20000+76800]!=0)==count*3
   print('PASS isolated persistence, validation, exact indexed background, seven native window groups and edited framebuffer pixel')
  finally:
   server.terminate();server.wait(timeout=10)

@@ -30,6 +30,12 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  await page.keyboard.press('Control+z');assert.equal((await page.evaluate(()=>StarEditor.getScene())).assets.at(-1).pixels[0],252);
  await page.keyboard.press('Control+Shift+z');assert.equal((await page.evaluate(()=>StarEditor.getScene())).assets.at(-1).pixels[0],250);
  await page.click('#closeSprite');await page.selectOption('#gameStar',editedId);
+ // Sky controls persist, undo, validate, and drive the native build.
+ await page.click('[data-tab="sky"]');
+ for(const [id,value] of Object.entries({onePixelStars:12,twoPixelStars:7,twinklePercent:60,meteorProbability:100})){await page.fill('#'+id,String(value));await page.locator('#'+id).blur();}
+ assert.deepEqual((await page.evaluate(()=>StarEditor.getScene())).sky,{onePixelStars:12,twoPixelStars:7,twinklePercent:60,meteorProbability:100});
+ await page.click('#undo');assert.equal((await page.evaluate(()=>StarEditor.getScene())).sky.meteorProbability,30);await page.click('#redo');
+ await page.fill('#onePixelStars','97');await page.locator('#onePixelStars').blur();assert.equal((await page.evaluate(()=>StarEditor.getScene())).sky.onePixelStars,12);
  // Export and import are round trips, not a lossy screenshot format.
  const project=await page.evaluate(()=>StarEditor.getScene());
  const downloadPromise=page.waitForEvent('download');await page.click('#exportBtn');const download=await downloadPromise;assert.equal(download.suggestedFilename(),'star-fisher-project.json');
