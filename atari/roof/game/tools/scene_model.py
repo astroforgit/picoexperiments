@@ -1,14 +1,64 @@
 """Shared editor/native asset model. All colours are actual VBXE palette indices."""
 from pathlib import Path
 import json, math, re
+from sounds import sound_settings
 ROOT=Path(__file__).resolve().parents[1]
 PROJECT=ROOT/'editor-scene.json'
 SKY_DEFAULTS=dict(onePixelStars=48,twoPixelStars=16,twinklePercent=25,meteorProbability=30)
+# Ambient star tone for palette slot 246. Moon and painted tones are the mean
+# of the brightest moon pixels in background-night-art.png and of the painted
+# stars in background-art.png. Ivory keeps 252 bright and 246 as its dim shade.
+STAR_TONES=dict(ivory=[216,210,184],moon=[246,232,204],painted=[246,218,172])
+STAR_COLOR_MODES=['ivory','moon','painted','custom']
+# New bait scenarios. Legacy `floats` settings are intentionally not reused.
+SCENARIOS=[('interest','Gentle interest',70,5,10,10,25),('attack','Aggressive dive',15,80,100,100,10),('nibble','Cautious nibble',8,15,25,25,20),('falseAlarm','False alarm',5,0,0,0,15),('sideTake','Sideways take',2,50,60,60,15)]
 
 def sky_settings(value):
  if value is None:value={}
  if not isinstance(value,dict):raise ValueError('Sky settings must be an object')
- return {k:integer(value.get(k,v),0,96 if k in ('onePixelStars','twoPixelStars') else 100,k) for k,v in SKY_DEFAULTS.items()}
+ sky={k:integer(value.get(k,v),0,96 if k in ('onePixelStars','twoPixelStars') else 100,k) for k,v in SKY_DEFAULTS.items()}
+ sky['starColor']=value.get('starColor','ivory')
+ if sky['starColor'] not in STAR_COLOR_MODES:raise ValueError('Star colour must be one of '+', '.join(STAR_COLOR_MODES))
+ rgb=value.get('starRgb',[200,220,255])
+ if not isinstance(rgb,list) or len(rgb)!=3:raise ValueError('Custom star colour must be three RGB values')
+ sky['starRgb']=[integer(c,0,255,'Star RGB') for c in rgb]
+ return sky
+
+def star_tone(sky):
+ return [c&254 for c in sky['starRgb']] if sky['starColor']=='custom' else STAR_TONES[sky['starColor']]
+
+def star_bright(sky):return 252 if sky['starColor']=='ivory' else 246
+
+def star_dim(sky,palette):
+ if sky['starColor']=='ivory':return 246
+ target=[c*7//10 for c in star_tone(sky)]
+ return min(range(1,246),key=lambda i:sum((palette[i*3+j]-target[j])**2 for j in range(3)))
+
+def fishing_settings(value):
+ if value is None:value={}
+ if not isinstance(value,dict):raise ValueError('Fishing settings must be an object')
+ given=value.get('scenarios',{})
+ if not isinstance(given,dict):raise ValueError('Bite scenarios must be an object')
+ clean={}
+ for id,name,weight,catch,missed,failed,duration in SCENARIOS:
+  f=given.get(id,{})
+  if not isinstance(f,dict):raise ValueError('Invalid '+name)
+  defaults=dict(weight=weight,catch=catch,missedLoss=missed,failedLoss=failed,durationTenths=duration)
+  clean[id]={k:integer(f.get(k,v),1 if k=='durationTenths' else 0,100,name+' '+k) for k,v in defaults.items()}
+ if not any(f['weight'] for f in clean.values()):raise ValueError('Enable at least one bite scenario')
+ lo=integer(value.get('quietMinSeconds',8),1,60,'Minimum quiet seconds')
+ hi=integer(value.get('quietMaxSeconds',20),lo,60,'Maximum quiet seconds')
+ return dict(version=2,springGauge=bool(value.get('springGauge',True)),quietMinSeconds=lo,quietMaxSeconds=hi,escalationPercent=integer(value.get('escalationPercent',35),0,100,'Escalation percent'),scenarios=clean)
+
+def scenario_slots(fishing):
+ weights=[fishing['scenarios'][id]['weight'] for id,*_ in SCENARIOS];total=sum(weights)
+ counts=[max(1,w*64//total) if w else 0 for w in weights]
+ order=sorted(range(len(weights)),key=lambda i:(-(weights[i]*64%total),i))
+ while sum(counts)<64:
+  for i in order:
+   if weights[i] and sum(counts)<64:counts[i]+=1
+ while sum(counts)>64:counts[max(range(len(counts)),key=lambda i:(counts[i],-i))]-=1
+ return [i+1 for i,n in enumerate(counts) for _ in range(n)]
 
 def starfield(scene):
  settings=sky_settings(scene.get('sky'));state=271828;points=[];used=set()
@@ -37,11 +87,12 @@ def starfield(scene):
  return points
 
 def apply_starfield(image,scene):
+ color=star_bright(sky_settings(scene.get('sky')))
  for p in starfield(scene):
-  for j in range(p['size']):image.putpixel((p['x']+j,p['y']),252)
+  for j in range(p['size']):image.putpixel((p['x']+j,p['y']),color)
 
 def library(palette):
- def nearest(rgb):return min(range(1,247),key=lambda i:sum((palette[i*3+j]-rgb[j])**2 for j in range(3)))
+ def nearest(rgb):return min(range(1,246),key=lambda i:sum((palette[i*3+j]-rgb[j])**2 for j in range(3)))
  blue=nearest((56,68,100));dust=nearest((88,86,112));shadow=nearest((12,16,26))
  result=[]
  def add(id,name,category,rows,colors):
@@ -79,7 +130,7 @@ def library(palette):
 
 def default_scene(palette):
  windows=json.loads((ROOT/'assets/default-windows.json').read_text())
- return dict(version=1,assets=library(palette),gameStar='star-pin',stamps=[],windows=windows,sky=SKY_DEFAULTS.copy())
+ return dict(version=1,assets=library(palette),gameStar='star-pin',stamps=[],windows=windows,sky=sky_settings({}),fishing=fishing_settings({}),sound=sound_settings({}))
 
 def integer(n,lo,hi,label):
  if type(n)!=int or not lo<=n<=hi:raise ValueError(f'{label} must be an integer from {lo} to {hi}')
@@ -126,7 +177,7 @@ def validate(scene):
   if not isinstance(id,str) or len(id)>64 or id in stamp_ids:raise ValueError('Placed object IDs must be unique')
   stamp_ids.add(id)
   clean_stamps.append(dict(id=id,assetId=a['id'],x=integer(stamp.get('x'),0,320-a['width'],'Object X'),y=integer(stamp.get('y'),13,226-a['height'],'Object Y')))
- return dict(version=1,assets=clean_assets,windows=clean_windows,stamps=clean_stamps,gameStar=star['id'],sky=sky_settings(scene.get('sky')))
+ return dict(version=1,assets=clean_assets,windows=clean_windows,stamps=clean_stamps,gameStar=star['id'],sky=sky_settings(scene.get('sky')),fishing=fishing_settings(scene.get('fishing')),sound=sound_settings(scene.get('sound')))
 
 def load_scene(palette):
  return validate(json.loads(PROJECT.read_text()) if PROJECT.exists() else default_scene(palette))

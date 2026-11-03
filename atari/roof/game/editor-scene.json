@@ -3187,5 +3187,52 @@
     "twoPixelStars": 16,
     "twinklePercent": 25,
     "meteorProbability": 30
+  },
+  "fishing": {
+    "version": 2,
+    "springGauge": true,
+    "quietMinSeconds": 8,
+    "quietMaxSeconds": 20,
+    "escalationPercent": 35,
+    "scenarios": {
+      "interest": {
+        "weight": 70,
+        "catch": 5,
+        "missedLoss": 10,
+        "failedLoss": 10,
+        "durationTenths": 25
+      },
+      "attack": {
+        "weight": 15,
+        "catch": 80,
+        "missedLoss": 100,
+        "failedLoss": 100,
+        "durationTenths": 10
+      },
+      "nibble": {
+        "weight": 8,
+        "catch": 15,
+        "missedLoss": 25,
+        "failedLoss": 25,
+        "durationTenths": 20
+      },
+      "falseAlarm": {
+        "weight": 5,
+        "catch": 0,
+        "missedLoss": 0,
+        "failedLoss": 0,
+        "durationTenths": 15
+      },
+      "sideTake": {
+        "weight": 2,
+        "catch": 50,
+        "missedLoss": 60,
+        "failedLoss": 60,
+        "durationTenths": 15
+      }
+    }
+  },
+  "sound": {
+    "enabled": false
   }
 }

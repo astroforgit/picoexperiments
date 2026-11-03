@@ -15,7 +15,7 @@ reset_sky
         sta meteor_clock
         lda #>500
         sta meteor_clock+1
-        ldx #2
+        ldx #CLOUD_SLOTS-1
 reset_cloud
         lda cloud_start,x
         sta cloud_x,x
@@ -60,7 +60,7 @@ update_sky
         lda cloud_pending
         beq meteor_tick
         dec cloud_pending
-        ldx #2
+        ldx #CLOUD_SLOTS-1
 cloud_move
         lda cloud_x,x
         clc
@@ -138,9 +138,13 @@ meteor_tail_pixel
         rts
 
 ; Blitter mode 1 skips zero edges, but the cloud body replaces sky/stars.
-; Three 160x40 wisps bounce gently within the full 320px sky.
+; 160x40 wisps bounce gently within the full 320px sky. The menu's cloud
+; level draws none, the first three, or all six.
 draw_clouds
-        ldx #2
+        ldx cloud_count
+        dex
+        bpl cloud_draw
+        rts
 cloud_draw
         stx cloud_index
         jsr blwait
@@ -172,12 +176,14 @@ cloud_command
         rts
 cloud_blit
         dta 0,$40,1,a(160),1,0,0,2,a(320),1,a(159),39,$ff,0,0,0,0,1
-cloud_row_lo dta <(40*320),<(74*320),<(104*320)
-cloud_row_hi dta >(40*320),>(74*320),>(104*320)
-cloud_start dta 8,79,147
-cloud_initial_dir dta 1,255,1
-cloud_x :3 dta 0
-cloud_dir :3 dta 0
+CLOUD_SLOTS = 6
+cloud_row_lo dta <(40*320),<(74*320),<(104*320),<(26*320),<(58*320),<(90*320)
+cloud_row_hi dta >(40*320),>(74*320),>(104*320),>(26*320),>(58*320),>(90*320)
+cloud_start dta 8,79,147,120,12,64
+cloud_initial_dir dta 1,255,1,255,1,255
+cloud_x :CLOUD_SLOTS dta 0
+cloud_dir :CLOUD_SLOTS dta 0
+cloud_count dta 3
 cloud_index dta 0
 sky_ticks dta 0
 sky_seed dta 1
@@ -202,7 +208,7 @@ draw_starfield
         sta field_tick
         ldx #0
 field_draw
-        lda #252
+        lda #STAR_BRIGHT
         sta color
         lda field_flags,x
         and #2
@@ -212,7 +218,7 @@ field_draw
         adc field_tick
         and #7
         bne field_bright
-        lda #246
+        lda #STAR_DIM
         sta color
 field_bright
         lda field_lo,x

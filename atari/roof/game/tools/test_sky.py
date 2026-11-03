@@ -20,7 +20,7 @@ for tick in range(0,256,32):
  put('SKY_TICKS',tick);a.vram[0x20000:0x20000+76800]=0;a.call(L['DRAW_STARFIELD'])
  expected=np.zeros(76800,dtype=np.uint8)
  for p in field:
-  color=246 if p['twinkle'] and (p['phase']+(tick>>5))%8==0 else 252
+  color=L['STAR_DIM'] if p['twinkle'] and (p['phase']+(tick>>5))%8==0 else L['STAR_BRIGHT']
   expected[p['y']*320+p['x']:p['y']*320+p['x']+p['size']]=color
  assert np.array_equal(a.vram[0x20000:0x20000+76800],expected)
 # Neither weather nor twinkling changes fishing randomness.
@@ -73,6 +73,25 @@ for key,value in [('onePixelStars',97),('meteorProbability',101),('twinklePercen
  except ValueError:pass
  else:raise AssertionError('Invalid sky setting accepted')
 old=json.loads(json.dumps(scene));old.pop('sky');assert validate(old)['sky']['onePixelStars']==48
+# Star colour modes: ivory keeps 252/246; others put their tone in slot 246
+# and twinkle down to the closest painting colour.
+from scene_model import star_tone,star_bright,star_dim,behaviour_slots,fishing_settings
+pal=Image.open(ROOT/'assets/editor-base.png').getpalette()
+for mode in ['ivory','moon','painted','custom']:
+ sky=validate({**scene,'sky':{**scene['sky'],'starColor':mode,'starRgb':[121,201,255]}})['sky']
+ assert star_bright(sky)==(252 if mode=='ivory' else 246)
+ assert star_dim(sky,pal)==246 if mode=='ivory' else 1<=star_dim(sky,pal)<=245
+assert star_tone({'starColor':'custom','starRgb':[121,201,255]})==[120,200,254]
+for bad in [{'starColor':'green'},{'starRgb':[1,2]},{'starRgb':[0,0,256]}]:
+ try:validate({**scene,'sky':{**scene['sky'],**bad}})
+ except ValueError:pass
+ else:raise AssertionError('Invalid star colour accepted')
+# Float frequency lookup: 64 slots in proportion, every appearing behaviour present.
+slots=behaviour_slots(fishing_settings({}));assert len(slots)==64 and set(slots)==set(range(7))
+assert behaviour_slots(fishing_settings({'floats':{k:{'often':0} for k in ['calm','drift','tremble','dip','lift','run']}}))==[6]*64
+try:fishing_settings({'floats':{k:{'often':0} for k in ['calm','drift','tremble','dip','lift','run','glint']}})
+except ValueError:pass
+else:raise AssertionError('All-zero float frequencies accepted')
 put('METEOR_LIFE',0);a.call(L['RENDER']);a.vregs[0x41]=0;a.vregs[0x42]=0xe0;a.vregs[0x43]=7
 a.screenshot(ROOT/'screenshots/night-sky.png',scale=3)
 print('PASS exact static star counts/positions, gentle selected twinkling, 64-VBI cloud speed, 500-VBI meteor clock, 0/100% probability, downward lifetime, masking/restoration, independent RNG and settings validation')

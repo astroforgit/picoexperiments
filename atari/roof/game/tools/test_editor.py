@@ -11,8 +11,8 @@ with tempfile.TemporaryDirectory(prefix='star-fisher-editor-') as tmp:
  for name in ['tools','gen','assets']:
   shutil.copytree(ROOT/name,work/name,ignore=shutil.ignore_patterns('__pycache__'))
  (work/'screenshots').mkdir()
- for name in ['build.sh','star-fisher.asm','sky.asm','star-fisher.xex']:shutil.copy2(ROOT/name,work/name)
- env=dict(os.environ,STAR_FISHER_ROOT=str(work),EDITOR_URL='http://127.0.0.1:8792',SCREENSHOT_PATH=str(ROOT/'screenshots/editor-library.png'))
+ for name in ['build.sh','star-fisher.asm','sky.asm','sound.asm','bobber-menu.asm','fishing.asm','star-fisher.xex']:shutil.copy2(ROOT/name,work/name)
+ env=dict(os.environ,STAR_FISHER_ROOT=str(work),STAR_FISHER_SOUNDS=str(ROOT.parent/'sounds'),EDITOR_URL='http://127.0.0.1:8792',SCREENSHOT_PATH=str(ROOT/'screenshots/editor-library.png'))
  server=subprocess.Popen([sys.executable,str(ROOT/'editor/serve.py'),'8792'],env=env,stdout=subprocess.DEVNULL,stderr=subprocess.STDOUT)
  try:
   for _ in range(50):
@@ -38,6 +38,13 @@ with tempfile.TemporaryDirectory(prefix='star-fisher-editor-') as tmp:
   L=load_labels(work/'star-fisher.lab');a=Atari(work/'star-fisher.xex');a.boot();a.run_frames(15)
   assert L['WINDOW_COUNT']==7
   assert L['STARFIELD_COUNT']==19 and L['METEOR_THRESHOLD']==255
+  # Fishing and star colour settings from the browser reach the executable.
+  assert L['SPRING_GAUGE']==0 and L['STAR_BRIGHT']==246
+  assert a.mem.ram[L['SCENARIO_CATCH']+2]==60 and a.palette[1][246].tolist()==[246,232,204]
+  # Sound settings from the browser: louder wind, a frequent train.
+  from sounds import chances
+  assert scene['sound']['wind']['volume']==9 and L['WIND_PCM']==1 and L['CLIP_COUNT']==4 and L['PCM_AUDF']==15
+  assert list(a.mem.ram[L['CLIP_CHANCE']:L['CLIP_CHANCE']+4])==chances(scene['sound'])
   assert sum(bool(a.mem.ram[L['FIELD_FLAGS']+i]&2) for i in range(19))==11
   a.mem.ram[L['LIGHT_ON']:L['LIGHT_ON']+7]=bytes([0]*6+[2])
   a.call(L['RENDER']);addr=(a.mem.ram[L['BUFFER']]<<16)+200*320+200
@@ -46,7 +53,7 @@ with tempfile.TemporaryDirectory(prefix='star-fisher-editor-') as tmp:
   for count in (0,96):
    scene['sky'].update(onePixelStars=count,twoPixelStars=count,twinklePercent=100,meteorProbability=0)
    (work/'editor-scene.json').write_text(json.dumps(scene))
-   subprocess.run(['bash','build.sh'],cwd=work,check=True,stdout=subprocess.DEVNULL)
+   subprocess.run(['bash','build.sh'],cwd=work,check=True,stdout=subprocess.DEVNULL,env=env)
    labels=load_labels(work/'star-fisher.lab');edge=Atari(work/'star-fisher.xex');edge.boot();edge.run_frames(15)
    assert labels['STARFIELD_COUNT']==2*count and labels['METEOR_THRESHOLD']==0
    edge.mem.ram[labels['BUFFER']]=2;edge.mem.ram[labels['DRAW_BANK']]=0xa0

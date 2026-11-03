@@ -64,3 +64,33 @@
         org $a000
         ins 'assets/vram.bin',86016,4096
         ini upload_bank
+        org $a000
+        ins 'assets/vram.bin',90112,4096
+        ini upload_bank
+        org $a000
+        ins 'assets/vram.bin',94208,4096
+        ini upload_bank
+        org $a000
+        ins 'assets/vram.bin',98304,4096
+        ini upload_bank
+        org $a000
+        ins 'assets/vram.bin',102400,4096
+        ini upload_bank
+        org $a000
+        ins 'assets/vram.bin',106496,4096
+        ini upload_bank
+        org $a000
+        ins 'assets/vram.bin',110592,4096
+        ini upload_bank
+        org $a000
+        ins 'assets/vram.bin',114688,4096
+        ini upload_bank
+        org $a000
+        ins 'assets/vram.bin',118784,4096
+        ini upload_bank
+        org $a000
+        ins 'assets/vram.bin',122880,4096
+        ini upload_bank
+        org $a000
+        ins 'assets/vram.bin',126976,4096
+        ini upload_bank

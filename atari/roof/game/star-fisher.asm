@@ -5,7 +5,7 @@ vb = $80
 src = $82
 dst = $84
 points = $86
-line_points = $88
+bob_ptr = $8a
         org $2000
 main
         sei
@@ -26,13 +26,7 @@ supported
         sta $d01a
         sta $d01b
         sta $d01d
-        sta $d208
-        sta $d201
-        sta $d203
-        sta $d205
-        sta $d207
-        lda #3
-        sta $d20f
+        jsr sound_init
         mwa #nmi $fffa
         mwa #irq $fffe
         lda #$98
@@ -109,6 +103,10 @@ wait_tick
         jsr input
         jsr update
         jsr render
+        lda popup_active
+        beq no_bobber_popup
+        jsr draw_bobber_popup
+no_bobber_popup
 ; Present only on vertical blank, then draw to the other buffer.
         lda frame
 wait_present
@@ -131,18 +129,39 @@ present_set
         jmp main_loop
 nmi
         pha
+        txa
+        pha
+        tya
+        pha
         lda #0
         sta $d40f
         inc frame
+        jsr charge_vblank
+        jsr bite_vblank
         jsr sky_vblank
+        jsr sound_vblank
+        pla
+        tay
+        pla
+        tax
         pla
         rti
-irq     rti
 
-; A ($3f), Space ($21), or joystick fire. R ($28) restarts.
+; A ($3f), Space ($21), or joystick fire. R ($28) returns to the menu.
+; Directions: joystick, or the arrow keys - = + * (bits up, down, left, right).
 input
+        lda popup_keys
+        sta popup_previous
+        lda #0
+        sta popup_keys
         lda pressed
         sta previous_pressed
+        lda dirs
+        sta previous_dirs
+        lda $d300
+        eor #$0f
+        and #$0f
+        sta dirs
         lda #0
         sta pressed
         lda $d010
@@ -154,11 +173,45 @@ keyboard
         bne input_done
         lda $d209
         and #$3f
+        cmp #$15
+        bne key_not_b
+        lda #1
+        sta popup_keys
+        jmp input_done
+key_not_b
+        cmp #$0c
+        bne key_not_enter
+        lda #2
+        sta popup_keys
+        jmp input_done
+key_not_enter
+        cmp #$1c
+        bne key_not_escape
+        lda #4
+        sta popup_keys
+        jmp input_done
+key_not_escape
         cmp #$28
         bne not_reset
+        lda popup_active
+        beq key_reset_allowed
+        jmp input_done
+key_reset_allowed
         jsr reset_game
         rts
 not_reset
+        ldx #3
+key_direction
+        cmp key_dir_codes,x
+        bne key_direction_next
+        pha
+        lda key_dir_bits,x
+        ora dirs
+        sta dirs
+        pla
+key_direction_next
+        dex
+        bpl key_direction
         cmp #$3f
         beq key_cast
         cmp #$21
@@ -167,13 +220,29 @@ key_cast
         lda #1
         sta pressed
 input_done
+        lda popup_previous
+        eor #$ff
+        and popup_keys
+        sta popup_edge
         lda previous_pressed
         eor #$ff
         and pressed
         sta press_edge
+        lda previous_dirs
+        eor #$ff
+        and dirs
+        sta dir_edge
         rts
+key_dir_codes dta $0e,$0f,$06,$07
+key_dir_bits dta 1,2,4,8
 reset_game
+        lda #1
+        sta bait_present
         lda #0
+        sta bite_stage
+        sta bite_timer
+        sta bite_timer+1
+        sta popup_active
         sta state
         sta charge
         sta power
@@ -185,10 +254,14 @@ reset_game
         lda #$ff
         sta caught
         sta previous_pressed
+        sta previous_dirs
+        lda #STATE_MENU
+        sta state
+        sta menu_dirty
         lda #0
+        sta menu_row
         sta pressed
         sta press_edge
-        sta bite_timer
         lda $d20a
         ora #1
         sta random_seed
@@ -217,22 +290,20 @@ random_byte
 random_ready
         sta random_seed
         rts
-new_wait
-        lda #5
-        sta state
-        lda #$ff
-        sta caught
-        jsr random_byte
-        and #63
-        clc
-        adc #60
-        sta wait_timer
-        rts
 
 update
+        jsr bobber_controls
+        lda popup_block
+        beq update_unpaused
+        rts
+update_unpaused
         jsr update_sky
         jsr update_lights
         lda state
+        cmp #STATE_MENU
+        bne not_menu_update
+        jmp menu
+not_menu_update
         cmp #4
         bne not_won
         rts
@@ -250,43 +321,126 @@ state_not_charge
         jmp casting
 state_not_cast
         cmp #3
-        bne state_not_reel
+        bne state_wait
         jmp reeling
-state_not_reel
-        cmp #5
-        bne state_bite
+state_wait
         jmp waiting
-state_bite
-        jmp biting
 
+; Start menu over the live night scene. Up/down picks a row; left/right or
+; fire changes a setting; fire on START GAME begins the night.
+STATE_MENU = 7
+menu
+        lda dir_edge
+        and #1
+        beq menu_not_up
+        lda menu_row
+        beq menu_not_up
+        dec menu_row
+menu_not_up
+        lda dir_edge
+        and #2
+        beq menu_not_down
+        lda menu_row
+        cmp #1
+        bcs menu_not_down
+        inc menu_row
+menu_not_down
+        ldx menu_row
+        beq menu_start
+        lda dir_edge
+        and #4
+        beq menu_not_left
+        lda cloud_level
+        beq menu_not_left
+        dec cloud_level
+menu_not_left
+        lda dir_edge
+        and #8
+        ora press_edge
+        beq menu_apply
+        lda cloud_level
+        clc
+        adc #1
+        cmp #3
+        bcc menu_store
+        lda dir_edge
+        and #8
+        bne menu_apply
+        lda #0
+menu_store
+        sta cloud_level
+menu_apply
+        lda dir_edge
+        ora press_edge
+        beq menu_clouds
+        sta menu_dirty
+menu_clouds
+        ldx cloud_level
+        lda cloud_counts,x
+        sta cloud_count
+        rts
+menu_start
+        lda press_edge
+        beq menu_apply
+        lda #0
+        sta state
+        beq menu_apply
 idle
         lda press_edge
         beq update_done
-        lda #1
-        sta state
         lda #0
         sta charge
+        sta charge_ticks
+        lda #1
+        sta gauge_dir
+        sta state
 update_done
+        rts
+; Charge follows PAL time, reaching maximum after 25 VBIs (half a second).
+; Preserve the editor's optional spring bounce, independent of render speed.
+charge_vblank
+        lda state
+        cmp #1
+        bne charge_clock_done
+        lda popup_active
+        bne charge_clock_done
+        lda gauge_dir
+        bmi charge_down
+        lda charge_ticks
+        cmp #25
+        bcs charge_clock_done
+        inc charge_ticks
+        lda charge_ticks
+        cmp #25
+        bne charge_map
+        lda spring_mode
+        beq charge_map
+        lda #$ff
+        sta gauge_dir
+        bne charge_map
+charge_down
+        dec charge_ticks
+        bne charge_map
+        lda #1
+        sta gauge_dir
+charge_map
+        ldx charge_ticks
+        lda charge_levels,x
+        sta charge
+charge_clock_done
         rts
 charging
         lda pressed
         beq launch
-        lda charge
-        cmp #60
-        bcs update_done
-        inc charge
         rts
+; More power casts farther forward (left), never back toward the fisherman.
 launch
-        lda charge
-        ldx #0
-        cmp #20
-        bcc power_ready
-        inx
-        cmp #40
-        bcc power_ready
-        inx
-power_ready
+        ldx charge
         stx power
+        lda charge_height,x
+        sta target_y
+        lda charge_distance,x
+        sta target_x
         lda #0
         sta phase
         lda #2
@@ -295,57 +449,62 @@ power_ready
         lda #$ff
         sta caught
         rts
+FLIGHT_START = 8
 casting
         inc phase
         lda phase
-        cmp #24
+        jsr set_rod
+        lda phase
+        cmp #FLIGHT_START
+        bcs cast_flight
+        jmp hang_float
+cast_flight
+        bne cast_step
+        jsr hang_float
+        lda target_x
+        sta goal_x
+        lda target_y
+        sta goal_y
+        jsr aim
+cast_step
+        jsr path_add
+        lda phase
+        sec
+        sbc #FLIGHT_START
+        tax
+        lda pos_hi+1
+        sec
+        sbc arc_table,x
+        bcc arc_clamp
+        cmp #14
+        bcs arc_ready
+arc_clamp
+        lda #14
+arc_ready
+        sta float_y
+        lda phase
+        cmp #23
         bcs cast_landed
         rts
 cast_landed
-        lda #23
-        sta phase
-        jsr select_pose
+        lda target_x
+        sta base_x
+        sta float_x
+        lda target_y
+        sta base_y
+        sta float_y
         jmp new_wait
-; Float remains out indefinitely: bites time out back to waiting, never auto-reel.
-waiting
-        lda press_edge
-        beq keep_waiting
-        lda #3
-        sta state
-        rts
-keep_waiting
-        dec wait_timer
-        beq start_bite
-        rts
-start_bite
-; The float glints during a bite; ambient stars remain fixed.
-        lda #6
-        sta state
-        lda #48
-        sta bite_timer
-        rts
-biting
-        lda press_edge
-        beq bite_wait
-        lda #0
-        sta caught
-        lda #3
-        sta state
-        rts
-bite_wait
-        dec bite_timer
-        bne bite_done
-        jmp new_wait
-bite_done
-        rts
 
 reeling
         lda phase
-        cmp #5
-        bcc landed
+        beq landed
         dec phase
-        rts
+        jmp path_add
 landed
+        lda #1
+        sta bait_present
+        lda #0
+        sta bite_stage
         lda caught
         cmp #$ff
         beq empty_cast
@@ -365,26 +524,68 @@ won_game
         lda #4
         sta state
         rts
-select_pose
-        ldx power
-        lda pose_base,x
-        clc
-        adc phase
+
+; A = rod frame. Sets the rod pixel list and its tip.
+set_rod
         tax
-        lda hook_x_table,x
-        sta hook_x
-        lda hook_y_table,x
-        sta hook_y
-        lda pose_lo,x
-        sta line_points
-        lda pose_hi,x
-        sta line_points+1
-        ldx phase
         lda rod_lo,x
         sta points
         lda rod_hi,x
         sta points+1
+        lda tip_x_table,x
+        sta tip_x
+        lda tip_y_table,x
+        sta tip_y
         rts
+hang_float
+        lda tip_x
+        sec
+        sbc #4
+        sta float_x
+        lda tip_y
+        clc
+        adc #43
+        sta float_y
+        rts
+; 16-step straight path from the float to goal, in 8.8 fixed point.
+aim
+        ldx #1
+aim_axis
+        lda float_x,x
+        sta pos_hi,x
+        lda #$80
+        sta pos_lo,x
+        lda goal_x,x
+        sec
+        sbc float_x,x
+        sta inc_lo,x
+        lda #0
+        sbc #0
+        sta inc_hi,x
+        ldy #4
+aim_shift
+        asl inc_lo,x
+        rol inc_hi,x
+        dey
+        bne aim_shift
+        dex
+        bpl aim_axis
+        rts
+path_add
+        ldx #1
+path_axis
+        clc
+        lda pos_lo,x
+        adc inc_lo,x
+        sta pos_lo,x
+        lda pos_hi,x
+        adc inc_hi,x
+        sta pos_hi,x
+        sta float_x,x
+        dex
+        bpl path_axis
+        rts
+
 render
         jsr background
         lda buffer
@@ -395,7 +596,7 @@ render
         ora #$80
         sta draw_bank
         jsr draw_windows
-; Charge and goal HUD in reserved strips.
+; Score and casts HUD in reserved strips.
         lda #250
         sta color
         lda #153
@@ -421,117 +622,114 @@ reduce_casts
         jmp reduce_casts
 cast_digit
         jsr digit
-        lda state
-        cmp #1
-        bne no_charge
-        ldx charge
-        beq no_charge
-charge_bar
-        txa
-        clc
-        adc #251
-        sta offset
-        lda #0
-        adc #0
-        sta offset+1
-        ; y=11 at x=251..311
-        clc
-        lda offset
-        adc #<3520
-        sta offset
-        lda offset+1
-        adc #>3520
-        sta offset+1
-        jsr plot_offset
-        dex
-        bne charge_bar
-no_charge
+        jsr draw_gauge
         jsr draw_starfield
-        lda state
-        cmp #6
-        bne no_bite_star
-        lda hook_x
-        sta px
-        lda hook_y
-        sta py
-        lda #252
-        sta color
-        jsr star
-no_bite_star
-        jsr draw_meteor
-        jsr draw_clouds
+; Rod frame: wind-up while charging, swing while casting, rest otherwise.
         lda state
         cmp #2
-        beq draw_cast
+        beq rod_cast
         cmp #3
-        beq draw_cast
+        beq rod_rest
         cmp #5
-        beq draw_cast
-        cmp #6
-        beq draw_cast
+        beq rod_rest
         lda #0
-        sta power
-        sta phase
-        lda state
-        cmp #1
-        bne idle_pose
+        ldx state
+        cpx #1
+        bne rod_idle
         lda charge
         lsr
         lsr
         lsr
-        lsr
-        and #3
-        sta phase
-idle_pose
-        jsr select_pose
-        jmp draw_rod
-draw_cast
-        jsr select_pose
-draw_rod
+        cmp #4
+        bcc rod_idle
+        lda #3
+rod_idle
+        jsr set_rod
+        jsr hang_float
+        jmp rod_ready
+rod_rest
+        lda #23
+        jsr set_rod
+        jmp rod_ready
+rod_cast
+        lda phase
+        jsr set_rod
+rod_ready
+; Out in the sky the float is far away, so clouds pass in front of it.
+        lda #0
+        sta float_far
+        lda state
+        cmp #2
+        bne far_state
+        lda phase
+        cmp #FLIGHT_START
+        bcs far_float
+        bcc far_done
+far_state
+        cmp #3
+        beq far_float
+        cmp #5
+        bne far_done
+far_float
+        inc float_far
+        lda caught
+        cmp #$ff
+        bne far_done
+        jsr draw_float
+        jsr draw_bait
+far_done
+        jsr draw_meteor
+        jsr draw_clouds
         lda #253
         sta color
         jsr draw_points
-        mwa line_points points
-        lda #254
-        sta color
-        jsr draw_points
-        jmp rod_done
-draw_points
-point_loop
-        ldy #0
-        lda (points),y
-        sta offset
-        iny
-        lda (points),y
-        cmp #$ff
-        beq points_done
-        sta offset+1
-        jsr plot_offset
-        clc
-        lda points
-        adc #2
-        sta points
-        bcc point_loop
-        inc points+1
-        jmp point_loop
-points_done
-        rts
-rod_done
-        lda hook_x
-        sta px
-        lda hook_y
-        sta py
+; The line shows while casting, reeling and at rest, not while the float waits.
+        lda state
+        cmp #5
+        beq line_hidden
+        jsr draw_line
+line_hidden
         lda caught
         cmp #$ff
-        beq bare_hook
+        beq near_float
+        lda float_x
+        sta px
+        lda float_y
+        sta py
         lda #252
         sta color
         jsr star
         jmp win_display
-bare_hook
+near_float
+        lda float_far
+        bne win_display
         jsr draw_float
+        jsr draw_bait
 win_display
+        lda state
+        cmp #STATE_MENU
+        bne game_status
+        jmp draw_menu
+game_status
+        lda state
+        cmp #5
+        bne status_not_waiting
+        ldx #9
+        lda bait_present
+        beq status_ready
+        ldx bite_stage
+        lda bite_status,x
+        tax
+        jmp status_ready
+status_not_waiting
         ldx state
+        cpx #3
+        bne status_ready
+        lda caught
+        cmp #$ff
+        bne status_ready
+        ldx #6
+status_ready
         lda status_lo,x
         sta points
         lda status_hi,x
@@ -566,37 +764,400 @@ win_stars
         bne win_stars
 render_done
         rts
+draw_points
+point_loop
+        ldy #0
+        lda (points),y
+        sta offset
+        iny
+        lda (points),y
+        cmp #$ff
+        beq points_done
+        sta offset+1
+        jsr plot_offset
+        clc
+        lda points
+        adc #2
+        sta points
+        bcc point_loop
+        inc points+1
+        jmp point_loop
+points_done
+        rts
 
-; A small two-colour fishing float. The line stays attached at its top.
-draw_float
-        lda #255
+; Menu panel: dark fill with rails, title, three rows, cursor and help.
+; It is drawn into spare VRAM at $60000 (same 320 stride) only after a
+; change, then one blit copies it into every frame.
+draw_menu
+        lda menu_dirty
+        beq menu_copy
+        lda #0
+        sta menu_dirty
+        lda draw_bank
+        pha
+        lda #$e0
+        sta draw_bank
+        lda #6
+        sta blit_bank
+        jsr compose_menu
+        pla
+        sta draw_bank
+menu_copy
+        lda buffer
+        sta blit_bank
+        mwa #menu_blit points
+        jmp run_blit
+compose_menu
+        mwa #panel_blit points
+        jsr run_blit
+        mwa #rail_top points
+        jsr run_blit
+        mwa #rail_bottom points
+        jsr run_blit
+        ldx #5
+        lda #250
+        jsr draw_text
+        ldx #4
+        lda #251
+        jsr draw_text
+        lda #0
+        jsr row_color
+        ldx #0
+        jsr draw_text
+        lda #1
+        jsr row_color
+        pha
+        lda cloud_level
+        clc
+        adc #1
+        tax
+        pla
+        jsr draw_text
+        lda menu_row
+        clc
+        adc #6
+        tax
+        lda #250
+draw_text
         sta color
-        jsr plot_xy
-        inc py
-        dec px
-        jsr plot_xy
-        inc px
-        jsr plot_xy
-        inc px
-        jsr plot_xy
-        dec px
-        inc py
+        lda menu_lo,x
+        sta points
+        lda menu_hi,x
+        sta points+1
+        jmp draw_points
+row_color
+        cmp menu_row
+        beq row_bright
+        lda #251
+        rts
+row_bright
+        lda #252
+        rts
+; Copies the 21-byte blitter command at points into the current buffer.
+run_blit
+        jsr blwait
+        lda #$ff
+        ldy #$5f
+        sta (vb),y
+        ldy #20
+run_blit_copy
+        lda (points),y
+        sta $9000,y
+        dey
+        bpl run_blit_copy
+        lda blit_bank
+        sta $9008
+        lda #1
+        ldy #$53
+        sta (vb),y
+        jmp blwait
+PANEL_X = 80
+PANEL_Y = 54
+PANEL_W = 160
+PANEL_H = 84
+panel_blit dta 0,0,0,a(0),0,<(PANEL_Y*320+PANEL_X),>(PANEL_Y*320+PANEL_X),0,a(320),1,a(PANEL_W-1),PANEL_H-1,0,249,0,0,0,0
+rail_top dta 0,0,0,a(0),0,<((PANEL_Y-1)*320+PANEL_X),>((PANEL_Y-1)*320+PANEL_X),0,a(320),1,a(PANEL_W-1),0,0,251,0,0,0,0
+menu_blit dta <((PANEL_Y-1)*320+PANEL_X),>((PANEL_Y-1)*320+PANEL_X),6,a(320),1,<((PANEL_Y-1)*320+PANEL_X),>((PANEL_Y-1)*320+PANEL_X),0,a(320),1,a(PANEL_W-1),PANEL_H+1,$ff,0,0,0,0,0
+rail_bottom dta 0,0,0,a(0),0,<((PANEL_Y+PANEL_H)*320+PANEL_X),>((PANEL_Y+PANEL_H)*320+PANEL_X),0,a(320),1,a(PANEL_W-1),0,0,251,0,0,0,0
+
+; Spring gauge right of POWER: two rails, coils every fourth column.
+GAUGE_X = 279
+draw_gauge
+        lda state
+        cmp #1
+        bne gauge_done
+        lda #251
+        sta color
+        ldx #GAUGE_MAX+1
+gauge_rail
+        txa
+        clc
+        adc #<(4*320+GAUGE_X)
+        sta offset
+        lda #>(4*320+GAUGE_X)
+        adc #0
+        sta offset+1
+        jsr plot_offset
+        clc
+        lda offset
+        adc #<(6*320)
+        sta offset
+        lda offset+1
+        adc #>(6*320)
+        sta offset+1
+        jsr plot_offset
+        dex
+        bpl gauge_rail
+        ldx charge
+        beq gauge_done
+gauge_column
+        dex
+        lda #250
+        sta color
+        txa
+        and #3
+        cmp #3
+        bne gauge_coil
         lda #252
         sta color
+gauge_coil
+        txa
+        clc
+        adc #<(5*320+GAUGE_X)
+        sta offset
+        lda #>(5*320+GAUGE_X)
+        adc #0
+        sta offset+1
+        lda #5
+        sta gauge_rows
+gauge_row
+        jsr plot_offset
+        clc
+        lda offset
+        adc #<320
+        sta offset
+        lda offset+1
+        adc #>320
+        sta offset+1
+        dec gauge_rows
+        bne gauge_row
+        txa
+        bne gauge_column
+gauge_done
+        rts
+
+; Straight charcoal line from the rod tip to the float, 8-bit coordinates.
+draw_line
+        lda #254
+        sta color
+        lda tip_x
+        sta px
+        lda tip_y
+        sta py
+        ldx #0
+line_axis
+        lda float_x,x
+        sec
+        sbc tip_x,x
+        ldy #1
+        bcs line_delta
+        eor #$ff
+        adc #1
+        ldy #$ff
+line_delta
+        sta line_dx,x
+        tya
+        sta line_sx,x
+        inx
+        cpx #2
+        bne line_axis
+        lda line_dx
+        cmp line_dy
+        bcc line_steep
+        sta line_count
+        lsr
+        sta line_acc
+shallow_loop
         jsr plot_xy
-        inc py
+        lda line_count
+        beq line_done
+        dec line_count
+        clc
+        lda px
+        adc line_sx
+        sta px
+        lda line_acc
+        clc
+        adc line_dy
+        bcs shallow_y
+        cmp line_dx
+        bcc shallow_keep
+shallow_y
+        sbc line_dx
+        sta line_acc
+        clc
+        lda py
+        adc line_sy
+        sta py
+        jmp shallow_loop
+shallow_keep
+        sta line_acc
+        jmp shallow_loop
+line_steep
+        lda line_dy
+        sta line_count
+        lsr
+        sta line_acc
+steep_loop
         jsr plot_xy
+        lda line_count
+        beq line_done
+        dec line_count
+        clc
+        lda py
+        adc line_sy
+        sta py
+        lda line_acc
+        clc
+        adc line_dx
+        bcs steep_x
+        cmp line_dy
+        bcc steep_keep
+steep_x
+        sbc line_dy
+        sta line_acc
+        clc
+        lda px
+        adc line_sx
+        sta px
+        jmp steep_loop
+steep_keep
+        sta line_acc
+        jmp steep_loop
+line_done
+        rts
+
+; All sixteen sprite variants share a top-centre attachment and lift rotation.
+draw_float
         lda state
-        cmp #6
-        bne float_done
-        lda ticks
-        and #2
-        beq float_done
-        ; Flashing pixel glint signals a bite; no automatic retrieval.
-        inc py
-        jsr star
+        cmp #5
+        bne bobber_setup
+        lda bite_stage
+        cmp #2
+        bne bobber_setup
+        lda bait_present
+        beq bobber_setup
+        rts
+bobber_setup
+        ldx bobber_selected
+        lda bobber_visible,x
+        clc
+        adc base_y
+        sta bobber_waterline
+        lda bobber_lo,x
+        sta bob_ptr
+        lda bobber_hi,x
+        sta bob_ptr+1
+bobber_pixel
+        ldy #2
+        lda (bob_ptr),y
+        beq bobber_end
+        sta color
+        dey
+        lda (bob_ptr),y
+        sta bob_dy
+        dey
+        lda (bob_ptr),y
+        sta bob_dx
+        lda float_x
+        clc
+        adc bob_dx
+        sta px
+        lda float_y
+        clc
+        adc bob_dy
+        sta py
+        lda state
+        cmp #5
+        bne bobber_visible_pixel
+        lda py
+        cmp bobber_waterline
+        bcs bobber_skip_pixel
+bobber_visible_pixel
+        jsr plot_xy
+bobber_skip_pixel
+        clc
+        lda bob_ptr
+        adc #3
+        sta bob_ptr
+        bcc bobber_pixel
+        inc bob_ptr+1
+        jmp bobber_pixel
+bobber_end
 float_done
         rts
+ ; Four-pixel luminous worm on a three-pixel leader below the bobber.
+; Palette cycling is slow (32 PAL frames per step); no fishing RNG is used.
+draw_bait
+        lda bait_present
+        beq bait_draw_done
+        lda state
+        cmp #5
+        beq bait_draw_done
+bait_full_height
+        ldx bobber_selected
+        lda bobber_height,x
+        clc
+        adc float_y
+bait_anchor
+        sta py
+        lda float_x
+        sta px
+        lda #254
+        sta color
+        jsr plot_xy
+        inc py
+        jsr plot_xy
+        inc py
+        jsr plot_xy
+        inc py
+        lda frame
+        lsr
+        lsr
+        lsr
+        and #28
+        tax
+        lda bait_colors,x
+        sta color
+        jsr plot_xy
+        inc py
+        inx
+        lda bait_colors,x
+        sta color
+        jsr plot_xy
+        inc px
+        inc py
+        inx
+        lda bait_colors,x
+        sta color
+        jsr plot_xy
+        inc py
+        inx
+        lda bait_colors,x
+        sta color
+        jsr plot_xy
+bait_draw_done
+        rts
+bait_colors
+        dta 248,247,254,251
+        dta 255,250,251,252
+        dta 250,251,252,255
+        dta 251,252,255,250
+        dta 252,255,250,251
+        dta 251,248,247,254
+        dta 254,248,247,254
+        dta 254,247,254,254
+bite_status dta 5,7,8,10,11,12
 
 ; Slow, independent lighting randomness does not change fishing/bite outcomes.
 update_lights
@@ -829,6 +1390,7 @@ buffer dta 2
 draw_bank dta $a0
 state dta 0
 charge dta 0
+charge_ticks dta 0
 power dta 0
 phase dta 0
 score dta 0
@@ -836,21 +1398,51 @@ casts dta 0
 ticks dta 0
 pressed dta 0
 caught dta $ff
-hook_x dta 0
-hook_y dta 0
+gauge_dir dta 1
+spring_mode dta SPRING_GAUGE
+gauge_rows dta 0
+target_x dta 0
+target_y dta 0
+base_x dta 0
+base_y dta 0
+; Paired x,y variables: routines index them with X=0 (x) or 1 (y).
+float_x dta 0
+float_y dta 0
+goal_x dta 0
+goal_y dta 0
+tip_x dta 0
+tip_y dta 0
+pos_lo dta 0,0
+pos_hi dta 0,0
+inc_lo dta 0,0
+inc_hi dta 0,0
+line_dx dta 0
+line_dy dta 0
+line_sx dta 0
+line_sy dta 0
+line_count dta 0
+line_acc dta 0
+tilt dta 0
+float_far dta 0
+dirs dta 0
+previous_dirs dta 0
+dir_edge dta 0
+menu_row dta 0
+menu_dirty dta 1
+blit_bank dta 2
+; Cloud setting kept across games: 0 none, 1 medium, 2 heavy.
+cloud_level dta 1
+cloud_counts dta 0,3,6
 star_origin_x dta 0
 star_origin_y dta 0
 previous_pressed dta 0
 press_edge dta 0
 random_seed dta 1
-wait_timer dta 0
-bite_timer dta 0
 win_count dta 0
 px dta 0
 py dta 0
 color dta 250
 offset dta a(0)
-pose_base dta 0,24,48
 times64 dta 0,64,128,192
 digit_value dta 0
 digit_index dta 0
@@ -928,6 +1520,37 @@ unsupported
         jmp *
 error_text dta $7d,c'STAR FISHER requires Atari XL/XE + VBXE FX.',$9b
 error_length = *-error_text
+; Load-time copy of a staged sample chunk from $A000 into RAM under the OS.
+; NMIs and IRQs stay off while the OS ROM is switched out.
+os_copy
+        lda #0
+        sta $d40e
+        sei
+        lda $d301
+        pha
+        and #$fe
+        sta $d301
+        mwa #$a000 src
+        mwa os_copy_dest dst
+        ldx os_copy_pages
+        ldy #0
+os_copy_byte
+        lda (src),y
+        sta (dst),y
+        iny
+        bne os_copy_byte
+        inc src+1
+        inc dst+1
+        dex
+        bne os_copy_byte
+        pla
+        sta $d301
+        cli
+        lda #$40
+        sta $d40e
+        rts
+os_copy_dest dta a(0)
+os_copy_pages dta 0
 basic_off
         lda $d301
         ora #2
@@ -935,11 +1558,16 @@ basic_off
         lda #0
         sta $022f
         rts
+        icl 'fishing.asm'
+        icl 'bobber-menu.asm'
         icl 'sky.asm'
+        icl 'sound.asm'
         icl 'gen/tables.asm'
-        .if * > $9000
-        .error "Code overlaps MEMAC window"
+; $7800-$8FFF holds recorded sounds (tools/samples.py REGIONS).
+        .if * > $7800
+        .error "Code overlaps sample RAM at $7800"
         .endif
         ini basic_off
         icl 'gen/loads.asm'
+        icl 'gen/samples.asm'
         run main

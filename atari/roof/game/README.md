@@ -1,9 +1,12 @@
 # Star Fisher — VBXE game and pixel workshop
 
-A quiet fishing game above dark nineteenth-century Paris. Cast a long black rod
-into the sky and leave the float there. Stars stay at fixed random positions, with gentle changes in brightness.
-Eventually a bite makes the float flash. The game is silent.
-Tap A or fire to strike and reel it home. Collect five stars to finish the night.
+A quiet fishing game above dark nineteenth-century Paris. Load the spring gauge,
+cast the float into the sky and watch it. It rests quietly with its bottom submerged,
+then a star may nibble, gently tug or pull it completely under. Strike at the right
+moment, and reel home to replace lost bait. The line hides
+while the float waits, and drifting clouds can hide the float itself. A POKEY night
+ambience is currently disabled. The optional ambience includes: wind, and now and then a distant dog, a steam
+train whistle, a church bell, an owl, a cat or a passing carriage. Collect five stars to finish the night.
 
 ## Pixel editor
 
@@ -30,7 +33,19 @@ when moving an object or editing a light mask.
   make a copy. Palette index 0 is transparent. Right-click erases.
 - **Sky settings:** set one-pixel and two-pixel star counts (0–96 each), the
   percentage that gently twinkle (0–100), and meteor chance per ten seconds
-  (0–100%). Star positions remain fixed. Save/Build and JSON export retain all settings.
+  (0–100%), and the star colour: ivory, the moon's colour, the colour of the
+  stars painted in the original artwork, or a custom colour. Star positions
+  remain fixed. Save/Build and JSON export retain all settings.
+- **Sounds:** sample rate, memory meter, wind (recorded loop or synthesised
+  noise) and up to six recorded sounds with name, file, start, length, gain
+  and plays per 10 minutes. Select a sound and drag on the waveform below the
+  screen: the top strip moves the selection through the whole recording, the
+  close-up chooses exactly what plays. ▶ Original plays the source slice;
+  ▶ Atari 4-bit plays the exact levels the game will play. ▶ Night mix plays
+  30 seconds of wind with randomly chosen sounds.
+- **Fishing:** configure quiet waiting time, gentle-interest escalation, and each
+  scenario's relative frequency, duration, catch chance, bait loss when ignored,
+  and bait loss after a failed strike. Turn the spring gauge bounce on or off.
 - **Caught star:** choose the native float/caught-star mask.
   The game uses its gold/ivory pulse colours; placed sprites retain their colours.
 - **Save project:** writes `editor-scene.json`, retaining the previous save as
@@ -51,6 +66,20 @@ The server binds to loopback only and writes only this game's project and build
 outputs. Run `editor/run.sh 8792` to use another port. Earlier concept images and
 packages remain outside the editable project.
 
+## Bobber catalogue
+
+Press **B** during play to open the dark navy **Bobber Designs** catalogue,
+with gold selection borders and framed cards matching the original concept sheet. Fishing pauses while it is open. Eight designs each have
+small and large versions; the default is **02 Quill, small (1×6 pixels)**.
+
+- Left/right arrows: previous/next design (wraps around).
+- Up/down arrows: switch small/large size.
+- Enter, A, Space or joystick fire: equip the highlighted bobber and resume.
+- B or Escape: close without applying changes.
+
+The selected bobber stays equipped when returning to the start menu. Every design has its bottom third submerged while waiting, and disappears
+completely during an aggressive dive.
+
 ## Play
 
 Load `star-fisher.xex` on an Atari XL/XE with a VBXE FX core, or in a suitably
@@ -61,46 +90,100 @@ register bases are detected. The adjacent projects' Altirra launcher works with:
 ./run.sh
 ```
 
-- **Hold A, Space, or joystick fire**, then **release** to cast.
-- Holding longer chooses a farther spot: short, medium, or long reach.
-- The float stays in that spot. Casting no longer triggers automatic reeling.
-- **WAIT FOR A BITE** means leave the float out. The sky stars keep their positions.
-- **BITE! TAP A / FIRE**, the flashing float signal a bite.
-- **Tap A, Space, or fire during the bite** to hook the star and reel it home.
-- Tapping while waiting retrieves an empty float so you can cast elsewhere.
-- Ignoring a bite loses that opportunity, but leaves the float in the sky.
-- A caught star scores only after it reaches the fisherman.
-- **R** resets. After five catches, press R to play another night.
+The game starts in a menu drawn over the live night scene:
 
-Once retrieval starts, reeling animates automatically. A held reel button cannot
-start another cast when the float reaches home; release and press again.
+- **START GAME** and **CLOUDS** (NONE / MEDIUM / HEAVY, default MEDIUM).
+- Joystick or arrow keys (`-` `=` `+` `*`, with or without CONTROL): up/down
+  picks a row, left/right changes clouds. Fire, A or Space selects.
+- Clouds: none, three, or six drifting clouds. Catch odds use the editor values
+  directly, without a difficulty multiplier.
+
+In the game:
+
+- **Hold A, Space, or joystick fire** to load the spring gauge right of POWER,
+  then **release** to cast. Full power takes **half a second** (25 PAL frames).
+  By default the gauge springs back down after it
+  fills, so release at the right moment.
+- The gauge level sets forward distance and height: low power makes a short
+  cast above the roofs; full power reaches far left and high into the sky.
+  Every cast goes forward, away from the fisherman.
+- **WATCH THE FLOAT**: the line disappears; only the rod and the float remain.
+  Clouds can drift in front of the float.
+- **Tap A, Space, or fire** to strike. The line reappears and the float is
+  reeled home: **STAR HOOKED!** or **MISSED - EMPTY HOOK**.
+- A caught star scores only after it reaches the fisherman.
+- **R** returns to the menu. After five catches, press R to play another night.
+
+| Scenario | Motion | Duration | Catch | Bait loss if ignored / failed strike |
+| --- | --- | --- | --- | --- |
+| Quiet waiting | stationary, partly submerged | 8–20 seconds | 0% | 0% / 0% |
+| Gentle interest | one pixel sideways or down | 2.5 seconds | 5% | 10% / 10% |
+| Aggressive dive | completely submerged | 1 second | 80% | 100% / 100% |
+| Cautious nibble | occasional tiny tug | 2 seconds | 15% | 25% / 25% |
+| False alarm | slight sideways sway | 1.5 seconds | 0% | 0% / 0% |
+| Sideways take | slides sideways and dips | 1.5 seconds | 50% | 60% / 60% |
+
+These defaults are editable in the Fishing panel. After gentle interest, if bait
+survives, there is a 35% chance of an aggressive dive. Otherwise quiet waiting
+resumes. A missed dive consumes the worm after exactly 50 PAL frames; the float
+returns to its resting position. With no worm, no further star takes interest.
+Reel completely home to automatically fit a fresh worm before casting again.
+A held button cannot start another cast: release and press again.
 
 ## Game sketch
 
 ```text
-REST → HOLD / CHARGE → RELEASE / CAST → FLOAT WAITS
-  ↑                                    │       ↑
-  │                           random bite      │ missed bite
-  │                                    ↓       │
-  └── LAND CATCH ← REEL ← TAP A/FIRE ← FLOAT FLASHES
-  └── EMPTY REEL ← TAP WHILE WAITING
+REST / FRESH WORM → CHARGE → CAST → QUIET WAIT → INTEREST / NIBBLE / TAKE
+      ↑                              ↑                 │
+      │                              └── bait survives ┤
+      │                                                ├→ DIVE (1 second)
+      │                                                └→ NO WORM: no more bites
+      └── LAND CATCH / REBAIT ← REEL ← STRIKE during any waiting state
 
 Five landed stars → NIGHT COMPLETE
 ```
 
-The float is a small coral-and-ivory marker attached to the longer charcoal
-line. During a bite, its lower end flashes. The sky uses one- and two-pixel
+The default float is the small striped Quill bobber. A four-pixel rainbow worm
+hangs beneath it on a fine three-pixel leader, slowly cycling and dimming over
+about five seconds. The worm and leader are visible while casting and reeling, but hidden while
+the bobber waits in the water. Lost bait disappears; the bobber hides during a dive. The charcoal line is drawn at
+runtime from the rod tip while casting, reeling and at rest, never while the
+float waits. The sky uses one- and two-pixel
 ivory stars in fixed random positions. By default, there are 48 single-pixel
 stars and 16 double-pixel stars, with 25% gently twinkling. The editor changes
-these counts immediately in the composition preview. The caught star appears
-at the float after a random waiting interval. Cast strength changes location,
-not bite probability.
+these counts immediately in the composition preview. Cast strength changes distance and height, not
+catch probability.
 
 Three 160×40 dark clouds mask stars as they pass, moving one pixel per 64 PAL
 VBIs (about 1.28 seconds). Every 500 PAL VBIs (ten seconds), the game makes one
 meteor probability check; the default is 30%. 0% disables meteors, while 100%
 always produces a meteor at each check. These clocks are independent of render
-speed. Sound effects are disabled in all game states.
+speed.
+
+## Sound
+
+Recorded sounds live in `../sounds` (any format ffmpeg reads; the defaults are
+the Pixabay `freesound_community` breeze and quiet-city-square recordings).
+`tools/samples.py` cuts each chosen part, band-limits and resamples it with
+ffmpeg, normalises it, applies its gain and quantises it to 4 bits, two
+samples per byte. `sound.asm` plays them in POKEY volume-only mode from a
+timer 1 IRQ at 63337 / (AUDF1 + 1) Hz (3.2–5.8 kHz, default 4.5 kHz):
+
+- Channel 1: the silent sample timer.
+- Channel 2: recorded clips, one at a time. Once a second the VBI rolls
+  against cumulative chances from each clip's plays per 10 minutes. Clips
+  ease in and out of silence so they do not click.
+- Channel 3: the recorded wind loop. Its end crossfades into its start so the
+  loop has no seam. It costs about 15% CPU while it runs; the timer is
+  switched off whenever nothing needs it.
+- Channel 4: the synthesised wind, when chosen instead. It copies Slayder
+  (`../slay.atr`, `SLAYDER.XEX` around $52f0): distortion 8 white noise,
+  here with gentle gusts and silent gaps.
+
+Samples use RAM at $7800–$8FFF, $A000–$BFFF, and under the OS ROM at
+$C000–$CFFF and $D800–$FFF9 (28 KB in all). Under-OS data is staged at $A000
+during loading and copied by `os_copy` with the OS switched out. The build
+fails with a clear message if the chosen clips do not fit.
 
 Six small windows add warm amber light to the houses. Distant windows switch
 on and off on independent slow timers; the nearest dormer stays lit and briefly
@@ -124,6 +207,7 @@ python3 tools/test_windows.py
 python3 tools/test_stars.py
 python3 tools/test_display.py
 python3 tools/test_sky.py
+python3 tools/test_sound.py
 ```
 
 - `star-fisher.asm`: native 6502 game, controls, states, VBXE drawing.
@@ -143,15 +227,24 @@ python3 tools/test_sky.py
 - `tools/test_stars.py`: editor-selected tiny star mask, pixel bounds and preserved drawing anchor.
 - `tools/test_windows.py`: window placement, full framebuffer addresses, dim/on/off
   states, clean restoration, and independent lighting timers.
-- `tools/test_game.py`: upload, silence, wait, missed bite, manual reel,
-  held-input handling, all three distances, five catches, and register-base tests.
+- `tools/test_sound.py`: sample data in all RAM regions; every nibble the
+  timer IRQ plays (wind loop and each clip) equals the editor preview; synth
+  wind gusts; the timer stops when idle; a silent sound-off build. It uses
+  `tools/pcm_emu.py`, the shared emulator plus POKEY timer IRQs.
+- `tools/test_game.py` / `tools/test_fishing.py`: exact percentage rolls, quiet
+  waiting, timed bites, lost-bait lockout, rebaiting, submerged sprites, menu
+  bounds and five catches through real keyboard input.
 
 ## Implementation
 
-The game uses states REST, CHARGE, CAST, REEL, WIN, WAIT and BITE. Randomness
-comes from a small LFSR seeded from POKEY on reset. Waiting and bite durations
-are counted in game updates; the current prototype follows render cadence,
-not a tuned 50 Hz simulation. A bite lasts 48 updates; waiting lasts 60–123.
+The game uses states REST, CHARGE, CAST, REEL, WIN, WAIT and MENU. The menu
+panel is composed in spare VRAM at $60000 only when a choice changes, then
+copied into each frame with one blit. Randomness
+comes from a small LFSR seeded from POKEY on reset. Bite durations are counted in PAL vertical blanks (50 Hz), independently of
+render cadence, and pause while the bobber catalogue is open. The cast flies in 16 steps of 8.8 fixed-point motion
+with an arc; reeling uses the same path code. The build generates the gauge
+heights, the 64-slot scenario lookup, PAL duration tables and exact percentage odds
+from the project. Palette slot 246 carries the ambient star colour.
 
 The background occupies VRAM $00000; the 160×40 transparent cloud sprite is at $14000. The blitter restores hidden framebuffers
 at $20000/$40000; the game draws dynamic graphics, then swaps XDLs at $7e000.

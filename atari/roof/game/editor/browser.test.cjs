@@ -33,8 +33,31 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  // Sky controls persist, undo, validate, and drive the native build.
  await page.click('[data-tab="sky"]');
  for(const [id,value] of Object.entries({onePixelStars:12,twoPixelStars:7,twinklePercent:60,meteorProbability:100})){await page.fill('#'+id,String(value));await page.locator('#'+id).blur();}
- assert.deepEqual((await page.evaluate(()=>StarEditor.getScene())).sky,{onePixelStars:12,twoPixelStars:7,twinklePercent:60,meteorProbability:100});
+ assert.deepEqual((await page.evaluate(()=>StarEditor.getScene())).sky,{onePixelStars:12,twoPixelStars:7,twinklePercent:60,meteorProbability:100,starColor:'ivory',starRgb:[200,220,255]});
  await page.click('#undo');assert.equal((await page.evaluate(()=>StarEditor.getScene())).sky.meteorProbability,30);await page.click('#redo');
+ await page.selectOption('#starColor','moon');assert.equal((await page.evaluate(()=>StarEditor.getScene())).sky.starColor,'moon');
+ assert.deepEqual((await page.evaluate(()=>StarEditor.getPalette())).slice(246*3,247*3),[246,232,204],'moon tone previews in slot 246');
+ await page.click('#undo');await page.click('#redo');
+ await page.click('[data-tab="fishing"]');
+ await page.fill('[data-scenario="attack"][data-field="catch"]','60');await page.locator('[data-scenario="attack"][data-field="catch"]').blur();
+ await page.fill('[data-scenario="interest"][data-field="weight"]','50');await page.locator('[data-scenario="interest"][data-field="weight"]').blur();
+ await page.uncheck('#springGauge');
+ let fishing=(await page.evaluate(()=>StarEditor.getScene())).fishing;assert.equal(fishing.scenarios.attack.catch,60);assert.equal(fishing.scenarios.interest.weight,50);assert.equal(fishing.springGauge,false);
+ await page.locator("#floatRows details").filter({has:page.locator('[data-scenario="sideTake"]')}).locator("summary").click();
+ await page.fill('[data-scenario="sideTake"][data-field="catch"]','101');await page.locator('[data-scenario="sideTake"][data-field="catch"]').blur();assert.equal((await page.evaluate(()=>StarEditor.getScene())).fishing.scenarios.sideTake.catch,50);
+ await page.click('[data-tab="sound"]');await page.waitForFunction(()=>/^Samples/.test(document.getElementById('sampleUsage').textContent));
+ await page.selectOption('#windMode','synth');await page.fill('#wind-volume','9');await page.locator('#wind-volume').blur();await page.selectOption('#windMode','recorded');
+ await page.click('#addClip');await page.fill('[data-clip="3"] [data-field="perTenMinutes"]','30');await page.locator('[data-clip="3"] [data-field="perTenMinutes"]').blur();
+ await page.fill('[data-clip="3"] [data-field="gain"]','300');await page.locator('[data-clip="3"] [data-field="gain"]').blur();
+ await page.selectOption('#sampleRate','15');
+ let sound=(await page.evaluate(()=>StarEditor.getScene())).sound;assert.equal(sound.wind.volume,9);assert.equal(sound.samples.wind.mode,'recorded');assert.equal(sound.samples.clips.length,4);assert.equal(sound.samples.clips[3].perTenMinutes,30);assert.equal(sound.samples.clips[3].gain,100);assert.equal(sound.samples.rate,15);
+ // Dragging on the close-up selects exactly what plays.
+ await page.waitForFunction(f=>document.getElementById('soundPicker').dataset.ready===f,sound.samples.clips[3].file,{timeout:60000});
+ const before=sound.samples.clips[3];const wave=await page.locator('#waveDetail').boundingBox();await page.mouse.move(wave.x+wave.width*.3,wave.y+20);await page.mouse.down();await page.mouse.move(wave.x+wave.width*.7,wave.y+20,{steps:5});await page.mouse.up();
+ const after=(await page.evaluate(()=>StarEditor.getScene())).sound.samples.clips[3];assert(after.start!==before.start||after.length!==before.length,'drag selects a new region');assert(after.length>=.1&&after.length<=8);
+ const previewResponse=page.waitForResponse(r=>r.url().endsWith('/api/sample-preview'));await page.click('#playSelected');assert.equal((await previewResponse).status(),200);await page.waitForFunction(()=>/Playing .* as the Atari plays it/.test(document.getElementById('status').textContent));
+ await page.click('#stopSound');
+ await page.click('[data-tab="sky"]');
  await page.fill('#onePixelStars','97');await page.locator('#onePixelStars').blur();assert.equal((await page.evaluate(()=>StarEditor.getScene())).sky.onePixelStars,12);
  // Export and import are round trips, not a lossy screenshot format.
  const project=await page.evaluate(()=>StarEditor.getScene());
