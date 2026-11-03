@@ -12,12 +12,16 @@
 <label>Star colour<select id="starColor"><option value="ivory">Ivory (original)</option><option value="moon">Same as the moon</option><option value="painted">Painted stars of the artwork</option><option value="custom">Custom colour</option></select></label>
 <label id="starRgbLabel">Custom colour<input id="starRgb" type="color"></label>
 <div class="note">0% disables meteors; 100% sends one every ten seconds. Twinkling changes brightness gently without moving stars. Star counts update the scene preview; Build Atari applies all settings to the game. The game is silent.</div></section>
-<section id="fishingPanel" hidden><h2>Star fishing</h2><p class="muted">Mostly still water. Gentle interest can become a one-second dive. The lower part of every float stays below the invisible sky surface.</p>
+<section id="fishingPanel" hidden><h2>Star fishing</h2><p class="muted">Mostly still water. Smaller bites can lead to a rare one-second dive. The lower part of every float stays below the invisible sky surface.</p>
 <label class="check"><input type="checkbox" id="springGauge"> Spring gauge bounces back</label>
 <p class="muted">Full casting power takes 0.5 seconds. More power throws farther forward and higher; every cast goes away from the fisherman.</p>
 <label>Quiet time minimum (seconds)<input id="quietMinSeconds" type="number" min="1" max="60"></label>
 <label>Quiet time maximum (seconds)<input id="quietMaxSeconds" type="number" min="1" max="60"></label>
-<label>Gentle interest becomes a dive (%)<input id="escalationPercent" type="number" min="0" max="100"></label>
+<label>Minimum time between full dives (seconds)<input id="diveIntervalSeconds" type="number" min="30" max="600"></label>
+<label>Dive chance after a small action, when interval has elapsed (%)<input id="escalationPercent" type="number" min="0" max="100"></label>
+<label>Risk / attack increase per take (percentage points)<input id="interestStepPercent" type="number" min="0" max="25"></label>
+<label>Repeat gentle / sideways chance before bonus (%)<input id="repeatTakePercent" type="number" min="0" max="100"></label>
+<label>Follow-up delay (seconds)<input id="followupSeconds" type="number" min="1" max="10"></label>
 <div id="floatRows" class="bite-scenarios"></div><p class="muted" id="floatSummary"></p>
 <div class="note">Weights select which encounter follows a quiet interval. Catch and bait-loss chances are independent settings. Ignored dives lose the bait; no stars return until you reel in and rebait.</div></section>
 <section id="soundPanel" hidden><h2>Night sounds</h2><p class="muted">Recorded sounds play as 4-bit POKEY samples. Choose a part of a recording on the waveform below the screen.</p>

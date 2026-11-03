@@ -19,10 +19,10 @@ bg=Image.frombytes('P',(320,240),bytes(x+1 for x in q.tobytes()));bg.putpalette(
 d=ImageDraw.Draw(bg);d.rectangle((0,0,319,12),fill=249);d.rectangle((0,226,319,239),fill=249)
 font=ImageFont.load_default(size=9)
 d.text((5,1),'STAR FISHER',font=font,fill=250)
-d.text((5,228),'HOLD A: CAST   TAP: STRIKE   B: FLOATS   R: MENU',font=font,fill=251)
+d.text((5,228),'A:CAST  1:RAINBOW 2:ELECTRIC B:FLOAT R:MENU',font=font,fill=251)
 d.text((114,2),'STARS',font=font,fill=251)
 d.text((159,2),'/',font=font,fill=251)
-d.text((183,2),'CASTS',font=font,fill=251)
+d.text((183,2),'WORMS',font=font,fill=251)
 d.text((241,2),'POWER',font=font,fill=251)
 scene=load_scene(palette)
 # Slot 246 carries the selected ambient star tone (ivory keeps its dim shade).
@@ -107,6 +107,8 @@ for label,key in [('scenario_catch','catch'),('scenario_missed','missedLoss'),('
  lines.append(label+'\n        dta 0,'+','.join(str(scenarios[id][key]) for id,*_ in SCENARIOS))
 for label,shift in [('scenario_time_lo',0),('scenario_time_hi',8)]:
  lines.append(label+'\n        dta 0,'+','.join(str((scenarios[id]['durationTenths']*5>>shift)&255) for id,*_ in SCENARIOS))
+lines += [f'DIVE_INTERVAL_FRAMES = {fishing["diveIntervalSeconds"]*50}']
+lines += [f'INTEREST_STEP = {fishing["interestStepPercent"]}',f'REPEAT_TAKE_PERCENT = {fishing["repeatTakePercent"]}',f'FOLLOWUP_FRAMES = {fishing["followupSeconds"]*50}']
 quiet=list(range(fishing['quietMinSeconds'],fishing['quietMaxSeconds']+1))
 lines += [f'QUIET_CHOICES = {len(quiet)}',f'ESCALATION_PERCENT = {fishing["escalationPercent"]}']
 for label,shift in [('quiet_time_lo',0),('quiet_time_hi',8)]:lines.append(label+'\n        dta '+','.join(str((seconds*50>>shift)&255) for seconds in quiet))
@@ -122,8 +124,11 @@ lines.append('digit_data\n        dta '+','.join(str(int(s[y:y+3],2)) for s in d
 mask=Image.new('1',(320,50));md=ImageDraw.Draw(mask);md.text((96,33),'FIVE STARS!  R: REPLAY',font=font,fill=1)
 win=[y*320+x for y in range(50) for x in range(320) if mask.getpixel((x,y))]
 lines.append('win_banner\n        dta '+','.join(f'a({o})' for o in win)+',a($ffff)')
-statuses=['HOLD A / FIRE','RELEASE TO CAST','CASTING','STAR HOOKED!','NIGHT COMPLETE','WAITING - WORM READY','MISSED - EMPTY HOOK','GENTLE INTEREST','DIVE! STRIKE NOW','NO WORM - REEL TO REBAIT','CAUTIOUS NIBBLE','FALSE ALARM','SIDEWAYS TAKE']
+statuses=['HOLD A / FIRE','RELEASE TO CAST','CASTING','STAR HOOKED!','NIGHT COMPLETE','WAITING','MISSED - EMPTY HOOK','GENTLE INTEREST','DIVE! STRIKE NOW','NO WORM - REEL IN','CAUTIOUS NIBBLE','FALSE ALARM','SIDEWAYS TAKE','RAINBOW WORM READY','ELECTRIC WORM READY','EMPTY HOOK - PRESS 1 OR 2','NO WORMS - R: NEW NIGHT','REPEATED TUGGING','HEAVY SWIMMING']
 for i,label in enumerate(statuses):
+ if i==6:
+  lines.append('status_6 = status_15')
+  continue
  mask=Image.new('1',(320,32));md=ImageDraw.Draw(mask);md.text((6,16),label,font=font,fill=1)
  coords=[y*320+x for y in range(32) for x in range(320) if mask.getpixel((x,y))]
  lines.append(f'status_{i}\n        dta '+','.join(f'a({o})' for o in coords)+',a($ffff)')

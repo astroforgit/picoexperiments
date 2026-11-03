@@ -11,7 +11,7 @@ SKY_DEFAULTS=dict(onePixelStars=48,twoPixelStars=16,twinklePercent=25,meteorProb
 STAR_TONES=dict(ivory=[216,210,184],moon=[246,232,204],painted=[246,218,172])
 STAR_COLOR_MODES=['ivory','moon','painted','custom']
 # New bait scenarios. Legacy `floats` settings are intentionally not reused.
-SCENARIOS=[('interest','Gentle interest',70,5,10,10,25),('attack','Aggressive dive',15,80,100,100,10),('nibble','Cautious nibble',8,15,25,25,20),('falseAlarm','False alarm',5,0,0,0,15),('sideTake','Sideways take',2,50,60,60,15)]
+SCENARIOS=[('interest','Gentle interest',70,5,10,10,25),('attack','Aggressive dive',1,80,100,100,10),('nibble','Cautious nibble',8,15,25,25,20),('falseAlarm','False alarm',5,0,0,0,15),('sideTake','Sideways take',2,50,60,60,15),('repeated','Repeated tugging',10,30,50,50,30),('heavySwim','Heavy swimming',8,20,35,35,30)]
 
 def sky_settings(value):
  if value is None:value={}
@@ -48,7 +48,7 @@ def fishing_settings(value):
  if not any(f['weight'] for f in clean.values()):raise ValueError('Enable at least one bite scenario')
  lo=integer(value.get('quietMinSeconds',8),1,60,'Minimum quiet seconds')
  hi=integer(value.get('quietMaxSeconds',20),lo,60,'Maximum quiet seconds')
- return dict(version=2,springGauge=bool(value.get('springGauge',True)),quietMinSeconds=lo,quietMaxSeconds=hi,escalationPercent=integer(value.get('escalationPercent',35),0,100,'Escalation percent'),scenarios=clean)
+ return dict(diveIntervalSeconds=integer(value.get('diveIntervalSeconds',180),30,600,'Dive interval'),version=2,springGauge=bool(value.get('springGauge',True)),quietMinSeconds=lo,quietMaxSeconds=hi,escalationPercent=integer(value.get('escalationPercent',35),0,100,'Escalation percent'),interestStepPercent=integer(value.get('interestStepPercent',5),0,25,'Interest step'),repeatTakePercent=integer(value.get('repeatTakePercent',60),0,100,'Repeat take chance'),followupSeconds=integer(value.get('followupSeconds',2),1,10,'Follow-up seconds'),scenarios=clean)
 
 def scenario_slots(fishing):
  weights=[fishing['scenarios'][id]['weight'] for id,*_ in SCENARIOS];total=sum(weights)

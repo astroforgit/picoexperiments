@@ -122,23 +122,41 @@ In the game:
 | Cautious nibble | occasional tiny tug | 2 seconds | 15% | 25% / 25% |
 | False alarm | slight sideways sway | 1.5 seconds | 0% | 0% / 0% |
 | Sideways take | slides sideways and dips | 1.5 seconds | 50% | 60% / 60% |
+| Repeated tugging | repeated small dips and sway | 3 seconds | 30% | 50% / 50% |
+| Heavy swimming | stronger sideways swimming and dips | 3 seconds | 20% | 35% / 35% |
 
-These defaults are editable in the Fishing panel. After gentle interest, if bait
-survives, there is a 35% chance of an aggressive dive. Otherwise quiet waiting
-resumes. A missed dive consumes the worm after exactly 50 PAL frames; the float
-returns to its resting position. With no worm, no further star takes interest.
-Reel completely home to automatically fit a fresh worm before casting again.
+These base odds are editable in the Fishing panel. Each surviving small bite adds 5 percentage points to subsequent bait-loss and dive odds,
+up to a +50-point bonus. Full dives have a **three-minute minimum interval** of active play, including
+before the first dive. Menu, win and bobber-popup time do not count. Only after
+this interval can a small action escalate into a dive (base 35% + interest
+bonus). The timing is a minimum, not a guaranteed dive every three minutes. If no dive follows, the next encounter comes after two
+seconds and increasingly favours gentle interest or another sideways take.
+Quiet water and false alarms still cannot consume bait. Reeling home resets
+this interest buildup. A missed dive always consumes the worm after 50 PAL frames.
+
+Each night has **five worms total**: one rainbow worm already fitted and four
+spares. Reeling home preserves a surviving worm and does not spend a spare.
+Lost or consumed worms are replaced automatically on return, while spares
+remain. Press **1** at home for rainbow bait or **2** for electric bait.
+Both use the same bite odds; rainbow bait cycles warm colours, electric bait
+pulses blue and white. Bait is replaced only at home, and an empty hook cannot
+cast. The WORMS counter includes the attached worm and all spares. R starts a
+new night when the supply is exhausted.
+
+The return shows exactly what happened: a brilliant 2×2 caught-star square with eight slowly pulsing halo pixels in place of
+the worm, a bare hook after bait loss, or the remaining worm. The caught star
+stays on display after landing until the next cast; it scores only once.
 A held button cannot start another cast: release and press again.
 
 ## Game sketch
 
 ```text
-REST / FRESH WORM → CHARGE → CAST → QUIET WAIT → INTEREST / NIBBLE / TAKE
+REST / FIT WORM → CHARGE → CAST → QUIET WAIT → INTEREST / NIBBLE / TAKE
       ↑                              ↑                 │
       │                              └── bait survives ┤
       │                                                ├→ DIVE (1 second)
       │                                                └→ NO WORM: no more bites
-      └── LAND CATCH / REBAIT ← REEL ← STRIKE during any waiting state
+      └── LAND CATCH / CHECK BAIT ← REEL ← STRIKE during any waiting state
 
 Five landed stars → NIGHT COMPLETE
 ```
@@ -146,7 +164,7 @@ Five landed stars → NIGHT COMPLETE
 The default float is the small striped Quill bobber. A four-pixel rainbow worm
 hangs beneath it on a fine three-pixel leader, slowly cycling and dimming over
 about five seconds. The worm and leader are visible while casting and reeling, but hidden while
-the bobber waits in the water. Lost bait disappears; the bobber hides during a dive. The charcoal line is drawn at
+the bobber waits in the water. An empty hook replaces lost bait above water; the bobber hides during a dive. The charcoal line is drawn at
 runtime from the rod tip while casting, reeling and at rest, never while the
 float waits. The sky uses one- and two-pixel
 ivory stars in fixed random positions. By default, there are 48 single-pixel

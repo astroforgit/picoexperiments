@@ -3203,7 +3203,7 @@
         "durationTenths": 25
       },
       "attack": {
-        "weight": 15,
+        "weight": 1,
         "catch": 80,
         "missedLoss": 100,
         "failedLoss": 100,
@@ -3229,8 +3229,26 @@
         "missedLoss": 60,
         "failedLoss": 60,
         "durationTenths": 15
+      },
+      "repeated": {
+        "weight": 10,
+        "catch": 30,
+        "missedLoss": 50,
+        "failedLoss": 50,
+        "durationTenths": 30
+      },
+      "heavySwim": {
+        "weight": 8,
+        "catch": 20,
+        "missedLoss": 35,
+        "failedLoss": 35,
+        "durationTenths": 30
       }
-    }
+    },
+    "interestStepPercent": 5,
+    "repeatTakePercent": 60,
+    "followupSeconds": 2,
+    "diveIntervalSeconds": 180
   },
   "sound": {
     "enabled": false

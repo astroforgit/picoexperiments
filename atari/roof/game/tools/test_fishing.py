@@ -12,8 +12,9 @@ def get(n):return r[L[n]]
 def call(n):a.call(L[n])
 def timer():return get('BITE_TIMER')+256*r[L['BITE_TIMER']+1]
 def setup(stage=0):
- for k,v in [('STATE',5),('BAIT_PRESENT',1),('BASE_X',120),('BASE_Y',90),('PRESS_EDGE',0),('POPUP_ACTIVE',0),('RANDOM_SEED',91)]:put(k,v)
- if stage:a.cpu.a=stage;call('SCENARIO_START')
+ for k,v in [('STATE',5),('BAIT_PRESENT',1),('BASE_X',120),('BASE_Y',90),('PRESS_EDGE',0),('POPUP_ACTIVE',0),('RANDOM_SEED',91),('INTEREST_BONUS',0)]:put(k,v)
+ if stage:
+  put('DIVE_TIMER',0);r[L['DIVE_TIMER']+1]=0;a.cpu.a=stage;call('SCENARIO_START')
  else:call('QUIET_START')
 # Uniform rejection sampler: accepted raw draws contain exactly two of each percent.
 for percent in (0,5,10,80,100):
@@ -54,7 +55,7 @@ for stage in (3,4,5):
  original=r[L['SCENARIO_MISSED']+stage]
  r[L['SCENARIO_MISSED']+stage]=0
  put('BITE_TIMER',0);r[L['BITE_TIMER']+1]=0;call('WAITING')
- assert get('BAIT_PRESENT')==1 and get('BITE_STAGE')==0
+ assert get('BAIT_PRESENT')==1 and get('BITE_STAGE') in ((0,2) if stage in (3,5) else (0,))
  r[L['SCENARIO_MISSED']+stage]=original
 # The two-row menu clamps navigation before indexing its generated masks.
 put('STATE',7);put('MENU_ROW',1);put('DIR_EDGE',2);put('PRESS_EDGE',0)
@@ -86,6 +87,10 @@ for n in range(5):
  # Force a live aggressive opportunity and guaranteed hook for integration.
  put('BITE_STAGE',2);put('BITE_TIMER',100);r[L['BITE_TIMER']+1]=0;r[L['SCENARIO_CATCH']+2]=100
  key(True);until(lambda:get('STATE') in (0,4));key(False);a.run_frames(6)
- assert get('SCORE')==n+1 and get('BAIT_PRESENT')==1
+ assert get('SCORE')==n+1 and get('BAIT_PRESENT')==(1 if n<4 else 0)
+ assert get('WORMS_SPARE')==max(0,3-n)
+ if n<4:
+  a.kbcode=0x1f if n%2 else 0x1e;a.skstat=0xfb;a.run_frames(8);key(False);a.run_frames(6)
+  assert get('BAIT_PRESENT')==1 and get('WORMS_SPARE')==3-n
 assert get('STATE')==4
-print('PASS real-input casting, timed strikes, reeling, automatic fresh bait and five-star win')
+print('PASS real-input casting, timed strikes, reeling, automatic replacement, finite bait and five-star win')

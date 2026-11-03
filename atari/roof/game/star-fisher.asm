@@ -200,6 +200,18 @@ key_reset_allowed
         jsr reset_game
         rts
 not_reset
+        cmp #$1f
+        bne key_not_rainbow
+        lda #0
+        jsr equip_worm
+        jmp input_done
+key_not_rainbow
+        cmp #$1e
+        bne key_not_electric
+        lda #1
+        jsr equip_worm
+        jmp input_done
+key_not_electric
         ldx #3
 key_direction
         cmp key_dir_codes,x
@@ -236,6 +248,15 @@ input_done
 key_dir_codes dta $0e,$0f,$06,$07
 key_dir_bits dta 1,2,4,8
 reset_game
+        lda #<DIVE_INTERVAL_FRAMES
+        sta dive_timer
+        lda #>DIVE_INTERVAL_FRAMES
+        sta dive_timer+1
+        lda #4
+        sta worms_spare
+        lda #0
+        sta worm_type
+        sta interest_bonus
         lda #1
         sta bait_present
         lda #0
@@ -386,6 +407,8 @@ menu_start
         sta state
         beq menu_apply
 idle
+        lda bait_present
+        beq update_done
         lda press_edge
         beq update_done
         lda #0
@@ -501,17 +524,14 @@ reeling
         dec phase
         jmp path_add
 landed
-        lda #1
-        sta bait_present
         lda #0
+        sta interest_bonus
         sta bite_stage
         lda caught
         cmp #$ff
         beq empty_cast
         inc score
 empty_cast
-        lda #$ff
-        sta caught
         lda #0
         sta state
         sta phase
@@ -519,7 +539,7 @@ empty_cast
         lda score
         cmp #5
         bcs won_game
-        rts
+        jmp auto_rebait
 won_game
         lda #4
         sta state
@@ -613,7 +633,9 @@ render
         sta color
         lda #218
         sta px
-        lda casts
+        lda worms_spare
+        clc
+        adc bait_present
 reduce_casts
         cmp #10
         bcc cast_digit
@@ -672,9 +694,6 @@ far_state
         bne far_done
 far_float
         inc float_far
-        lda caught
-        cmp #$ff
-        bne far_done
         jsr draw_float
         jsr draw_bait
 far_done
@@ -686,20 +705,8 @@ far_done
 ; The line shows while casting, reeling and at rest, not while the float waits.
         lda state
         cmp #5
-        beq line_hidden
-        jsr draw_line
-line_hidden
-        lda caught
-        cmp #$ff
         beq near_float
-        lda float_x
-        sta px
-        lda float_y
-        sta py
-        lda #252
-        sta color
-        jsr star
-        jmp win_display
+        jsr draw_line
 near_float
         lda float_far
         bne win_display
@@ -722,13 +729,35 @@ game_status
         tax
         jmp status_ready
 status_not_waiting
+        lda state
+        beq home_status
+        cmp #3
+        beq return_status
         ldx state
-        cpx #3
-        bne status_ready
+        jmp status_ready
+home_status
+return_status
         lda caught
         cmp #$ff
+        beq status_bait
+        ldx #3
+        jmp status_ready
+status_bait
+        lda bait_present
+        beq status_empty
+        ldx worm_type
+        inx
+        txa
+        clc
+        adc #12
+        tax
+        jmp status_ready
+status_empty
+        ldx #15
+        lda worms_spare
         bne status_ready
-        ldx #6
+        ldx #16
+        jmp status_ready
 status_ready
         lda status_lo,x
         sta points
@@ -1099,11 +1128,10 @@ float_done
  ; Four-pixel luminous worm on a three-pixel leader below the bobber.
 ; Palette cycling is slow (32 PAL frames per step); no fishing RNG is used.
 draw_bait
-        lda bait_present
-        beq bait_draw_done
         lda state
         cmp #5
-        beq bait_draw_done
+        bne bait_full_height
+        rts
 bait_full_height
         ldx bobber_selected
         lda bobber_height,x
@@ -1121,11 +1149,33 @@ bait_anchor
         inc py
         jsr plot_xy
         inc py
+        lda caught
+        cmp #$ff
+        beq bait_or_hook
+        jmp draw_caught_star
+bait_or_hook
+        lda bait_present
+        bne bait_worm
+        lda #251
+        sta color
+        jsr plot_xy
+        inc py
+        jsr plot_xy
+        inc px
+        jsr plot_xy
+        dec py
+        jmp plot_xy
+bait_worm
         lda frame
         lsr
         lsr
         lsr
         and #28
+        ldx worm_type
+        beq bait_palette_ready
+        clc
+        adc #32
+bait_palette_ready
         tax
         lda bait_colors,x
         sta color
@@ -1157,7 +1207,56 @@ bait_colors
         dta 251,248,247,254
         dta 254,248,247,254
         dta 254,247,254,254
-bite_status dta 5,7,8,10,11,12
+        dta 254,251,254,251
+        dta 251,252,251,252
+        dta 252,251,252,251
+        dta 251,252,251,252
+        dta 252,252,251,252
+        dta 251,254,251,254
+        dta 254,251,254,251
+        dta 254,254,251,254
+
+; Four brilliant core pixels with a pulsing square halo, never a star silhouette.
+draw_caught_star
+        lda px
+        sta catch_left
+        lda py
+        sta catch_top
+        ldx #0
+catch_square_loop
+        lda catch_dx,x
+        clc
+        adc catch_left
+        sta px
+        lda catch_dy,x
+        clc
+        adc catch_top
+        sta py
+        lda #252
+        cpx #4
+        bcc catch_square_color
+        lda frame
+        lsr
+        lsr
+        lsr
+        lsr
+        lsr
+        and #7
+        tay
+        lda catch_glow,y
+catch_square_color
+        sta color
+        jsr plot_xy
+        inx
+        cpx #12
+        bne catch_square_loop
+        rts
+catch_dx dta 0,1,0,1,255,2,255,2,0,1,0,1
+catch_dy dta 0,0,1,1,0,0,1,1,255,255,2,2
+catch_glow dta 254,251,250,252,250,251,254,254
+catch_left dta 0
+catch_top dta 0
+bite_status dta 5,7,8,10,11,12,17,18
 
 ; Slow, independent lighting randomness does not change fishing/bite outcomes.
 update_lights

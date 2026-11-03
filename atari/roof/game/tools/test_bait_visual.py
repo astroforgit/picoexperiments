@@ -9,7 +9,7 @@ L=load_labels(ROOT/'star-fisher.lab');a=Atari(ROOT/'star-fisher.xex');a.boot();r
 
 def put(k,v):r[L[k]]=v
 def call(k):a.call(L[k])
-for k,v in [('BUFFER',2),('DRAW_BANK',0xa0),('FLOAT_X',120),('FLOAT_Y',90),('BASE_Y',90)]:put(k,v)
+for k,v in [('BUFFER',2),('DRAW_BANK',0xa0),('FLOAT_X',120),('FLOAT_Y',90),('BASE_Y',90),('CAUGHT',255),('WORM_TYPE',0)]:put(k,v)
 frames=[]
 for selected in range(16):
  put('BOBBER_SELECTED',selected)
@@ -20,10 +20,13 @@ for selected in range(16):
    for phase in range(8):
     put('FRAME',phase*32);a.vram[0x20000:0x20000+76800]=0;call('DRAW_BAIT')
     expected=bytearray(76800)
-    if bait and state!=5:
+    if state!=5:
      y=90+r[L['BOBBER_HEIGHT']+selected]
      for dy in range(3):expected[(y+dy)*320+120]=254
-     for i,(dx,dy) in enumerate(((0,3),(0,4),(1,5),(1,6))):expected[(y+dy)*320+120+dx]=r[L['BAIT_COLORS']+phase*4+i]
+     if bait:
+      for i,(dx,dy) in enumerate(((0,3),(0,4),(1,5),(1,6))):expected[(y+dy)*320+120+dx]=r[L['BAIT_COLORS']+phase*4+i]
+     else:
+      for dx,dy in ((0,3),(0,4),(1,4),(1,3)):expected[(y+dy)*320+120+dx]=251
     assert bytes(a.vram[0x20000:0x20000+76800])==expected,(selected,state,bait,stage,phase)
 # Actual native scene, with a magnified crop for reviewing its tiny bait.
 a=Atari(ROOT/'star-fisher.xex');a.boot();a.run_frames(15);r=a.mem.ram
