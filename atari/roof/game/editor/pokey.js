@@ -22,15 +22,15 @@ export function render(frames,rate=44100){
  return out;
 }
 let context,source;
-export function play(samples,rate=44100){
+export function play(samples,rate=44100,loop=false){
  stop();context??=new AudioContext({sampleRate:rate});context.resume();
  const buffer=context.createBuffer(1,samples.length,rate);buffer.copyToChannel(samples,0);
- source=context.createBufferSource();source.buffer=buffer;source.connect(context.destination);source.start();return samples.length/rate;
+ source=context.createBufferSource();source.buffer=buffer;source.loop=loop;source.connect(context.destination);source.start();return samples.length/rate;
 }
 // 4-bit volume-only levels (0-15) at the POKEY timer rate, sample-and-hold to 44.1 kHz.
-export function pcm(levels,rate,repeat=1,out=44100){
+export function pcm(levels,rate,repeat=1,out=44100,maximum=15){
  const n=Math.floor(levels.length*repeat*out/rate),y=new Float32Array(n);
- for(let i=0;i<n;i++)y[i]=(levels[Math.floor(i*rate/out)%levels.length]-7.5)/7.5*.5;
+ for(let i=0;i<n;i++)y[i]=(levels[Math.floor(i*rate/out)%levels.length]/maximum-.5);
  return y;
 }
 export async function playEncoded(bytes){

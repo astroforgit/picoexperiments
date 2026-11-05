@@ -161,7 +161,7 @@ def validate(scene):
   pixels=[];seen=set()
   for point in win['pixels']:
    if not isinstance(point,list) or len(point)!=2:raise ValueError('Invalid window pixel')
-   x=integer(point[0],0,319,'Window X');y=integer(point[1],13,225,'Window Y')
+   x=integer(point[0],0,319,'Window X');y=integer(point[1],13,239,'Window Y')
    if (x,y) in seen:continue
    if (x,y) in occupied:raise ValueError('A light pixel cannot belong to two window groups')
    seen.add((x,y));pixels.append([x,y])
@@ -176,7 +176,7 @@ def validate(scene):
   a=byid[stamp['assetId']];id=stamp.get('id')
   if not isinstance(id,str) or len(id)>64 or id in stamp_ids:raise ValueError('Placed object IDs must be unique')
   stamp_ids.add(id)
-  clean_stamps.append(dict(id=id,assetId=a['id'],x=integer(stamp.get('x'),0,320-a['width'],'Object X'),y=integer(stamp.get('y'),13,226-a['height'],'Object Y')))
+  clean_stamps.append(dict(id=id,assetId=a['id'],x=integer(stamp.get('x'),0,320-a['width'],'Object X'),y=integer(stamp.get('y'),13,240-a['height'],'Object Y')))
  return dict(version=1,assets=clean_assets,windows=clean_windows,stamps=clean_stamps,gameStar=star['id'],sky=sky_settings(scene.get('sky')),fishing=fishing_settings(scene.get('fishing')),sound=sound_settings(scene.get('sound')))
 
 def load_scene(palette):

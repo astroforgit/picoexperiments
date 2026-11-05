@@ -4,9 +4,7 @@ A quiet fishing game above dark nineteenth-century Paris. Load the spring gauge,
 cast the float into the sky and watch it. It rests quietly with its bottom submerged,
 then a star may nibble, gently tug or pull it completely under. Strike at the right
 moment, and reel home to replace lost bait. The line hides
-while the float waits, and drifting clouds can hide the float itself. A POKEY night
-ambience is currently disabled. The optional ambience includes: wind, and now and then a distant dog, a steam
-train whistle, a church bell, an owl, a cat or a passing carriage. Collect five stars to finish the night.
+while the float waits, and drifting clouds can hide the float itself. POKEY loops excerpts from ambient1.m4a and ambient2.m4a. Collect five stars to finish the night.
 
 ## Pixel editor
 
@@ -24,7 +22,7 @@ when moving an object or editing a light mask.
 - **Lights:** choose a group, zoom to its window, then paint or erase individual
   pixels (right-click also erases). Rectangle filling, undo/redo, and up to 16
   independent groups are supported. Select steady, candle, or on/off lighting.
-  Masks can use up to 512 pixels in total, anywhere outside the interface strips.
+  Masks can use up to 512 pixels in total, on rows 13–239, including the bottom edge; only the top menu strip is reserved.
 - **Sky library:** drag a proposed small star, comet, moon, galaxy or dark cloud
   onto the scene. Alternatively, select a design and click to place it.
 - **Scene:** move, duplicate, delete or nudge placed objects. Arrow keys move one
@@ -36,13 +34,10 @@ when moving an object or editing a light mask.
   (0–100%), and the star colour: ivory, the moon's colour, the colour of the
   stars painted in the original artwork, or a custom colour. Star positions
   remain fixed. Save/Build and JSON export retain all settings.
-- **Sounds:** sample rate, memory meter, wind (recorded loop or synthesised
-  noise) and up to six recorded sounds with name, file, start, length, gain
-  and plays per 10 minutes. Select a sound and drag on the waveform below the
-  screen: the top strip moves the selection through the whole recording, the
-  close-up chooses exactly what plays. ▶ Original plays the source slice;
-  ▶ Atari 4-bit plays the exact levels the game will play. ▶ Night mix plays
-  30 seconds of wind with randomly chosen sounds.
+- **Sounds:** import a recording (up to 32 MB), or choose **Both ambients**, **Ambient 1**, or **Ambient 2**. Select the start and length, compare
+  **Original** with the **Atari** preview, and use **Stop** to end the loop preview.
+  **Build Atari** writes the soundtrack into the executable. The project stores
+  the source filename and selection; imported recordings live in `../sounds`.
 - **Fishing:** configure quiet waiting time, gentle-interest escalation, and each
   scenario's relative frequency, duration, catch chance, bait loss when ignored,
   and bait loss after a failed strike. Turn the spring gauge bounce on or off.
@@ -92,15 +87,21 @@ register bases are detected. The adjacent projects' Altirra launcher works with:
 
 The game starts in a menu drawn over the live night scene:
 
-- **START GAME** and **CLOUDS** (NONE / MEDIUM / HEAVY, default MEDIUM).
+- **PLAY**, **CLOUDS** (NONE / MEDIUM / HEAVY), **BOOBER**, **DIFFICULTY**, and **SOUND: ON/OFF**.
+- **M** opens or closes the pause menu without losing your cast or bite.
+- The menu shows rainbow-worm, electric-worm and caught-star icons with numbers.
+  Worm counts include the worm on the hook. **B** opens the existing bobber catalogue.
 - Joystick or arrow keys (`-` `=` `+` `*`, with or without CONTROL): up/down
-  picks a row, left/right changes clouds. Fire, A or Space selects.
-- Clouds: none, three, or six drifting clouds. Catch odds use the editor values
-  directly, without a difficulty multiplier.
+  picks a row, left/right changes settings. Fire, A, Space or Enter activates the selected row.
+- Clouds: none, three, or six drifting clouds. Difficulty changes probabilities only: Easy / Medium / Hard allow a bite on
+  100% / 75% / 40% of quiet-interval completions, and apply 125% / 100% / 50%
+  of each action’s base catch chance (rounded down, capped at 100%). Hard can
+  therefore leave the bobber still across several intervals. Bite durations,
+  casting speed, bait-loss odds and the dive cooldown do not change.
 
 In the game:
 
-- **Hold A, Space, or joystick fire** to load the spring gauge right of POWER,
+- **Hold A, Space, or joystick fire** to load the spring gauge at the top right,
   then **release** to cast. Full power takes **half a second** (25 PAL frames).
   By default the gauge springs back down after it
   fills, so release at the right moment.
@@ -112,7 +113,9 @@ In the game:
 - **Tap A, Space, or fire** to strike. The line reappears and the float is
   reeled home: **STAR HOOKED!** or **MISSED - EMPTY HOOK**.
 - A caught star scores only after it reaches the fisherman.
-- **R** returns to the menu. After five catches, press R to play another night.
+- The game screen shows only **M - MENU** and the spring meter, with no status
+  messages, counters, title or bottom instructions. PLAY resumes a night, or starts a fresh night after winning or exhausting
+  all worms. R also restarts the night.
 
 | Scenario | Motion | Duration | Catch | Bait loss if ignored / failed strike |
 | --- | --- | --- | --- | --- |
@@ -134,14 +137,21 @@ seconds and increasingly favours gentle interest or another sideways take.
 Quiet water and false alarms still cannot consume bait. Reeling home resets
 this interest buildup. A missed dive always consumes the worm after 50 PAL frames.
 
-Each night has **five worms total**: one rainbow worm already fitted and four
-spares. Reeling home preserves a surviving worm and does not spend a spare.
+Each night has **five worms total**: three rainbow worms (one already fitted) and two
+electric worms. Reeling home preserves a surviving worm and does not spend a spare.
 Lost or consumed worms are replaced automatically on return, while spares
 remain. Press **1** at home for rainbow bait or **2** for electric bait.
-Both use the same bite odds; rainbow bait cycles warm colours, electric bait
+Switching types returns the surviving worm to its stock and takes one of the
+other type, without changing the total. Automatic replacement falls back to the
+other type when the current type is exhausted. Both use the same bite odds; rainbow bait cycles warm colours, electric bait
 pulses blue and white. Bait is replaced only at home, and an empty hook cannot
-cast. The WORMS counter includes the attached worm and all spares. R starts a
-new night when the supply is exhausted.
+cast. Menu icon counters include the attached worm and each type’s spares.
+When the last worm is gone, a **GAME OVER** popup shows a caught-star icon and
+the final count. A final hooked star scores on landing before this screen appears.
+Release any held controls, then press any key, joystick button/direction, or
+console key to return to the menu. **PLAY** starts a new night with zero stars
+and all five worms. Holding the finishing strike cannot skip the result or
+accidentally start another night.
 
 The return shows exactly what happened: a brilliant 2×2 caught-star square with eight slowly pulsing halo pixels in place of
 the worm, a bare hook after bait loss, or the remaining worm. The caught star
@@ -180,28 +190,62 @@ speed.
 
 ## Sound
 
-Recorded sounds live in `../sounds` (any format ffmpeg reads; the defaults are
-the Pixabay `freesound_community` breeze and quiet-city-square recordings).
-`tools/samples.py` cuts each chosen part, band-limits and resamples it with
-ffmpeg, normalises it, applies its gain and quantises it to 4 bits, two
-samples per byte. `sound.asm` plays them in POKEY volume-only mode from a
-timer 1 IRQ at 63337 / (AUDF1 + 1) Hz (3.2–5.8 kHz, default 4.5 kHz):
+Sound starts enabled, with silence before the first clip. Open **M**, select
+**SOUND**, and press Enter/fire or left/right to toggle it. Off silences all
+channels and stops the sample timer; On resumes playback. The preference
+lasts through new nights until you reload the game.
 
-- Channel 1: the silent sample timer.
-- Channel 2: recorded clips, one at a time. Once a second the VBI rolls
-  against cumulative chances from each clip's plays per 10 minutes. Clips
-  ease in and out of silence so they do not click.
-- Channel 3: the recorded wind loop. Its end crossfades into its start so the
-  loop has no seam. It costs about 15% CPU while it runs; the timer is
-  switched off whenever nothing needs it.
-- Channel 4: the synthesised wind, when chosen instead. It copies Slayder
-  (`../slay.atr`, `SLAYDER.XEX` around $52f0): distortion 8 white noise,
-  here with gentle gusts and silent gaps.
+The **New night sounds** preset replaces the old continuous ambient loop.
+It chooses equally between four excerpts from the new recordings: resonance
+(2 s), distant echo (1.45 s), train (1.85 s), and water shimmer (0.9 s).
+After each sound finishes, it waits a random 5–15 seconds before choosing
+another. Clips never overlap. The initial pause uses the same limits.
 
-Samples use RAM at $7800–$8FFF, $A000–$BFFF, and under the OS ROM at
-$C000–$CFFF and $D800–$FFF9 (28 KB in all). Under-OS data is staged at $A000
-during loading and copied by `os_copy` with the OS switched out. The build
-fails with a clear message if the chosen clips do not fit.
+The current project plays all 14 recordings in `assets/audio` (47.0 s at
+3.96 kHz). The three 10 s "Crackle of the Cosmos" recordings are trimmed to
+6.45 s each so that everything fits.
+
+In the editor's Sounds tab, set **Minimum silence** and **Maximum silence**
+(1–120 seconds), and choose how much of each recording plays with **Start** and
+**Length** (up to 16 sounds, 0.1–10 s each), or by dragging on the waveform.
+**Add all recordings** adds every unused recording at full length. Each card
+shows how long it plays, the recording's full length and its memory size. Two
+meters show the VBXE storage and the longest sound against the playback buffer.
+A sound that is too long, or a set that is too large, is flagged in red, and
+the build refuses it. **Night mix** previews 30 seconds of the same
+sound/pause behavior. Build Atari applies your changes to the XEX.
+
+Random mode uses three POKEY volume registers for 46 summed digital levels,
+at 3.96 kHz by default. Channel 1 supplies the silent sample timer. During
+pauses all audio channels and sample IRQs are off. Background loop and synth
+modes remain available for custom projects; their occasional effects use the
+legacy per-ten-minute chance controls instead of the silence settings.
+
+Random-mode sounds are stored in VBXE memory, in the 46 whole 4 KB banks that
+no graphics use: $13, $33–$3F, $53–$5F and $6B–$7D (184 KB, 47.6 s at
+3.96 kHz). Audited occupied ranges: background $00000–$12BFF, cloud sprite
+$14000–$158FF, bobber popup $16000–$1F9BF, framebuffers $20000–$32BFF and
+$40000–$52BFF, cached menu panel $60000–$6AD6F, XDLs at $7E000 and the blitter
+command at $7F000 (`VRAM_USED` in `tools/samples.py`). Each 4 KB bank is staged
+at $A000 while loading and uploaded by `upload_bank`.
+
+When a sound ends, the game picks the next one at random. While the main loop
+waits for a frame, `sound_load` copies that sound one 256-byte page at a time
+into a CPU RAM playback buffer. It never starts a page within about 40 lines of
+the vertical blank, so frames are never delayed, and the sample IRQ never
+switches MEMAC. The buffer holds 139 pages (34.8 KB): $0400–$1FFF,
+$7800–$8FFF, $A000–$CFFF and $D800–$FEFF. That is the limit for one sound:
+8.99 s at 3.96 kHz, 11.2 s at 3.2 kHz, 7.9 s at 4.5 kHz and 6.2 s at 5.8 kHz.
+The IRQ steps through the four segments. Copying takes about 3–4 pages per
+frame, so a full buffer loads in under 1 s, the shortest allowed pause. If it
+does not finish, the next sound simply starts a little later.
+
+At 3.96 kHz, all 14 originals untrimmed would need about 238 KB. At 3.2 kHz
+they would need about 191 KB, and the 10 s length cap would also apply. Either
+way, some trimming is needed.
+
+Background loop and synth modes keep their samples in CPU RAM: $7800–$8FFF,
+$A000–$BFFF, and under the OS ROM at $C000–$CFFF and $D800–$FFF9 (28 KB).
 
 Six small windows add warm amber light to the houses. Distant windows switch
 on and off on independent slow timers; the nearest dormer stays lit and briefly
@@ -226,6 +270,7 @@ python3 tools/test_stars.py
 python3 tools/test_display.py
 python3 tools/test_sky.py
 python3 tools/test_sound.py
+python3 tools/test_vram_audio.py
 ```
 
 - `star-fisher.asm`: native 6502 game, controls, states, VBXE drawing.
@@ -248,14 +293,19 @@ python3 tools/test_sound.py
 - `tools/test_sound.py`: sample data in all RAM regions; every nibble the
   timer IRQ plays (wind loop and each clip) equals the editor preview; synth
   wind gusts; the timer stops when idle; a silent sound-off build. It uses
-  `tools/pcm_emu.py`, the shared emulator plus POKEY timer IRQs.
+  `tools/pcm_emu.py`, the shared emulator plus POKEY timer IRQs and VCOUNT.
+- `tools/test_vram_audio.py`: sounds uploaded to the spare VBXE banks; a long
+  play session never writes VRAM outside the audited ranges; every sound copies
+  byte-exactly into the playback buffer, only during pauses; an 8 s sound plays
+  every level across all four buffer segments; constant loading leaves every
+  presented frame unchanged.
 - `tools/test_game.py` / `tools/test_fishing.py`: exact percentage rolls, quiet
   waiting, timed bites, lost-bait lockout, rebaiting, submerged sprites, menu
   bounds and five catches through real keyboard input.
 
 ## Implementation
 
-The game uses states REST, CHARGE, CAST, REEL, WIN, WAIT and MENU. The menu
+The game uses states REST, CHARGE, CAST, REEL, WAIT, GAME OVER and MENU. The menu
 panel is composed in spare VRAM at $60000 only when a choice changes, then
 copied into each frame with one blit. Randomness
 comes from a small LFSR seeded from POKEY on reset. Bite durations are counted in PAL vertical blanks (50 Hz), independently of

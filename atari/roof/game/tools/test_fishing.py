@@ -57,9 +57,9 @@ for stage in (3,4,5):
  put('BITE_TIMER',0);r[L['BITE_TIMER']+1]=0;call('WAITING')
  assert get('BAIT_PRESENT')==1 and get('BITE_STAGE') in ((0,2) if stage in (3,5) else (0,))
  r[L['SCENARIO_MISSED']+stage]=original
-# The two-row menu clamps navigation before indexing its generated masks.
-put('STATE',7);put('MENU_ROW',1);put('DIR_EDGE',2);put('PRESS_EDGE',0)
-call('MENU');assert get('MENU_ROW')==1
+# The four-row menu clamps navigation before indexing its generated masks.
+put('STATE',7);put('MENU_ROW',3);put('DIR_EDGE',2);put('PRESS_EDGE',0)
+call('MENU');assert get('MENU_ROW')==3
 # All sixteen floats are partially submerged, completely hidden for dives,
 # and fully visible during casting/reeling. No old tilt/glint mechanics.
 for selected in range(16):
@@ -86,11 +86,11 @@ for n in range(5):
  key(True);until(lambda:get('CHARGE')>=5);key(False);until(lambda:get('STATE')==5)
  # Force a live aggressive opportunity and guaranteed hook for integration.
  put('BITE_STAGE',2);put('BITE_TIMER',100);r[L['BITE_TIMER']+1]=0;r[L['SCENARIO_CATCH']+2]=100
- key(True);until(lambda:get('STATE') in (0,4));key(False);a.run_frames(6)
+ key(True);until(lambda:get('STATE') in (0,6));key(False);a.run_frames(6)
  assert get('SCORE')==n+1 and get('BAIT_PRESENT')==(1 if n<4 else 0)
  assert get('WORMS_SPARE')==max(0,3-n)
  if n<4:
   a.kbcode=0x1f if n%2 else 0x1e;a.skstat=0xfb;a.run_frames(8);key(False);a.run_frames(6)
   assert get('BAIT_PRESENT')==1 and get('WORMS_SPARE')==3-n
-assert get('STATE')==4
+assert get('STATE')==6
 print('PASS real-input casting, timed strikes, reeling, automatic replacement, finite bait and five-star win')

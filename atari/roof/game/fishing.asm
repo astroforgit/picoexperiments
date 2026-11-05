@@ -4,6 +4,8 @@ bite_vblank
         ora bite_loading
         bne dive_clock_done
         lda state
+        cmp #STATE_GAME_OVER
+        beq dive_clock_done
         cmp #4
         beq dive_clock_done
         cmp #7
@@ -131,7 +133,12 @@ lose_bait
         sta bite_stage
         sta bite_timer
         sta bite_timer+1
-        jmp bite_place
+        jsr bite_place
+        lda worms_spare
+        bne lost_bait_done
+        jmp game_over_enter
+lost_bait_done
+        rts
 
 waiting
 ; Expiry wins over a late input: a dive is catchable for only its timed window.
@@ -185,8 +192,17 @@ bite_quiet
         jmp bite_check_strike
 bite_lost
         jsr lose_bait
-        jmp bite_check_strike
+        lda state
+        cmp #STATE_GAME_OVER
+        bne bite_check_strike
+        rts
 bite_choose
+        ldx difficulty
+        lda activity_chance,x
+        jsr chance_percent
+        bcc bite_activity
+        jmp quiet_start
+bite_activity
         lda interest_bonus
         beq bite_normal_choice
         lda #REPEAT_TAKE_PERCENT
@@ -218,6 +234,7 @@ bite_strike
         beq start_reel
         ldx bite_stage
         lda scenario_catch,x
+        jsr difficulty_catch
         jsr chance_percent
         bcs bite_failed
         lda #0
@@ -351,17 +368,28 @@ pressure_chance
 pressure_done
         rts
 
-; 1/2 selects the worm type at home; an empty hook consumes one spare.
+; Switching bait at home swaps the attached worm back into its own stock.
 equip_worm
         tax
         lda state
         ora popup_active
         bne equip_done
-        stx worm_type
-        lda bait_present
-        bne equip_done
-        lda worms_spare
+        lda worm_stock,x
         beq equip_done
+        lda bait_present
+        beq equip_empty
+        cpx worm_type
+        beq equip_done
+        ldy worm_type
+        lda worm_stock,y
+        clc
+        adc #1
+        sta worm_stock,y
+        dec worm_stock,x
+        stx worm_type
+        rts
+equip_empty
+        dec worm_stock,x
         dec worms_spare
         stx worm_type
         lda #1
@@ -373,18 +401,53 @@ equip_worm
 equip_done
         rts
 worms_spare dta 4
+worm_stock dta 2,2
 worm_type dta 0
 interest_bonus dta 0
 
-; Keep surviving bait; automatically replace only consumed or lost worms.
+; Replace only lost/consumed bait; fall back to the other type if exhausted.
 auto_rebait
         lda bait_present
         bne rebait_done
         lda worms_spare
         beq rebait_done
+        ldx worm_type
+        lda worm_stock,x
+        bne rebait_type_ready
+        txa
+        eor #1
+        tax
+        lda worm_stock,x
+        beq rebait_done
+rebait_type_ready
+        dec worm_stock,x
         dec worms_spare
+        stx worm_type
         lda #1
         sta bait_present
 rebait_done
         rts
 dive_timer dta a(DIVE_INTERVAL_FRAMES)
+
+; Difficulty changes probabilities only, not clocks or physical movement.
+activity_chance dta 100,75,40
+difficulty_catch
+        ldx difficulty
+        cpx #1
+        beq difficulty_catch_done
+        cpx #2
+        bne difficulty_easy
+        lsr
+        rts
+difficulty_easy
+        sta catch_base
+        lsr
+        lsr
+        clc
+        adc catch_base
+        cmp #101
+        bcc difficulty_catch_done
+        lda #100
+difficulty_catch_done
+        rts
+catch_base dta 0

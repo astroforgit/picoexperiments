@@ -23,10 +23,10 @@ for spare in range(4,0,-1):
  assert get('BAIT_PRESENT')==1 and get('WORMS_SPARE')==spare-1 and get('WORM_TYPE')==spare%2
  call('AUTO_REBAIT');assert get('WORMS_SPARE')==spare-1
 put('BAIT_PRESENT',0);call('LANDED');assert get('BAIT_PRESENT')==0 and get('WORMS_SPARE')==0
-put('PRESS_EDGE',1);call('IDLE');assert get('STATE')==0
+put('PRESS_EDGE',1);call('IDLE');assert get('STATE')==6
 a.cpu.a=0;call('EQUIP_WORM');assert get('BAIT_PRESENT')==0
 # Neither worm selection nor replenishment is allowed away from home.
-put('WORMS_SPARE',4)
+put('WORMS_SPARE',4);put('WORM_STOCK',2);r[L['WORM_STOCK']+1]=2
 for state in (1,2,3,4,5,7):
  put('STATE',state);a.cpu.a=0;call('EQUIP_WORM');assert get('BAIT_PRESENT')==0 and get('WORMS_SPARE')==4
 # Exact percentage-point pressure and cap; zero-risk states remain zero.

@@ -26,7 +26,12 @@ for i,panes in enumerate(windows):
 r[L['LIGHT_ON']:L['LIGHT_ON']+len(windows)]=bytes(len(windows))
 a.call(L['RENDER'])
 assert bytes(a.vram[base:base+76800])==unlit, 'Unlit windows restore cleanly'
-assert bytes(a.vram[:len((ROOT/'assets/vram.bin').read_bytes())])==(ROOT/'assets/vram.bin').read_bytes()
+# Graphics art is intact; spare banks inside that range hold recorded sounds.
+from samples import AUDIO_BANKS
+art=bytearray((ROOT/'assets/vram.bin').read_bytes());loaded=bytearray(a.vram[:len(art)])
+for bank in AUDIO_BANKS:
+ if bank*4096<len(art):art[bank*4096:(bank+1)*4096]=loaded[bank*4096:(bank+1)*4096]=bytes(4096)
+assert loaded==art
 print('PASS all window masks, warm/dim colours, >64K addressing, off restoration',flush=True)
 # Lighting must not advance gameplay randomness.
 seed=r[L['RANDOM_SEED']]

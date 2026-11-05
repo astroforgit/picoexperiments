@@ -2,8 +2,8 @@
 """Local editor, following the neighboring Zorro editor's HTTP/save workflow."""
 from pathlib import Path
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
-import json,sys,subprocess,threading,shutil,os
-from urllib.parse import urlsplit
+import json,sys,subprocess,threading,shutil,os,tempfile,math
+from urllib.parse import urlsplit,parse_qs
 from PIL import Image
 HERE=Path(__file__).resolve().parent
 EMULATOR=HERE.parent.parents[1]/'lair/tools'
@@ -23,6 +23,24 @@ def wave(name):
   peaks=x[:n*160].reshape(n,160).max(1) if n else np.zeros(0)
   WAVES[name]=dict(file=name,duration=len(x)/8000,rate=50,peaks=np.minimum(255,np.round(np.sqrt(peaks/32768)*255)).astype(int).tolist())
  return WAVES[name]
+
+def import_audio(name,body):
+ """Publish only probed audio, and never replace an existing recording."""
+ if not name or len(name)>200 or Path(name).name!=name or chr(92) in name or Path(name).suffix.lower() not in samples.AUDIO_SUFFIXES:
+  raise ValueError('Choose a WAV, MP3, Ogg, FLAC, AIFF or M4A file.')
+ samples.SOURCES.mkdir(parents=True,exist_ok=True)
+ with tempfile.NamedTemporaryFile(dir=samples.SOURCES,suffix='.upload') as tmp:
+  tmp.write(body);tmp.flush()
+  probe=subprocess.run(['ffprobe','-v','error','-select_streams','a:0','-show_entries','stream=codec_type:format=duration','-of','json',tmp.name],capture_output=True,text=True,check=True,timeout=15)
+  info=json.loads(probe.stdout)
+  seconds=float(info.get('format',{}).get('duration',0))
+  if not info.get('streams') or not math.isfinite(seconds) or not .1<=seconds<=36000:
+   raise ValueError('Choose an audio recording between 0.1 seconds and 10 hours.')
+  with LOCK:
+   if name in samples.sources():
+    if samples.source_path(name).read_bytes()!=body:raise ValueError('Another recording has this name. Rename the new file and import again.')
+   else:os.link(tmp.name,samples.SOURCES/name)
+ return dict(file=name,duration=seconds)
 
 def original(clip):
  """The selected slice of the source recording as a 22 kHz WAV."""
@@ -59,7 +77,14 @@ class Handler(BaseHTTPRequestHandler):
    else:self.send(404,{'error':'Build or preview the game first.'})
    return
   if path=='/api/sound-sources':
-   self.send(200,[dict(file=f,duration=round(samples.duration(f),2)) for f in samples.sources()]);return
+   recordings=[]
+   archived={'rooftop-nocturne.wav', 'freesound_community-lonely-winter-breeze-36867.mp3',
+             'freesound_community-quiet-city-square-night-19743.mp3'}
+   for name in samples.sources():
+    if name in archived:continue
+    try:recordings.append(dict(file=name,duration=round(samples.duration(name),2)))
+    except (ValueError,OSError,subprocess.SubprocessError):continue
+   self.send(200,recordings);return
   if path=='/api/sound-wave':
    from urllib.parse import parse_qs
    try:self.send(200,wave(parse_qs(urlsplit(self.path).query).get('file',[''])[0]))
@@ -75,6 +100,14 @@ class Handler(BaseHTTPRequestHandler):
   if host not in (f'127.0.0.1:{self.server.server_port}',f'localhost:{self.server.server_port}') or (origin and origin not in (f'http://{host}',)):
    self.send(403,{'error':'Use the local editor address to save.'});return
   path=urlsplit(self.path).path
+  if path=='/api/import-audio':
+   try:
+    size=int(self.headers.get('Content-Length',0))
+    if not 0<size<=32*1024*1024:raise ValueError('Choose an audio file up to 32 MB.')
+    name=parse_qs(urlsplit(self.path).query).get('name',[''])[0]
+    self.send(200,import_audio(name,self.rfile.read(size)))
+   except (ValueError,OSError,subprocess.SubprocessError) as e:self.send(400,{'error':str(e)})
+   return
   if path not in ['/api/save','/api/build','/api/preview','/api/sound-preview','/api/sample-preview','/api/sample-original','/api/sound-usage']:
    self.send(404,{'error':'Not found'});return
   try:
@@ -87,11 +120,16 @@ class Handler(BaseHTTPRequestHandler):
     loop=bool(body.get('loop'));clip=samples.clip_settings(body.get('clip'),'Sound',loop);rate=body.get('rate',13)
     if rate not in samples.RATES:raise ValueError('Choose a listed sample rate')
     if path=='/api/sample-original':self.send(200,original(clip),'audio/wav')
-    else:self.send(200,dict(rate=samples.hz(rate),levels=samples.levels(clip,rate,loop)))
+    else:
+     maximum=45 if body.get('clean') is True else 15
+     self.send(200,dict(rate=samples.hz(rate),maximum=maximum,levels=samples.levels(clip,rate,loop,maximum)))
     return
    if path=='/api/sound-usage':
-    self.send(200,usage(sound_settings(body)));return
+    self.send(200,usage(sound_settings(body),strict=False));return
    with LOCK:
+    if path=='/api/build':
+     sound=validate(body)['sound']
+     if sound['enabled']:usage(sound)
     if path!='/api/preview':save(body)
     if path=='/api/build':
      old=(ROOT/'star-fisher.xex').read_bytes()

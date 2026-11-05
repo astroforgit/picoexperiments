@@ -16,14 +16,9 @@ palette += [12,18,36, 246,218,138, 152,174,214, 250,244,210, 6,8,14, 46,52,70, 2
 assert len(palette)==768
 bg=Image.frombytes('P',(320,240),bytes(x+1 for x in q.tobytes()));bg.putpalette(palette)
 # Interface and bitmap glyphs are game graphics, not edits to the illustration.
-d=ImageDraw.Draw(bg);d.rectangle((0,0,319,12),fill=249);d.rectangle((0,226,319,239),fill=249)
+d=ImageDraw.Draw(bg);d.rectangle((0,0,319,12),fill=249)
 font=ImageFont.load_default(size=9)
-d.text((5,1),'STAR FISHER',font=font,fill=250)
-d.text((5,228),'A:CAST  1:RAINBOW 2:ELECTRIC B:FLOAT R:MENU',font=font,fill=251)
-d.text((114,2),'STARS',font=font,fill=251)
-d.text((159,2),'/',font=font,fill=251)
-d.text((183,2),'WORMS',font=font,fill=251)
-d.text((241,2),'POWER',font=font,fill=251)
+d.text((5,1),'M - MENU',font=font,fill=251)
 scene=load_scene(palette)
 # Slot 246 carries the selected ambient star tone (ivory keeps its dim shade).
 palette[246*3:247*3]=star_tone(scene['sky']);bg.putpalette(palette)
@@ -121,29 +116,24 @@ lines.append(f'STAR_PIXELS = {len(star_pixels)}')
 # 3x5 digits for score and casts, 1 byte per row (left pixel is bit 2).
 digits=['111101101101111','010110010010111','111001111100111','111001111001111','101101111001001','111100111001111','111100111101111','111001001001001','111101111101111','111101111001111']
 lines.append('digit_data\n        dta '+','.join(str(int(s[y:y+3],2)) for s in digits for y in range(0,15,3)))
-mask=Image.new('1',(320,50));md=ImageDraw.Draw(mask);md.text((96,33),'FIVE STARS!  R: REPLAY',font=font,fill=1)
-win=[y*320+x for y in range(50) for x in range(320) if mask.getpixel((x,y))]
-lines.append('win_banner\n        dta '+','.join(f'a({o})' for o in win)+',a($ffff)')
-statuses=['HOLD A / FIRE','RELEASE TO CAST','CASTING','STAR HOOKED!','NIGHT COMPLETE','WAITING','MISSED - EMPTY HOOK','GENTLE INTEREST','DIVE! STRIKE NOW','NO WORM - REEL IN','CAUTIOUS NIBBLE','FALSE ALARM','SIDEWAYS TAKE','RAINBOW WORM READY','ELECTRIC WORM READY','EMPTY HOOK - PRESS 1 OR 2','NO WORMS - R: NEW NIGHT','REPEATED TUGGING','HEAVY SWIMMING']
-for i,label in enumerate(statuses):
- if i==6:
-  lines.append('status_6 = status_15')
-  continue
- mask=Image.new('1',(320,32));md=ImageDraw.Draw(mask);md.text((6,16),label,font=font,fill=1)
- coords=[y*320+x for y in range(32) for x in range(320) if mask.getpixel((x,y))]
- lines.append(f'status_{i}\n        dta '+','.join(f'a({o})' for o in coords)+',a($ffff)')
 lines+=sound_tables(scene['sound'],ROOT/'gen/samples.asm')
 # Start menu text at absolute screen positions inside the panel (x 80-239, y 54-137).
 def text_offsets(text,x,y):
  mask=Image.new('1',(320,150));ImageDraw.Draw(mask).text((x,y),text,font=font,fill=1)
  return [yy*320+xx for yy in range(150) for xx in range(320) if mask.getpixel((xx,yy))]
-menu=[('START GAME',100,70)]+[(f'CLOUDS:  {v}',100,90) for v in ['NONE','MEDIUM','HEAVY']]
-menu+=[('UP/DOWN  LEFT/RIGHT  FIRE',88,119),('STAR FISHER',124,53)]+[('>',90,70+20*r) for r in range(2)]
+for name,text,x,y in [('result_title','GAME OVER',133,76),('result_hint','ANY KEY',140,119)]:
+ lines.append(name+'\n        dta '+','.join(f'a({o})' for o in text_offsets(text,x,y))+',a($ffff)')
+menu=[('PLAY',100,84)]+[(f'CLOUDS:  {v}',100,95) for v in ['NONE','MEDIUM','HEAVY']]
+menu+=[('BOOBER',100,106)]+[(f'DIFFICULTY: {v}',100,117) for v in ['EASY','MEDIUM','HARD']]+[(f'SOUND: {v}',100,128) for v in ['OFF','ON']]+[('>',90,84+11*r) for r in range(5)]
+# Tiny inventory icons: four colourful worm segments and a square star.
+for name,x,colors in [('rainbow',99,[255,250,251,252]),('electric',151,[251,252,251,252])]:
+ for row,c in enumerate(colors):
+  xx=x+(1 if row>1 else 0);yy=65+row*2
+  offsets=[(yy+dy)*320+xx+dx for dy in range(2) for dx in range(2)]
+  lines.append(f'menu_{name}_{row}\n        dta '+','.join(f'a({o})' for o in offsets)+',a($ffff)')
 for i,(text,x,y) in enumerate(menu):lines.append(f'menu_{i}\n        dta '+','.join(f'a({o})' for o in text_offsets(text,x,y))+',a($ffff)')
 lines.append('menu_lo\n        dta '+','.join(f'<menu_{i}' for i in range(len(menu))))
 lines.append('menu_hi\n        dta '+','.join(f'>menu_{i}' for i in range(len(menu))))
-lines.append('status_lo\n        dta '+','.join(f'<status_{i}' for i in range(len(statuses))))
-lines.append('status_hi\n        dta '+','.join(f'>status_{i}' for i in range(len(statuses))))
 # Editable masks, modes and initial timers shared with the browser editor.
 windows=[w['pixels'] for w in scene['windows']]
 lines.append(f'WINDOW_COUNT = {len(windows)}')
@@ -155,7 +145,7 @@ lines.append('window_hi\n        dta '+','.join(f'>window_{i}' for i in range(le
 for i,panes in enumerate(windows):
  data=[]
  for x,y in panes:
-  assert 0<=x<320 and 13<=y<226
+  assert 0<=x<320 and 13<=y<240
   offset=y*320+x
   data.extend([offset>>12,offset&255,0x90|((offset>>8)&15)])
  lines.append(f'window_{i}\n        dta '+','.join(map(str,data))+',255')

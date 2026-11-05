@@ -81,6 +81,9 @@ copy_xdl
         lda #7
         sta (vb),y
         jsr reset_game
+        lda #0
+        sta menu_release
+        sta result_armed
         lda #2
         sta buffer
         jsr render
@@ -95,10 +98,14 @@ copy_xdl
         lda #$40
         sta $d40e
         cli
+; Idle time in both waits copies the next recorded sound from VBXE memory.
 main_loop
         lda frame
+        sta wait_frame
 wait_tick
-        cmp frame
+        jsr sound_load
+        lda frame
+        cmp wait_frame
         beq wait_tick
         jsr input
         jsr update
@@ -109,8 +116,11 @@ wait_tick
 no_bobber_popup
 ; Present only on vertical blank, then draw to the other buffer.
         lda frame
+        sta wait_frame
 wait_present
-        cmp frame
+        jsr sound_load
+        lda frame
+        cmp wait_frame
         beq wait_present
         lda buffer
         cmp #2
@@ -150,6 +160,19 @@ nmi
 ; A ($3f), Space ($21), or joystick fire. R ($28) returns to the menu.
 ; Directions: joystick, or the arrow keys - = + * (bits up, down, left, right).
 input
+        lda state
+        cmp #STATE_GAME_OVER
+        bne input_not_results
+        jmp game_over_input
+input_not_results
+        lda menu_release
+        beq input_normal
+        jsr read_any_input
+        bne input_blocked
+        sta menu_release
+input_blocked
+        rts
+input_normal
         lda popup_keys
         sta popup_previous
         lda #0
@@ -191,6 +214,12 @@ key_not_enter
         sta popup_keys
         jmp input_done
 key_not_escape
+        cmp #$25
+        bne key_not_menu
+        lda #8
+        sta popup_keys
+        jmp input_done
+key_not_menu
         cmp #$28
         bne not_reset
         lda popup_active
@@ -248,6 +277,11 @@ input_done
 key_dir_codes dta $0e,$0f,$06,$07
 key_dir_bits dta 1,2,4,8
 reset_game
+        lda #2
+        sta worm_stock
+        sta worm_stock+1
+        lda #0
+        sta menu_resume
         lda #<DIVE_INTERVAL_FRAMES
         sta dive_timer
         lda #>DIVE_INTERVAL_FRAMES
@@ -313,6 +347,16 @@ random_ready
         rts
 
 update
+        lda state
+        cmp #STATE_GAME_OVER
+        bne update_live
+        rts
+update_live
+        jsr toggle_menu
+        lda menu_block
+        beq update_menu_ready
+        rts
+update_menu_ready
         jsr bobber_controls
         lda popup_block
         beq update_unpaused
@@ -348,9 +392,18 @@ state_wait
         jmp waiting
 
 ; Start menu over the live night scene. Up/down picks a row; left/right or
-; fire changes a setting; fire on START GAME begins the night.
+; fire changes a setting or activates the highlighted menu entry.
 STATE_MENU = 7
 menu
+        lda popup_edge
+        and #2
+        ora press_edge
+        sta menu_activate
+        ora dir_edge
+        beq menu_no_dirty
+        lda #1
+        sta menu_dirty
+menu_no_dirty
         lda dir_edge
         and #1
         beq menu_not_up
@@ -362,12 +415,16 @@ menu_not_up
         and #2
         beq menu_not_down
         lda menu_row
-        cmp #1
+        cmp #4
         bcs menu_not_down
         inc menu_row
 menu_not_down
         ldx menu_row
-        beq menu_start
+        bne menu_setting
+        jmp menu_start
+menu_setting
+        cpx #2
+        bcs menu_extra
         lda dir_edge
         and #4
         beq menu_not_left
@@ -377,7 +434,7 @@ menu_not_down
 menu_not_left
         lda dir_edge
         and #8
-        ora press_edge
+        ora menu_activate
         beq menu_apply
         lda cloud_level
         clc
@@ -392,7 +449,7 @@ menu_store
         sta cloud_level
 menu_apply
         lda dir_edge
-        ora press_edge
+        ora menu_activate
         beq menu_clouds
         sta menu_dirty
 menu_clouds
@@ -400,12 +457,74 @@ menu_clouds
         lda cloud_counts,x
         sta cloud_count
         rts
+menu_extra
+        cpx #4
+        beq menu_sound
+        cpx #3
+        bne menu_bobber_activate
+        lda dir_edge
+        and #4
+        beq difficulty_not_left
+        lda difficulty
+        beq difficulty_not_left
+        dec difficulty
+difficulty_not_left
+        lda dir_edge
+        and #8
+        ora menu_activate
+        beq difficulty_applied
+        lda difficulty
+        clc
+        adc #1
+        cmp #3
+        bcc difficulty_store
+        lda dir_edge
+        and #8
+        bne difficulty_applied
+        lda #0
+difficulty_store
+        sta difficulty
+difficulty_applied
+        jmp menu_apply
+menu_sound
+        lda dir_edge
+        and #12
+        ora menu_activate
+        beq menu_sound_done
+        jsr sound_toggle
+menu_sound_done
+        jmp menu_apply
+menu_bobber_activate
+        lda menu_activate
+        beq menu_extra_done
+        jmp menu_bobbers
+menu_extra_done
+        rts
+menu_bobbers
+        lda bobber_selected
+        sta popup_selected
+        lda #1
+        sta popup_active
+        rts
 menu_start
-        lda press_edge
+        lda menu_activate
         beq menu_apply
+        lda menu_resume
+        cmp #STATE_GAME_OVER
+        beq play_new_night
+        cmp #4
+        beq play_new_night
+        lda worms_spare
+        ora bait_present
+        beq play_new_night
+        lda menu_resume
+        sta state
+        jmp menu_apply
+play_new_night
+        jsr reset_game
         lda #0
         sta state
-        beq menu_apply
+        jmp menu_apply
 idle
         lda bait_present
         beq update_done
@@ -539,11 +658,15 @@ empty_cast
         lda score
         cmp #5
         bcs won_game
-        jmp auto_rebait
-won_game
-        lda #4
-        sta state
+        jsr auto_rebait
+        lda bait_present
+        ora worms_spare
+        bne landed_ready
+        jmp game_over_enter
+landed_ready
         rts
+won_game
+        jmp game_over_enter
 
 ; A = rod frame. Sets the rod pixel list and its tip.
 set_rod
@@ -616,36 +739,18 @@ render
         ora #$80
         sta draw_bank
         jsr draw_windows
-; Score and casts HUD in reserved strips.
-        lda #250
-        sta color
-        lda #153
-        sta px
-        lda #5
-        sta py
-        lda score
-        jsr digit
-        lda #167
-        sta px
-        lda #5
-        jsr digit
-        lda #251
-        sta color
-        lda #218
-        sta px
-        lda worms_spare
-        clc
-        adc bait_present
-reduce_casts
-        cmp #10
-        bcc cast_digit
-        sec
-        sbc #10
-        jmp reduce_casts
-cast_digit
-        jsr digit
         jsr draw_gauge
         jsr draw_starfield
+        lda state
+        cmp #STATE_GAME_OVER
+        beq render_panel
+        cmp #STATE_MENU
+        bne render_fishing
+render_panel
+        jsr draw_meteor
+        jsr draw_clouds
+        jmp draw_menu
+render_fishing
 ; Rod frame: wind-up while charging, swing while casting, rest otherwise.
         lda state
         cmp #2
@@ -713,86 +818,9 @@ near_float
         jsr draw_float
         jsr draw_bait
 win_display
-        lda state
-        cmp #STATE_MENU
-        bne game_status
-        jmp draw_menu
-game_status
-        lda state
-        cmp #5
-        bne status_not_waiting
-        ldx #9
-        lda bait_present
-        beq status_ready
-        ldx bite_stage
-        lda bite_status,x
-        tax
-        jmp status_ready
-status_not_waiting
-        lda state
-        beq home_status
-        cmp #3
-        beq return_status
-        ldx state
-        jmp status_ready
-home_status
-return_status
-        lda caught
-        cmp #$ff
-        beq status_bait
-        ldx #3
-        jmp status_ready
-status_bait
-        lda bait_present
-        beq status_empty
-        ldx worm_type
-        inx
-        txa
-        clc
-        adc #12
-        tax
-        jmp status_ready
-status_empty
-        ldx #15
-        lda worms_spare
-        bne status_ready
-        ldx #16
-        jmp status_ready
-status_ready
-        lda status_lo,x
-        sta points
-        lda status_hi,x
-        sta points+1
-        lda #250
-        sta color
-        jsr draw_points
-        lda state
-        cmp #4
-        bne render_done
-        mwa #win_banner points
-        lda #252
-        sta color
-        jsr draw_points
-; Five bright stars at screen centre celebrate completion.
-        lda #128
-        sta px
-        lda #24
-        sta py
-        lda #252
-        sta color
-        ldx #5
-win_stars
-        stx win_count
-        jsr star
-        clc
-        lda px
-        adc #16
-        sta px
-        ldx win_count
-        dex
-        bne win_stars
 render_done
         rts
+
 draw_points
 point_loop
         ldy #0
@@ -828,7 +856,14 @@ draw_menu
         sta draw_bank
         lda #6
         sta blit_bank
+        lda state
+        cmp #STATE_GAME_OVER
+        bne compose_pause_menu
+        jsr compose_results
+        jmp panel_composed
+compose_pause_menu
         jsr compose_menu
+panel_composed
         pla
         sta draw_bank
 menu_copy
@@ -843,12 +878,7 @@ compose_menu
         jsr run_blit
         mwa #rail_bottom points
         jsr run_blit
-        ldx #5
-        lda #250
-        jsr draw_text
-        ldx #4
-        lda #251
-        jsr draw_text
+        jsr draw_menu_inventory
         lda #0
         jsr row_color
         ldx #0
@@ -862,9 +892,31 @@ compose_menu
         tax
         pla
         jsr draw_text
+        lda #2
+        jsr row_color
+        ldx #4
+        jsr draw_text
+        lda #3
+        jsr row_color
+        pha
+        lda difficulty
+        clc
+        adc #5
+        tax
+        pla
+        jsr draw_text
+        lda #4
+        jsr row_color
+        pha
+        lda sound_active
+        clc
+        adc #8
+        tax
+        pla
+        jsr draw_text
         lda menu_row
         clc
-        adc #6
+        adc #10
         tax
         lda #250
 draw_text
@@ -909,7 +961,7 @@ rail_top dta 0,0,0,a(0),0,<((PANEL_Y-1)*320+PANEL_X),>((PANEL_Y-1)*320+PANEL_X),
 menu_blit dta <((PANEL_Y-1)*320+PANEL_X),>((PANEL_Y-1)*320+PANEL_X),6,a(320),1,<((PANEL_Y-1)*320+PANEL_X),>((PANEL_Y-1)*320+PANEL_X),0,a(320),1,a(PANEL_W-1),PANEL_H+1,$ff,0,0,0,0,0
 rail_bottom dta 0,0,0,a(0),0,<((PANEL_Y+PANEL_H)*320+PANEL_X),>((PANEL_Y+PANEL_H)*320+PANEL_X),0,a(320),1,a(PANEL_W-1),0,0,251,0,0,0,0
 
-; Spring gauge right of POWER: two rails, coils every fourth column.
+; Unlabelled spring gauge: two rails, coils every fourth column.
 GAUGE_X = 279
 draw_gauge
         lda state
@@ -1485,6 +1537,7 @@ xdl_data
 blit_data
         dta 0,0,0,a(320),1,0,0,2,a(320),1,a(319),239,$ff,0,0,0,0,0
 frame dta 0
+wait_frame dta 0
 buffer dta 2
 draw_bank dta $a0
 state dta 0
@@ -1657,6 +1710,7 @@ basic_off
         lda #0
         sta $022f
         rts
+        icl 'menu-ui.asm'
         icl 'fishing.asm'
         icl 'bobber-menu.asm'
         icl 'sky.asm'
