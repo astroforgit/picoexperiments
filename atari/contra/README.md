@@ -102,6 +102,11 @@ Use a two-button stick for simultaneous movement, aiming and jumping. The Atari
 keyboard only reports one ordinary key at a time; SHIFT is independent.
 The original Konami-code input handling is retained.
 
+The title screen shows "ATARI VBXE VERSION : ASTROFOR" under "2 PLAYERS" in
+place of the four copyright lines. `tools/build.py` (`title_credit`) rewrites
+the title nametable in the extracted `graphic_data_02` and draws a colon into
+the copyright sign's tile in `graphic_data_01`; the font has no colon.
+
 ## Implementation
 
 * The annotated upstream disassembly reproduces all 131,072 PRG bytes of the
