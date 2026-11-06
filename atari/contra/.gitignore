@@ -1,0 +1,10 @@
+/work/
+/gen/
+/contra.xex
+/contra.sha256
+__pycache__/
+# The supplied game files and the data extracted from them stay local: the
+# build reads the ROM and writes these assets itself (upstream/assets.txt).
+/Contra/*.nes
+/pc_cntra.zip
+/upstream/src/assets/**/*.bin
