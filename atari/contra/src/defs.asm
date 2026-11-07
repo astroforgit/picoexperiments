@@ -23,6 +23,7 @@ IRQEN   = $D20E
 IRQST   = $D20E
 SKCTL   = $D20F
 SKSTAT  = $D20F
+RANDOM  = $D20A
 PORTA   = $D300
 PORTB   = $D301
 DMACTL  = $D400
@@ -56,6 +57,7 @@ PPU_CONTROL_STATE = $FF
 PPU_MASK_STATE    = $09F0
 ACTIVE_NES_BANK   = $09F1
 BANK_SWITCH_CTRL_REGS = $09F4
+BUNNY_MODE = $09FC     ; title's BAX BUNNY entry (written by the NES code)
         icl '../gen/nes-labels.asm'
 ; NES_NMI = generated
 ; NES_RESET = generated

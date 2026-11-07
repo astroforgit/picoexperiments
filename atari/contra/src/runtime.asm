@@ -127,6 +127,11 @@ cu_end  .ds 2           ; list ended after its tile slots by catch_up
 ; ---- more variables ($0B80-$0BFF)
         org $0B80
 ri_b2   .ds 1
+ri_j    .ds 1
+mi_arm  .ds 1
+bu_t    .ds 1
+bu_wait .ds 1
+bu_dir  .ds 1
 pot_val .ds 4
 pot_rest .ds 4
 src_armed .ds 1
@@ -272,6 +277,9 @@ st_ntsc stx pitch_k
         sta kb_head
         sta kb_tail
         sta kdir
+        sta mi_arm
+        sta bu_t
+        sta bu_wait
         sta kpulse
         sta kpulse_t
         lda #$40                ; keyboard IRQ

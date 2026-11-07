@@ -56,7 +56,12 @@ status_a
 bank_a  php
         pha
         sta ACTIVE_NES_BANK
-        jsr prg_bank
+        and #7                  ; prg_bank, inlined: the game switches often
+        asl
+        asl
+        ora #$80
+        sta mems_sh
+ba_mems sta VBX+VB_MEMS
         pla
         plp
         rts

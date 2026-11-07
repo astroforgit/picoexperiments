@@ -90,6 +90,7 @@ class Atari:
         self.in_trig0 = 1
         self.in_trig1 = 1
         self.in_pot = [228, 228]
+        self.potgo_cycle = -10**9
         self.random = 0x5A
         self.xdl_addr_log = []
         self.nmi_count = 0
@@ -140,8 +141,15 @@ class Atari:
             return self.irqst
         if addr == 0xD209:
             return self.kbcode
-        if addr in (0xD200, 0xD201):
-            return self.in_pot[addr & 1]
+        if 0xD200 <= addr <= 0xD208:
+            # POKEY counts each POT line once per scan line after POTGO and
+            # latches the count when the line's capacitor charges.
+            lines = int((self.cpu.processorCycles - getattr(self, "potgo_cycle", -10**9))
+                        / (self.frame_cycles / (312 if self.pal else 262)))
+            targets = self.in_pot + [228] * 6
+            if addr == 0xD208:              # ALLPOT: 1 = still scanning
+                return sum(1 << n for n in range(8) if lines < targets[n])
+            return min(targets[addr & 7], lines) & 0xFF
         if addr == 0xD010:
             return self.in_trig0
         if addr == 0xD011:
@@ -153,6 +161,8 @@ class Atari:
         return 0xFF
 
     def io_write(self, addr, value):
+        if addr == 0xD20B:
+            self.potgo_cycle = self.cpu.processorCycles
         page = addr >> 8
         if page == self.vbxe_page:
             reg = addr & 0xFF

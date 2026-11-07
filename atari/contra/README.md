@@ -11,8 +11,9 @@ The output is **`contra.xex`**. PAL and NTSC scheduling are supported. The game 
 the original 60 ticks per second; pictures are paced (see *Frame pacing*).
 A newly loaded stage waits for its background to be ready before play starts.
 
-Music is disabled by default to free CPU time for rendering. Shooting, explosions,
-death and pause sound effects remain enabled. The renderer now samples sprites
+There is no music: tunes, the pause jingle and the boss fanfare are dropped to free
+CPU time for rendering. Shooting, explosions
+and death sound effects remain enabled. The renderer now samples sprites
 and scroll after background-tile work, retries if a game update interrupts the
 snapshot, and uses a faster OAM copy and tile-expansion path. Completed frames
 can now be presented during a vertical blank that interrupts a long game update,
@@ -84,8 +85,8 @@ VBXE profile. Alternatively load `contra.xex` directly in your configured emulat
 | Move / aim | Joystick 1, or W A S D |
 | Shoot (NES B) | Fire, O / Z / C / N |
 | Jump (NES A) | Second/third joystick button, SHIFT, P / X / V / SPACE |
-| Start / pause | Console START or RETURN |
-| Select player count | Console SELECT on the original title menu |
+| Start / pause | Console START or RETURN; on the title, demo, CONTINUE/END and game over screens also joystick fire |
+| Select player count / CONTINUE or END | Console SELECT, or joystick up / down on those screens |
 | Alternate jump in one-player mode | Joystick 2 fire |
 | Player 2 | Joystick 2; fire shoots, second/third button jumps |
 
@@ -97,12 +98,28 @@ fire is up, so an emulator setup that maps one key to both joysticks (as
 Altirra's "Arrow Keys -> Joystick (port 1)" and "(port 2)" maps together do)
 shoots without jumping on every press.
 
+On the menu screens a fire button or direction held from gameplay (fire
+while dying) counts only after it has been released, so the CONTINUE/END
+choice is never made by accident. Keyboard keys keep their NES meaning there,
+so the Konami code still works with W/S/A/D, O and P.
+
 Release joystick buttons while loading so the extra-button inputs can calibrate.
+The POT lines of the extra buttons are read and rescanned only at the vertical
+blank: PAL's extra 60 Hz game ticks run in a mid-frame DLI, and restarting the
+scan there made the next read see half-counted lines as a held jump button.
+`tools/test_input.py` checks idle gameplay for phantom buttons and starts a
+game with the joystick alone; the emulator models POKEY's POT counting.
 Use a two-button stick for simultaneous movement, aiming and jumping. The Atari
 keyboard only reports one ordinary key at a time; SHIFT is independent.
 The original Konami-code input handling is retained.
 
-The title screen shows "ATARI VBXE VERSION : ASTROFOR" under "2 PLAYERS" in
+The title menu has a third entry, BAX BUNNY: a one-player game in which the
+player also jumps on their own every 0.5-1.5 seconds, drifting left or right
+unless steered. SELECT (or joystick up/down) cycles 1 PLAYER, 2 PLAYERS and
+BAX BUNNY. `tools/build.py` (`BUNNY_PATCHES`) adds the entry to the original
+menu code; `bunny_input` in `src/render.asm` adds the jumps.
+
+The title screen shows "ATARI VBXE VERSION : ASTROFOR" below the menu in
 place of the four copyright lines. `tools/build.py` (`title_credit`) rewrites
 the title nametable in the extracted `graphic_data_02` and draws a colon into
 the copyright sign's tile in `graphic_data_01`; the font has no colon.
@@ -125,7 +142,7 @@ the copyright sign's tile in `graphic_data_01`; the font has no colon.
   PAL display-list interrupts provide six nominal game ticks per five video frames;
   NTSC uses vertical blank. Long loads do not accumulate an unlimited tick backlog.
 * The original sound driver writes an APU shadow. Pulse, triangle and noise music
-  and effects are approximated on four POKEY channels. Music requests are filtered before starting the sound driver.
+  and effects are approximated on four POKEY channels. Music requests (tunes $26-$51, pause jingle $54, boss fanfare $57-$59) are filtered before starting the sound driver.
 
 ## Optimization update
 
@@ -217,7 +234,7 @@ Model timing excludes exact blitter/display
 contention and analogue POKEY behavior, as described in the testing guide.
 
 The music/scrolling regressions are exercised by `tools/test_no_music.py`:
-all 44 music codes are rejected, shooting still creates an effect, scroll/OAM
+all 48 music codes (the tunes, the pause jingle and the boss-destroyed fanfare) are rejected, shooting still creates an effect, scroll/OAM
 are sampled after tile work, and a simulated mid-copy game update requires a
 complete snapshot retry. Nested-VBI tests also verify that only completed blits
 are presented and that the interrupted game’s bank mappings and scratch memory

@@ -4,7 +4,8 @@ from test_runtime import initialized,sample_now,L,R
 from build import labels
 N=labels(R/'gen/nes.lab')
 a=initialized()
-for code in range(0x26,0x52):
+MUSIC=[*range(0x26,0x52),0x54,0x57,0x58,0x59]
+for code in MUSIC:
  a.cpu.a=code;a.call(N['PLAY_SOUND'])
  assert not any(a.mem.ram[N['SOUND_CODE']:N['SOUND_CODE']+6]),hex(code)
 a.cpu.a=0x0a;a.call(N['PLAY_SOUND'])
@@ -23,7 +24,7 @@ assert seen and a.mem.ram[L['C_X']]==99 and a.mem.ram[0x800]==17,(seen,a.mem.ram
 # Force one update halfway through OAM copying. The snapshot must retry.
 a=initialized();step=a.cpu.step;changed=[]
 def interrupt_copy():
- if a.cpu.pc==L['CO_OAM'] and a.cpu.x==32 and not changed:
+ if a.cpu.pc==L['CO_OAM'] and a.cpu.x==16 and not changed:
   a.mem.ram[0x200:0x300]=bytes([17])*256
   a.mem.ram[0x1a]=(a.mem.ram[0x1a]+1)&255
   a.mem.ram[L['LAT_X']]=123;changed.append(1)
@@ -58,5 +59,5 @@ for dli,busy,due,expected in [(False,False,True,True),(True,False,True,False),(F
  assert a.mem.ram[L['IN_VBI']]==1
  assert bytes(a.mem.ram[L['ZP']:L['ZP']+8])==zp
  assert (a.mems,a.memb)==windows
-report={'suppressed_music_codes':44,'shooting_effect_retained':True,'scroll_and_oam_sampled_after_tile_work':True,'interrupted_snapshot_retries':True,'idle_audio_fast_path_preserves_triggers':True,'nested_vbi_flips_finished_frames_only':True}
+report={'suppressed_music_codes':len(MUSIC),'shooting_effect_retained':True,'scroll_and_oam_sampled_after_tile_work':True,'interrupted_snapshot_retries':True,'idle_audio_fast_path_preserves_triggers':True,'nested_vbi_flips_finished_frames_only':True}
 (R/'gen/no-music-test.json').write_text(json.dumps(report,indent=2)+'\n');print('PASS',report)

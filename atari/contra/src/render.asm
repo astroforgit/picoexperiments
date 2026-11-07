@@ -440,15 +440,23 @@ snapshot_frame
         ; enabled: masking them for the whole copy loses timing events.
         lda $1A                 ; original FRAME_COUNTER
         sta snapshot_tick
-        ldx #63
+        ldx #31
 co_oam  lda $0200,x
         sta $0800,x
+        lda $0220,x
+        sta $0820,x
         lda $0240,x
         sta $0840,x
+        lda $0260,x
+        sta $0860,x
         lda $0280,x
         sta $0880,x
+        lda $02A0,x
+        sta $08A0,x
         lda $02C0,x
         sta $08C0,x
+        lda $02E0,x
+        sta $08E0,x
         dex
         bpl co_oam
         lda hud_nt
@@ -612,69 +620,62 @@ et_full lda #0
         sta et_bcol
         rts                     ; any_dirty stays set: continue next frame
 notmask dta $FE,$FD,$FB,$F7,$EF,$DF,$BF,$7F
+; per nametable row: low byte of the cell row, page offset, attribute row
+et_row_lo
+        dta $00,$20,$40,$60,$80,$A0,$C0,$E0,$00,$20,$40,$60,$80,$A0,$C0
+        dta $E0,$00,$20,$40,$60,$80,$A0,$C0,$E0,$00,$20,$40,$60,$80,$A0
+et_row_hi
+        dta $00,$00,$00,$00,$00,$00,$00,$00,$01,$01,$01,$01,$01,$01,$01
+        dta $01,$02,$02,$02,$02,$02,$02,$02,$02,$03,$03,$03,$03,$03,$03
+et_row_at
+        dta $C0,$C0,$C0,$C0,$C8,$C8,$C8,$C8,$D0,$D0,$D0,$D0,$D8,$D8,$D8
+        dta $D8,$E0,$E0,$E0,$E0,$E8,$E8,$E8,$E8,$F0,$F0,$F0,$F0,$F8,$F8
 
 ; emit a tile BCB for physical nametable et_p, row et_r, column et_c.
 ; C=1 if the tile could not be expanded this frame.
 emit_tile
-        ; shadow row address
-        ldx et_p
-        lda phys_page,x
-        sta ZP+1
-        lda et_r
-        lsr
-        lsr
-        lsr
+        ; shadow cell and attribute addresses from per-row tables
+        ldx et_r
+        ldy et_p
+        lda et_row_hi,x
         clc
-        adc ZP+1
+        adc phys_page,y
         sta ZP+1                ; page = base + row/8
-        lda et_r
-        asl
-        asl
-        asl
-        asl
-        asl
+        lda phys_page,y
+        adc #3                  ; C = 0: page + row/8 < 256
+        sta ZP+3
+        lda et_row_lo,x
         ora et_c
         sta ZP
+        lda et_c
+        lsr
+        lsr
+        ora et_row_at,x
+        sta ZP+2                ; $3C0 + (row/4)*8 + col/4
         ldy #0
         lda (ZP),y
         sta et_tile
-        ; attribute byte: base + $3C0 + (row/4)*8 + col/4
-        ldx et_p
-        lda phys_page,x
-        clc
-        adc #3
-        sta ZP+3
-        lda et_r
-        lsr
-        lsr
-        asl
-        asl
-        asl
-        sta ZP+2
-        lda et_c
-        lsr
-        lsr
-        ora ZP+2
-        ora #$C0
-        sta ZP+2
         lda (ZP+2),y
+        ; palette bits of this 16x16 quadrant, as (pal << 2) | 3
         sta et_attr
         lda et_r
         and #2
-        asl
-        sta et_sh
-        lda et_c
-        and #2
-        ora et_sh
-        tax                     ; shift 0,2,4,6
+        beq et_qt
         lda et_attr
-et_sh1  dex
-        bmi et_sh2
         lsr
-        jmp et_sh1
-et_sh2  and #3
+        lsr
+        lsr
+        lsr
+        sta et_attr
+et_qt   lda et_c
+        and #2
+        bne et_qr
+        lda et_attr
         asl
         asl
+        jmp et_qp
+et_qr   lda et_attr
+et_qp   and #$0C
         ora #3
         sta et_and
         ; make sure the tile is expanded
@@ -1047,8 +1048,7 @@ es_off  jsr es_hide1
 es_go   ldx #252                ; OAM offset of entry 63; Y = cache index
 es_loop lda $0800,x
         cmp #$EF
-        bcs es_hide             ; off screen
-        jmp es_vis
+        bcc es_vis              ; on screen
 es_hide lda SC_A,y
         and #$20
         bne es_hn
@@ -1446,7 +1446,14 @@ ex_done
 ; is a change from the level the line had once the first scans finished.
 ; ------------------------------------------------------------------
 read_input
-        ldx #3
+        ; POT lines finish counting 228 scan lines after POTGO. Read and
+        ; restart the scan only at the vertical blank: an extra game tick
+        ; from a mid-frame DLI would otherwise see half-counted lines as a
+        ; held second button (the player kept jumping on PAL).
+        lda nmi_kind
+        beq ri_vbi
+        rts                     ; PAL's extra mid-frame tick: keep the inputs
+ri_vbi  ldx #3
 ri_p    lda POT0,x
         sta pot_val,x
         dex
@@ -1474,7 +1481,9 @@ ri_p    lda POT0,x
         lda ri_b
         ora #$40
         sta ri_b
-ri_1    ; player 1 A
+ri_1    lda ri_b
+        sta ri_j                ; joystick 1 alone: for the menus
+        ; player 1 A
         lda SKSTAT
         and #8                  ; SHIFT
         cmp #1
@@ -1556,7 +1565,8 @@ ri_c3   lsr
         lda ri_b
         ora #$20
         sta ri_b
-ri_c4   nop
+ri_c4   jsr menu_input
+        jsr bunny_input
         lda ri_b
         sta nes_buttons
         lda ri_b2
@@ -1649,6 +1659,99 @@ src_chk bcc sc_down
 sc_down lda bitmask,x
         and src_armed
         cmp #1                  ; C = armed
+        rts
+
+; The title, demo, CONTINUE/END and game over screens only react to Start
+; and Select. There joystick 1's fire is Start and pushing it up or down is
+; Select, so a game starts with the joystick alone. A button held into a
+; menu (fire while dying) counts only after its release. Keyboard keys keep
+; their NES meaning, so the Konami code still works with W/S/A/D, O and P.
+menu_input
+        lda $18                 ; GAME_ROUTINE_INDEX
+        cmp #3
+        bcc mi_menu             ; intro, player select, demo
+        cmp #5
+        bne mi_off
+        lda $2C                 ; LEVEL_ROUTINE_INDEX
+        cmp #6
+        bcc mi_off
+        cmp #8
+        bcc mi_menu             ; 6 = CONTINUE/END, 7 = game over
+mi_off  lda #0
+        sta mi_arm
+        rts
+mi_menu lda ri_j
+        eor #$FF
+        and #$4C
+        ora mi_arm
+        sta mi_arm              ; released fire / up / down: armed
+        and ri_j
+        tax
+        and #$40
+        beq mi_sel
+        lda ri_b
+        ora #$10                ; fire = Start
+        sta ri_b
+mi_sel  txa
+        and #$0C
+        beq mi_done
+        lda ri_b
+        ora #$20                ; up / down = Select
+        sta ri_b
+mi_done rts
+
+; BAX BUNNY: a one-player game whose player also jumps on their own every
+; 0.5-1.5 s. A jump presses A for a few ticks; unless the player steers, it
+; drifts left, right or straight up. The player's own input always counts.
+BUNNY_TICKS = 32                   ; ticks of one automatic jump
+BUNNY_PRESS = 6                   ; of which A is held
+bunny_input
+        lda BUNNY_MODE
+        beq bu_off
+        lda $18                 ; GAME_ROUTINE_INDEX: playing a level
+        cmp #5
+        bne bu_off
+        lda $2C                 ; LEVEL_ROUTINE_INDEX: level running
+        cmp #4
+        bne bu_off
+        lda $25                 ; PAUSE_STATE
+        bne bu_done
+        lda bu_t
+        bne bu_jump
+        lda bu_wait
+        beq bu_new
+        dec bu_wait
+        rts
+bu_new  lda RANDOM
+        and #63
+        adc #30
+        sta bu_wait             ; the pause after this jump
+        lda RANDOM
+        and #3                  ; 0/3 = straight up, 1 = right, 2 = left
+        cmp #3
+        bne bu_d
+        lda #0
+bu_d    sta bu_dir
+        lda #BUNNY_TICKS
+        sta bu_t
+bu_jump dec bu_t
+        lda bu_t
+        cmp #BUNNY_TICKS-BUNNY_PRESS
+        bcc bu_drift
+        lda ri_b
+        ora #$80                ; A = jump
+        sta ri_b
+bu_drift lda ri_b
+        and #$03
+        bne bu_done             ; the player steers
+        lda ri_b
+        ora bu_dir
+        sta ri_b
+bu_done rts
+bu_off  lda #0
+        sta bu_t
+        lda #60
+        sta bu_wait             ; a second of peace at the start
         rts
 
 ; C = 0 when POT line X differs from its resting level
