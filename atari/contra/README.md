@@ -86,7 +86,7 @@ VBXE profile. Alternatively load `contra.xex` directly in your configured emulat
 | Shoot (NES B) | Fire, O / Z / C / N |
 | Jump (NES A) | Second/third joystick button, SHIFT, P / X / V / SPACE |
 | Start / pause | Console START or RETURN; on the title, demo, CONTINUE/END and game over screens also joystick fire |
-| Select player count / CONTINUE or END | Console SELECT, or joystick up / down on those screens |
+| Select player count / CONTINUE or END | Console SELECT; on the title menu joystick up / down move the cursor up / down, on CONTINUE/END they toggle it |
 | Alternate jump in one-player mode | Joystick 2 fire |
 | Player 2 | Joystick 2; fire shoots, second/third button jumps |
 
@@ -115,8 +115,8 @@ The original Konami-code input handling is retained.
 
 The title menu has a third entry, BAX BUNNY: a one-player game in which the
 player also jumps on their own every 0.5-1.5 seconds, drifting left or right
-unless steered. SELECT (or joystick up/down) cycles 1 PLAYER, 2 PLAYERS and
-BAX BUNNY. `tools/build.py` (`BUNNY_PATCHES`) adds the entry to the original
+unless steered. SELECT cycles 1 PLAYER, 2 PLAYERS and BAX BUNNY; joystick
+down and up move the cursor down and up. `tools/build.py` (`BUNNY_PATCHES`) adds the entry to the original
 menu code; `bunny_input` in `src/render.asm` adds the jumps.
 
 The title screen shows "ATARI VBXE VERSION : ASTROFOR" below the menu in

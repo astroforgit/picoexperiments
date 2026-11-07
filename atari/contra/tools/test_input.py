@@ -17,12 +17,10 @@ for pal in (True,False):
  press(a,200,trig=1)                      # fire held while loading must not count
  a.run_frames(200)
  assert a.mem.ram[GAME_ROUTINE]==1,(name,'title not reached',a.mem.ram[GAME_ROUTINE])
- press(a,stick=0xd);a.run_frames(10)      # joystick down = Select
- assert a.mem.ram[PLAYER_MODE]==1,(name,'down did not select 2 players')
- press(a,stick=0xe);a.run_frames(10)      # joystick up = Select
- assert (a.mem.ram[PLAYER_MODE],a.mem.ram[0x09FC])==(0,1),(name,'up did not select BAX BUNNY')
- press(a,stick=0xe);a.run_frames(10)
- assert (a.mem.ram[PLAYER_MODE],a.mem.ram[0x09FC])==(0,0),(name,'menu did not wrap to 1 PLAYER')
+ menu=lambda:(a.mem.ram[PLAYER_MODE],a.mem.ram[0x09FC])
+ for stick,want in [(0xd,(1,0)),(0xd,(0,1)),(0xd,(0,1)),(0xe,(1,0)),(0xe,(0,0)),(0xe,(0,0))]:
+  press(a,stick=stick);a.run_frames(10)   # down moves the cursor down, up moves it up
+  assert menu()==want,(name,hex(stick),menu(),want)
  press(a,trig=1);a.run_frames(600)        # fire = Start
  assert a.mem.ram[GAME_ROUTINE]==5,(name,'fire did not start the game')
  held=0

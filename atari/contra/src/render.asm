@@ -1695,8 +1695,43 @@ mi_menu lda ri_j
 mi_sel  txa
         and #$0C
         beq mi_done
-        lda ri_b
-        ora #$20                ; up / down = Select
+        pha
+        eor #$FF
+        and mi_arm
+        sta mi_arm              ; one step per push: release to step again
+        pla
+        ; On the title's player select menu up and down move the cursor (it
+        ; stops at the ends). Elsewhere (intro scroll, demo, CONTINUE/END,
+        ; game over) they act as Select.
+        ldy $18                 ; GAME_ROUTINE_INDEX
+        cpy #1
+        bne mi_selb
+        ldy $FD                 ; HORIZONTAL_SCROLL: 0 once the menu shows
+        bne mi_selb
+        and #4
+        bne mi_down
+        lda BUNNY_MODE          ; up: BAX BUNNY -> 2 PLAYERS -> 1 PLAYER
+        beq mi_1p
+        lda #0
+        sta BUNNY_MODE
+        lda #1
+        sta $22                 ; PLAYER_MODE
+        rts
+mi_1p   sta $22
+        rts
+mi_down lda BUNNY_MODE          ; down: 1 PLAYER -> 2 PLAYERS -> BAX BUNNY
+        bne mi_done
+        lda $22
+        bne mi_bun
+        inc $22
+        rts
+mi_bun  lda #0
+        sta $22
+        lda #1
+        sta BUNNY_MODE
+        rts
+mi_selb lda ri_b
+        ora #$20                ; Select
         sta ri_b
 mi_done rts
 
