@@ -639,6 +639,7 @@ bake_tile
         beq bk_black
         lda tmp+1
         beq bk_black
+        jsr scenery_underlay
         ; tile from the lit (fog 0) or dark (fog 1) sheet
         lda tmp+1
         and #15
@@ -664,7 +665,8 @@ bake_tile
         sta bxor
         lda #10
         sta tmp
-        jmp blit_emit
+        jsr blit_emit
+        jmp scenery_decor
 bk_black
         lda #0
         sta band

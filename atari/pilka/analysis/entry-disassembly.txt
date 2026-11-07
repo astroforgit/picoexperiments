@@ -1,0 +1,96 @@
+975B  78        SEI
+975C  20 74 97  JSR $9774
+975F  20 00 92  JSR $9200
+9762  20 0e 08  JSR $080e
+9765  20 6e 08  JSR $086e
+9768  20 98 83  JSR $8398
+976B  20 eb 8d  JSR $8deb
+976E  20 85 9f  JSR $9f85
+9771  4c 0f 97  JMP $970f
+9774  a9 0c     LDA #$0c
+9776  8d 18 d0  STA $d018
+9779  8d d9 11  STA $11d9
+977C  ad 00 dd  LDA $dd00
+977F  29 fc     AND #$fc
+9781  8d 00 dd  STA $dd00
+9784  ad 16 d0  LDA $d016
+9787  29 e7     AND #$e7
+9789  09 10     ORA #$10
+978B  8d 16 d0  STA $d016
+978E  ad 11 d0  LDA $d011
+9791  29 f7     AND #$f7
+9793  8d 11 d0  STA $d011
+9796  a9 00     LDA #$00
+9798  8d 20 d0  STA $d020
+979B  8d 10 d0  STA $d010
+979E  8d 23 d0  STA $d023
+97A1  8d 26 d0  STA $d026
+97A4  a9 02     LDA #$02
+97A6  8d 22 d0  STA $d022
+97A9  a9 0a     LDA #$0a
+97AB  8d 25 d0  STA $d025
+97AE  a9 ff     LDA #$ff
+97B0  8d 15 d0  STA $d015
+97B3  8d 1c d0  STA $d01c
+97B6  60        RTS
+97B7  ad ff 91  LDA $91ff
+97BA  f0 fb     BEQ $97b7
+97BC  ad 11 d0  LDA $d011
+97BF  30 15     BMI $97d6
+97C1  ad 12 d0  LDA $d012
+97C4  c9 f8     CMP #$f8
+97C6  b0 0e     BCS $97d6
+97C8  c9 0a     CMP #$0a
+97CA  90 0a     BCC $97d6
+97CC  a9 00     LDA #$00
+97CE  8d ff 91  STA $91ff
+97D1  ad ff 91  LDA $91ff
+97D4  f0 fb     BEQ $97d1
+97D6  a9 00     LDA #$00
+97D8  8d ff 91  STA $91ff
+97DB  60        RTS
+97DC  00        BRK
+97DD  00        BRK
+97DE  00        BRK
+97DF  00        BRK
+97E0  00        BRK
+97E1  00        BRK
+97E2  00        BRK
+97E3  00        BRK
+97E4  00        BRK
+97E5  00        BRK
+97E6  00        BRK
+97E7  00        BRK
+97E8  00        BRK
+97E9  00        BRK
+97EA  00        BRK
+97EB  f0 00     BEQ $97ed
+97ED  ad dc 97  LDA $97dc
+97F0  0d df 97  ORA $97df
+97F3  f0 03     BEQ $97f8
+97F5  20 b1 99  JSR $99b1
+97F8  a5 05     LDA $05
+97FA  4a        LSR A
+97FB  90 03     BCC $9800
+97FD  4c 5e 98  JMP $985e
+9800  ad de 97  LDA $97de
+9803  0d e8 97  ORA $97e8
+9806  d0 03     BNE $980b
+9808  4c 0a 8e  JMP $8e0a
+980B  ae de 97  LDX $97de
+980E  f0 20     BEQ $9830
+9810  a9 00     LDA #$00
+9812  8d de 97  STA $97de
+9815  a9 14     LDA #$14
+9817  8d ea 97  STA $97ea
+981A  ac e8 97  LDY $97e8
+981D  8d 12 d4  STA $d412
+9820  f0 03     BEQ $9825
+9822  20 44 9a  JSR $9a44
+9825  bd 27 9b  LDA $9b27,X
+9828  8d e8 97  STA $97e8
+982B  a9 01     LDA #$01
+982D  8d e9 97  STA $97e9
+9830  ae e8 97  LDX $97e8
+9833  f0 26     BEQ $985b
+9835  ce e9 97  DEC $97e9

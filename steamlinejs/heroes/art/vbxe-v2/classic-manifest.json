@@ -1,0 +1,606 @@
+{
+  "commit": "04c3d638",
+  "files": [
+    {
+      "path": "archery-1.png",
+      "sha256": "b0a1f59dd9f8267e3cfe9887866ca6ceb23c99348865d3d9b191ae7aaa7de0b1"
+    },
+    {
+      "path": "archery-2.png",
+      "sha256": "d7590a6bd6d5d96666799f9740314328cdd3e7fb15684d995a20feb275f00345"
+    },
+    {
+      "path": "archery-3.png",
+      "sha256": "01cdc6ac00f3dbfc676aaea1d62ca862e92a44ab2847e6d8e1c6b7ff35c9bff5"
+    },
+    {
+      "path": "barracks-1.png",
+      "sha256": "73b4da79d05fd47aebc75b294ad8841f66312ff1391bc87e1fc0df021be14804"
+    },
+    {
+      "path": "barracks-2.png",
+      "sha256": "3316051bde1f24104fe9d205b52c32ccd5e280c0f1d0535639206cad5e0a7f12"
+    },
+    {
+      "path": "barracks-3.png",
+      "sha256": "92f673bd78d39da6b681440c06f25a8707a847b6e5c589f5395f577b5eaf9ebb"
+    },
+    {
+      "path": "battle-catacombs.png",
+      "sha256": "0f9c951e8912da5122bdaa1afcd5b4f2df9a53e2825c090de27b33ca712fe79b"
+    },
+    {
+      "path": "battle-caves.png",
+      "sha256": "debcdc79165258e9ff398dc306dceb9b2bae8ac9100bf154dbdea29f4170c9c7"
+    },
+    {
+      "path": "battle-forest.png",
+      "sha256": "e893e2dea3b8ea59cd2c2d690b083ef0b09df653b3f9f4870ea60ca700970376"
+    },
+    {
+      "path": "battle-pillar.png",
+      "sha256": "48fc7b7468ae20cec0cdb9c5ed4422dea78566f5183b4d654cc145cd6edf4025"
+    },
+    {
+      "path": "battle-rock.png",
+      "sha256": "6a4a1aaa6156ba682b2b9e103e17ac6ff8a3e66b30551cf241a9f2cfcaabf7fc"
+    },
+    {
+      "path": "battle-ruins.png",
+      "sha256": "db3b5e8d4504c10de7a362e7693aef045944d2a6a3a81ed16e66acb23119230c"
+    },
+    {
+      "path": "battle-tree.png",
+      "sha256": "f58e8b4f5426886ec3fcebac23ee42369101afff6da9c36f1636708777b4ea2e"
+    },
+    {
+      "path": "chapel-1.png",
+      "sha256": "1394480417deab2c0fcddc100b26050f2e80ffa38f5897ec89e4c5044a0a4a74"
+    },
+    {
+      "path": "chapel-2.png",
+      "sha256": "cde82bbad1f83c75d311639175131b5f12063ddeffdd667546edb78c548d004f"
+    },
+    {
+      "path": "chapel-3.png",
+      "sha256": "cd9faae51fb7c8c063e4bc9612341636046680f838b88a0de6842e38279df03e"
+    },
+    {
+      "path": "city-background.png",
+      "sha256": "4465160c4ded451f63c2551562b039044e0a47b21ea96757101410cbc2ac2504"
+    },
+    {
+      "path": "encounters-background.png",
+      "sha256": "0fc58fd69b8498a8a0db0d23236bd5563d3c2626df417e7788f1118a1a6066d7"
+    },
+    {
+      "path": "lodge-1.png",
+      "sha256": "9a3cad4e5412743b2423545f140c89ed8c5b325a5c454da2f6c7184cc9131deb"
+    },
+    {
+      "path": "lodge-2.png",
+      "sha256": "bd672cf9d73f7c8d06ab56570a835ce58d2f04a8b43cbd940020bb638f7914b2"
+    },
+    {
+      "path": "lodge-3.png",
+      "sha256": "050e5c64827ecec9e5a1b1ea379f161492afb39aa84e8549ac8a22f8922de193"
+    },
+    {
+      "path": "medieval/archer-0.png",
+      "sha256": "9462fc7c13148a5036ab5e718f2f7b05c36e522ff87c492b583386c05b2c341e"
+    },
+    {
+      "path": "medieval/archer-1.png",
+      "sha256": "95649c77e3cfeab37ed1c0acee1f6006635de7ac79ef3ac5f28ea69637249624"
+    },
+    {
+      "path": "medieval/archer-2.png",
+      "sha256": "52863dab0ed9c416702600db5725659a10e1fb243b95f3899399a3be4168a781"
+    },
+    {
+      "path": "medieval/archer-3.png",
+      "sha256": "28e4f322da338ef10b25b0ebc4ed7b8f0a2cbba1de32753d6881529c583286fa"
+    },
+    {
+      "path": "medieval/archer-4.png",
+      "sha256": "8333af187783d33b53386c56d7b3a3d356b48b9e6f731398299df74d8e1b8dea"
+    },
+    {
+      "path": "medieval/archer-5.png",
+      "sha256": "da8d6219b9b9b4a62f7219a7e17ad949387da02fad3d5bf1f4c5eab957783879"
+    },
+    {
+      "path": "medieval/bat-0.png",
+      "sha256": "276b41300b92c602215e8b1d7434d0d70a9605af62b18187743f3399316f2f9d"
+    },
+    {
+      "path": "medieval/bat-1.png",
+      "sha256": "2abcea66d54df2ecd2d8efafede0809b46e511e0fce5467088216ff03d90ad7f"
+    },
+    {
+      "path": "medieval/bat-2.png",
+      "sha256": "e26b577a12df1c1b1539126effc1bfe49363506e10dca76cc0e146dae71cfcf8"
+    },
+    {
+      "path": "medieval/bat-3.png",
+      "sha256": "1abe90255c36d55be746d45b9b8031128d15de117e6e624ca58e4d803bf49d33"
+    },
+    {
+      "path": "medieval/bat-4.png",
+      "sha256": "54427b56b57711f3adaff9eaee012fc3c7b533069e600bcc55d96dde7786f591"
+    },
+    {
+      "path": "medieval/bat-5.png",
+      "sha256": "54ae0e9972d467bbd3f6e6328aa319d8437c0bc5b940f0ee7178b41b3b983726"
+    },
+    {
+      "path": "medieval/beast-0.png",
+      "sha256": "deb23e28f3d81b137575ab70a4435702d4b501e8c9e86d0d09662a64691f3875"
+    },
+    {
+      "path": "medieval/beast-1.png",
+      "sha256": "3f357225e633d8b7f020e2d7d6d50c4f91fa29c94113e192a358791016bfdf3b"
+    },
+    {
+      "path": "medieval/beast-2.png",
+      "sha256": "32df00aa03b4fde6a6ace59f1d26f486a7ae735445762978db272ca4c6562f19"
+    },
+    {
+      "path": "medieval/beast-3.png",
+      "sha256": "5e36fb634d9fabde49240bf3960e63661c73f0c944efe2323fed0a34d35197c9"
+    },
+    {
+      "path": "medieval/beast-4.png",
+      "sha256": "2693d5659dd6ae1148edfff64da0d13fd1dd2eeabdda9327c031ae313f0b2660"
+    },
+    {
+      "path": "medieval/beast-5.png",
+      "sha256": "ad328000da747f8494bba78c2242088a066963ba20d7df2afbba23591c19d3b0"
+    },
+    {
+      "path": "medieval/bone-archer-0.png",
+      "sha256": "4710c3353a2452ef86a4d906cdb66a8a588f45e647c2451070dd2ded0698f5bb"
+    },
+    {
+      "path": "medieval/bone-archer-1.png",
+      "sha256": "a63afb50baf91d0fe231d8a74f8ccb5b0cabc24cc3d3e01b3a42129379686f86"
+    },
+    {
+      "path": "medieval/bone-archer-2.png",
+      "sha256": "6dc70811e8ebb04905dda20e10fd61fdc0c73a839242a11d91d46d6e9d6f7f29"
+    },
+    {
+      "path": "medieval/bone-archer-3.png",
+      "sha256": "78340ed94cf46ee609f078de65d6cc98b1e5f9b5387bbfab58815f2b2e8437bc"
+    },
+    {
+      "path": "medieval/bone-archer-4.png",
+      "sha256": "7479d8b640322f2a61fb2d9368db98fb198774879ba3d711d7641d8a6e5df6c7"
+    },
+    {
+      "path": "medieval/bone-archer-5.png",
+      "sha256": "7b41edb6f446f1bfbe55bfb32f6f48f07c115d41abda563bbaecc2137f22cf53"
+    },
+    {
+      "path": "medieval/dark-0.png",
+      "sha256": "fd6d527aad892a27c81606189b4d6e7bdf7d0d645f8aba21bdcc57b3d03ba0dd"
+    },
+    {
+      "path": "medieval/dark-1.png",
+      "sha256": "60c6d537f99b8e65fc779b6fc3509abb7bfe5896979d20b1327449a1352e2abc"
+    },
+    {
+      "path": "medieval/dark-2.png",
+      "sha256": "0d4e58ec527c5cf8304401f46504a8e448aed1f1bc272e8bfb3db60762d73391"
+    },
+    {
+      "path": "medieval/dark-3.png",
+      "sha256": "b1d891af43ea758674f9ef0b4dfb77e4537673c592eeec720b22391b387c808f"
+    },
+    {
+      "path": "medieval/dark-4.png",
+      "sha256": "a52332edd7c125c703e62efc88b4feb4f44614a73f163e819191f066a9c04105"
+    },
+    {
+      "path": "medieval/dark-5.png",
+      "sha256": "7bf39be2da2037723af26c65acf0d1940f4e8145cba49083e3f635949e3dfded"
+    },
+    {
+      "path": "medieval/demon-0.png",
+      "sha256": "f61efb7c6e08225d948f397ca1a492b2fc6a50365fe7064f9968db19228922f1"
+    },
+    {
+      "path": "medieval/demon-1.png",
+      "sha256": "48ff80f82ff589eb5e42f90f206f783b5e2c2db2bad548e20070c3fc12d994f1"
+    },
+    {
+      "path": "medieval/demon-2.png",
+      "sha256": "bf2af2e8aaa39cb263526c44f97351fd4b1f118386eaf2e9a57fd1f132c428be"
+    },
+    {
+      "path": "medieval/demon-3.png",
+      "sha256": "d4756ed5af5cc6be9accd58cf5dd13aaac90d01a427f8ca491dc91e20a47dfe5"
+    },
+    {
+      "path": "medieval/demon-4.png",
+      "sha256": "6393b5e52c2ae955f01ea5835c77e8e7692dc4456b0a95bc866936dcb958b50f"
+    },
+    {
+      "path": "medieval/demon-5.png",
+      "sha256": "c00b976ae19350b245fbdd9e44c0cf0c82eb23dbeb01f7a338d7a62a13cbad59"
+    },
+    {
+      "path": "medieval/imp-0.png",
+      "sha256": "c5dba5d742dbc0c1a92f4a115c315aa94bfa249fa93aa6a5a886bfc75a9930d3"
+    },
+    {
+      "path": "medieval/imp-1.png",
+      "sha256": "7f50af2df519c0c4d30f128b6c1c8f77e9c91bb66b3619261e0edea3b395dc4b"
+    },
+    {
+      "path": "medieval/imp-2.png",
+      "sha256": "e19cb49f1bf3ade92eef3b938d35adab54139f124e5600cf52c0bda630d2036f"
+    },
+    {
+      "path": "medieval/imp-3.png",
+      "sha256": "3d95b500dab548832612bbe4d10b032299f0d2658a26f3f0a89118e9534099fd"
+    },
+    {
+      "path": "medieval/imp-4.png",
+      "sha256": "c3850a1e340ed844e3e336ae07b008aada659855179ec148a23e81907f511541"
+    },
+    {
+      "path": "medieval/imp-5.png",
+      "sha256": "49c1fab8570da37d22541ffcd7b18517c3c6b73b3add45e1af244845bfcb6342"
+    },
+    {
+      "path": "medieval/militia-0.png",
+      "sha256": "c145922bce73fb95df68410f207c79a9ba876a510efef7b593cf0cc7f6ee2940"
+    },
+    {
+      "path": "medieval/militia-1.png",
+      "sha256": "759fce87309a2387150f077006e6c8f311bc2d8453c6f997f5db38d7c0bba27f"
+    },
+    {
+      "path": "medieval/militia-2.png",
+      "sha256": "82765c2f8e5261a95a02ab627f76a91ea4a9907075e33cc55466f1a32f61ef20"
+    },
+    {
+      "path": "medieval/militia-3.png",
+      "sha256": "349ff07f198083bb8090ca8e0247a2735d9f4ad955ecfba91d984615c3fae1e5"
+    },
+    {
+      "path": "medieval/militia-4.png",
+      "sha256": "edd04c0a5a7178893b002e2df2cd06d896da21bb916b7189414a6b9a86a9d155"
+    },
+    {
+      "path": "medieval/militia-5.png",
+      "sha256": "da1b76c59c33a9c116121979e3780db053800b15fa1150a5ade3365831a47acf"
+    },
+    {
+      "path": "medieval/minibeast-0.png",
+      "sha256": "18d7a4889d03c3aa237b8dde51be657e8c0665edb3c48626644146e9b0051575"
+    },
+    {
+      "path": "medieval/minibeast-1.png",
+      "sha256": "7891dbc68ea2225f3c10f78988e718b60749543f515a1f405d70137c5d6ba86e"
+    },
+    {
+      "path": "medieval/minibeast-2.png",
+      "sha256": "fcaf15785808759c4aaad73f93669654f46a4ec2d6d9aee74e0a7005bef291cf"
+    },
+    {
+      "path": "medieval/minibeast-3.png",
+      "sha256": "1fe3837c1beb8f1a363caded6bfbb854b2f7e7001b39656058de701b6f3e202b"
+    },
+    {
+      "path": "medieval/minibeast-4.png",
+      "sha256": "39cc5cecba790f8c94ad4d430bced4b4327c080f8d650ed0fa418a2adaacde99"
+    },
+    {
+      "path": "medieval/minibeast-5.png",
+      "sha256": "80269a0ef2722dd6cde549c14d345d52e4276f66a989220deaf12d0d2334a0b1"
+    },
+    {
+      "path": "medieval/mounted-cavalry-0.png",
+      "sha256": "e4f9f1b8bc2c81d9b04f5c64ee7c0c39feb5ef68497acc3321f88cc1e0b0160d"
+    },
+    {
+      "path": "medieval/mounted-cavalry-1.png",
+      "sha256": "b46dd9d0229a9cc987db83314cbd174ff130e8432944a068de8ce23ac63e3a67"
+    },
+    {
+      "path": "medieval/mounted-cavalry-2.png",
+      "sha256": "94838652fef754aa20150a20cfa8d065abb684b7d30a8a788684be5e6ab794b2"
+    },
+    {
+      "path": "medieval/mounted-cavalry-3.png",
+      "sha256": "912c339fd6525e676a95824bc55320b23f2bf9d095037ba3dda627080c0db36e"
+    },
+    {
+      "path": "medieval/mounted-cavalry-4.png",
+      "sha256": "c8df1bd40039f65f207c0f5ea27c3ec3b57498d372f67f3e8847540aa3061b15"
+    },
+    {
+      "path": "medieval/mounted-cavalry-5.png",
+      "sha256": "fcb4304234a5b103a63780f46e5b99779f268dd191748c23fead4bd1e9fd091c"
+    },
+    {
+      "path": "medieval/mounted-ranger-0.png",
+      "sha256": "87cc4e7ae90e640380eafa59a08656187ed5dc2b1ef1fc70f0440d33be8cd4f0"
+    },
+    {
+      "path": "medieval/mounted-ranger-1.png",
+      "sha256": "ec9959d91d744c58251b0fa30549d702710db636b0c73cdf3edafd5b1dcfef46"
+    },
+    {
+      "path": "medieval/mounted-ranger-2.png",
+      "sha256": "00e96a5669d68d99cd8e73d55137a71100ae3f00ceb6c0a0b78acc4e06f96d36"
+    },
+    {
+      "path": "medieval/mounted-ranger-3.png",
+      "sha256": "f122639d6076da00130de93886b5fdcacdf17fb5efbbb4d1f1447a3881931910"
+    },
+    {
+      "path": "medieval/mounted-ranger-4.png",
+      "sha256": "753d5eaac33ea07ef45607523d3f432b9d31e525e2fbbb2a7bf8e0ebcffa877c"
+    },
+    {
+      "path": "medieval/mounted-ranger-5.png",
+      "sha256": "7118992f018d294cec926dd3269647b06542455fd9c2141185a0858afdab4255"
+    },
+    {
+      "path": "medieval/mounted-scout-0.png",
+      "sha256": "74806aa25bd436f2325cf8d96f95b0f6bb9514787264a3a569c0ef3355668e0f"
+    },
+    {
+      "path": "medieval/mounted-scout-1.png",
+      "sha256": "bce68d333f2dac5c52409a5c7fb4c70881e900f7686e952bddea5a1c71bd232d"
+    },
+    {
+      "path": "medieval/mounted-scout-2.png",
+      "sha256": "3ed83b00267ea3b2a9d2c770ab4a831a3d29ee060a17bd8f0627f760e47f83d3"
+    },
+    {
+      "path": "medieval/mounted-scout-3.png",
+      "sha256": "3b6a74512f0c6bbe81f53795ebc31007fc0d8d26e1df92b6b48f91a263bed9b9"
+    },
+    {
+      "path": "medieval/mounted-scout-4.png",
+      "sha256": "d0112eeb21f249278b95ef0a36df89f08f6fb52d02cbdf832568bb999047a82c"
+    },
+    {
+      "path": "medieval/mounted-scout-5.png",
+      "sha256": "b80824425318080e513a16ae97d23f3a293dc864bc447c9fda34a79d0ae7e431"
+    },
+    {
+      "path": "medieval/ogre-0.png",
+      "sha256": "9098eaaffd6690b546a7202ad7ac42750c169a2e61d48aae24e73b5f79af3f3b"
+    },
+    {
+      "path": "medieval/ogre-1.png",
+      "sha256": "2098cbf3a700e35141d8b6e0d29d68b8b007f4400dc1a4776884295bb7ac5aae"
+    },
+    {
+      "path": "medieval/ogre-2.png",
+      "sha256": "56e2bbe8af1d1bb6417d3feb5caba3391043d4417a8fc7327f1c4a1fc6aa81c1"
+    },
+    {
+      "path": "medieval/ogre-3.png",
+      "sha256": "0a8452174060f13027b64a257ff282285f3b6397b802f0558a0d228eef0c26ec"
+    },
+    {
+      "path": "medieval/ogre-4.png",
+      "sha256": "0ceb2490333650730a12e809957c9bd084af3b1834cc168101e781e383ca7989"
+    },
+    {
+      "path": "medieval/ogre-5.png",
+      "sha256": "527db2341a32d7e13a17e879a8c6907cb4ce389926c2149bc8a943ad2c6ac3a0"
+    },
+    {
+      "path": "medieval/skeleton-0.png",
+      "sha256": "0491ff37cfee5c78695aa61d0ffe2a3bbac39074f44ba1ed22981b7a8cb9dbf5"
+    },
+    {
+      "path": "medieval/skeleton-1.png",
+      "sha256": "75c0479e4d134650327afe56ec0357ad589a749c3a07e2e25a308d80d9350301"
+    },
+    {
+      "path": "medieval/skeleton-2.png",
+      "sha256": "e626c112bb71b67d30f3e31be1db272549cb290924e03362ada2200c032b9dd0"
+    },
+    {
+      "path": "medieval/skeleton-3.png",
+      "sha256": "ca04469fc48c84a6fc9e60c76dec31256fa51d6f31db19adc66168f31b13c07d"
+    },
+    {
+      "path": "medieval/skeleton-4.png",
+      "sha256": "4eed8adf9ee14f20a2c18d3acd592a4a668d8f9e77d4fd229f8da6f08596c352"
+    },
+    {
+      "path": "medieval/skeleton-5.png",
+      "sha256": "a6ef95541eecab0472a40ab19f2f803dab47e7761657107ebfaaf05ee916c2c0"
+    },
+    {
+      "path": "medieval/sniper-0.png",
+      "sha256": "8b8734b4b91bbe0bb7973853a8d370a1c9fa026917fe4536a054b150c9e5bb31"
+    },
+    {
+      "path": "medieval/sniper-1.png",
+      "sha256": "a1e5884a6d0edc8c08292e44a58568596c9ebbed69772fab33574657e5298690"
+    },
+    {
+      "path": "medieval/sniper-2.png",
+      "sha256": "76584d05b6cd1f3eb59ff29ed507bc1bea250ef185b7d60b9b48a24d57878834"
+    },
+    {
+      "path": "medieval/sniper-3.png",
+      "sha256": "919631d00562bd59881117d673ba77544d8bb7d1f6b0cf35e38ea58462ed01be"
+    },
+    {
+      "path": "medieval/sniper-4.png",
+      "sha256": "3bfa338e97f3a532e5ed7b9b0451fa802a4c5cabbc9d656285d3ed96573f3877"
+    },
+    {
+      "path": "medieval/sniper-5.png",
+      "sha256": "fe2bf1bc2535eea7428294f0ec064a69e94de8b6b9897d223eb4e440ddb3d096"
+    },
+    {
+      "path": "medieval/spearman-0.png",
+      "sha256": "1cf9dc231e1cbf2a2f7eef0b4683381c9d66506abdbdf05c6cf9c8a139ef5394"
+    },
+    {
+      "path": "medieval/spearman-1.png",
+      "sha256": "5f6ac65ef8f505cb2acbea3ae3032c0d25ab07b3010e6825fccc0819e6d27030"
+    },
+    {
+      "path": "medieval/spearman-2.png",
+      "sha256": "d24d2178ec11fa8d9f28f7bcc7e8ef6982ef54730281d57b9826226360745817"
+    },
+    {
+      "path": "medieval/spearman-3.png",
+      "sha256": "d656420cb0cd0b1a80c78822d25ef27333d67dab2c2c7b5bd9c687fdc07576a0"
+    },
+    {
+      "path": "medieval/spearman-4.png",
+      "sha256": "ddcb99e9ca92e6a250d82d1bc76c3615c184bf4d90ed52fbf7b1785ad7092564"
+    },
+    {
+      "path": "medieval/spearman-5.png",
+      "sha256": "2807bc829c4f4e8bb4cb157ab29bc63d79d551c061b146fa6aef89bd78fd830f"
+    },
+    {
+      "path": "medieval/swordsman-0.png",
+      "sha256": "4e3964eaccc0bcab9f62be0743b2557e2a086144393ed1cb7818d74540aee3c4"
+    },
+    {
+      "path": "medieval/swordsman-1.png",
+      "sha256": "190411605bcbc10273a6055ceca12236b230d37ac125b9578c9f18e33d696a06"
+    },
+    {
+      "path": "medieval/swordsman-2.png",
+      "sha256": "013ee3833309443f9b5e5e57370c00f5ec74d1e28fb13f8ef2bd11c97f47fa2e"
+    },
+    {
+      "path": "medieval/swordsman-3.png",
+      "sha256": "f174bd44f99d9ca9383cde32c7b714a5cea233e6a1b1c8b82a219864fb789904"
+    },
+    {
+      "path": "medieval/swordsman-4.png",
+      "sha256": "4bee693bac249311bf494fcfff85945f02588eeccbd57cfd78c7679bb25a623c"
+    },
+    {
+      "path": "medieval/swordsman-5.png",
+      "sha256": "e2f39fef8784cefa56a0cddee383d58e76a31082df9e21e46e8e3e83f97c9e5e"
+    },
+    {
+      "path": "medieval/warlock-0.png",
+      "sha256": "0ae3bc70b91822090ea1a2153fd72103b216a9af867bd2bc42028e89d15d80f4"
+    },
+    {
+      "path": "medieval/warlock-1.png",
+      "sha256": "57de73d9515ecfd86c70a6d7beadb49dd0d9927b180e60557c4f99955cb70677"
+    },
+    {
+      "path": "medieval/warlock-2.png",
+      "sha256": "ae4b2650175b6d30459863ae09e25e68ff405822ec9661025d0ceb05ed9f55ec"
+    },
+    {
+      "path": "medieval/warlock-3.png",
+      "sha256": "f9c568123e3cce58093fd9447be111a01ae81cde8e314c267f919b24ef380e80"
+    },
+    {
+      "path": "medieval/warlock-4.png",
+      "sha256": "34a7ed562c880f354bb89d2265d7f8392334aadc11ed50a935deea13577c1e3b"
+    },
+    {
+      "path": "medieval/warlock-5.png",
+      "sha256": "8d3e868ea3fbe9e6ffe3afe18f70bdd4ed16fe346174b222fc4ac8b82c33cda7"
+    },
+    {
+      "path": "medieval/wizard-0.png",
+      "sha256": "c7525fd92c4133b6565a1afd38ab38ff7f6e8691192118d402c27709994b397c"
+    },
+    {
+      "path": "medieval/wizard-1.png",
+      "sha256": "2f6c306a44a9af567b6bff054a4328e465a9f8993f011e6bb8bff16b8b631d2b"
+    },
+    {
+      "path": "medieval/wizard-2.png",
+      "sha256": "fb38826f3037ec319027d9aa3d409bd21cd9bae08e11e6c90904507cdfb7de40"
+    },
+    {
+      "path": "medieval/wizard-3.png",
+      "sha256": "139e826add6a64bcd98e9b6f2bfe76e4e3277f7154898cc9acd312703ef080de"
+    },
+    {
+      "path": "medieval/wizard-4.png",
+      "sha256": "712f9d135eb43f00edb42b9cbee1114e798b256b1d83c2b52b0ddf19e5c51f6f"
+    },
+    {
+      "path": "medieval/wizard-5.png",
+      "sha256": "4721fba67cfd6c724f1e213a61b08e6225efa8030e311d9bd7511523628038cb"
+    },
+    {
+      "path": "medieval/wolf-0.png",
+      "sha256": "a6283674cea7f26d220afc0d32e192855bdb25441b44b3a1ed1f4db05d4b8dae"
+    },
+    {
+      "path": "medieval/wolf-1.png",
+      "sha256": "028301b6af52f8cb80980aa18e9482df3b3c0532d7c4a10b7adcd183ff6da88e"
+    },
+    {
+      "path": "medieval/wolf-2.png",
+      "sha256": "fcf48ba5bf793ae8207190d729124d11caf7cfcb3312a14844729ba949010cf9"
+    },
+    {
+      "path": "medieval/wolf-3.png",
+      "sha256": "ea8f2250d645a79d22a3b0cded25797c052e31c43ff6ebcfed6a4f4ce942d447"
+    },
+    {
+      "path": "medieval/wolf-4.png",
+      "sha256": "c6246c6c49f337128df9d0acd6b71c9d88d3e73479fc3112ec779f3a8d62de77"
+    },
+    {
+      "path": "medieval/wolf-5.png",
+      "sha256": "df98e54c36957d4ad0e117df390def973e29cfbac317e7571f5e28c740ba530c"
+    },
+    {
+      "path": "medieval/zombie-0.png",
+      "sha256": "01af2fc09131b43a0c477758ff662ed48a76e6c9f1f7ed297092b7cdb873cb60"
+    },
+    {
+      "path": "medieval/zombie-1.png",
+      "sha256": "bcc42f4d5fc4e46e367c4a3c00316924fc1bee3c8d0ec689d73db55940f11cb2"
+    },
+    {
+      "path": "medieval/zombie-2.png",
+      "sha256": "461fb6a8873f78adab4bad1593866f0ade5a68a8d6887e2ac729dc214d48610f"
+    },
+    {
+      "path": "medieval/zombie-3.png",
+      "sha256": "2c51386a75de4ceb0339726ccba71966627e528845b53042d54e6f8ad7a4fc42"
+    },
+    {
+      "path": "medieval/zombie-4.png",
+      "sha256": "2437d5da4cac009403f83f86a2180805653b0fd65333389453bac6d59d741779"
+    },
+    {
+      "path": "medieval/zombie-5.png",
+      "sha256": "5838a1d127cd8d63e258191b5380dfa105667953cc847f1335e277dc75283888"
+    },
+    {
+      "path": "tower-1.png",
+      "sha256": "1b4a6e786855e5bc747232c90aa9f42c18697606d4bea33c978a8bde767279ad"
+    },
+    {
+      "path": "tower-2.png",
+      "sha256": "299ce78097b0bcf2bbecdab6bfd54a98cc9bccdbe59201ec9772d54ebef89bfe"
+    },
+    {
+      "path": "tower-3.png",
+      "sha256": "745e9650e82326a056fbba66a4537c96ddce9418f6f5e28f45c28333acf25a20"
+    }
+  ],
+  "executableSHA256": "51a4deb5d400376e46c911bd0e8314c8ac5d29fde3d8e580ed0e04149033cb58"
+}

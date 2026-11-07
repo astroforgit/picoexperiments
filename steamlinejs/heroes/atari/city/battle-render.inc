@@ -15,9 +15,7 @@
         mwa #0 calc_x
         mva #28 calc_y
         jsr transparent_blit
-        ldx contract
-        mva contract_name_lo,x text_src
-        mva contract_name_hi,x text_src+1
+        jsr title_pointer
         mwa #8 text_x
         mva #4 text_y
         jsr draw_text
@@ -27,7 +25,14 @@
         jsr format_number
         labeltext 256,4,number_text+2
         rect 0,15,320,1,2
-        labeltext 8,18,s_hint
+        ldx ability_event
+        lda ability_lo,x
+        sta text_src
+        lda ability_hi,x
+        sta text_src+1
+        mwa #8 text_x
+        mva #18 text_y
+        jsr draw_text
         mva #0 draw_cell
 ?grid   mva #0 hex_kind
         lda game_state
@@ -135,32 +140,7 @@ hex_hi dta >$E400,>$E700,>$EA00,>$ED00,>$F000
         lda foot_x
         sbc lunge-1,y
         sta foot_x
-?ground lda foot_x
-        sec
-        sbc #10
-        sta calc_x
-        mva #0 calc_x+1
-        lda foot_y
-        clc
-        adc #2
-        sta calc_y
-        mwa #20 fr_w
-        mva #3 fr_h
-        mva #8 fr_col
-        lda unit_team,x
-        beq ?friendly
-        mva #9 fr_col
-        jmp ?ellipse
-?friendly
-        cpx selected_unit
-        bne ?ellipse
-        mva #2 fr_col
-?ellipse jsr fill_rect
-        lda attack_flash
-        beq ?sprite
-        lda draw_id
-        cmp attack_flash_target
-        beq ?bar
+?ground jsr hit_recoil
 ?sprite lda foot_x
         sec
         sbc #16
@@ -173,6 +153,7 @@ hex_hi dta >$E400,>$E700,>$EA00,>$ED00,>$F000
         ldx draw_id
         lda unit_type,x
         jsr hero_sprite
+        jmp hit_dot
 ?bar    rts
 .endp
 foot_x dta 0
@@ -212,6 +193,7 @@ enemy_sprite_hi dta >$E000,>$E380,>$E700,>$EA80,>$EE00,>$F180,>$F500,>$F880,>$FC
         cmp #42
         bcc ?labels
         mwa #7 calc_x
+        lda cursor_cell         ; mwa clobbered A
         cmp #43
         bne ?border
         mwa #233 calc_x
@@ -222,7 +204,7 @@ enemy_sprite_hi dta >$E000,>$E380,>$E700,>$EA80,>$EE00,>$F180,>$F500,>$F880,>$FC
         jsr outline
 ?labels labeltext 20,192,s_skip
         labeltext 103,192,s_fire
-        labeltext 260,192,s_menu
+        labeltext 252,192,s_retreat
         rts
 .endp
 s_health_label dta c'HEALTH',0
@@ -247,7 +229,8 @@ s_shoot_label dta c'SHOOT',0
         mva number_text+4 stats_line+3
         ldx info_id
         ldy unit_type,x
-        mva type_hp,y number_value
+        lda type_hp,y
+        sta number_value
         jsr format_number
         mva number_text+3 stats_line+5
         mva number_text+4 stats_line+6
@@ -286,6 +269,9 @@ s_shoot_label dta c'SHOOT',0
 ?ready  mwa #s_ready_unit text_src
         jmp ?status
 ?enemy  mwa #s_enemy text_src
+        lda unit_charge,x
+        beq ?status
+        mwa #s_windup text_src
 ?status mwa #264 text_x
         mva info_y text_y
         jmp draw_text
@@ -312,7 +298,14 @@ info_y dta 0
         mva #57 text_y
         jsr draw_text
         labeltext 62,80,s_recovery
-        labeltext 62,96,s_reward
+        mwa #s_reward text_src
+        lda game_state
+        cmp #3
+        bne ?earned
+        mwa #s_lost text_src
+?earned mwa #62 text_x
+        mva #96 text_y
+        jsr draw_text
         mwa reward number_value
         jsr format_number
         labeltext 206,96,number_text
@@ -355,15 +348,15 @@ s_round dta c'ROUND',0
 s_hint dta c'FIRE:ACTION  DOUBLE FIRE ON ALLY:SKIP',0
 s_skip dta c'SKIP UNIT',0
 s_fire dta c'FIRE: ACTION',0
-s_menu dta c'MENU',0
 s_acted dta c'ACTED',0
 s_ready_unit dta c'READY',0
 s_enemy dta c'ENEMY',0
 s_victory dta c'VICTORY!',0
 s_defeat dta c'DEFEAT',0
 s_retreated dta c'RETREATED',0
-s_recovery dta c'YOUR ARMY RECOVERS FULLY',0
+s_recovery dta c'FALLEN SOLDIERS ARE LOST',0
 s_reward dta c'GOLD EARNED',0
+s_lost dta c'GOLD LOST',0
 s_return dta c'FIRE: RETURN TO MAP',0
 s_battle_menu dta c'BATTLE MENU',0
 s_retreat dta c'RETREAT',0
@@ -396,3 +389,82 @@ obstacle_hi dta >$F300,>$F680,>$FA00
 
 lunge dta 0,2,4,6,6,4,2,0
         icl 'battle-heroes.inc'
+
+ability_lo dta <s_hint,<s_lifesteal,<s_raised,<s_prepare,<s_hint,<s_hop,<s_summoned
+ability_hi dta >s_hint,>s_lifesteal,>s_raised,>s_prepare,>s_hint,>s_hop,>s_summoned
+s_lifesteal dta c'VAMPIRE HEALS 1 HP ON HIT',0
+s_raised dta c'RAISED! ZOMBIE ACTS NEXT ROUND',0
+s_prepare dta c'OGRE PREPARES +2 STRIKE: MOVE AWAY',0
+s_hop dta c'IMP HOPS AWAY AFTER ATTACKING',0
+s_summoned dta c'WARLOCK SUMMONS A SKELETON',0
+s_windup dta c'WIND',0
+
+; Backward kick and recovery at contact, using the actual attack direction.
+.proc hit_recoil
+        lda impact_damage
+        beq ?done
+        lda attack_frame
+        beq ?done
+        ldx draw_id
+        cpx defender_unit
+        bne ?done
+        tay
+        lda recoil-1,y
+        sta recoil_offset
+        ldx attacker_unit
+        ldy unit_cell,x
+        lda foot_x
+        cmp cell_x_lo,y
+        bcc ?left
+        clc
+        adc recoil_offset
+        sta foot_x
+        rts
+?left   sec
+        sbc recoil_offset
+        sta foot_x
+?done   rts
+.endp
+recoil dta 0,1,3,5,0,0,0,0
+recoil_offset dta 0
+
+; Actual HP lost selects a native 1/3/5/7 pixel red impact point.
+.proc hit_dot
+        lda attack_frame
+        cmp #2
+        bcc ?done
+        cmp #5
+        bcs ?done
+        lda draw_id
+        cmp defender_unit
+        bne ?done
+        lda impact_damage
+        beq ?done
+        cmp #5
+        bcc ?size
+        lda #4
+?size   sec
+        sbc #1
+        sta impact_radius
+        asl
+        clc
+        adc #1
+        sta fr_w
+        sta fr_h
+        mva #0 fr_w+1
+        lda foot_x
+        sec
+        sbc impact_radius
+        sta calc_x
+        mva #0 calc_x+1
+        lda foot_y
+        sec
+        sbc #14
+        sec
+        sbc impact_radius
+        sta calc_y
+        mva #9 fr_col
+        jmp fill_rect
+?done   rts
+.endp
+impact_radius dta 0

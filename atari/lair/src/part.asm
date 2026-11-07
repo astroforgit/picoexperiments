@@ -51,6 +51,17 @@ p_free  dta 0
 
 ; ps_new: A = template -> X = system (C = 1 none free); ps_gen bumped
 ps_new  sta tmp
+        .if PARTICLES = 0
+        ; only the texts: the effects (deaths, debris, sparks, auras,
+        ; trails, stars, charges, the boss rings) are left out for speed
+        cmp #T_EQ
+        bcc pn_none
+        cmp #T_EQ0+1
+        bcc pn_txt
+pn_none sec
+        rts
+pn_txt
+        .endif
         ldx #0
 pn_f    lda ps_on,x
         beq pn_got

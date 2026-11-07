@@ -107,13 +107,21 @@
         mva next_unit target_index
         jmp ?done
 ?support mva #255 target_index
-        mva #0 secondary_available
+        lda current_level
+        beq ?done
+        mva #1 secondary_available
 ?done   mwa upgrade_cost purchase_cost
         rts
 .endp
 
 .proc confirm_action
         lda screen_mode
+        cmp #3
+        bne ?active
+        jsr new_city
+        mva #1 action_latched
+        rts
+?active lda screen_mode
         cmp #2
         bne ?not_battle
         jmp battle.confirm
@@ -148,6 +156,11 @@
         jmp ?redraw
 ?secondary
         lda selected_plot
+        cmp #3
+        bne ?ordinary_secondary
+        jsr gallery.open
+        jmp ?redraw
+?ordinary_secondary
         cmp #6
         bcs ?dismiss
         jsr recruit
@@ -178,13 +191,17 @@
         sta gold+1
         sec
         rts
-?poor   mva #1 notice
+?poor   lda #SFX_DENIED
+        jsr sfx.play
+        mva #1 notice
         mva #1 dirty
         clc
         rts
 .endp
 
 .proc action_done
+        lda #SFX_COIN
+        jsr sfx.play
         mva #0 popup_open
         sta notice
         mva #1 dirty
@@ -224,6 +241,9 @@ action_unavailable
         rts
 
 .proc recruit
+        lda selected_plot
+        cmp #3
+        jeq action_unavailable
         jsr describe_selection
         lda secondary_available
         jeq action_unavailable

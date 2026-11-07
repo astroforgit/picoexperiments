@@ -1,7 +1,7 @@
 'use strict';
 // Mechanical atlas cropping/downsampling for native 32x28 sprites.
 const fs=require('fs'),path=require('path'),cp=require('child_process');
-const root=path.resolve(__dirname,'..'),src=path.resolve(root,'../../assets/unit-previews');
+const root=path.resolve(__dirname,'..'),src=path.resolve(process.env.HEROES_UNIT_SOURCE||path.resolve(root,'../../assets/unit-previews'));
 const sheets=[['medieval-heroes-v2.png',[0,215,425,637,856,1095,1374],[0,220,454,683,910,1145],.115],['medieval-enemies-a-alpha.png',[0,224,447,670,893,1113,1374],[0,147,278,450,635,807,960,1145],.135],['medieval-enemies-b.png',[0,216,432,651,859,1093,1374],[0,225,378,560,755,956,1145],.115]];
 sheets.push(['medieval-mounted.png',[0,295,585,876,1165,1468,1774],[0,285,579,887],.088]);
 const names=[['militia','spearman','swordsman','archer','wizard'],['minibeast','wolf','bat','skeleton','zombie','bone-archer','ogre'],['warlock','imp','beast','dark','demon','sniper']];

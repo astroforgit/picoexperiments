@@ -1,0 +1,80 @@
+; Temporary XEX INIT at $7000: later battle tables overwrite this entire code.
+; Three pictures use VRAM $00000/$10000/$20000 until the title picture and
+; gameplay reload them.
+.proc story_intro
+        lda hardware_ok
+        beq done
+        cld
+        lda PORTB
+        ora #2
+        sta PORTB
+        jsr setup_antic
+        jsr setup_xdl
+        jsr blit_init
+        jsr load_city_palette
+        mva #0 front_bank
+        mva #1 back_bank
+        jsr enable_display
+        jsr wait_action
+        jsr present_back_buffer
+        jsr wait_action
+        ; Stage picture three in the non-displayed buffer, then present it.
+        mva #2 background_bank
+        mva back_bank render_bank
+        jsr copy_background_cache
+        jsr wait_blit
+        jsr present_back_buffer
+        jsr wait_action
+        ; Reuse the relocated startup display reset before painting both buffers.
+        jsr loader_init
+        mva #$FF CH
+done    mva #16 upload_index         ; title picture follows into the back buffer
+        rts
+
+.proc wait_action
+        ; Require two released frames before accepting a fresh press. Holding
+        ; Fire/Enter/Space cannot skip either page or open a city popup.
+        ldx #2
+release
+        jsr wait_frame
+        jsr pressed
+        bne wait_action
+        dex
+        bne release
+press
+        jsr wait_frame
+        jsr pressed
+        beq press
+        ldx #2
+finish
+        jsr wait_frame
+        jsr pressed
+        bne held
+        dex
+        bne finish
+        rts
+held    ldx #2
+        bne finish
+.endp
+
+.proc pressed
+        lda STRIG0
+        and #1
+        beq yes
+        lda SKSTAT
+        and #4
+        bne no
+        lda KBCODE
+        and #$3F
+        cmp #12
+        beq yes
+        cmp #33
+        beq yes
+no      lda #0
+        rts
+yes     lda #1
+        rts
+.endp
+.endp
+story_intro_end
+        ert story_intro_end>$7800

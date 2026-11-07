@@ -1,0 +1,254 @@
+[
+  {
+    "scenario": "native-campaign-plan",
+    "mapping": "0xd600",
+    "fight": 1,
+    "region": "Dark Forest",
+    "gold": 80,
+    "army": [
+      0,
+      0,
+      3,
+      255,
+      255
+    ]
+  },
+  {
+    "scenario": "native-campaign-plan",
+    "mapping": "0xd600",
+    "fight": 2,
+    "region": "Dark Forest",
+    "gold": 80,
+    "army": [
+      0,
+      0,
+      3,
+      255,
+      255
+    ]
+  },
+  {
+    "scenario": "native-campaign-plan",
+    "mapping": "0xd600",
+    "fight": 3,
+    "region": "Dark Forest",
+    "gold": 90,
+    "army": [
+      0,
+      255,
+      3,
+      255,
+      255
+    ]
+  },
+  {
+    "scenario": "native-campaign-plan",
+    "mapping": "0xd600",
+    "fight": 4,
+    "region": "Catacombs",
+    "gold": 25,
+    "army": [
+      255,
+      255,
+      255,
+      255,
+      255
+    ]
+  },
+  {
+    "scenario": "native-campaign-plan",
+    "mapping": "0xd600",
+    "fight": 5,
+    "region": "Dark Forest",
+    "gold": 10,
+    "army": [
+      255,
+      255,
+      255,
+      255,
+      255
+    ]
+  },
+  {
+    "scenario": "native-campaign-plan",
+    "mapping": "0xd700",
+    "fight": 1,
+    "region": "Dark Forest",
+    "gold": 80,
+    "army": [
+      0,
+      0,
+      3,
+      255,
+      255
+    ]
+  },
+  {
+    "scenario": "native-campaign-plan",
+    "mapping": "0xd700",
+    "fight": 2,
+    "region": "Dark Forest",
+    "gold": 80,
+    "army": [
+      0,
+      0,
+      3,
+      255,
+      255
+    ]
+  },
+  {
+    "scenario": "native-campaign-plan",
+    "mapping": "0xd700",
+    "fight": 3,
+    "region": "Dark Forest",
+    "gold": 90,
+    "army": [
+      0,
+      255,
+      3,
+      255,
+      255
+    ]
+  },
+  {
+    "scenario": "native-campaign-plan",
+    "mapping": "0xd700",
+    "fight": 4,
+    "region": "Catacombs",
+    "gold": 25,
+    "army": [
+      255,
+      255,
+      255,
+      255,
+      255
+    ]
+  },
+  {
+    "scenario": "native-campaign-plan",
+    "mapping": "0xd700",
+    "fight": 5,
+    "region": "Dark Forest",
+    "gold": 10,
+    "army": [
+      255,
+      255,
+      255,
+      255,
+      255
+    ]
+  },
+  {
+    "scenario": "native-defeat-plan",
+    "mapping": "0xd600",
+    "fight": 1,
+    "region": "Dark Forest",
+    "gold": 35,
+    "army": [
+      255,
+      255,
+      255,
+      255,
+      255
+    ]
+  },
+  {
+    "scenario": "native-defeat-plan",
+    "mapping": "0xd600",
+    "fight": 2,
+    "region": "Dark Forest",
+    "gold": 55,
+    "army": [
+      0,
+      255,
+      255,
+      255,
+      255
+    ]
+  },
+  {
+    "scenario": "native-defeat-plan",
+    "mapping": "0xd600",
+    "fight": 3,
+    "region": "Dark Forest",
+    "gold": 20,
+    "army": [
+      255,
+      255,
+      255,
+      255,
+      255
+    ]
+  },
+  {
+    "scenario": "native-defeat-plan",
+    "mapping": "0xd600",
+    "fight": 4,
+    "region": "Dark Forest",
+    "gold": 5,
+    "army": [
+      255,
+      255,
+      255,
+      255,
+      255
+    ]
+  },
+  {
+    "scenario": "native-defeat-plan",
+    "mapping": "0xd700",
+    "fight": 1,
+    "region": "Dark Forest",
+    "gold": 35,
+    "army": [
+      255,
+      255,
+      255,
+      255,
+      255
+    ]
+  },
+  {
+    "scenario": "native-defeat-plan",
+    "mapping": "0xd700",
+    "fight": 2,
+    "region": "Dark Forest",
+    "gold": 55,
+    "army": [
+      0,
+      255,
+      255,
+      255,
+      255
+    ]
+  },
+  {
+    "scenario": "native-defeat-plan",
+    "mapping": "0xd700",
+    "fight": 3,
+    "region": "Dark Forest",
+    "gold": 20,
+    "army": [
+      255,
+      255,
+      255,
+      255,
+      255
+    ]
+  },
+  {
+    "scenario": "native-defeat-plan",
+    "mapping": "0xd700",
+    "fight": 4,
+    "region": "Dark Forest",
+    "gold": 5,
+    "army": [
+      255,
+      255,
+      255,
+      255,
+      255
+    ]
+  }
+]

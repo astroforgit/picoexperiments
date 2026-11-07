@@ -1,0 +1,12 @@
+{
+  "tool": "z-image-turbo (Hugging Face Space mrfakename/z-image-turbo)",
+  "seed": 210008438,
+  "size": [1280, 800],
+  "images": [
+    {
+      "file": "title-key-art.png",
+      "prompt": "Detailed 1990s hand-pixelled fantasy game title screen illustration, wide landscape. Foreground left: an adult young prince with short brown hair, gold circlet, blue tunic and flowing red cape stands on a rocky cliff edge holding a raised sword, seen from behind three-quarter view, looking toward the distance. Beside him a beautiful adult forest nymph with long auburn hair, pointed ears, flower crown and modest green leaf dress, holding his arm. Far away on the right: dark necromancer ruins with a jagged black tower glowing with eerie purple-green spectral light under storm clouds. Left background: a sunlit white palace with blue banners. Valley of misty forests between them, dramatic golden sunset sky. Upper third of the image is open calm sky with soft clouds, empty space for a title logo. Lower centre is darker shaded forest, empty space. Deliberate coarse pixel clusters, rich emerald, gold, teal and purple palette, strong silhouettes. No text, no lettering, no letters, no logo, no border, no interface, no watermark."
+    }
+  ],
+  "compose": "python3 art/tools/compose-title.py adds the gold logo (URW Bookman Demi and Z003) at 4x and box-reduces to title.png (320x200). atari/city/tools/build-assets.js quantizes it to the shared palette."
+}

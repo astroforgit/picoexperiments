@@ -16,7 +16,7 @@ def check(page,capture=False):
  images=[bytes(m.mem.vram[a:a+896]) for a in layout['idleCaches']]
  m.call('battle.draw');assert images==[bytes(m.mem.vram[a:a+896]) for a in layout['idleCaches']]
  m.put('render_bank',m.get('back_bank'));m.put('battle.enemy_busy',0);m.put('battle.info_y',161);m.put('battle.unit_hp',2);m.put('battle.unit_move_left',1)
- m.cpu.x=0;m.call('battle.info');a=r.LABELS['battle.stats_line'];text=bytes(m.mem.ram[a:a+18]).decode().replace('\x00',' ');assert text=='HP 2/ 3 A2 M1/2 S0',text
+ m.cpu.x=0;m.call('battle.info');a=r.LABELS['battle.stats_line'];text=bytes(m.mem.ram[a:a+18]).decode().replace('\x00',' ');assert text=='HP 2/ 4 A2 M1/2 S0',text
  m.put('battle.unit_acted',1);m.cpu.x=0;m.call('battle.info');assert m.mem.ram[a+12]==ord('0')
  m.put('battle.unit_acted',0)
  if capture:m.screenshot('battle-fast-hud.png')

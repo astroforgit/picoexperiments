@@ -23,7 +23,9 @@ old conversion's 29 isolated room snapshots.
 - joystick left/right: move and aim horizontally
 - joystick up/down: aim vertically
 - joystick trigger: jump
-- `SPACE`: teleport in the aimed direction, including while airborne
+- teleport in the aimed direction, including while airborne: `SPACE`,
+  `SHIFT`, joystick 2's fire, or button 2/3 of a 2-button joystick
+  (Joy2B+ style, pins 5/9)
 - teleporting into a wall or outside the world kills Porter
 - SPACE, trigger or any direction on the title screen: start immediately
 - the illustrated title waits for input, with the original-game and port credits
@@ -31,6 +33,23 @@ old conversion's 29 isolated room snapshots.
 - Atari `OPTION`: toggle all sound on/off
 - `1`: jump to the previous level (debug)
 - `2`: jump to the next level (debug)
+
+As in the Celeste port, buttons 2 and 3 arrive on the paddle lines (POT 0 /
+POT 1), whose resting level depends on the joystick (Altirra's two-button
+joystick reads high when pressed, Joy2B+ sticks read low), so a press is any
+change from the level the line had half a second after the game started.
+Don't hold these buttons while the game loads. Joystick 2's fire is ignored
+while joystick 1's fire is held, so an emulator setup that maps one key to
+both sticks does not teleport on every jump.
+
+## Speed
+
+The game logic runs at the cartridge's 30 updates per second (`_update`) on
+PAL and NTSC, counted in the vertical blank. Animated tiles redraw only the
+tiles that changed in the room cache; the whole room is rebuilt only when
+the camera moves to another room or switches, keys and crumbling blocks
+change it. Blits run while the CPU goes on with the next one; the buffer
+flip waits for the last.
 
 ## Build
 
@@ -44,12 +63,15 @@ The output is `porter-vbxe.xex`. A VBXE 1.2-compatible core is required.
 
 The title artwork is in `assets/porter-title-credits.png`; the exact 320x200
 conversion is `assets/porter-title-preview.png`. `tools/make_title.py` converts
-it to 32 colours in palette entries 16..47. Four XEX INIT segments upload it
+it to 32 colours in palette entries 16..47 and writes the version
+(`VERSION`, now 1.3) in the bottom-right corner in a PICO-8 style 3x5 font. Four XEX INIT segments upload it
 directly to VBXE before loading the game, keeping assets below BASIC ROM and
 preserving the gameplay palette. The title stays visible until SPACE or joystick input.
 
 The separate `assets/porter-background-source.png` uses palette entries 48..79
-and lives at VRAM `$40000`. Both gameplay buffers are seeded from it once on
+and lives at VRAM `$40000`. The generated image is nearly black, so
+`make_title.py` lifts it with a tone curve (gamma 0.6, gain 1.5) before
+quantizing. Both gameplay buffers are seeded from it once on
 start/restart. Room-cache rebuilds restore the matching background region before
 drawing transparent tiles, so the background stays steady across buffer flips.
 The display list scans exactly 200 image rows, excluding the uninitialized
@@ -114,11 +136,15 @@ tool; the art direction is recorded in `assets/title-prompt.txt`.
 
 ## Build and run
 
-From the Porter project directory, use the one-command launcher:
-
 ```sh
-./run-emulator.sh
+./run.sh                    # build, then start in the persistent Altirra VBXE profile
+./run.sh --no-build         # start the existing porter-vbxe.xex
+./run.sh --pal | --ntsc     # force the video standard (the game runs at 30 Hz on both)
+./run.sh --debug            # also open Altirra's debugger
+./run.sh --slow-load        # load through normal-speed SIO like real hardware
 ```
 
-It regenerates the Atari data, rebuilds the XEX, and opens it with the
-workspace Altirra VBXE profile.
+`run.sh` regenerates the Atari data, rebuilds the XEX, sets Altirra's audio
+to 20ms latency and 20ms extra buffer, and opens the game with the workspace
+Altirra VBXE profile. `../run-emulator.sh` does the same from the Porter
+project directory.

@@ -192,6 +192,22 @@ gl_ok   ldx lp
         jsr room_del
         jmp gl_iter
 gl_placed
+        ; An empty enabled roster must not loop forever while filling the budget.
+        ldy #2
+gl_check
+        lda m_prop,y
+        bne gl_check_next
+        lda m_enabled,y
+        beq gl_check_next
+        lda m_depth,y
+        cmp pl_depth
+        beq gl_mob1
+        bcc gl_mob1
+gl_check_next
+        iny
+        cpy #NENT+1
+        bne gl_check
+        jmp gl_mob1d
         ; mobs everywhere
 gl_mob1 lda mobs_to_place
         cmp mobs_placed
@@ -206,6 +222,9 @@ gl_mob1 lda mobs_to_place
         jsr place_mob
         jmp gl_mob1
 gl_mob1d
+        ldx #P_MIMIC_ID
+        lda m_enabled,x
+        beq gl_mob2d
         ; mimics: mobs_to_place = mobs_placed + depth - 3
         ldx pl_depth
         lda mobs_placed
@@ -345,7 +364,9 @@ place_mob
         ; mobs = m_anim of non-props available at this depth (rnd consumed always)
         ldx #0
         ldy #2
-pm_l    lda m_prop,y
+pm_l    lda m_enabled,y
+        beq pm_n
+        lda m_prop,y
         bne pm_n
         lda m_depth,y
         cmp pl_depth
@@ -359,6 +380,8 @@ pm_n    iny
         bne pm_l
         lda pm_id
         bne pm_go
+        cpx #0
+        beq pm_d
         txa
         jsr intrnd
         tax
@@ -374,7 +397,7 @@ pm_d    rts
 pm_id   dta 0
 pm_x    dta 0
 pm_y    dta 0
-pm_list :40 dta 0
+pm_list :NENT dta 0
 
 ; x, y = get_rnd_pos(room u7) -> Y, X
 get_rnd_pos
@@ -1224,7 +1247,7 @@ wf_n    iny
         inx
         cpx #31
         bne wf_y
-        rts
+        jmp index_overhangs
 
 ; ---------------------------------------------------------- hand-made floors
 ; load_floor(A = floor map): RLE ($fe count value) from VRAM $3e000 into

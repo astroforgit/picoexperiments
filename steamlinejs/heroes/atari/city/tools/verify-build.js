@@ -5,18 +5,24 @@ const assert=require("assert/strict");
 const labels=Object.fromEntries(fs.readFileSync("generated/city-vbxe.lab","utf8").split("\n").map(l=>l.trim().split(/\s+/)).filter(p=>p.length===3).map(p=>[p[2].toLowerCase(),parseInt(p[1],16)]));
 const data=fs.readFileSync("city-vbxe.xex");
 assert.equal(data.readUInt16LE(0),65535);
-let i=2,uploads=0,init=0,run;
+let i=2,uploads=0,init=0,run,storyLoaded=false;
 while(i<data.length){
   const start=data.readUInt16LE(i);i+=2;if(start===65535)continue;
   const end=data.readUInt16LE(i);i+=2;const n=end-start+1;
   assert(n>0&&i+n<=data.length,"Malformed XEX segment");
-  if(start===0x6000){assert.equal(n,4096);uploads++;}
-  else if(start===0x2e2){assert.equal(n,2);init++;}
+  if(start===0x6000&&n===labels.runtime_data_end-0x6000){assert(end<0x8000);assert.equal(uploads,159,'Battle tables must load after graphics staging');assert(start<=labels.story_intro&&end>=labels.story_intro_end-1,'Battle tables must overwrite all temporary intro code');}
+  else if(start===0x6000){assert.equal(n,4096);uploads++;if(uploads===49)assert(storyLoaded&&init===50,'Title picture loads straight after the intro');}
+  else if(start===0x2e2){assert.equal(n,2);init++;if(data.readUInt16LE(i)===labels.story_intro){assert(storyLoaded);assert.equal(uploads,48,'Show the intro before loading game graphics');}}
   else if(start===0x2e0){assert.equal(n,2);run=data.readUInt16LE(i);}
-  else assert((start>=0x2000&&end<0x6000)||(start===0x7000&&end<0x8000)||(start===0x8000&&end===0x83ff),"Unexpected CPU memory region");
+  else if(start===0x7000){assert.equal(start,labels.story_intro);assert.equal(end+1,labels.story_intro_end);storyLoaded=true;}
+  else if(start===0xa000){assert.equal(n,labels.battle_groups_end-labels.release_ui_start);assert(end<0xc000);}
+  else assert((start>=0x2000&&end<0x6000)||(start===0x8000&&end===0x83ff),"Unexpected CPU memory region");
   i+=n;
 }
-assert.equal(uploads,95);assert.equal(init,96);assert.equal(run,labels.main);
+assert.equal(uploads,159);assert.equal(init,161);assert.equal(run,labels.main);
+assert(storyLoaded);
+for(let page=1;page<=3;page++)assert.equal(fs.statSync(`generated/intro-${page}.bin`).size,65536);
+assert.equal(fs.statSync('generated/title.bin').size,65536);
 assert(labels.code_end<=0x6000);assert.equal(fs.statSync("generated/palette.bin").size,768);
 assert.equal(fs.statSync("generated/vram.bin").size,389120);
 const c=JSON.parse(fs.readFileSync("content.json","utf8"));
@@ -33,10 +39,11 @@ for(const b of c.buildings){
     assert(b.hp[t]>0&&b.hp[t]<100&&b.damage[t]>0&&b.damage[t]<100&&b.range[t]>0&&b.range[t]<10);
   }
 }
-console.log(`PASS: ${data.length}-byte XEX, 95 graphics uploads, safe CPU regions, four recruit lines plus support Chapel, duplicate troops allowed.`);
+console.log(`PASS: ${data.length}-byte XEX, 143 graphics uploads including three temporary intro screens, intro code overwritten by battle data, safe CPU regions.`);
 
+const artProfile=fs.existsSync('generated/asset-profile.json')?JSON.parse(fs.readFileSync('generated/asset-profile.json')):{profile:'classic',buildingBytes:53760};
 const regions=[
- [0x20000,64000,'city'],[0x30000,53760,'buildings'],[0x3d200,4608,'font'],
+ [0x20000,64000,'city'],[0x30000,artProfile.buildingBytes||53760,'buildings'],[0x3d200,4608,'font'],
  [0x3e400,3840,'hex masks'],[0x3f300,2688,'obstacles'],[0x40000,4480,'troops'],
  [0x44000,40960,'forest'],[0x50000,64000,'encounters'],
  [0x60000,40960,'catacombs'],[0x6a000,40960,'caves'],[0x74000,40960,'ruins']
@@ -51,6 +58,13 @@ console.log('PASS: all battle/city graphics fit without overlap below the reserv
 
 const anim=JSON.parse(fs.readFileSync('generated/hero-animation-layout.json'));
 const allocations=regions.map(([a,n,name])=>[a,a+n,name]);
+const story=JSON.parse(fs.readFileSync('generated/story-layout.json'));
+assert.equal(story.width,320);assert.equal(story.height,144);assert.equal(story.colors,256);
+const disk=fs.readFileSync('generated/heroes-story.atr');
+assert.equal(disk.readUInt16LE(0),0x296);assert.equal(disk.readUInt16LE(4),256);
+assert.equal(disk.length,1048208);assert.equal(story.sectors.length,12);
+assert(story.sectors.at(-1)+250-1<=story.sectorCount);
+for(let i=1;i<=12;i++)assert.equal(fs.statSync(`generated/story-${i}.bin`).size,64000);
 for(const a of anim.idleCaches||[])allocations.push([a,a+896,'idle sprite cache']);
 allocations.push([anim.cache[0],anim.cache[0]+anim.cache[1],'decoded hero cache']);
 anim.addresses.forEach((a,i)=>{
@@ -63,3 +77,4 @@ for(let i=0;i<allocations.length;i++){
  if(i)assert(allocations[i-1][1]<=allocations[i][0],allocations[i][2]+' overlaps');
 }
 console.log('PASS: compressed hero frames and decode cache are disjoint from all scenery/UI banks.');
+console.log('PASS: twelve full-quality story/gallery pages stream from the companion ATR with no permanent picture allocation.');

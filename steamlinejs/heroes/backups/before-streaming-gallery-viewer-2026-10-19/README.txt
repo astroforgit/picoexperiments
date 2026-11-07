@@ -1,0 +1,1 @@
+The previous test viewer embedded the first four gallery paintings in four VRAM caches. This self-contained XEX is preserved for comparison. The new viewer streams eight paintings from the companion disk and reserves no resident picture caches.

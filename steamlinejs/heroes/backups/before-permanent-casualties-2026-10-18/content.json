@@ -1,0 +1,973 @@
+{
+  "startingGold": 50,
+  "buildings": [
+    {
+      "id": "barracks",
+      "name": "BARRACKS",
+      "startLevel": 2,
+      "x": 62,
+      "y": 32,
+      "costs": [
+        40,
+        70,
+        90
+      ],
+      "units": [
+        "MILITIA",
+        "SPEARMAN",
+        "SWORDSMAN"
+      ],
+      "hp": [
+        3,
+        4,
+        6
+      ],
+      "damage": [
+        1,
+        2,
+        3
+      ],
+      "range": [
+        1,
+        1,
+        1
+      ],
+      "recruitCosts": [
+        15,
+        25,
+        60
+      ],
+      "move": [
+        2,
+        2,
+        2
+      ],
+      "shootRange": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "archery",
+      "name": "ARCHERY RANGE",
+      "startLevel": 0,
+      "x": 128,
+      "y": 32,
+      "costs": [
+        45,
+        75,
+        100
+      ],
+      "units": [
+        "HUNTER",
+        "ARCHER",
+        "MARKSMAN"
+      ],
+      "hp": [
+        3,
+        4,
+        5
+      ],
+      "damage": [
+        1,
+        2,
+        2
+      ],
+      "range": [
+        4,
+        5,
+        6
+      ],
+      "recruitCosts": [
+        25,
+        50,
+        80
+      ],
+      "move": [
+        1,
+        1,
+        2
+      ],
+      "shootRange": [
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "lodge",
+      "name": "RANGER LODGE",
+      "startLevel": 0,
+      "x": 194,
+      "y": 32,
+      "costs": [
+        45,
+        75,
+        100
+      ],
+      "units": [
+        "SCOUT",
+        "RANGER",
+        "CAVALRY"
+      ],
+      "hp": [
+        3,
+        4,
+        6
+      ],
+      "damage": [
+        1,
+        2,
+        3
+      ],
+      "range": [
+        1,
+        1,
+        1
+      ],
+      "recruitCosts": [
+        20,
+        45,
+        70
+      ],
+      "move": [
+        4,
+        4,
+        5
+      ],
+      "shootRange": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "chapel",
+      "name": "CHAPEL",
+      "startLevel": 0,
+      "x": 79,
+      "y": 77,
+      "costs": [
+        40,
+        50,
+        30
+      ],
+      "units": [
+        "ACOLYTE",
+        "HEALER",
+        "PRIEST"
+      ],
+      "hp": [
+        2,
+        3,
+        4
+      ],
+      "damage": [
+        1,
+        1,
+        2
+      ],
+      "range": [
+        1,
+        1,
+        1
+      ],
+      "recruitCosts": [
+        20,
+        45,
+        85
+      ],
+      "move": [
+        1,
+        2,
+        2
+      ],
+      "shootRange": [
+        0,
+        0,
+        0
+      ],
+      "support": true,
+      "effects": [
+        "UNLOCK ARMY SLOT 4",
+        "UNLOCK ARMY SLOT 5",
+        "RECRUITS COST 10 LESS"
+      ]
+    },
+    {
+      "id": "tower",
+      "name": "WIZARD TOWER",
+      "startLevel": 0,
+      "x": 174,
+      "y": 77,
+      "costs": [
+        45,
+        75,
+        100
+      ],
+      "units": [
+        "APPRENTICE",
+        "MAGE",
+        "WIZARD"
+      ],
+      "hp": [
+        3,
+        4,
+        5
+      ],
+      "damage": [
+        2,
+        2,
+        3
+      ],
+      "range": [
+        2,
+        3,
+        4
+      ],
+      "recruitCosts": [
+        25,
+        50,
+        85
+      ],
+      "move": [
+        1,
+        2,
+        2
+      ],
+      "shootRange": [
+        2,
+        3,
+        4
+      ]
+    }
+  ],
+  "startingArmy": [
+    1,
+    1,
+    255,
+    255,
+    255
+  ],
+  "enemies": [
+    {
+      "id": "minibeast",
+      "name": "Minibeast",
+      "hp": 3,
+      "damage": 1,
+      "move": 3,
+      "range": 1,
+      "shootRange": 0,
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Individual fighter; fixed damage, no armor or special abilities."
+    },
+    {
+      "id": "wolf",
+      "name": "Wolf",
+      "hp": 3,
+      "damage": 2,
+      "move": 3,
+      "range": 1,
+      "shootRange": 0,
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Individual fighter; fixed damage, no armor or special abilities."
+    },
+    {
+      "id": "bat",
+      "name": "Bat",
+      "hp": 2,
+      "damage": 1,
+      "move": 5,
+      "range": 1,
+      "shootRange": 0,
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Individual fighter; fixed damage, no armor or special abilities."
+    },
+    {
+      "id": "skeleton",
+      "name": "Skeleton",
+      "hp": 3,
+      "damage": 1,
+      "move": 1,
+      "range": 4,
+      "shootRange": 4,
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Arrows deal 1 less damage, minimum 1. Magic and melee deal full damage."
+    },
+    {
+      "id": "zombie",
+      "name": "Zombie",
+      "hp": 5,
+      "damage": 2,
+      "move": 1,
+      "range": 1,
+      "shootRange": 0,
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Kills raise a 2 HP zombie next round; at most 2 per battle. Raised zombies cannot raise others."
+    },
+    {
+      "id": "bone-archer",
+      "name": "Bone Archer",
+      "hp": 3,
+      "damage": 2,
+      "move": 1,
+      "range": 4,
+      "shootRange": 4,
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Individual fighter; fixed damage, no armor or special abilities."
+    },
+    {
+      "id": "ogre",
+      "name": "Ogre",
+      "hp": 7,
+      "damage": 3,
+      "move": 2,
+      "range": 1,
+      "shootRange": 0,
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Prepares a heavy strike for one turn, then attacks for +2 damage without moving. Move away to avoid it."
+    },
+    {
+      "id": "warlock",
+      "name": "Warlock",
+      "hp": 9,
+      "damage": 1,
+      "move": 1,
+      "range": 3,
+      "shootRange": 0,
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Summons skeletons from round 2; at most 2 living summons. Killing the Warlock wins."
+    },
+    {
+      "id": "imp",
+      "name": "Imp",
+      "hp": 4,
+      "damage": 2,
+      "move": 4,
+      "range": 1,
+      "shootRange": 0,
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "After attacking, hops one open adjacent hex away from its target."
+    },
+    {
+      "id": "beast",
+      "name": "Beast",
+      "hp": 4,
+      "damage": 2,
+      "move": 3,
+      "range": 1,
+      "shootRange": 0,
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Individual fighter; fixed damage, no armor or special abilities."
+    },
+    {
+      "id": "dark",
+      "name": "Vampire",
+      "hp": 5,
+      "damage": 2,
+      "move": 2,
+      "range": 1,
+      "shootRange": 0,
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Melee damage heals 1 HP, capped at starting health."
+    },
+    {
+      "id": "demon",
+      "name": "Demon",
+      "hp": 3,
+      "damage": 3,
+      "move": 2,
+      "range": 1,
+      "shootRange": 0,
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Individual fighter; fixed damage, no armor or special abilities."
+    },
+    {
+      "id": "sniper",
+      "name": "Sniper",
+      "hp": 3,
+      "damage": 2,
+      "move": 2,
+      "range": 5,
+      "shootRange": 5,
+      "basis": "Balance v1 - playtest candidate",
+      "notes": "Individual fighter; fixed damage, no armor or special abilities."
+    }
+  ],
+  "encounters": [
+    {
+      "name": "OUTSKIRTS",
+      "reward": 50,
+      "enemies": [
+        "minibeast",
+        "minibeast"
+      ]
+    },
+    {
+      "name": "STRONGHOLD",
+      "reward": 65,
+      "enemies": [
+        "wolf",
+        "minibeast",
+        "minibeast"
+      ]
+    },
+    {
+      "name": "REGION GUARD",
+      "reward": 85,
+      "enemies": [
+        "beast",
+        "wolf",
+        "minibeast"
+      ]
+    },
+    {
+      "name": "OUTSKIRTS",
+      "reward": 90,
+      "enemies": [
+        "zombie",
+        "skeleton",
+        "zombie"
+      ]
+    },
+    {
+      "name": "STRONGHOLD",
+      "reward": 110,
+      "enemies": [
+        "dark",
+        "zombie",
+        "skeleton"
+      ]
+    },
+    {
+      "name": "REGION GUARD",
+      "reward": 130,
+      "enemies": [
+        "dark",
+        "dark",
+        "skeleton",
+        "zombie"
+      ]
+    },
+    {
+      "name": "OUTSKIRTS",
+      "reward": 130,
+      "enemies": [
+        "ogre",
+        "beast",
+        "beast",
+        "bat"
+      ]
+    },
+    {
+      "name": "STRONGHOLD",
+      "reward": 150,
+      "enemies": [
+        "ogre",
+        "ogre",
+        "beast",
+        "bat"
+      ]
+    },
+    {
+      "name": "REGION GUARD",
+      "reward": 180,
+      "enemies": [
+        "ogre",
+        "ogre",
+        "beast",
+        "beast"
+      ]
+    },
+    {
+      "name": "OUTER RUINS",
+      "reward": 180,
+      "enemies": [
+        "dark",
+        "dark",
+        "demon",
+        "bone-archer",
+        "imp"
+      ]
+    },
+    {
+      "name": "INNER RUINS",
+      "reward": 220,
+      "enemies": [
+        "dark",
+        "dark",
+        "demon",
+        "demon",
+        "sniper"
+      ]
+    },
+    {
+      "name": "WARLOCK",
+      "reward": 400,
+      "enemies": [
+        "dark",
+        "warlock",
+        "demon",
+        "dark",
+        "demon"
+      ]
+    }
+  ],
+  "baseArmyCapacity": 3,
+  "encounterConfig": {
+    "version": 1,
+    "selection": "weighted-seeded",
+    "terrain": "fixed",
+    "retrySameSeed": true,
+    "regions": [
+      {
+        "id": "forest",
+        "name": "Dark Forest",
+        "replayReward": 30,
+        "stages": [
+          {
+            "name": "Outskirts",
+            "reward": 50,
+            "variants": [
+              {
+                "name": "Dark Forest 1 - 1",
+                "weight": 1,
+                "enemies": [
+                  "minibeast",
+                  "minibeast"
+                ]
+              },
+              {
+                "name": "Dark Forest 1 - 2",
+                "weight": 1,
+                "enemies": [
+                  "minibeast",
+                  "bat"
+                ]
+              },
+              {
+                "name": "Dark Forest 1 - 3",
+                "weight": 1,
+                "enemies": [
+                  "bat",
+                  "bat"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Stronghold",
+            "reward": 65,
+            "variants": [
+              {
+                "name": "Dark Forest 2 - 1",
+                "weight": 1,
+                "enemies": [
+                  "wolf",
+                  "minibeast",
+                  "minibeast"
+                ]
+              },
+              {
+                "name": "Dark Forest 2 - 2",
+                "weight": 1,
+                "enemies": [
+                  "beast",
+                  "minibeast",
+                  "bat"
+                ]
+              },
+              {
+                "name": "Dark Forest 2 - 3",
+                "weight": 1,
+                "enemies": [
+                  "wolf",
+                  "wolf",
+                  "bat"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Region guard",
+            "reward": 85,
+            "variants": [
+              {
+                "name": "Dark Forest 3 - 1",
+                "weight": 1,
+                "enemies": [
+                  "beast",
+                  "wolf",
+                  "minibeast"
+                ]
+              },
+              {
+                "name": "Dark Forest 3 - 2",
+                "weight": 1,
+                "enemies": [
+                  "beast",
+                  "beast",
+                  "minibeast"
+                ]
+              },
+              {
+                "name": "Dark Forest 3 - 3",
+                "weight": 1,
+                "enemies": [
+                  "wolf",
+                  "wolf",
+                  "wolf"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "catacombs",
+        "name": "Catacombs",
+        "replayReward": 50,
+        "stages": [
+          {
+            "name": "Outskirts",
+            "reward": 90,
+            "variants": [
+              {
+                "name": "Catacombs 1 - 1",
+                "weight": 1,
+                "enemies": [
+                  "zombie",
+                  "skeleton",
+                  "zombie"
+                ]
+              },
+              {
+                "name": "Catacombs 1 - 2",
+                "weight": 1,
+                "enemies": [
+                  "zombie",
+                  "zombie",
+                  "zombie"
+                ]
+              },
+              {
+                "name": "Catacombs 1 - 3",
+                "weight": 1,
+                "enemies": [
+                  "dark",
+                  "skeleton",
+                  "zombie"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Stronghold",
+            "reward": 110,
+            "variants": [
+              {
+                "name": "Catacombs 2 - 1",
+                "weight": 1,
+                "enemies": [
+                  "dark",
+                  "zombie",
+                  "skeleton"
+                ]
+              },
+              {
+                "name": "Catacombs 2 - 2",
+                "weight": 1,
+                "enemies": [
+                  "zombie",
+                  "zombie",
+                  "skeleton",
+                  "skeleton"
+                ]
+              },
+              {
+                "name": "Catacombs 2 - 3",
+                "weight": 1,
+                "enemies": [
+                  "dark",
+                  "dark",
+                  "zombie"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Region guard",
+            "reward": 130,
+            "variants": [
+              {
+                "name": "Catacombs 3 - 1",
+                "weight": 1,
+                "enemies": [
+                  "dark",
+                  "dark",
+                  "skeleton",
+                  "zombie"
+                ]
+              },
+              {
+                "name": "Catacombs 3 - 2",
+                "weight": 1,
+                "enemies": [
+                  "dark",
+                  "bone-archer",
+                  "zombie",
+                  "skeleton"
+                ]
+              },
+              {
+                "name": "Catacombs 3 - 3",
+                "weight": 1,
+                "enemies": [
+                  "dark",
+                  "zombie",
+                  "zombie",
+                  "skeleton"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "caves",
+        "name": "Monster Caves",
+        "replayReward": 70,
+        "stages": [
+          {
+            "name": "Outskirts",
+            "reward": 130,
+            "variants": [
+              {
+                "name": "Monster Caves 1 - 1",
+                "weight": 1,
+                "enemies": [
+                  "ogre",
+                  "beast",
+                  "beast",
+                  "bat"
+                ]
+              },
+              {
+                "name": "Monster Caves 1 - 2",
+                "weight": 1,
+                "enemies": [
+                  "beast",
+                  "beast",
+                  "beast",
+                  "beast"
+                ]
+              },
+              {
+                "name": "Monster Caves 1 - 3",
+                "weight": 1,
+                "enemies": [
+                  "ogre",
+                  "beast",
+                  "beast",
+                  "beast"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Stronghold",
+            "reward": 150,
+            "variants": [
+              {
+                "name": "Monster Caves 2 - 1",
+                "weight": 1,
+                "enemies": [
+                  "ogre",
+                  "ogre",
+                  "beast",
+                  "bat"
+                ]
+              },
+              {
+                "name": "Monster Caves 2 - 2",
+                "weight": 1,
+                "enemies": [
+                  "ogre",
+                  "beast",
+                  "beast",
+                  "beast"
+                ]
+              },
+              {
+                "name": "Monster Caves 2 - 3",
+                "weight": 1,
+                "enemies": [
+                  "beast",
+                  "beast",
+                  "beast",
+                  "beast",
+                  "bat"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Region guard",
+            "reward": 180,
+            "variants": [
+              {
+                "name": "Monster Caves 3 - 1",
+                "weight": 1,
+                "enemies": [
+                  "ogre",
+                  "ogre",
+                  "beast",
+                  "beast"
+                ]
+              },
+              {
+                "name": "Monster Caves 3 - 2",
+                "weight": 1,
+                "enemies": [
+                  "ogre",
+                  "ogre",
+                  "beast",
+                  "bat"
+                ]
+              },
+              {
+                "name": "Monster Caves 3 - 3",
+                "weight": 1,
+                "enemies": [
+                  "ogre",
+                  "beast",
+                  "beast",
+                  "beast",
+                  "bat"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ruins",
+        "name": "Necromancer Ruins",
+        "replayReward": 90,
+        "stages": [
+          {
+            "name": "Outer ruins",
+            "reward": 180,
+            "variants": [
+              {
+                "name": "Necromancer Ruins 1 - 1",
+                "weight": 1,
+                "enemies": [
+                  "dark",
+                  "dark",
+                  "demon",
+                  "bone-archer",
+                  "imp"
+                ]
+              },
+              {
+                "name": "Necromancer Ruins 1 - 2",
+                "weight": 1,
+                "enemies": [
+                  "dark",
+                  "dark",
+                  "dark",
+                  "bone-archer",
+                  "bone-archer"
+                ]
+              },
+              {
+                "name": "Necromancer Ruins 1 - 3",
+                "weight": 1,
+                "enemies": [
+                  "demon",
+                  "demon",
+                  "sniper",
+                  "imp",
+                  "dark"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Inner ruins",
+            "reward": 220,
+            "variants": [
+              {
+                "name": "Necromancer Ruins 2 - 1",
+                "weight": 1,
+                "enemies": [
+                  "dark",
+                  "dark",
+                  "demon",
+                  "demon",
+                  "sniper"
+                ]
+              },
+              {
+                "name": "Necromancer Ruins 2 - 2",
+                "weight": 1,
+                "enemies": [
+                  "dark",
+                  "dark",
+                  "dark",
+                  "demon",
+                  "imp"
+                ]
+              },
+              {
+                "name": "Necromancer Ruins 2 - 3",
+                "weight": 1,
+                "enemies": [
+                  "demon",
+                  "demon",
+                  "demon",
+                  "sniper",
+                  "imp"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Warlock",
+            "reward": 400,
+            "variants": [
+              {
+                "name": "Necromancer Ruins 3 - 1",
+                "weight": 1,
+                "enemies": [
+                  "dark",
+                  "warlock",
+                  "demon",
+                  "dark",
+                  "demon"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "progression": {
+      "mode": "previous-region-wins",
+      "winsRequired": [
+        3,
+        3,
+        3,
+        3
+      ]
+    }
+  },
+  "monsterAbilitiesVersion": 1,
+  "simulationSettings": {
+    "earlyPractice": true,
+    "practiceReward": 20,
+    "nativeSeedCycle": true
+  }
+}

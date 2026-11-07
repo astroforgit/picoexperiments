@@ -77,7 +77,8 @@ class Atari:
         self.random = 0x5A
         self.xdl_writes = []
         self.blit_busy_until = 0
-        self.blit_model = True  # VBXE memory: 1 access per 14.18 MHz clock
+        self.blit_model = True
+        self.potgo_at = 0  # VBXE memory: 1 access per 14.18 MHz clock
 
     # ------------------------------------------------------------ I/O
     def memac_on(self):
@@ -106,7 +107,10 @@ class Atari:
         if addr == 0xD209:
             return self.kbcode
         if addr in (0xD200, 0xD201):
-            return self.in_pot[addr & 1]
+            # the counter runs one step per line after POTGO until it reaches
+            # the paddle's value (a read during the scan sees the count)
+            lines = (self.cpu.processorCycles - self.potgo_at) // 114
+            return min(self.in_pot[addr & 1], lines, 228)
         if addr == 0xD010:
             return self.in_trig0
         if addr == 0xD011:
@@ -139,6 +143,8 @@ class Atari:
             return
         if 0xD200 <= addr < 0xD210:
             self.pokey[addr & 15] = value
+            if addr == 0xD20B:
+                self.potgo_at = self.cpu.processorCycles
             return
         self.mem.ram[addr] = value
 

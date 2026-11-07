@@ -1,0 +1,63 @@
+PILKA: INITIAL CONVERSION INVESTIGATION
+2026-10-26
+
+Target: Atari XL/XE + VBXE FX; Arlasoft Soccer C64 game logic with
+Sensible World of Soccer (Amiga) graphics. No Atari executable exists yet.
+
+Verified input
+- arlasoc.d64 is a 174848-byte D64 named ARLASOFT SOCCER.
+- Its one directory entry, ARLASOC, is a 33734-byte PRG loading at $0801.
+- BASIC SYS 2061 enters a compressed loader at $080D.
+- Executing the loader with py65 reaches JMP $975B at $01C2 after
+  1993262 instructions (including the final jump).
+- analysis/unpacked-64k.bin is the resulting RAM image; manifest.json
+  records source/output hashes and CPU registers. This is not an XEX.
+- entry-disassembly.txt covers the beginning of initialization. The code
+  initializes VIC-II graphics, including multicolor sprites, then calls
+  routines at $9774, $9200, $080E, $086E, $8398, $8DEB and $9F85.
+
+Reproduce
+  python3 tools/extract_c64.py
+Requires Python 3 and py65. Run from any directory. The tool reads the disk
+without modifying it and writes only analysis outputs in pilka/analysis.
+
+Useful local references
+- ../gg: original C64 6502 game code retained, hardware accesses patched,
+  VBXE renderer, SID-to-POKEY adaptation, C64 tracing and Atari test tools.
+  Its game-specific address patches cannot be reused unchanged.
+- ../phoenix: existing Amiga graphics extraction and VBXE conversion example.
+- ../../steamlinejs/atari/vbxe/docs/vbxe-fx-1.26-pl.pdf: programmer manual
+  for FX 1.26; XDL, overlay modes, RGB palettes, MEMAC and blitter.
+- MADS is installed at /home/marcin/.local/bin/mads.
+
+Amiga assets missing from the inspected tree
+SWOS-RE-main/SWOS-RE-main contains disassembly, decompiled C, format notes
+and debugging tools. Its SWOS2/Data.c references external graphics:
+  grafs/cjcteam1.raw, cjcteam2.raw, cjcteam3.raw, cjcteamg.raw
+  grafs/cjcbits.raw, cjcgrafs.raw, cjcbench.raw
+  grafs/swcpich1.map through swcpich6.map
+Those raw/map files and original SWOS ADFs were not found in the supplied
+project tree. The declaration spriteGraphics[4880] is an uninitialized
+buffer, not an embedded sprite sheet. Original Amiga game data or disk
+images are needed to extract the requested graphics. The supplied project
+identifies its reference version as SWOS 96/97, version 152.
+
+Implementation approach
+1. Trace the decompressed C64 game, identify IRQs, memory ownership,
+   player/ball state, animation IDs, input, rendering and sound routines.
+2. Keep the C64 match logic where practical. Adapt C64 hardware access and
+   memory mapping to Atari; measure timing before selecting frame cadence.
+3. Decode the supplied Amiga graphics using SWOS loading/rendering code;
+   convert bitplanes to VBXE pixels and map animations to C64 game states.
+4. Use VBXE overlay graphics and blitter drawing for pitch and sprites,
+   with explicit camera, clipping, palette and transparency handling.
+5. Validate controls, match flow, scoring, AI and restarts against the C64;
+   validate display and timing in an Atari emulator configured with VBXE.
+
+Validation limits
+The extractor successfully executed the decompressor. A separate attempt
+to start the game in the sibling gg headless C64 model stopped at $EE61
+in frame 0 (reported as an unhandled KERNAL call). That model is tailored
+to another game and lacks ROM emulation. This is not evidence of a fault
+in Arlasoft Soccer. Full game execution, Atari compatibility and performance
+are unverified. No gameplay or graphics substitution has been implemented.

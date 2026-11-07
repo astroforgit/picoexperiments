@@ -1,0 +1,22 @@
+{
+  "tool": "built-in imagegen",
+  "status": "Preview only",
+  "results": [
+    {
+      "name": "painter-mischief",
+      "prompt": "Use case: illustration-story. One wide 16:9 humorous fantasy game painting, detailed hand-painted pixel art matching the reference's style and same clearly adult 25-year-old red-haired nymph with pointed ears, green eyes and flowers in her curls. All characters adults. Game story: discovered portraits reveal her playful rebellious personality. No prince in the image. Expressive character comedy and clear composition readable at 320x144. Opaque clothing, no nudity, no underwear, no sexual activity or erotic framing. No text, watermark, borders or UI. A goblin artist paints the nymph in a sunlit woodland studio. She sits sideways on an ordinary chair wearing an opaque emerald leaf halter top with an open upper back and a layered mid-thigh green leaf skirt, bare arms and sturdy boots. She looks over her bare shoulder with a cheeky laughing wink while secretly holding two fingers behind the goblin's beret as a prank. On the canvas he has painted her as a solemn saint with a halo; he has not noticed the prank. Natural relaxed posture, frame both characters and canvas, focus on expressions and joke.",
+      "status": "generated",
+      "file": "painter-mischief.png"
+    },
+    {
+      "name": "tavern-revel",
+      "prompt": "Use case: illustration-story. One wide 16:9 humorous fantasy game painting, detailed hand-painted pixel art matching the reference's style and same clearly adult 25-year-old red-haired nymph with pointed ears, green eyes and flowers in her curls. All characters adults. Game story: discovered portraits reveal her playful rebellious personality. No prince in the image. Expressive character comedy and clear composition readable at 320x144. Opaque clothing, no nudity, no underwear, no sexual activity or erotic framing. No text, watermark, borders or UI. A lively medieval tavern. The nymph laughs exuberantly while leading a stomping folk jig on a broad wooden table, wearing an opaque emerald cropped leaf vest, practical opaque green shorts with a decorative leaf overskirt, and sturdy boots. Bare shoulders and midriff. She has flushed rosy cheeks and a tipsy mischievous grin, one hand raised in triumph, both legs naturally positioned with no exposed undergarments. Adult dwarves and barbarian adventurers clap and laugh, a goblin fiddler plays, wooden mugs on neighboring tables. Festive folk-dance scene focused on comic joy and the crowd, no provocative dance or sexual performance.",
+      "status": "rejected by image safety system; previous tavern preview retained"
+    },
+    {
+      "name": "waterfall-shower",
+      "prompt": "Use case: illustration-story. One wide 16:9 humorous fantasy game painting, detailed hand-painted pixel art matching the reference's style and same clearly adult 25-year-old red-haired nymph with pointed ears, green eyes and flowers in her curls. All characters adults. Game story: discovered portraits reveal her playful rebellious personality. No prince in the image. Expressive character comedy and clear composition readable at 320x144. Opaque clothing, no nudity, no underwear, no sexual activity or erotic framing. No text, watermark, borders or UI. A secluded woodland waterfall in warm afternoon sunlight. Three-quarter back view of the nymph, waist-deep in the clear pool, rinsing her long red curls under a gentle falling stream. She wears a clearly visible opaque emerald halter-neck one-piece bathing costume with a solid fully covered front and hips, open upper back. Natural relaxed posture, turning her face over her shoulder with a delighted cheeky smile, eyes open. A little frog on a mossy stone seems astonished by her splashing. Bare upper back and arms visible; emphasize lush scenery, carefree expression and playful splashes, no anatomical emphasis. Medium-wide composition. No boots in the water.",
+      "status": "rejected by image safety system; previous waterfall preview retained"
+    }
+  ]
+}

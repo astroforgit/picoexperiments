@@ -21,8 +21,18 @@
         lda popup_open
         beq ?location
         lda popup_choice
-        bne ?close
-        jsr can_enter_battle
+        jsr map_choice_enabled
+        bcc ?done
+        lda popup_choice
+        cmp #1
+        beq ?close
+        cmp #2
+        bne ?campaign
+        mva #1 battle.duel
+        jmp battle.start
+?campaign
+        mva #0 battle.duel
+?fight  jsr can_enter_battle
         bcc ?done
         jmp battle.start
 ?close  jmp close_popup
@@ -34,6 +44,9 @@
 ?scout  mva #1 popup_open
         sta dirty
         mva #0 popup_choice
+        jsr can_enter_battle
+        bcs ?done
+        mva #1 popup_choice
 ?done   rts
 .endp
 
@@ -42,11 +55,14 @@
         beq ?no
         ldx selected_location
         lda location_region,x
+        cmp #255
+        beq ?no
+        cmp #0
         beq ?yes
         tax
         dex
         lda region_wins,x
-        cmp #3
+        cmp battle.wins_required,x
         bcc ?no
 ?yes    sec
         rts
@@ -56,12 +72,50 @@
 region_wins dta 0,0,0,0
 location_region dta 0,1,2,255,3
 
+; A popup choice -> carry set only for an available action. Back is always valid.
+.proc map_choice_enabled
+        cmp #1
+        beq ?yes
+        cmp #2
+        bne ?fight
+        jmp can_duel
+?fight  cmp #0
+        bne ?no
+        jmp can_enter_battle
+?yes    sec
+        rts
+?no     clc
+        rts
+.endp
+map_choice_step dta 1
+map_button_slot dta 0,2,1       ; choice -> position on screen
+map_button_choice dta 0,2,1     ; position -> choice
+
 .proc map_navigate
         lda popup_open
         beq ?map
-        lda popup_choice
-        eor #1
+        mva #1 map_choice_step
+        cpx #0
+        beq ?previous
+        cpx #2
+        bne ?next
+?previous
+        mva #255 map_choice_step
+?next   ldx popup_choice           ; buttons left to right: fight, duel, back
+        lda map_button_slot,x
+        clc
+        adc map_choice_step
+        cmp #255
+        bne ?upper
+        lda #2
+?upper  cmp #3
+        bcc ?choice
+        lda #0
+?choice tax
+        lda map_button_choice,x
         sta popup_choice
+        jsr map_choice_enabled
+        bcc ?next
         mva #1 dirty
         rts
 ?map    lda map_direction_offsets,x
@@ -138,77 +192,8 @@ map_cursor_w dta 56,56,56,72,56
         rts
 .endp
 
-.proc draw_scout_report
-        rect 22,28,280,128,1
-        rect 24,30,276,124,7
-        rect 24,30,276,16,1
-        mwa #22 calc_x
-        mva #28 calc_y
-        mwa #280 fr_w
-        mva #128 fr_h
-        mva #2 fr_col
-        jsr outline
-        jsr location_name_pointer
-        mwa #32 text_x
-        mva #34 text_y
-        jsr draw_text
-        labeltext 32,54,s_scout
-        ldx selected_location
-        lda location_desc_lo,x
-        sta text_src
-        lda location_desc_hi,x
-        sta text_src+1
-        mwa #32 text_x
-        mva #72 text_y
-        jsr draw_text
-        ldx selected_location
-        lda location_detail_lo,x
-        sta text_src
-        lda location_detail_hi,x
-        sta text_src+1
-        mwa #32 text_x
-        mva #88 text_y
-        jsr draw_text
-        labeltext 32,105,s_wins
-        ldx selected_location
-        ldy location_region,x
-        lda region_wins,y
-        clc
-        adc #48
-        sta one_char
-        labeltext 68,105,one_char
-        labeltext 80,105,s_three
-        jsr can_enter_battle
-        bcs ?ready
-        lda army_count
-        beq ?no_army
-        labeltext 32,119,s_locked
-        jmp ?buttons
-?no_army
-        labeltext 32,119,s_recruit_first
-        jmp ?buttons
-?ready  labeltext 32,119,s_ready
-?buttons
-        rect 32,134,119,15,1
-        rect 170,134,119,15,1
-        lda popup_choice
-        bne ?back
-        mwa #32 calc_x
-        jmp ?outline
-?back   mwa #170 calc_x
-?outline
-        mva #134 calc_y
-        mwa #119 fr_w
-        mva #15 fr_h
-        mva #2 fr_col
-        jsr outline
-        labeltext 74,138,s_fight
-        labeltext 217,138,s_back
-        rts
-.endp
-s_wins dta c'WINS',0
-s_three dta c'/ 3',0
-s_locked dta c'CLEAR PREVIOUS REGION FIRST',0
+; draw_scout_report lives in duel.inc (three buttons with the Dark Forest duel).
+s_locked dta c'WIN MORE IN THE PREVIOUS LAIR',0
 s_recruit_first dta c'RECRUIT AN ARMY IN THE CITY',0
 s_ready dta c'FIRE: FIGHT   ESC: BACK',0
 s_fight dta c'FIGHT',0
@@ -227,11 +212,14 @@ s_caves dta c'MONSTER CAVES',0
 s_city_return dta c'BACK TO GREENHAVEN',0
 s_ruins dta c'NECROMANCER RUINS',0
 s_forest_desc dta c'EVIL EYES GLOW BENEATH BLACK ROOTS.',0
-s_forest_detail dta c'BEASTS HUNT AMONG THORNS AND WEBS.',0
+s_forest_detail dta c'FAST BEASTS - ARCHERS THIN THEM OUT.',0
 s_cemetery_desc dta c'A SKULL GATE DESCENDS INTO DARKNESS.',0
-s_cemetery_detail dta c'THE RESTLESS DEAD GUARD THE TUNNELS.',0
+s_cemetery_detail dta c'ARROWS PASS THROUGH BONES - BRING MAGES.',0
 s_caves_desc dta c'CLAW MARKS SCAR THE CAVERN MOUTH.',0
-s_caves_detail dta c'OGRES AND HUNGRY BATS LURK WITHIN.',0
+s_caves_detail dta c'SLOW OGRES - KEEP AWAY AND SHOOT.',0
 s_city_desc dta c'RETURN HOME TO BUILD AND UPGRADE.',0
 s_ruins_desc dta c'GREEN SOUL FIRE SPLITS THE RUINS.',0
-s_ruins_detail dta c'UNDEAD AND IMPS SERVE THE WARLOCK.',0
+s_ruins_detail dta c'SNIPERS HIDE BEHIND - SEND CAVALRY.',0
+
+
+s_disabled dta c'LOCKED',0

@@ -1,0 +1,1362 @@
+{
+  "profile": "vbxe-v2",
+  "nativeResolution": [
+    320,
+    200
+  ],
+  "generationTool": "built-in image_gen",
+  "sources": "art/vbxe-v2/generation.json",
+  "preserves": "Classic assets remain in their original paths; no classic PNG was overwritten.",
+  "files": [
+    {
+      "path": "archery-1.png",
+      "size": [
+        56,
+        64
+      ],
+      "opaqueColors": 22,
+      "sha256": "5c1b77556b6fc322d1040096366d649bb219d973135cc3be1018a71f6f1176d8"
+    },
+    {
+      "path": "archery-2.png",
+      "size": [
+        56,
+        64
+      ],
+      "opaqueColors": 22,
+      "sha256": "79ba07f07ba00624c872299e204a700f791fcdafd99699f5d5e7fedcd2810c30"
+    },
+    {
+      "path": "archery-3.png",
+      "size": [
+        56,
+        64
+      ],
+      "opaqueColors": 22,
+      "sha256": "a451049932db6b1bc2f8ba246d8c622d9010d7c324bc40302082cda493266b38"
+    },
+    {
+      "path": "barracks-1.png",
+      "size": [
+        56,
+        64
+      ],
+      "opaqueColors": 22,
+      "sha256": "eee5a20aeaa6885d52e9fe74824b12cabb4be91fe40021983e30c94532ad59d3"
+    },
+    {
+      "path": "barracks-2.png",
+      "size": [
+        56,
+        64
+      ],
+      "opaqueColors": 22,
+      "sha256": "f07acaa665e8030d4fb42cccaff1047c1c8c3db98a2fcbed82bd079750ea48b6"
+    },
+    {
+      "path": "barracks-3.png",
+      "size": [
+        56,
+        64
+      ],
+      "opaqueColors": 22,
+      "sha256": "082dc6db041fc49196db0fe8987f5de6f9fabf58fc2eea3a050df4c7ed708e7d"
+    },
+    {
+      "path": "battle-catacombs.png",
+      "size": [
+        320,
+        128
+      ],
+      "opaqueColors": 48,
+      "sha256": "7f286d152b3e05f767c0dae8ec0c0c609b41874ed82d20c0d7a857d684299815"
+    },
+    {
+      "path": "battle-caves.png",
+      "size": [
+        320,
+        128
+      ],
+      "opaqueColors": 48,
+      "sha256": "a19d3ee830c1b3a439bcf3a7ff091dbd3a01bb3f8b44646b1d079920b7e64c3f"
+    },
+    {
+      "path": "battle-forest.png",
+      "size": [
+        320,
+        128
+      ],
+      "opaqueColors": 48,
+      "sha256": "03323cfadcf2ad9f4703c689bf13a4b07d9175cff4a03a30b4d280bef8710251"
+    },
+    {
+      "path": "battle-pillar.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "e4643b35cb7614967ebded7385341033313c1f3c1d93f14c3549b1e47454e8ad"
+    },
+    {
+      "path": "battle-rock.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 11,
+      "sha256": "597449ea7a3c7e2a1df609a7fe5e7831f7af179bd619128c076565a0c9ccdf9b"
+    },
+    {
+      "path": "battle-ruins.png",
+      "size": [
+        320,
+        128
+      ],
+      "opaqueColors": 48,
+      "sha256": "c6c34881a32738b74b32960e86d974ce622609f8c4551b20a396d9ac4e2b82f8"
+    },
+    {
+      "path": "battle-tree.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "e27407593845a09e5f90b89dc372ddf45015f5dbbf3d299fe97a31b980cc2d85"
+    },
+    {
+      "path": "chapel-1.png",
+      "size": [
+        56,
+        64
+      ],
+      "opaqueColors": 22,
+      "sha256": "7767ab6754d1b1d5383cb54309856daf15526063a81256b545aa9db12e311ea0"
+    },
+    {
+      "path": "chapel-2.png",
+      "size": [
+        56,
+        64
+      ],
+      "opaqueColors": 22,
+      "sha256": "2023a037dd41147dac0ca3a8af89ce9c5a927cd0063fae42b614ead018eac36b"
+    },
+    {
+      "path": "chapel-3.png",
+      "size": [
+        56,
+        64
+      ],
+      "opaqueColors": 22,
+      "sha256": "9542d2ca18b7365efe6d49f15c8f3fafa500b44461274748d3af26cf43ca961c"
+    },
+    {
+      "path": "city-background.png",
+      "size": [
+        320,
+        200
+      ],
+      "opaqueColors": 96,
+      "sha256": "eae7d75b8ca47d05a4607072d54897c9c56a7e45c1de849307bcf5cc6ab080de"
+    },
+    {
+      "path": "encounters-background.png",
+      "size": [
+        320,
+        200
+      ],
+      "opaqueColors": 96,
+      "sha256": "c1d631bc6a7b1c70e6bce0d2aff668ae06605a247dab1771151dc8957b63a942"
+    },
+    {
+      "path": "lodge-1.png",
+      "size": [
+        56,
+        64
+      ],
+      "opaqueColors": 22,
+      "sha256": "2d9f8eab5006e3a476241a6fb84ab9586adee5c2f93c1866ea1986b1b3ef6866"
+    },
+    {
+      "path": "lodge-2.png",
+      "size": [
+        56,
+        64
+      ],
+      "opaqueColors": 22,
+      "sha256": "8f081e798c8d5805b86a50c015fc156e196b4e169fd4b1a05725fbb092867e9f"
+    },
+    {
+      "path": "lodge-3.png",
+      "size": [
+        56,
+        64
+      ],
+      "opaqueColors": 22,
+      "sha256": "7e9f5ed408ff4e843752744017af6a281b90917e8bb58d99774a67f007f54e8d"
+    },
+    {
+      "path": "medieval/archer-0.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "e9c8e9dec136db0cdf898cf1d2beb3f6be7a8abcfaf38206f298ac8d5cd0378a"
+    },
+    {
+      "path": "medieval/archer-1.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "0b2f0152e29266a988f37a1fd8b7b76bee52a19fca07cb38ecbaf4e779145bc9"
+    },
+    {
+      "path": "medieval/archer-2.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "4ceee5b1f3576faa6b44bdca9d277cd84511941f67a617f0c18477c35bde4501"
+    },
+    {
+      "path": "medieval/archer-3.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "59fa8f4fc7a31d4aa9c23fa378bdf0ec15445a159865aa6f751ef74a5c085285"
+    },
+    {
+      "path": "medieval/archer-4.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "62608f9419f3c23760e8df7697d0f08c42d8b79cddcc94dd5441dc8beb0c24da"
+    },
+    {
+      "path": "medieval/archer-5.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "410ce129645298858bdc3e22be3f6e020f377eb9ae6ea9d7b5070f472ee9c84c"
+    },
+    {
+      "path": "medieval/bat-0.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "ed042d3fd7cd75f227049af859e4f17db684896666e526b936b131e5973c4f12"
+    },
+    {
+      "path": "medieval/bat-1.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "c512a0e01ad0745c2fefa3b3b531f2913037314c79de7ac10f948663716e7a22"
+    },
+    {
+      "path": "medieval/bat-2.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "562adc6d4533ca586b6bfe4c7fe909c2b17e2c6ff32353f3bb2e47f4c52c645f"
+    },
+    {
+      "path": "medieval/bat-3.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "bf1c6efb90e398da0a47c3f716a2d5497aeae20d75c075998d5ec3dc2300f9f7"
+    },
+    {
+      "path": "medieval/bat-4.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "804337b1205a5bf13d0f3ae76d51866f5b111a00cb7ff67594ea307a203a0fd6"
+    },
+    {
+      "path": "medieval/bat-5.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "93dd633cb5282b20eb804a7a183dc471a56753d698cc4e23164c58f577803317"
+    },
+    {
+      "path": "medieval/beast-0.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 12,
+      "sha256": "ade94fff7d0418bbcda30d9742929ddfed5d4f263c83bc2b8f0fef3dfcc6cbe7"
+    },
+    {
+      "path": "medieval/beast-1.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 12,
+      "sha256": "c6a1c2c79cb5fa55b3df57b1c1a1627b6af1f4cf266ed8fa0df323f74839e489"
+    },
+    {
+      "path": "medieval/beast-2.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 12,
+      "sha256": "738d4a20c76655e33559765f80accd520322570a7acb496a0cf081976cc8cf14"
+    },
+    {
+      "path": "medieval/beast-3.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 12,
+      "sha256": "a2e9828517d223b32c0f581cc39b98925acc6176c707599cc82eeebafdeee9d6"
+    },
+    {
+      "path": "medieval/beast-4.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 12,
+      "sha256": "32121a9853fdbab71947639a149f1a53038d7d644efb35be2d57b2b912c79f46"
+    },
+    {
+      "path": "medieval/beast-5.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 12,
+      "sha256": "1ce0a3890755e4789e25f6a390de87c46639a8049487fbe47bdc73f1790f74ea"
+    },
+    {
+      "path": "medieval/bone-archer-0.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "cb543ec10653c49be3463080a56a4e0aa01ca9a9e02fa35d1a9edca13c295898"
+    },
+    {
+      "path": "medieval/bone-archer-1.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "8d0a570f3640574644614776fba7a6c94a0384cbf7c29aa2e834474cd968da06"
+    },
+    {
+      "path": "medieval/bone-archer-2.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "22ed9c2a99948b0c285a6372096915df7d9f1c999dd70ca5318b97710a871f9e"
+    },
+    {
+      "path": "medieval/bone-archer-3.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "0152b7b3556062021dab0ec76d4a3dbdc81a10de11a5619a9cdd10e18569c6d5"
+    },
+    {
+      "path": "medieval/bone-archer-4.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "e7c97dd07cee3f5dc1318b6b08be246a922777e650935e9883daa22449e39e3c"
+    },
+    {
+      "path": "medieval/bone-archer-5.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "628aeb071b62fedd117639cebae05eebb8979d4e25e184e0bfc70d1a908c370f"
+    },
+    {
+      "path": "medieval/dark-0.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "71a9013010b721a3960c3744103858740768a5344014ac931b7a4382bf363a3c"
+    },
+    {
+      "path": "medieval/dark-1.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "500d365b1f2de349523453d7203bf3da3f4589fa2f21775226db588a4e805446"
+    },
+    {
+      "path": "medieval/dark-2.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "e1962ceea624ced25343ee0a2332b1d86b5b58908f45cea3580c6a86be62e6b2"
+    },
+    {
+      "path": "medieval/dark-3.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "7cd6f427c70bca4256b6355ea5b2b3e2dfd40c532523f2713f343c00cd930427"
+    },
+    {
+      "path": "medieval/dark-4.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "7c8c6a1e4c600fc4c92421b407c4322a2a0a204b22a24d7e7e87c84c79ddb253"
+    },
+    {
+      "path": "medieval/dark-5.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "7e61cf29c8e71c83a4d328e74f6ad03839d212b181783d044359195d7dd34006"
+    },
+    {
+      "path": "medieval/demon-0.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "89bba6aeadd8f85c7423b948e0279e091da96791da7d3e15d9ba08fa65c801f3"
+    },
+    {
+      "path": "medieval/demon-1.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 12,
+      "sha256": "f50e24dacb881aeae64b0b0a772de7c64cf57652c6981b0aab4df369bf90ca4c"
+    },
+    {
+      "path": "medieval/demon-2.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "f840343d17d43637ad026269721fb703d5726ed07f61439580daa8654b13caf3"
+    },
+    {
+      "path": "medieval/demon-3.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 12,
+      "sha256": "c742097a91b7144436e2bf47d25ae36a580e777dda8348bf0f6751ff82400170"
+    },
+    {
+      "path": "medieval/demon-4.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "b90695b471096308104d05aa225cbe3dc18334c412f80b169a135a57ac7be8ee"
+    },
+    {
+      "path": "medieval/demon-5.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 12,
+      "sha256": "fd1cc1fd4aec5979cf021fce81c22e68d689fa1e3969513a4f735392c6cbbe91"
+    },
+    {
+      "path": "medieval/imp-0.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "3f35c56c972544ef8e7edcbda0504a7244b91870d5adeee40adac406095fe242"
+    },
+    {
+      "path": "medieval/imp-1.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 12,
+      "sha256": "3250d8d511b7111ea75f4e2ab9ae66582eef48b1b16247707d601c67537e0ef2"
+    },
+    {
+      "path": "medieval/imp-2.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 12,
+      "sha256": "7dd5241b0164e31b975e16e2a4fda1a2ea8f077563fb6784d94023ed75ffae28"
+    },
+    {
+      "path": "medieval/imp-3.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "6df77a6b3d8c97bf568fc69a30ec88366799cc92fe8c37db5752a578a70e7aae"
+    },
+    {
+      "path": "medieval/imp-4.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "e9aff6a03084c3917dc4bbee9cf3b5ee19460899abd9b201a2a0791785557b60"
+    },
+    {
+      "path": "medieval/imp-5.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "91d2d2390cd80de4d7c1a9b2efef5b856bdd45dd55d15e48d27e4eb683d17762"
+    },
+    {
+      "path": "medieval/militia-0.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "e288e3d1f1af2bee479cf031dd9f6303e3f65539828a95a681e64b13d22529b8"
+    },
+    {
+      "path": "medieval/militia-1.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "0cf3937174582ce6ed8fe89cda3e85cc16bc4306f79086b6e55fc88f10c56171"
+    },
+    {
+      "path": "medieval/militia-2.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "f0ce41bcab42fb5f6abd976f8dc9db2410b7304beee876e4cb9372df2344918a"
+    },
+    {
+      "path": "medieval/militia-3.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "858bca32f6d913ac5c0bfff3a225c27bbb4e603c9f91ebc55cfec614ec1145ca"
+    },
+    {
+      "path": "medieval/militia-4.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "014a8f95157894c4d1c9cbad6cc430b81808be745e211cadf4af8eb25561167c"
+    },
+    {
+      "path": "medieval/militia-5.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "055b9bc1842b9e1eb5e534712afab38db98575141026072e46a6abc7d451c2df"
+    },
+    {
+      "path": "medieval/minibeast-0.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "2c2c3ce46b3089b32ca4f21f2efdb3258baa0b2284450630f5a4f24ba70d0a54"
+    },
+    {
+      "path": "medieval/minibeast-1.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "f66d1583307274ef86dcccafd81c91882209060b9a65f47de965fa9109bca0c4"
+    },
+    {
+      "path": "medieval/minibeast-2.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "8a9dd534f7f8de8ff96433972faa717818245ea33ce107350f9b8d1347009ca2"
+    },
+    {
+      "path": "medieval/minibeast-3.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "e54a1a5c439274d5cf5d8857bc878e611e4afab44b0d72d41677b3f3f390b2ac"
+    },
+    {
+      "path": "medieval/minibeast-4.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "1ccda5e6bdad834035b12fcb9b0d368600a8ab4dfb2f9d108c8e9fbba9a24295"
+    },
+    {
+      "path": "medieval/minibeast-5.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 12,
+      "sha256": "53faf898358a0fa93465a86c49bdc30452e12804488f72f0662e5e2453a30e8b"
+    },
+    {
+      "path": "medieval/mounted-cavalry-0.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "f3d910986be3643448cf85a5cc752e51cd42b0adfa16088b52b9fe44c3a74e0a"
+    },
+    {
+      "path": "medieval/mounted-cavalry-1.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "1a56601413ef323f0c97de39906c411b28296f114881ef80dfe3bc17d5a8ca8c"
+    },
+    {
+      "path": "medieval/mounted-cavalry-2.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "7423e43433d35cb136cb79d3c1a4246ca281c04c44b0cbe06612a20b2d5d7a1c"
+    },
+    {
+      "path": "medieval/mounted-cavalry-3.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "865b6c20a8fd3fefbc4f05fd57616a1ba8b77c68a17386b254f2b4a784c93854"
+    },
+    {
+      "path": "medieval/mounted-cavalry-4.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "d492894a5ca88bf136e6248411f459ee41869348df2ab1b9915479bba5b3a30c"
+    },
+    {
+      "path": "medieval/mounted-cavalry-5.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "104f94de2cd48ffee6dea904d01ecfb3d0b03db4b5dd4855f2ec555e2236f8e7"
+    },
+    {
+      "path": "medieval/mounted-ranger-0.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "0cc125736290322f18ea7ba41b7a352b89d19f58c219fcc934fa9e48b54e3d50"
+    },
+    {
+      "path": "medieval/mounted-ranger-1.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 12,
+      "sha256": "958ce935f4218966987b75935eb007c23c25ed8df2b766ec805e4c0ccb95d469"
+    },
+    {
+      "path": "medieval/mounted-ranger-2.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "d398ba474e0cb7c674d1fbcf20e7a756796906ec6e45a18f8df43a1d5e8b66a4"
+    },
+    {
+      "path": "medieval/mounted-ranger-3.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "eb13c202e7ca87d999969e27303bee212312d2e437952f7ea1309d65aeb02767"
+    },
+    {
+      "path": "medieval/mounted-ranger-4.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "ca9e65d9cf1847335d34eb0eb43c1e0f6def7b24e5c9c3a5bcd752d59c02274b"
+    },
+    {
+      "path": "medieval/mounted-ranger-5.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "84a7aa446881a01ce81b3567ce2c579ab0c155c85cad41a1120a0615e4826948"
+    },
+    {
+      "path": "medieval/mounted-scout-0.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "5bc2f95ddf679b396204407b29c14953de02ce9eda478120ec3134eaade721d1"
+    },
+    {
+      "path": "medieval/mounted-scout-1.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "b59ac1a48d62a741aefa2197e88cb50eee56f81ab88e2ec6216d3ba54a1b24bc"
+    },
+    {
+      "path": "medieval/mounted-scout-2.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "585fc16b1ce3025849826f0833283621b5e7c9d17d1431989197165db29f0bda"
+    },
+    {
+      "path": "medieval/mounted-scout-3.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "66f61e9c7ca937777376256a9caf9bf7f82f74abcfbc4add2f8345919a9c2c0c"
+    },
+    {
+      "path": "medieval/mounted-scout-4.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "74665266a7611d6314b17a16fa1c9b78f5ecc33c88a0d463a7021777b569e864"
+    },
+    {
+      "path": "medieval/mounted-scout-5.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "2c9d2f44ab85a8c88903facaf44fcb7d34a1d1b209f642031c25d79d4eb025c0"
+    },
+    {
+      "path": "medieval/ogre-0.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "3002b53284e7e3000d35179a8cc4162c12c0797d8a83529b49ce5fe060eacd0b"
+    },
+    {
+      "path": "medieval/ogre-1.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "1e84ebdf483653827ea8bfe1dc140e2fd073b57c469238471a6f51838ff7538c"
+    },
+    {
+      "path": "medieval/ogre-2.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "13b00ff79015bed062a635101723efb7f9c4195a6be769fe815daf16c775a7fd"
+    },
+    {
+      "path": "medieval/ogre-3.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "8a91585a346ae93c8f049fd833a79c920a60594c121f8711dff14ed8695a18d6"
+    },
+    {
+      "path": "medieval/ogre-4.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "0e85d92eb9848ac0b8f4e36b37607b4d4abca07e6c5da9db5f2f9074c20e1149"
+    },
+    {
+      "path": "medieval/ogre-5.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "5f1a9b6d29bfe600a70736364cfc7c3cdb6c17a08226918a2dff95e785a77202"
+    },
+    {
+      "path": "medieval/skeleton-0.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 11,
+      "sha256": "404f84e4041d5f6d0dee2a71bf6b58f7dd49283926c5fe1d25514df7d9d8ded7"
+    },
+    {
+      "path": "medieval/skeleton-1.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 11,
+      "sha256": "1ae73a0be8b4c12bcfc2d45c440317819d7f1c9957e91f2f8589e74808f346da"
+    },
+    {
+      "path": "medieval/skeleton-2.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 11,
+      "sha256": "a3f33f7bcd82633bf696d9f8c767036b9ee5af7d54634fd7dd4ea4945a3f23cb"
+    },
+    {
+      "path": "medieval/skeleton-3.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 11,
+      "sha256": "f98e6581509541ba9b7c62f99b69fe08baa25f9a269c60c9db39f98245ab9b4d"
+    },
+    {
+      "path": "medieval/skeleton-4.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 12,
+      "sha256": "e8baaa97720cafbb939a3222b80e4f38e9584963c9a21a23e2339fd6e99e13ce"
+    },
+    {
+      "path": "medieval/skeleton-5.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 11,
+      "sha256": "8cc6bd938b38b409fd152d921ed5f839422997da3a5c4ab86b3bb2b3eaf0724a"
+    },
+    {
+      "path": "medieval/sniper-0.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "fa0b64fbd03d8a8c28d8a138425529c9af68f2cdee9bebcf0a85fc46235cb7b3"
+    },
+    {
+      "path": "medieval/sniper-1.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "103d1b473077dd14c0028fd22418dbffbc5be109e520f40f6931ed3c9d036ff8"
+    },
+    {
+      "path": "medieval/sniper-2.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "4bf3e3ee977043438b7b65211d4b2d0997f0f12f5fecb23b1c2f25ba71ca45d8"
+    },
+    {
+      "path": "medieval/sniper-3.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "0e03305503e8ab0410ed7c4787f15958af26cd61dad1fbae34b02dbb4c880833"
+    },
+    {
+      "path": "medieval/sniper-4.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "e5585497390dff8a960ffb1691dbe38a94bd1a6b3fa9c814c453bb604bfd2af3"
+    },
+    {
+      "path": "medieval/sniper-5.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "5c3d58ab71886c8953589969a3f0556a7f7b5b32d451fa5df5e37efc877a0c8b"
+    },
+    {
+      "path": "medieval/spearman-0.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "e23ca48fd609f0f229335a0dfe74d6e199f1be72dbeaa968a12b625ca70a9608"
+    },
+    {
+      "path": "medieval/spearman-1.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "a7642a9b8609f5551ddafe7b5b2cb37a4e57b7e4bf87d5ca9c73d858e2340fd3"
+    },
+    {
+      "path": "medieval/spearman-2.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "833bea303ae2284163a6b7e60ab7d47a3f44f3343b9364ff35233c48acd4fda4"
+    },
+    {
+      "path": "medieval/spearman-3.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "c3a227f3102b038bb8230522200226506504ae15145e0e67d4424be2c992a360"
+    },
+    {
+      "path": "medieval/spearman-4.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "024c523a4c1d07a57dd6cb5897e2b54b04cbc17430a070218509341384b14326"
+    },
+    {
+      "path": "medieval/spearman-5.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "a4bb63f47610d8509b8cc7a56d67bb28aaeeb116772e6d0687b2820392972d9e"
+    },
+    {
+      "path": "medieval/swordsman-0.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "c3188a1a47989e4cd2f1f4361ef45875fcea75448c46474bb335d9680df7a1ca"
+    },
+    {
+      "path": "medieval/swordsman-1.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "acd8a2c43d79c83c2104856ce274c5fc2dc037017c33a8b0315e45fbc6422d90"
+    },
+    {
+      "path": "medieval/swordsman-2.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "8f0d19390bb290e5f2c2597164980916e6a2e6123b65cbc3f97ecbcce847c581"
+    },
+    {
+      "path": "medieval/swordsman-3.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "908f87984df71d5c400d0dbf439fd7d0dbc5eb5378b4b8b0a63dcdb898d8979e"
+    },
+    {
+      "path": "medieval/swordsman-4.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "5593351a23ec1f15d84b845557694bd7d517ad9399cf056a2e9b94a6591e0c79"
+    },
+    {
+      "path": "medieval/swordsman-5.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "6c67eb7109dc15cc0b74d9b6ce9b4e7f6fbb9e91a7fd3810292fec7ea0f02cf6"
+    },
+    {
+      "path": "medieval/warlock-0.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "632d2fc5cef469939809717378e95d7a0906fbb7ac9f08b33ec25b43783655f2"
+    },
+    {
+      "path": "medieval/warlock-1.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "4504f1b7e7149f78518b3f0a85a019c10a22c387678c3c04cd46f0c5799e7b95"
+    },
+    {
+      "path": "medieval/warlock-2.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "8f792603de08b4beafa9cc3c6674e7cac7a3c4367da50b618da79a11074727e6"
+    },
+    {
+      "path": "medieval/warlock-3.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "36a7922f0a798e36ffaaf42d46f7998e0502c0a24e9c459672d824b1affa82ab"
+    },
+    {
+      "path": "medieval/warlock-4.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "af57cea5e0b1544df25d939d8e86d27aecf59aa94f0fa50ee3b37e61d7bb6c0a"
+    },
+    {
+      "path": "medieval/warlock-5.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "173ce66fc975e82f03602ceb179ae232cce63c27289f223ebc4e7f04d7f5be85"
+    },
+    {
+      "path": "medieval/wizard-0.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "f1a5c740c3591301be5cc32156a0351d055dd1459b2212c3bdcc7ec59fa333a1"
+    },
+    {
+      "path": "medieval/wizard-1.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "ccf03ad837ad08534c6fd7affb052bb9bcaef52e2d29c9e45ec4c70f5c1d5619"
+    },
+    {
+      "path": "medieval/wizard-2.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "03deddaf03782c3092b019388e72e56d49208556bae010f946cd199231613753"
+    },
+    {
+      "path": "medieval/wizard-3.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "267be11e05159a9a64c9d1985b27fe025401887294368bf06c9bc0db41529617"
+    },
+    {
+      "path": "medieval/wizard-4.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "b79e8e16e3f6f77d5c890a1a4b27c79d640a7c8f34e25a9a37c629724a125538"
+    },
+    {
+      "path": "medieval/wizard-5.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "4a737933c1e158c4d033c8dba98f00ac9a8eddca9923809e587e66e783bb168d"
+    },
+    {
+      "path": "medieval/wolf-0.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 12,
+      "sha256": "b2699e2a7fe2d140ae76398a360b12b353b688300f65c6fb14caff7cf22520b6"
+    },
+    {
+      "path": "medieval/wolf-1.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 12,
+      "sha256": "be86e6009382adbeb99a39867ce939cfa8d7a6471b26c4db0b182e6ac3c5be1e"
+    },
+    {
+      "path": "medieval/wolf-2.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 12,
+      "sha256": "e262485cccbee6f06ff1f43cb527fe7d8abc895859c687a14713bdddda0e1feb"
+    },
+    {
+      "path": "medieval/wolf-3.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 12,
+      "sha256": "79b1aae933b9981a5b07434bb97e2155d933efbf9843790542ce611f245cdf24"
+    },
+    {
+      "path": "medieval/wolf-4.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 13,
+      "sha256": "730baa3b9149ef186f71b2743fac61551c36caa0821c3cf81f8f7c8ddefc422a"
+    },
+    {
+      "path": "medieval/wolf-5.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 12,
+      "sha256": "ce9bc0425c92b98978df7f3334d40c7657134cdefc92921f363b77aa51d4d475"
+    },
+    {
+      "path": "medieval/zombie-0.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 12,
+      "sha256": "45e6b499a79787ec5f40681a842c1eebf0332fd7bfe5664847cf56193450abe6"
+    },
+    {
+      "path": "medieval/zombie-1.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 12,
+      "sha256": "721a52207a141c80aff72565315b9a33bef6bcf60faea3befabd26b01b91788e"
+    },
+    {
+      "path": "medieval/zombie-2.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 12,
+      "sha256": "5bf21a847508120cf4208c3fa5ec20a635e2fa41e9ac210b139f8bf1fba797e5"
+    },
+    {
+      "path": "medieval/zombie-3.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 12,
+      "sha256": "c201d72a348083f521983da77f04bf193209aca59f4cdb5c2a6b31b212b41351"
+    },
+    {
+      "path": "medieval/zombie-4.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 12,
+      "sha256": "0cd3bf509795fa51175c5a01004c65fc0c551d95fe07f95bef8c8c69d3a430c7"
+    },
+    {
+      "path": "medieval/zombie-5.png",
+      "size": [
+        32,
+        28
+      ],
+      "opaqueColors": 12,
+      "sha256": "342c24739fd553fa460ffd7aecb792374d1a5faf3d64217ab8c93d30c1512c64"
+    },
+    {
+      "path": "tower-1.png",
+      "size": [
+        56,
+        64
+      ],
+      "opaqueColors": 20,
+      "sha256": "357546458c3d77c004bc8601f5d911a5f23c1dd31a7b71da29927b6c61f6605e"
+    },
+    {
+      "path": "tower-2.png",
+      "size": [
+        56,
+        64
+      ],
+      "opaqueColors": 22,
+      "sha256": "febcb9a20455f4ede01be4e5ca1d5162b7f33c6db9c70c44e30092fa318b9466"
+    },
+    {
+      "path": "tower-3.png",
+      "size": [
+        56,
+        64
+      ],
+      "opaqueColors": 22,
+      "sha256": "48669fa7387239440fe12481dc62e07a2e05715fb66646a557f374b014684379"
+    }
+  ]
+}

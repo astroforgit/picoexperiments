@@ -10,6 +10,7 @@ from py65.devices.mpu6502 import MPU
 ROOT = Path(__file__).resolve().parents[1]
 LABELS = {p[2].lower(): int(p[1], 16) for line in (ROOT/'generated/city-vbxe.lab').read_text().splitlines() if len(p := line.split()) == 3}
 
+START_GOLD=json.loads((ROOT/'content.json').read_text())['startingGold']
 IDLE_CACHES=json.loads((ROOT/'generated/hero-animation-layout.json').read_text()).get('idleCaches',[])
 
 class Memory:
@@ -18,6 +19,11 @@ class Memory:
         self.vram = bytearray(0x80000)
         self.palette = bytearray(768)
         self.page, self.bank, self.color = page, 0, 0
+        self.story_disk = (ROOT/'generated/heroes-story.atr').read_bytes()
+        self.story_reads = []
+        self.story_writes = []
+        self.disk_locked = False
+        self.audio_writes = []
         self.blits = 0
         self.portrait_blits = []
         self.hero_blits = []
@@ -35,9 +41,15 @@ class Memory:
 
     def __setitem__(self, a, v):
         if 0x9000 <= a < 0xa000 and self.bank & 128:
-            self.vram[(self.bank & 127)*4096+a-0x9000] = v
+            target=(self.bank & 127)*4096+a-0x9000
+            if self.page and self.ram[self.page+0x40]&1 and target<0x20000:
+                xdl=int.from_bytes(self.ram[self.page+0x41:self.page+0x44],'little')
+                front=int.from_bytes(self.vram[xdl+3:xdl+6],'little')//65536
+                assert target//65536!=front,'CPU drawing into the displayed framebuffer'
+            self.vram[target] = v
             return
         self.ram[a] = v
+        if a in (0xd202,0xd203):self.audio_writes.append((a,v))
         if self.page is None: return
         if a == self.page+0x5f: self.bank = v
         if a == self.page+0x44: self.color = v
@@ -85,11 +97,19 @@ class Memory:
             self.blits += 1
 
 class Machine:
-    def __init__(self, page=0xd600):
+    def __init__(self, page=0xd600, story=False, menu=False, gallery=False):
         self.mem = Memory(page)
         self.cpu = MPU(memory=self.mem)
-        data = (ROOT/'city-vbxe.xex').read_bytes()
-        i = 0
+        self.loader_data = (ROOT/'city-vbxe.xex').read_bytes()
+        self.loader_offset = 0
+        self.menu = menu
+        self.gallery = gallery
+        self.story = story and bool(page)
+        self.load_remaining()
+
+    def load_remaining(self):
+        data=self.loader_data
+        i=self.loader_offset
         while i < len(data):
             start = int.from_bytes(data[i:i+2], 'little'); i += 2
             if start == 65535: continue
@@ -98,17 +118,71 @@ class Machine:
             assert n > 0 and i+n <= len(data)
             for a, value in enumerate(data[i:i+n], start): self.mem[a] = value
             i += n
+            self.loader_offset=i
             if start <= 0x2e2 <= end:
-                self.call(int.from_bytes(self.mem.ram[0x2e2:0x2e4], 'little'))
+                entry=int.from_bytes(self.mem.ram[0x2e2:0x2e4], 'little')
+                if entry==LABELS['story_intro']:
+                    if self.story:
+                        self.cpu.sp=255
+                        self.cpu.stPushWord(0x05ff)
+                        self.cpu.pc=entry
+                        self.run_until(LABELS['story_intro.wait_action'])
+                        return
+                    # Gameplay tests skip only the blocking temporary INIT.
+                    # Native story tests run it and resume the real XEX loader.
+                    if self.mem.page:self.put('upload_index',16)
+                    else:self.call(entry) # Real no-VBXE INIT must return immediately.
+                else:self.call(entry)
         self.cpu.pc = LABELS['main']
-        self.run_until(LABELS['main_loop' if page else 'no_vbxe'])
+        self.run_until(LABELS['release_ui.show.loop' if self.menu else 'main_loop'] if self.mem.page else LABELS['no_vbxe'])
+
+    def resume_after_story(self):
+        self.run_until(0x600)
+        self.story=False
+        self.load_remaining()
 
     def run_until(self, stop, limit=4000000):
         for tick in range(limit):
             if self.cpu.pc == stop: return
             if tick % 1000 == 0: self.mem.ram[0x14] = (self.mem.ram[0x14]+1) & 255
-            self.cpu.step()
+            if self.cpu.pc == LABELS.get('release_ui.show') and not getattr(self,'menu',False):
+                # Gameplay fixtures skip only the blocking title menu; release UI
+                # tests execute it using menu=True. No bypass exists in the game.
+                self.cpu.pc=self.cpu.stPopWord()+1
+            elif self.cpu.pc == LABELS.get('gallery.check_events') and not getattr(self,'gallery',False):
+                # Other fixtures acknowledge blocking discoveries; dedicated gallery
+                # tests execute the messages. Collection/progression remains native.
+                self.put('gallery.notes_pending',0);self.put('gallery.painting_pending',0)
+                self.cpu.pc=self.cpu.stPopWord()+1
+            elif self.cpu.pc == 0xe459:
+                self.sio_read()
+            else:
+                self.cpu.step()
         raise AssertionError(f'CPU stuck at {self.cpu.pc:04x}, expected {stop:04x}')
+
+    def sio_read(self):
+        ram=self.mem.ram
+        sector=int.from_bytes(ram[0x30a:0x30c],'little')
+        size=int.from_bytes(ram[0x308:0x30a],'little')
+        ptr=int.from_bytes(ram[0x304:0x306],'little')
+        write=ram[0x302]==0x57
+        (self.mem.story_writes if write else self.mem.story_reads).append((sector,size))
+        assert ram[0x300:0x304]==bytes([0x31,1,0x57,0x80] if write else [0x31,1,0x52,0x40])
+        assert size==(128 if sector<=3 else 256)
+        offset=16+(sector-1)*128 if sector<=3 else 16+384+(sector-4)*256
+        disk=self.mem.story_disk
+        if disk is None or sector<1 or offset+size>len(disk):
+            self.cpu.y=138
+        elif write and self.mem.disk_locked:
+            self.cpu.y=144
+        elif write:
+            disk=bytearray(disk);disk[offset:offset+size]=ram[ptr:ptr+size];self.mem.story_disk=bytes(disk)
+            self.cpu.y=1
+        else:
+            ram[ptr:ptr+size]=disk[offset:offset+size]
+            self.cpu.y=1
+        ram[0x303]=self.cpu.y
+        self.cpu.pc=self.cpu.stPopWord()+1
 
     def call(self, name):
         self.cpu.sp = 255
@@ -177,7 +251,7 @@ def check(page, capture=False):
     assert m.get('gold',2)==content['startingGold']
     if capture:m.screenshot('city-start.png')
     m.fire();assert m.get('popup_open')==1
-    m.idle(120);assert m.get('popup_open')==1 and m.get('gold',2)==50
+    m.idle(120);assert m.get('popup_open')==1 and m.get('gold',2)==START_GOLD
     m.release();m.call('close_popup')
     # Every building/unit tier: purchase, recruit, upgrade, dismiss and accounting.
     m.call('clear_army');m.put('gold',60000,2)
@@ -195,10 +269,10 @@ def check(page, capture=False):
             expected+=building['recruitCosts'][tier]//2
             assert m.array('army_units')==[255]*5 and m.get('army_count')==0
             assert m.get('gold',2)==expected
-    m.call('new_city');m.put('gold',130,2);m.put('selected_plot',0);m.call('purchase')
-    assert m.array('building_levels')[0]==3 and m.get('gold',2)==0
-    m.put('gold',50,2);m.put('selected_plot',6);m.call('purchase')
-    assert m.array('army_units')==[2,1,255,255,255] and m.get('gold',2)==0
+    m.call('new_city');m.put('gold',content['buildings'][0]['costs'][1],2);m.put('selected_plot',0);m.call('purchase')
+    assert m.array('building_levels')[0]==2 and m.get('gold',2)==0
+    m.put('gold',content['buildings'][0]['recruitCosts'][1]-content['buildings'][0]['recruitCosts'][0],2);m.put('selected_plot',6);m.call('purchase')
+    assert m.array('army_units')==[1,0,255,255,255] and m.get('gold',2)==0
     # Insufficient funds is non-mutating.
     m.put('selected_plot',0);m.call('recruit');assert m.get('notice')==1
     before=(m.array('army_units'),m.get('gold',2));m.call('show_map');m.call('show_city')

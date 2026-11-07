@@ -1,0 +1,300 @@
+PRINCE AND THE NYMPH — ATARI VBXE
+Author: astrofor
+
+RELEASE
+Run ./atari/run-prince-and-the-nymph.sh or the Windows .cmd launcher.
+The old run-heroes-vbxe3 entry points remain compatible.
+A title menu follows the introduction: Start Game, Level, How to Play,
+Enemy Info, Sound On/Off (Fire toggles; off silences every cue for the session).
+Level cycles EASY / MEDIUM / HARD; MEDIUM is the default. Every level has the
+same gold (100 start, normal rewards) and the same unit stats. Each encounter
+group lists its enemies per level in greenhaven-unit-balance.json: enemies
+(EASY, the playtested balance), mediumEnemies and hardEnemies (bigger groups
+of stronger enemy types). The seeded group choice is the same on every level.
+
+Dark Forest duel (duel.json): the Dark Forest scout report has FIGHT, DUEL
+and BACK. A duel is a normal battle with your current army against one random
+enemy from duel.json (weights out of 32: Minibeast 12, Bat 8, Wolf 6, Beast 5,
+Vampire 1). Each pays its own purse (15/12/20/25/50 gold, difficulty-scaled)
+and gives no region progress or paintings; losses and casualties follow the
+usual rules. It is always available.
+
+Save/load (single-file boot ATR only): the boot loader sets savegame.boot_disk.
+Escape/SELECT in the city opens GAME MENU (SAVE GAME, LOAD GAME, BACK); the
+title menu gains LOAD GAME. One slot in the disk sector between the pictures
+and the game: 'NYS1', length, 42 campaign bytes, checksum. The XEX version
+never shows these options.
+
+Building prices: the highest level costs 140 (Barracks), 160 (Archery Range,
+Ranger Lodge, Wizard Tower) and 70 (Chapel discount level); previously 90/100/30.
+
+Enemy AI: an enemy attacks the nearest hero it can hit from where it stands
+(range and line of sight, so archers shoot any visible hero in range). If none,
+it searches the shortest open path around trees and fighters to the nearest
+hex from which some hero can be hit, and steps along it. Only when no such hex
+is reachable does it fall back to stepping towards the nearest hero.
+Native: atari/city/enemy-path.inc; simulator: enemyPolicy 'search' (default).
+release/audit-balance.cjs simulates every level and fails the release build if
+a harder level gives the fixed bots a higher mean completion rate than an easier one.
+It sits on a painted 320x200 title picture (art/title-v1/) that loads into
+the spare back buffer straight after the intro; gameplay reuses that VRAM.
+Rebuild the picture with python3 art/tools/compose-title.py.
+Short, soft POKEY cues (coin chime, fanfare, falling defeat phrase, muffled
+hits) play on channel 2; music is omitted.
+The development O shortcut is removed.
+Release README, checks, balance review and packaging: release/.
+Repeat the complete build/check/package flow with sh release/build.sh.
+
+BALANCE, ENCOUNTERS AND MONSTER RULES
+
+Build and play
+  cd atari/city
+  node tools/import-balance.js ../../greenhaven-unit-balance.json
+  sh build.sh
+Open atari/city/city-vbxe.xex with VBXE enabled. Build defaults to the improved
+vbxe-v2 artwork. HEROES_ART_PROFILE=classic sh build.sh uses the original art
+with the current gameplay. Node 22, ImageMagick and MADS are required.
+
+Preservation
+The exact pre-integration native executable, native config, editor and editor
+config are in backups/before-native-abilities-2026-10-17/. Older backups remain.
+The 150 original art inputs remain unchanged. The old art comparison and its
+included executables are historical art-review builds, before v3 gameplay.
+
+Picture-story introduction
+Three illustrated screens play once during XEX loading: the prince and forest
+nymph fall in love; the necromancer abducts her with no army in that scene;
+then the furious prince leads his troops. Raise an army at the palace, defeat
+the necromancer and rescue her. Fire, Enter or Space advances
+each page; release the button between presses. The game starts at the palace.
+The 320x200 screens use the existing shared palette and temporarily occupy
+the two screen buffers and the city-background cache. Game loading replaces
+the third picture with city art and overwrites ALL intro code at $7000 with
+battle data. The running game reserves no RAM or VRAM for the introduction.
+Source illustrations and exact image-generation prompts are in art/intro-v1/.
+
+Victory and wedding ending
+Defeating the Warlock in the final Necromancer Ruins encounter completes the
+campaign and automatically plays three ending pictures: the father reveal,
+the wedding ceremony, and the rowdy garden reception. The prince spares the defeated
+necromancer after the nymph promises to marry him. Her father escorts her down
+the aisle among happy human guests, zombies in suits and skeletons;
+at the garden reception she dances, the prince struggles to stand,
+and her father is sick onto the grass after the free bar.
+Fire, Enter or Space advances each picture. After THE END, another press starts
+a fresh campaign. Ordinary victories, losses and retreats do not play it.
+The main game now uses the approved full-quality 320x144 artwork with the
+shared 256-colour palette, at one native pixel per picture pixel. Twelve complete
+320x200 pages (three victory scenes, defeat and eight gallery paintings) stream from heroes-story.atr
+on D1: into the hidden framebuffer. Captions remain native and readable.
+No ending picture is reserved in gameplay VRAM or at $A000; a 256-byte buffer
+at $8400 is shared with existing rendering scratch RAM. Additional RAM hardware
+is not required. Source artwork: art/outro-v1/ and art/game-over-v1/.
+
+Start the MAIN GAME with:
+  cd steamlinejs/heroes/atari
+  ./run-heroes-vbxe3.sh
+The runner now attaches heroes-story.atr to D1: and loads heroes-vbxe3.xex,
+using the existing persistent Altirra hardware profile. On Windows, use
+run-heroes-vbxe3.cmd. If loading the XEX manually, attach the ATR to D1: first.
+The executable checks the disk signature and palette version before loading;
+missing or incompatible media shows an explicit message. Fire retries an
+ending page, or starts a new campaign from the defeat screen.
+
+Losing the entire army without enough gold to recruit shows the prince crying
+while four smiling medieval women exchange glances behind him. Caption:
+  THE PRINCE LOST HIS NYMPH.
+  HE IS DEVASTATED...
+  BUT FOR HOW LONG?
+Fire starts a fresh game. The original bankruptcy and casualty rules remain.
+
+Regression checks:
+  python3 atari/city/tools/test-story-streaming.py
+  python3 atari/city/tools/test-outro.py
+  python3 atari/city/tools/test-outro-shortcut.py
+  python3 atari/city/tools/test-game-over.py
+  python3 atari/city/tools/test-story-intro.py
+These execute native 6502 code with both VBXE register pages. Story reads are
+modeled at the OS SIO boundary; raster timing and physical drive timing are not
+emulated by these tests. The separate full-quality viewer remains available
+for direct inspection, now showing only the eight gallery paintings. Fire,
+Enter or Space advances, and the eighth page loops to the first. The runner
+./atari/run-outro-full-quality-test.sh mounts the matched ATR automatically.
+The viewer streams one page at a time using the existing framebuffers; it
+needs the companion disk and reserves no per-picture VRAM caches.
+
+Integrated balance
+Starts with 100 gold and two Militia (3 HP, 2 damage). The editor's current recruitment,
+individual upgrade and building prices are imported. Chapel costs 40/50/30,
+unlocking the fourth/fifth slots and then a 10-gold recruitment discount.
+Cavalry deals 3 damage; Demon has 3 HP, from the earlier simulation candidate.
+
+Unlimited encounters and unlocks
+34 weighted enemy groups across four regions and three initial difficulty stages.
+Dark Forest -> Catacombs -> Monster Caves -> Necromancer Ruins. Three victories
+unlock the next lair; the current lair stays open for unlimited battles until
+the final necromancer victory finishes the campaign and plays the wedding.
+There is no WINS x/3 text or battle limit in the pre-battle popup.
+After reaching the unlock threshold, each further victory adds one enemy HP;
+every three such wins adds one base damage. Reward increases by 10 gold for each
+HP step. Native caps are 99 HP and 9 base damage; Ogre preparation can add 2.
+The internal victory counter saturates at 255 to avoid wrapping or reading past
+the stage tables. It does not restrict entry, even after reaching that value.
+Further battles remain at maximum strength once the safe stat caps are reached.
+Defeat/retreat preserves the encounter seed and difficulty. The old flat Practice
+option is removed. Early fights use the authored pools; harder repeat fights
+use the final pool with strengthened enemies. Summons scale with the lair too.
+
+Native randomness uses an 8-bit seed initialized from Atari RANDOM and clock.
+Every successful battle advances it, wrapping after 255. Defeat and retreat
+preserve it. All 256 native seeds use the exact editor's weighted 32-bit hash
+and groups, via compiled tables. Editor previews also accept larger seeds;
+use 0..255 for direct native comparisons. Simulation uses the native seed cycle.
+
+Monster abilities
+Vampire (existing dark ID/art): dealing damage heals 1 HP, capped at original HP.
+Zombie: killing a hero converts its battlefield slot to an enemy zombie with
+2 HP. It acts next round. At most two conversions per battle, and raised zombies
+cannot convert more soldiers. The original soldier is permanently lost from the campaign army, including
+when the battle is won.
+Skeleton: Archery Range arrows deal one less damage, minimum 1. Magic/melee
+remain unchanged. Bone Archers do not gain this resistance.
+Ogre: instead of attacking immediately, prepares a +2 damage strike against the
+victim's hex. Next enemy phase it stands still and attacks that hex if a hero
+remains adjacent. Moving away avoids the hit. WIND status identifies preparation.
+Imp: after hitting, hops to the first open adjacent hex farther from its victim.
+Warlock: summons skeletons from round 2, at most two living summons. New summons
+act next round. Dead enemy slots are recycled if the twelve allocated slots fill.
+Killing the Warlock wins immediately. Ability messages appear above the board.
+
+Verification and limitations
+Tests execute the assembled 6502 code with a functional VBXE blitter at both
+D600 and D700. They cover all abilities, caps, delays, seeded groups, rewards,
+unlimited lairs, army purchases and upgrades, animation, UI controls and memory bounds.
+This checks logic and pixels, not physical Atari raster/DMA timing or human
+play difficulty. No physical-hardware run has been performed.
+The editor simulator has the same special rules, with healing for survivors, purchases,
+upgrades and tactical logs. Its player uses fixed shopping plans and pathfinding;
+its default enemy follows the native greedy movement. Simulation is not native
+execution. Actual tactical choices can differ. Returning to earlier lairs is allowed; replays keep the same enemies and reward.
+
+Benchmark
+node simulation/abilities-benchmark.cjs PATH_TO_OUTPUT_DIRECTORY
+Runs 2,560 campaigns: five strategies x 256 starting seeds x abilities on/off.
+The current benchmark uses permanent casualties and paid replacements.
+Completion depends on strategy and starting seed; the earlier 100% result
+assumed free restoration and no longer applies. See the latest generated report.
+The generated HTML includes full purchase and tactical logs for five examples.
+The browser editor compares abilities on/off without changing the active draft.
+
+Tests
+node tests/editor-balance.test.cjs
+node tests/editor-progression.test.cjs
+node tests/campaign-sim.test.cjs
+node tests/monster-abilities.test.cjs
+python3 atari/city/tools/test-monster-abilities.py
+python3 atari/city/tools/test-runtime.py
+python3 atari/city/tools/test-lowrez.py
+python3 atari/city/tools/test-chapel.py
+python3 atari/city/tools/test-hero-animation.py
+python3 atari/city/tools/test-battle-speed.py
+python3 atari/city/tools/test-battle-controls.py
+
+Launch the published executable without rebuilding
+  ./atari/run-heroes-vbxe3.sh
+Windows shortcut: atari/run-heroes-vbxe3.cmd (double-click).
+Both launch atari/heroes-vbxe3.xex through the shared Atari VBXE toolkit and
+reuse the persistent Altirra profile. Enable VBXE in that profile beforehand.
+The runner works independently of the current directory. Use --check in the
+shell runner, or -Check in PowerShell, to check paths without starting Altirra.
+
+Double-Fire input fix (2026-10-18)
+The first Fire on the already selected soldier now only arms the second press;
+it does not trigger a blocking battlefield redraw. This keeps input polling
+active to capture the release and rapid second Fire. Selecting another soldier
+still redraws, held Fire still cannot skip, and the second press still requires
+a release within the existing double-Fire interval. The last soldier's skip
+runs the enemy phase and starts the next player round.
+Regression: python3 atari/city/tools/test-double-fire-turn.py
+The previous v3 executable/source are preserved in
+backups/before-double-fire-fix-2026-10-18/.
+
+Encounter popup availability fix (2026-10-18)
+Unavailable Fight controls now show LOCKED without a button background or active
+outline, and navigation skips them. Locked regions and empty armies default to
+Back. The report shows the reason (previous region required or recruit an army).
+Practice is selectable only in Dark Forest after a Forest victory and with an
+army. Its unavailable state is informational; other regions omit it entirely.
+All popup entry, navigation and confirmation use the same availability checks.
+Regression: python3 atari/city/tools/test-encounter-popup.py
+
+Damage-scaled impact animation (2026-10-18)
+Attacks now use eight approach/contact/recovery frames. On contact, the target
+recoils up to five pixels away from the attacker and returns to its original
+position. A red point appears over its body for the impact frames: 1 HP lost
+uses 1x1 pixel, 2 HP 3x3, 3 HP 5x5, and 4+ HP 7x7. Size uses actual HP lost,
+including skeleton arrow resistance, the Ogre bonus and remaining HP on lethal
+hits. This is a visual offset, never a change to the occupied hex. Summons do
+not trigger damage effects. Ranged projectiles reach the target before impact.
+Regression: python3 atari/city/tools/test-hit-impact.py
+
+Character bars removed (2026-10-18)
+Removed the flat colored bars beneath battlefield soldiers and monsters.
+Health remains in the numeric bottom panel; hit recoil and red impact points
+remain visible.
+
+Permanent casualties (2026-10-18)
+A soldier killed in any fight is removed immediately from its original campaign
+slot, even when the battle is won. The same applies to defeats and retreats.
+A Zombie conversion permanently removes the original soldier too. No gold is
+refunded; its recorded purchase/upgrade investment is cleared. Empty army slots
+remain empty until the player buys replacements. Surviving soldiers still heal
+between fights. An empty army cannot enter battle; insufficient replacement
+funds can leave the campaign lost. No automatic rescue units are granted.
+The simulator uses the same rule and purchases replacements at current building
+tiers and full normal recruitment prices (including any earned Chapel discount).
+Regression tests:
+  python3 atari/city/tools/test-permanent-casualties.py
+  node tests/permanent-casualties.test.cjs
+The previous preset, native config and executable are preserved in
+backups/before-permanent-casualties-2026-10-18/.
+
+Endless lair progression (2026-10-18)
+The previous fixed Practice/replay descriptions above are historical and are
+superseded by the unlimited encounter rules. Unlock thresholds only gate the
+next lair. They never close the current lair or stop further battles.
+Native regression: python3 atari/city/tools/test-endless-lairs.py
+Editor/simulator regression: node tests/endless-lairs.test.cjs
+The stats benchmark still has a finite target (three wins in every region) for
+comparison; reaching that target does not end the actual game or editor preview.
+Previous configs and executable: backups/before-endless-lairs-2026-10-18/.
+
+Game over and restart (2026-10-18)
+The campaign now enters GAME OVER when no soldiers remain and no recruit from
+any currently built recruiting building is affordable. It compares the current
+highest unlocked tier in each building, applies Chapel's discount, and checks
+16-bit prices. Low gold alone is not a loss while soldiers remain alive.
+The defeat check runs after battle actions/rewards finish and after city actions.
+The game-over screen explains the loss. Fire starts a new campaign with the
+normal initial gold, buildings, two Spearmen and locked lairs. A held Fire press
+cannot also open the new city's popup. Escape/directions do not bypass game over.
+Simulator runs now expose gameOver separately from a fixed buying strategy that
+cannot afford its preferred replacement while a cheaper recruit is still possible.
+Tests: python3 atari/city/tools/test-game-over.py; node tests/game-over.test.cjs
+
+Chapel gallery
+After two victories, scouts discover the notes of goblin painter Grubbrush.
+Bandits scattered eight portraits, two hidden in each lair. Forest wins three
+and four yield its two; other regions yield theirs on wins one and two. The
+eight paintings are shuffled at campaign start with a separate seeded RNG;
+encounter seeds and gold rewards are unchanged. No duplicate finds. Build
+the Chapel to enable ART GALLERY. Missing items are locked; viewing art is free
+and returns to the same campaign/popup. A new game clears the collection.
+The matched XEX/ATR now uses a 1 MB companion disk with twelve pages. Both
+the game and standalone viewer stream one picture at a time into the existing
+front/back screen buffers via $8400..$84FF, with no resident picture caches.
+The standalone run-outro-full-quality-test.sh shows only the eight gallery
+paintings, loops after the last, and automatically attaches the story ATR.
+Selected artwork: art/gallery-selection.json. Source images and built-in imagegen
+prompts are preserved in art/gallery-v1/ through art/gallery-v4/.
+Native checks: test-gallery.py, test-story-streaming.py, test-outro-full-quality.py

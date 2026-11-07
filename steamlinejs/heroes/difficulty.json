@@ -1,0 +1,23 @@
+{
+  "format": "prince-and-the-nymph-difficulty",
+  "version": 1,
+  "default": 1,
+  "notes": "Every level uses the same gold and unit stats. Medium and Hard use each encounter group's mediumEnemies/hardEnemies lists (bigger groups of stronger enemy types) from greenhaven-unit-balance.json; Easy uses enemies. rewardShift n>0 adds reward>>n, n<0 subtracts reward>>-n.",
+  "levels": [
+    {
+      "name": "EASY",
+      "startingGold": 100,
+      "rewardShift": 0
+    },
+    {
+      "name": "MEDIUM",
+      "startingGold": 100,
+      "rewardShift": 0
+    },
+    {
+      "name": "HARD",
+      "startingGold": 100,
+      "rewardShift": 0
+    }
+  ]
+}

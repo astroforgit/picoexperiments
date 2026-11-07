@@ -14,8 +14,17 @@ for (const b of content.buildings) {
 function convert(args, input) {
   return cp.execFileSync("convert", args, {input, maxBuffer:32*1024*1024});
 }
+const artProfile=process.env.HEROES_ART_PROFILE||'classic';
+if(!/^[a-z0-9-]+$/.test(artProfile))throw Error('Invalid asset profile name');
+const profileRoot=path.join(root,'assets/profiles',artProfile);
+if(artProfile!=='classic'&&!fs.existsSync(path.join(profileRoot,'manifest.json')))throw Error('Missing asset profile manifest: '+artProfile);
+function resolveArt(file){
+ if(artProfile==='classic')return file;
+ const alternative=path.join(profileRoot,path.relative('assets',file));
+ return fs.existsSync(alternative)?alternative:file;
+}
 function rgba(file, w, h) {
-  return convert([file, "-filter", "Box", "-resize", `${w}x${h}!`, "-depth", "8", "rgba:-"]);
+  return convert([resolveArt(file), "-filter", "Box", "-resize", `${w}x${h}!`, "-depth", "8", "rgba:-"]);
 }
 const W=56, H=64, size=W*H;
 const [aw,ah] = cp.execFileSync("identify",["-format","%w %h","assets/buildings-source.png"]).toString().split(" ").map(Number);
@@ -83,7 +92,7 @@ const heroPalettes=heroFrames.map(frames=>{
 });
 // Weighted median-cut palette shared by all art; 0 transparent, 1..7 UI colors.
 const hist=new Map();
-for(const raw of [background,encounters,...sprites,...portraits,...battleMaps,...enemySprites,...obstacleSprites,...heroFrames.flat()]) for(let i=0;i<raw.length;i+=4) if(raw[i+3]>=128) {
+for(const raw of [background,encounters,...sprites,...portraits,...battleMaps,...(artProfile==='classic'?enemySprites:[]),...obstacleSprites,...heroFrames.flat()]) for(let i=0;i<raw.length;i+=4) if(raw[i+3]>=128) {
   const key=((raw[i]>>3)<<10)|((raw[i+1]>>3)<<5)|(raw[i+2]>>3);
   const e=hist.get(key)||[0,0,0,0];
   e[0]+=raw[i];e[1]+=raw[i+1];e[2]+=raw[i+2];e[3]++;hist.set(key,e);
@@ -132,13 +141,26 @@ const font={
  "0":[14,17,19,21,25,17,14],"1":[4,12,4,4,4,4,14],"2":[14,17,1,2,4,8,31],"3":[30,1,1,14,1,1,30],"4":[2,6,10,18,31,2,2],"5":[31,16,16,30,1,1,30],"6":[14,16,16,30,17,17,14],"7":[31,1,2,4,8,8,8],"8":[14,17,17,14,17,17,14],"9":[14,17,17,15,1,1,14],
  ":":[0,4,4,0,4,4,0],"-":[0,0,0,31,0,0,0],"/":[1,1,2,4,8,16,16],"> ":[0,16,8,4,8,16,0],"+":[0,4,4,31,4,4,0],".":[0,0,0,0,0,12,12],"!":[4,4,4,4,4,0,4],"?":[14,17,1,2,4,0,4],"(":[2,4,8,8,8,4,2],")":[8,4,2,2,2,4,8]
 };
+font[","]=[0,0,0,0,0,4,8];
 font[">"]=font["> "];font["<"]=[0,1,2,4,2,1,0];
 const glyphs=Buffer.alloc(96*48);
 for(let ch=32;ch<128;ch++) for(let y=0;y<7;y++)for(let x=0;x<5;x++) {
   if(((font[String.fromCharCode(ch)]||[])[y]||0)&(16>>x))glyphs[(ch-32)*48+y*6+x]=3;
 }
+const buildingGeometry=sprites.map(raw=>{
+ let x0=0,y0=0,x1=W,y1=H;
+ if(artProfile!=='classic'){
+  x0=W;y0=H;x1=0;y1=0;
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(raw[(y*W+x)*4+3]>=128){x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x+1);y1=Math.max(y1,y+1);}
+ }
+ if(x1<=x0||y1<=y0)throw Error('Empty building sprite');
+ return {x:x0,y:y0,w:x1-x0,h:y1-y0};
+});
+const buildingOffsets=[];let buildingBytes=0;
+const buildingPixels=sprites.map((raw,i)=>{const g=buildingGeometry[i],full=indexed(raw),pixels=Buffer.alloc(g.w*g.h);for(let y=0;y<g.h;y++)full.copy(pixels,y*g.w,(y+g.y)*W+g.x,(y+g.y)*W+g.x+g.w);buildingOffsets.push(buildingBytes);buildingBytes+=pixels.length;return pixels;});
+if(buildingBytes>15*size)throw Error('Building graphics overlap font storage');
 const vram=Buffer.alloc(0x5f000);indexed(background).copy(vram);
-sprites.forEach((s,i)=>indexed(s).copy(vram,65536+i*size));glyphs.copy(vram,65536+15*size);
+buildingPixels.forEach((pixels,i)=>pixels.copy(vram,65536+buildingOffsets[i]));glyphs.copy(vram,65536+15*size);
 heroFrames.slice(0,5).forEach((frames,i)=>indexed(frames[0]).copy(vram,2*65536+i*32*28));
 indexed(encounters).copy(vram,3*65536);
 const battleAddresses=[0x44000,0x60000,0x6a000,0x74000];
@@ -178,8 +200,13 @@ function packHero(raw,pal){
  }out.push(0);return Buffer.from(out);
 }
 const gaps=[[0x2fa00,0x30000],[0x3fd80,0x40000],[0x41180,0x42000],[0x42000,0x43000],[0x43000,0x44000],[0x4e000,0x4f000],[0x4f000,0x50000],[0x5fa00,0x60000],[0x7e380,0x7f000]];
+// Reuse transparent building padding for poses, split at aperture-bank boundaries.
+if(artProfile!=='classic')for(let a=0x30000+buildingBytes;a<0x3d200;){const end=Math.min((Math.floor(a/4096)+1)*4096,0x3d200);gaps.push([a,end]);a=end;}
 const frames=heroFrames.flatMap((fs,i)=>fs.map(raw=>packHero(raw,heroPalettes[i])));
 const addresses=Array(frames.length),limits=gaps.map(g=>g[0]);
+const animationBudget={bytes:frames.reduce((n,f)=>n+f.length,0),available:gaps.reduce((n,g)=>n+g[1]-g[0],0),perSet:heroSets.map((name,i)=>({name,bytes:frames.slice(i*6,i*6+6).reduce((n,f)=>n+f.length,0)}))};
+fs.writeFileSync('generated/animation-budget.json',JSON.stringify(animationBudget,null,2)+'\n');
+console.log(`Animation budget: ${animationBudget.bytes}/${animationBudget.available} bytes before idle caches.`);
 // Best-fit, largest first: frames never cross a 4K aperture boundary.
 frames.map((f,i)=>i).sort((a,b)=>frames[b].length-frames[a].length).forEach(i=>{
  const choices=gaps.map((g,n)=>[n,g[1]-limits[n]-frames[i].length]).filter(x=>x[1]>=0).sort((a,b)=>a[1]-b[1]);
@@ -209,6 +236,7 @@ fs.writeFileSync('generated/hero-animation.inc',heroDefs);
 fs.writeFileSync('generated/hero-animation-layout.json',JSON.stringify({idleCaches,addresses,lengths:frames.map(f=>f.length),cache:[0x7e000,896]},null,2));
 console.log(`Packed 126 full-body fighter frames into ${frames.reduce((n,f)=>n+f.length,0)} VRAM bytes.`);
 fs.writeFileSync("generated/palette.bin",Buffer.from(palette.flat()));
+require('./build-story-assets')({convert,indexed,palette,font:glyphs});
 fs.writeFileSync("generated/vram.bin",vram);
 const bytes=(name,a)=>`${name}\n        dta ${a.join(",")}\n`;
 const ptr=(name,a)=>bytes(name+"_lo",a.map(x=>"<"+x))+bytes(name+"_hi",a.map(x=>">"+x));
@@ -225,14 +253,76 @@ bytes("unit_price_lo",content.buildings.flatMap(b=>b.recruitCosts.map(c=>c&255))
 bytes("unit_family",content.buildings.flatMap((b,i)=>[i,i,i])),bytes("unit_tier",content.buildings.flatMap(b=>[1,2,3])),
 bytes("cost_lo",content.buildings.flatMap(b=>b.costs.map(c=>c&255))),bytes("cost_hi",content.buildings.flatMap(b=>b.costs.map(c=>c>>8))),
 ...['hp','damage','range'].map(k=>bytes("unit_"+k,content.buildings.flatMap(b=>b[k]))),
-bytes("sprite_lo",sprites.map((_,i)=>(i*size)&255)),bytes("sprite_hi",sprites.map((_,i)=>(i*size)>>8)),
+bytes("sprite_lo",buildingOffsets.map(a=>a&255)),bytes("sprite_hi",buildingOffsets.map(a=>a>>8)),
+...(artProfile==='classic'?[]:[bytes("sprite_crop_x",buildingGeometry.map(g=>g.x)),bytes("sprite_crop_y",buildingGeometry.map(g=>g.y)),bytes("sprite_width",buildingGeometry.map(g=>g.w)),bytes("sprite_height",buildingGeometry.map(g=>g.h))]),
 bytes("portrait_lo",portraits.map((_,i)=>(heroMapping[i]*32*28)&255)),bytes("portrait_hi",portraits.map((_,i)=>(heroMapping[i]*32*28)>>8)),
 bytes("glyph_lo",Array.from({length:96},(_,i)=>(15*size+i*48)&255)),bytes("glyph_hi",Array.from({length:96},(_,i)=>(15*size+i*48)>>8)),...strings];
 fs.writeFileSync("generated/content.inc",defs.join("\n")+"\n");
+fs.writeFileSync("generated/asset-profile.inc",`CROPPED_BUILDINGS = ${artProfile==='classic'?0:1}\n`);
 const uploads=[];
+// Three temporary pages use banks 0..47, before gameplay assets replace them.
+// Keep the gameplay palette unchanged and stamp captions with the native font.
+const storyPages=[
+ {file:'forest-love',lines:[
+  'IN THE FOREST, A YOUNG PRINCE MET A NYMPH.',
+  'THEY FELL IN LOVE BENEATH THE ANCIENT TREES.'
+ ],action:'FIRE / ENTER / SPACE: NEXT PAGE'},
+ {file:'necromancer-abduction',lines:[
+  'AN EVIL NECROMANCER KIDNAPPED THE NYMPH.',
+  'THE PRINCE WAS NOT AMUSED.'
+ ],action:'FIRE / ENTER / SPACE: NEXT PAGE'},
+ {file:'prince-leads-army',lines:[
+  'FURIOUS, HE VOWS TO LEAD AN ARMY.',
+  'BUILD YOUR FORCES AT THE PALACE.',
+  'DEFEAT THE NECROMANCER AND BRING HER HOME.'
+ ],action:'FIRE / ENTER / SPACE: RAISE YOUR ARMY'}
+];
+for(const [page,story] of storyPages.entries()){
+ const pixels=Buffer.alloc(65536,1);
+ indexed(rgba(`../../art/intro-v1/${story.file}.png`,320,144)).copy(pixels);
+ pixels.fill(2,144*320,145*320);
+ function caption(text,y,color){
+  if(text.length>52)throw Error('Intro caption too long');
+  const x0=Math.floor((320-text.length*6+1)/2);
+  for(let i=0;i<text.length;i++)for(let y1=0;y1<7;y1++)for(let x=0;x<5;x++)
+   if(((font[text[i]]||[])[y1]||0)&(16>>x))pixels[(y+y1)*320+x0+i*6+x]=color;
+ }
+ story.lines.forEach((text,i)=>caption(text,159+i*9,3));
+ caption(story.action,190,5);
+ fs.writeFileSync(`generated/intro-${page+1}.bin`,pixels);
+ const rgb=Buffer.alloc(64000*3);
+ for(let i=0;i<64000;i++)for(let c=0;c<3;c++)rgb[i*3+c]=palette[pixels[i]][c];
+ convert(['-size','320x200','-depth','8','rgb:-',`generated/intro-${page+1}.png`],rgb);
+ for(let bank=0;bank<16;bank++){
+  const id=page*16+bank;
+  const bankFile=`generated/${page===2?'intro-':''}bank-${id}.bin`;
+  fs.writeFileSync(bankFile,pixels.subarray(bank*4096,(bank+1)*4096));
+  uploads.push(`        org $6000\n        ins '${bankFile}'\n        ini upload_chunk`);
+ }
+}
+// Display while loading; the next uploads replace picture three with city art,
+// and the final battle tables overwrite the temporary intro machine code.
+uploads.push(`        org $7000\n        icl 'story-intro.inc'\n        ini story_intro`);
+// Title picture: composed by art/tools/compose-title.py. It loads into the
+// spare back buffer once the intro has finished with it; the menu copies it
+// to the front buffer and gameplay overwrites both buffers after Start.
+{
+ const pixels=Buffer.alloc(65536,1);
+ indexed(rgba('../../art/title-v1/title.png',320,200)).copy(pixels);
+ fs.writeFileSync('generated/title.bin',pixels);
+ const rgb=Buffer.alloc(64000*3);
+ for(let i=0;i<64000;i++)for(let c=0;c<3;c++)rgb[i*3+c]=palette[pixels[i]][c];
+ convert(['-size','320x200','-depth','8','rgb:-','generated/title.png'],rgb);
+ for(let bank=0;bank<16;bank++){
+  const bankFile=`generated/title-bank-${bank+16}.bin`;
+  fs.writeFileSync(bankFile,pixels.subarray(bank*4096,(bank+1)*4096));
+  uploads.push(`        org $6000\n        ins '${bankFile}'\n        ini upload_chunk`);
+ }
+}
 for(let i=0;i<vram.length/4096;i++){
   fs.writeFileSync(`generated/bank-${i+32}.bin`,vram.subarray(i*4096,(i+1)*4096));
   uploads.push(`        org $6000\n        ins 'generated/bank-${i+32}.bin'\n        ini upload_chunk`);
 }
 fs.writeFileSync("generated/uploads.inc",uploads.join("\n")+"\n");
-console.log("Exported background, 15 buildings, 15 unit portraits, shared palette and font.");
+fs.writeFileSync('generated/asset-profile.json',JSON.stringify({profile:artProfile,buildingBytes,buildingGeometry,buildingOffsets,overrides:artProfile==='classic'?0:JSON.parse(fs.readFileSync(path.join(profileRoot,'manifest.json'))).files.length,compressedAnimationBytes:frames.reduce((n,f)=>n+f.length,0),idleCaches:idleCaches.length},null,2)+'\n');
+console.log(`Exported ${artProfile}: background, 15 buildings, 15 unit portraits, shared palette and font.`);

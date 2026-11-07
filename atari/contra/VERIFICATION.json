@@ -1,0 +1,690 @@
+{
+  "binary": "contra.xex",
+  "sha256": "d10a2277e7aa5e9803768bf53c7d3894323fc236bee69bef4671fcc66a0551e5",
+  "bytes": 189384,
+  "source_rom_sha256": "26541a5550ee22deeb3d5484e4a96130219b58cff74d068fb1eb6567fa5e5519",
+  "upstream_revision": "687d651c021fd7020f10d05b970ccb62663c94bd",
+  "original_prg_reassembly_identical": true,
+  "clean_export_rebuild_identical": true,
+  "hardware_service_tests": {
+    "register_pages": [
+      "D600",
+      "D700"
+    ],
+    "background_patterns_per_page": 256,
+    "sprite_8x16_patterns_per_page": 256,
+    "chr_invalidations_per_page": 512,
+    "nametable_pixels_compared": 122880,
+    "sprite_flip_transparency_clipping": true,
+    "targeted_chr_row_dirty_check": true,
+    "chr_upload_coalescing": true,
+    "random_dirty_maps": 8,
+    "pitch_conversions": 8192
+  },
+  "pal_stage_checks": [
+    {
+      "stage": 1,
+      "score_wait_skips": 1,
+      "load_frames": 150,
+      "positions": 92,
+      "bullets": true,
+      "display_updates": 65
+    },
+    {
+      "stage": 2,
+      "score_wait_skips": 1,
+      "load_frames": 292,
+      "positions": 71,
+      "bullets": true,
+      "display_updates": 19
+    },
+    {
+      "stage": 3,
+      "score_wait_skips": 1,
+      "load_frames": 284,
+      "positions": 103,
+      "bullets": true,
+      "display_updates": 74
+    },
+    {
+      "stage": 4,
+      "score_wait_skips": 1,
+      "load_frames": 288,
+      "positions": 69,
+      "bullets": true,
+      "display_updates": 15
+    },
+    {
+      "stage": 5,
+      "score_wait_skips": 1,
+      "load_frames": 301,
+      "positions": 86,
+      "bullets": true,
+      "display_updates": 68
+    },
+    {
+      "stage": 6,
+      "score_wait_skips": 1,
+      "load_frames": 296,
+      "positions": 90,
+      "bullets": true,
+      "display_updates": 72
+    },
+    {
+      "stage": 7,
+      "score_wait_skips": 1,
+      "load_frames": 300,
+      "positions": 87,
+      "bullets": true,
+      "display_updates": 74
+    },
+    {
+      "stage": 8,
+      "score_wait_skips": 1,
+      "load_frames": 301,
+      "positions": 78,
+      "bullets": true,
+      "display_updates": 68
+    }
+  ],
+  "stage_run_note": "All eight stages checked together on the final build, using labeled score-wait breakpoints in the test harness.",
+  "interactive_altirra_verified": false,
+  "real_hardware_verified": false,
+  "limitations": [
+    "Scene-dependent redraw rate and long loading transitions",
+    "Approximate POKEY audio; DMC samples and hardware pulse sweeps omitted",
+    "Sprite/background priority bit 5 not reproduced",
+    "Full boss fights and uninterrupted playthrough not verified"
+  ],
+  "ending_transition": {
+    "forced_boss_defeat_transition": true,
+    "game_routine": 6,
+    "current_level": 8,
+    "note": "Tests transition into ending; does not simulate defeating the boss."
+  },
+  "audio_benchmark": {
+    "before": {
+      "samples": 242,
+      "min_cycles": 454,
+      "max_cycles": 537,
+      "mean_cycles": 490.3801652892562
+    },
+    "after": {
+      "samples": 242,
+      "min_cycles": 50,
+      "max_cycles": 50,
+      "mean_cycles": 50.0
+    }
+  },
+  "all_stage_fixed_game_banks_intact": true,
+  "changes": [
+    "Coalesce background invalidations during CHR uploads",
+    "Pack eight validity flags per dirty-map byte",
+    "Lookup-table audio conversion",
+    "Correct exact-256 POKEY divider conversion",
+    "Remove unused X-register save/restore in PPUCTRL service",
+    "Assert non-overlapping VRAM allocations during assembly",
+    "Real-input PAL/NTSC sessions with protected VRAM guards and negative control",
+    "Temporary-build A/B and invalid-layout tests",
+    "Suppress music codes $26\u2013$51 while retaining sound effects",
+    "Skip idle audio channel conversion",
+    "Sample OAM and scrolling after tile work",
+    "Retry OAM snapshot if a game update interrupts it, without masking NMIs",
+    "Unroll OAM copying and inline pixel expansion",
+    "Present completed frames on nested VBI without waiting for a long game NMI"
+  ],
+  "previous_release_benchmarks": {
+    "sha256": "42c5fcc84e0d6d85e84af9f8bb95b7d5ee790c36760749840025d8e4bd8feea7",
+    "gameplay": [
+      {
+        "stage": 1,
+        "video_frames": 100,
+        "before": {
+          "game_ticks": 119,
+          "pictures": 16
+        },
+        "after": {
+          "game_ticks": 119,
+          "pictures": 23
+        }
+      },
+      {
+        "stage": 2,
+        "video_frames": 100,
+        "before": {
+          "game_ticks": 105,
+          "pictures": 9
+        },
+        "after": {
+          "game_ticks": 110,
+          "pictures": 12
+        }
+      }
+    ],
+    "method": "Identical baseline gameplay checkpoints at an idle boundary; changed assembled code/table bytes replaced for the candidate. 100 PAL video frames each. Headless model."
+  },
+  "harness_failure_investigation": {
+    "original_timeout_frames": 800,
+    "diagnostic_frames": 1600,
+    "score_countdown_at_frame_300": 190,
+    "score_countdown_at_frame_1600": 60,
+    "cause": "Video-boundary sampling missed the gaps between long game NMIs, preventing the intended score-wait skip.",
+    "fix": "Clear the test-only presentation counter at the labeled LEVEL_ROUTINE_02 entry before its loads; assert exactly one breakpoint hit.",
+    "resumed_reports_preserve_prior_records": true
+  },
+  "guide_testing": {
+    "guide": "../howtotestgame/README.md",
+    "real_input_sessions": {
+      "pal-d600": {
+        "sha256": "d10a2277e7aa5e9803768bf53c7d3894323fc236bee69bef4671fcc66a0551e5",
+        "video_frames": 1396,
+        "seed": 23,
+        "states": [
+          [
+            "title menu",
+            339
+          ],
+          [
+            "two-player game",
+            925
+          ]
+        ],
+        "two_player_menu": true,
+        "exact_shoot_jump_input_bits": true,
+        "pokey_volume_active": true,
+        "return_keyboard_start": true,
+        "pause_resume": true,
+        "guard_negative_control": true,
+        "protected_vram_bytes": 213539,
+        "protected_vram_unchanged": true,
+        "fixed_game_bank_intact": true,
+        "gameplay_pictures_in_90_frames": 51
+      },
+      "ntsc-d700": {
+        "sha256": "d10a2277e7aa5e9803768bf53c7d3894323fc236bee69bef4671fcc66a0551e5",
+        "video_frames": 1577,
+        "seed": 91,
+        "states": [
+          [
+            "title menu",
+            408
+          ],
+          [
+            "two-player game",
+            1106
+          ]
+        ],
+        "two_player_menu": true,
+        "exact_shoot_jump_input_bits": true,
+        "pokey_volume_active": true,
+        "return_keyboard_start": true,
+        "pause_resume": true,
+        "guard_negative_control": true,
+        "protected_vram_bytes": 213539,
+        "protected_vram_unchanged": true,
+        "fixed_game_bank_intact": true,
+        "gameplay_pictures_in_90_frames": 45
+      }
+    },
+    "ppuctrl_ab": {
+      "cases": 1024,
+      "register_flags_and_state_identical": true,
+      "cycles_saved_per_call": 8,
+      "baseline_cycles": [
+        47,
+        49
+      ],
+      "optimized_cycles": [
+        39,
+        41
+      ],
+      "isolated_temporary_builds": true
+    },
+    "invalid_layouts": {
+      "rejected": [
+        "PRG overlap",
+        "CHR overlap",
+        "list overflow"
+      ]
+    },
+    "desktop_attempt": "Computer-use initialization failed: sandboxCwd is not a local file URI"
+  },
+  "music_disabled": true,
+  "sound_effects_retained": true,
+  "music_and_snapshot_tests": {
+    "suppressed_music_codes": 44,
+    "shooting_effect_retained": true,
+    "scroll_and_oam_sampled_after_tile_work": true,
+    "interrupted_snapshot_retries": true,
+    "idle_audio_fast_path_preserves_triggers": true,
+    "nested_vbi_flips_finished_frames_only": true
+  },
+  "scrolling_benchmark": {
+    "before": {
+      "sha256": "990787a331f2be5d2200f0c14ab4a35011a132aa6278553a7d79d97d447ccb93",
+      "video_frames": 180,
+      "pictures": 29,
+      "game_ticks": 205,
+      "max_gap_video_frames": 15,
+      "mean_gap_video_frames": 6.0,
+      "presentation_events": [
+        {
+          "frame": 8,
+          "scroll_x": 91,
+          "scroll_y": 224
+        },
+        {
+          "frame": 13,
+          "scroll_x": 94,
+          "scroll_y": 224
+        },
+        {
+          "frame": 18,
+          "scroll_x": 94,
+          "scroll_y": 224
+        },
+        {
+          "frame": 23,
+          "scroll_x": 94,
+          "scroll_y": 224
+        },
+        {
+          "frame": 28,
+          "scroll_x": 94,
+          "scroll_y": 224
+        },
+        {
+          "frame": 33,
+          "scroll_x": 94,
+          "scroll_y": 224
+        },
+        {
+          "frame": 38,
+          "scroll_x": 94,
+          "scroll_y": 224
+        },
+        {
+          "frame": 43,
+          "scroll_x": 94,
+          "scroll_y": 224
+        },
+        {
+          "frame": 48,
+          "scroll_x": 94,
+          "scroll_y": 224
+        },
+        {
+          "frame": 53,
+          "scroll_x": 94,
+          "scroll_y": 224
+        },
+        {
+          "frame": 58,
+          "scroll_x": 99,
+          "scroll_y": 224
+        },
+        {
+          "frame": 71,
+          "scroll_x": 113,
+          "scroll_y": 224
+        },
+        {
+          "frame": 79,
+          "scroll_x": 121,
+          "scroll_y": 224
+        },
+        {
+          "frame": 86,
+          "scroll_x": 129,
+          "scroll_y": 224
+        },
+        {
+          "frame": 94,
+          "scroll_x": 137,
+          "scroll_y": 224
+        },
+        {
+          "frame": 109,
+          "scroll_x": 137,
+          "scroll_y": 224
+        },
+        {
+          "frame": 118,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 123,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 128,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 134,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 138,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 143,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 148,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 154,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 158,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 163,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 168,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 173,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 178,
+          "scroll_x": 157,
+          "scroll_y": 224
+        }
+      ]
+    },
+    "after": {
+      "sha256": "d10a2277e7aa5e9803768bf53c7d3894323fc236bee69bef4671fcc66a0551e5",
+      "video_frames": 180,
+      "pictures": 52,
+      "game_ticks": 210,
+      "max_gap_video_frames": 12,
+      "mean_gap_video_frames": 3.3962264150943398,
+      "presentation_events": [
+        {
+          "frame": 1,
+          "scroll_x": 77,
+          "scroll_y": 224
+        },
+        {
+          "frame": 7,
+          "scroll_x": 83,
+          "scroll_y": 224
+        },
+        {
+          "frame": 12,
+          "scroll_x": 93,
+          "scroll_y": 224
+        },
+        {
+          "frame": 14,
+          "scroll_x": 94,
+          "scroll_y": 224
+        },
+        {
+          "frame": 17,
+          "scroll_x": 94,
+          "scroll_y": 224
+        },
+        {
+          "frame": 19,
+          "scroll_x": 94,
+          "scroll_y": 224
+        },
+        {
+          "frame": 21,
+          "scroll_x": 94,
+          "scroll_y": 224
+        },
+        {
+          "frame": 24,
+          "scroll_x": 94,
+          "scroll_y": 224
+        },
+        {
+          "frame": 27,
+          "scroll_x": 94,
+          "scroll_y": 224
+        },
+        {
+          "frame": 29,
+          "scroll_x": 94,
+          "scroll_y": 224
+        },
+        {
+          "frame": 32,
+          "scroll_x": 94,
+          "scroll_y": 224
+        },
+        {
+          "frame": 34,
+          "scroll_x": 94,
+          "scroll_y": 224
+        },
+        {
+          "frame": 37,
+          "scroll_x": 94,
+          "scroll_y": 224
+        },
+        {
+          "frame": 39,
+          "scroll_x": 94,
+          "scroll_y": 224
+        },
+        {
+          "frame": 41,
+          "scroll_x": 94,
+          "scroll_y": 224
+        },
+        {
+          "frame": 44,
+          "scroll_x": 94,
+          "scroll_y": 224
+        },
+        {
+          "frame": 46,
+          "scroll_x": 94,
+          "scroll_y": 224
+        },
+        {
+          "frame": 48,
+          "scroll_x": 94,
+          "scroll_y": 224
+        },
+        {
+          "frame": 50,
+          "scroll_x": 94,
+          "scroll_y": 224
+        },
+        {
+          "frame": 53,
+          "scroll_x": 94,
+          "scroll_y": 224
+        },
+        {
+          "frame": 56,
+          "scroll_x": 94,
+          "scroll_y": 224
+        },
+        {
+          "frame": 63,
+          "scroll_x": 103,
+          "scroll_y": 224
+        },
+        {
+          "frame": 67,
+          "scroll_x": 103,
+          "scroll_y": 224
+        },
+        {
+          "frame": 75,
+          "scroll_x": 118,
+          "scroll_y": 224
+        },
+        {
+          "frame": 78,
+          "scroll_x": 118,
+          "scroll_y": 224
+        },
+        {
+          "frame": 83,
+          "scroll_x": 127,
+          "scroll_y": 224
+        },
+        {
+          "frame": 87,
+          "scroll_x": 127,
+          "scroll_y": 224
+        },
+        {
+          "frame": 99,
+          "scroll_x": 141,
+          "scroll_y": 224
+        },
+        {
+          "frame": 107,
+          "scroll_x": 149,
+          "scroll_y": 224
+        },
+        {
+          "frame": 111,
+          "scroll_x": 152,
+          "scroll_y": 224
+        },
+        {
+          "frame": 117,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 120,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 123,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 125,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 128,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 131,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 134,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 136,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 139,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 142,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 145,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 148,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 151,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 154,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 156,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 159,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 162,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 166,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 169,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 173,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 176,
+          "scroll_x": 157,
+          "scroll_y": 224
+        },
+        {
+          "frame": 179,
+          "scroll_x": 157,
+          "scroll_y": 224
+        }
+      ]
+    },
+    "method": "Same scripted session from separate fresh boots, followed by 180 frames of rightward movement, shooting and periodic jumping. Headless model; not cycle-identical game states or exact hardware timings."
+  }
+}

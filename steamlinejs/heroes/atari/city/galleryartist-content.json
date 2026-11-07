@@ -1,0 +1,44 @@
+{
+  "paintings": [
+    {
+      "image": "../../art/galleryartist/painter-sitting.png",
+      "title": "THE ARTIST AND HIS MUSE",
+      "lines": [
+        "THE ARTIST AND HIS MUSE",
+        "ARTIST GALLERY TEST"
+      ]
+    },
+    {
+      "image": "../../art/galleryartist/gallery-v5--tavern-singalong.png",
+      "title": "ONE MORE CHORUS",
+      "lines": [
+        "ONE MORE CHORUS",
+        "ARTIST GALLERY TEST"
+      ]
+    },
+    {
+      "image": "../../art/galleryartist/lake-reflection.png",
+      "title": "A MOMENT OF VANITY",
+      "lines": [
+        "A MOMENT OF VANITY",
+        "ARTIST GALLERY TEST"
+      ]
+    },
+    {
+      "image": "../../art/galleryartist/flower-pentagram.png",
+      "title": "FLOWERS AND SECRETS",
+      "lines": [
+        "FLOWERS AND SECRETS",
+        "ARTIST GALLERY TEST"
+      ]
+    },
+    {
+      "image": "../../art/galleryartist/tavern-dance.png",
+      "title": "THE TAVERN DANCE",
+      "lines": [
+        "THE TAVERN DANCE",
+        "ARTIST GALLERY TEST"
+      ]
+    }
+  ]
+}

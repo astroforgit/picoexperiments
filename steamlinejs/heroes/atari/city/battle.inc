@@ -4,12 +4,6 @@ COLS=7
 MAX_UNITS=12
 TEAM_HERO=0
 TEAM_ENEMY=1
-battle_data_resume equ *
-        org $7000
-        icl 'generated/battle-content.inc'
-battle_data_end equ *
-        ert battle_data_end>$8000
-        org battle_data_resume
 game_state dta 0
 selected_unit dta 0
 cursor_cell dta 0
@@ -18,6 +12,7 @@ turn_number dta 1
 region dta 0
 contract dta 0
 hero_count dta 0
+hero_army_slot :5 dta 255
 init_index dta 0
 reward dta a(0)
 reward_committed dta 0
@@ -28,13 +23,23 @@ unit_hp :12 dta 0
 unit_acted :12 dta 0
 unit_moved :12 dta 0
 unit_move_left :12 dta 0
+unit_charge :12 dta 0
+unit_mark :12 dta 0
+unit_raised :12 dta 0
+unit_summoned :12 dta 0
+unit_spawned :12 dta 0
+conversions dta 0
+ability_event dta 0
+encounter_seed dta 1
 terrain :42 dta 0
 
 .proc start
         jsr can_enter_battle
         bcs ?yes
         rts
-?yes    mva #2 screen_mode
+?yes    lda #SFX_MARCH
+        jsr sfx.play
+        mva #2 screen_mode
         mva #0 popup_open
         sta game_state
         sta unit_count
@@ -43,6 +48,8 @@ terrain :42 dta 0
         sta attack_flash
         sta attack_frame
         sta enemy_busy
+        sta conversions
+        sta ability_event
         mva #255 click_unit
         mwa #0 reward
         mva #0 idle_next
@@ -56,10 +63,21 @@ terrain :42 dta 0
         sta region
         tax
         lda region_wins,x
-        cmp #3
-        bcc ?stage
-        lda #2
-?stage  sta contract
+        cmp #10
+        bcc ?lookup
+        lda #9
+?lookup sta init_index
+        txa
+        asl
+        asl
+        clc
+        adc region
+        asl
+        clc
+        adc init_index
+        tay
+        lda stage_for_win,y
+        sta contract
         lda region
         asl
         clc
@@ -85,12 +103,27 @@ terrain :42 dta 0
         ldy deploy_cells,x
         ldx #0
         jsr add_unit
+        tax
+        lda init_index
+        sta hero_army_slot,x
 ?next   inc init_index
         lda init_index
         cmp army_capacity
         bne ?hero
         mva unit_count hero_count
+        jsr duel_enemy
+        bcs ?ready
         ldx contract
+        lda seed_ptr_lo,x
+        sta data_ptr
+        lda seed_ptr_hi,x
+        sta data_ptr+1
+        ldy encounter_seed
+        lda (data_ptr),y
+        ldx difficulty
+        clc
+        adc difficulty_group_base,x
+        tax
         lda enemy_ptr_lo,x
         sta data_ptr
         lda enemy_ptr_hi,x
@@ -127,10 +160,23 @@ add_cell dta 0
         sta add_type
         stx add_team
         sty add_cell
+        mva #0 add_reused
         ldx unit_count
         cpx #MAX_UNITS
-        bcs ?full
-        lda add_type
+        bcc ?slot
+        ldx #0
+?reuse  lda unit_hp,x
+        bne ?rn
+        lda unit_team,x
+        beq ?rn
+        mva #1 add_reused
+        jmp ?slot
+?rn     inx
+        cpx #MAX_UNITS
+        bcc ?reuse
+        clc
+        rts
+?slot   lda add_type
         sta unit_type,x
         tay
         lda add_team
@@ -144,14 +190,21 @@ add_cell dta 0
         lda #0
         sta unit_acted,x
         sta unit_moved,x
+        sta unit_charge,x
+        sta unit_raised,x
+        sta unit_summoned,x
+        sta unit_spawned,x
+        lda add_reused
+        bne ?added
         inc unit_count
-        txa
+?added  txa
         sec
         rts
 ?full   clc
         rts
 .endp
 add_team dta 0
+add_reused dta 0
 
 ;==============================================================================
 ; Hex and occupancy helpers
@@ -511,55 +564,62 @@ attack_frame     dta 0
 
 .proc animate_attack
         mva defender_unit attack_flash_target
-        jsr prepare_projectile
-        mva #8 attack_frame
-?frame  mva #0 attack_flash
-        lda attack_frame
-        cmp #3
-        bcs ?draw
-        and #1
-        sta attack_flash
-?draw   jsr draw
-        jsr advance_projectile
-        jsr advance_projectile
-        dec attack_frame
-        dec attack_frame
-        bne ?frame
-        mva #0 attack_flash
-        rts
-.endp
-animation_step dta 0
-.proc attack_units
-        ldx attacker_unit
-        ldy unit_type,x
-        lda type_damage,y
-        sta attack_damage
+        jsr compute_damage
         ldx defender_unit
         lda unit_hp,x
-        sec
-        sbc attack_damage
-        bcs ?alive
-        lda #0
-?alive  sta unit_hp,x
-        bne ?done
+        cmp attack_damage
+        bcc ?amount
+        lda attack_damage
+?amount sta impact_damage
+        ldx attacker_unit
         ldy unit_type,x
         lda type_summon,y
         cmp #255
-        beq ?done
-        mva #1 game_state
-        jsr award
-?done   rts
+        beq ?prepare
+        mva #0 impact_damage
+?prepare
+        jsr prepare_projectile
+        mva #8 attack_frame
+?frame  jsr draw
+        lda attack_frame
+        cmp #5
+        bcc ?impact
+        jsr advance_projectile
+        jsr advance_projectile
+?impact lda attack_frame
+        cmp #4
+        bne ?next_frame
+        ldx defender_unit
+        lda impact_damage
+        beq ?thud
+        cmp unit_hp,x
+        bne ?thud
+        lda #SFX_FALL           ; this blow knocks the target out
+        bne ?sound
+?thud   lda #SFX_THUD
+?sound  jsr sfx.play
+?next_frame
+        dec attack_frame
+        bne ?frame
+        mva #0 impact_damage
+        rts
 .endp
-attack_damage dta 0
+impact_damage dta 0
+animation_step dta 0
+        icl 'monster-abilities.inc'
 
 .proc enemy_phase
         mva #1 enemy_busy
-        lda hero_count
-        sta enemy_id
+        mva #0 enemy_id
 ?enemy ldx enemy_id
         cpx unit_count
         bcs ?new_turn
         lda unit_hp,x
+        beq ?next
+        lda unit_team,x
+        beq ?next
+        lda unit_spawned,x
+        cmp turn_number
         beq ?next
         mva #0 enemy_attacked
         ldy unit_type,x
@@ -624,7 +684,24 @@ enemy_best_dist dta 0
         beq ?normal
         jmp summon_enemy
 ?normal
-        ; Find closest living hero.
+        lda unit_charge,x
+        beq ?find
+        jmp release_ogre
+?find
+        ; Attack the nearest hero that can be hit from here (range and sight).
+        ldx enemy_id
+        lda unit_cell,x
+        jsr target_from
+        bcs ?has_target
+        ; Otherwise walk the shortest open path towards a cell from which a
+        ; hero can be hit, going around trees and other fighters.
+        jsr path_step
+        cmp #$FF
+        beq ?nearest
+        sta enemy_best
+        jmp ?walk
+?nearest
+        ; No such cell is reachable: step closer to the nearest hero.
         lda #$FF
         sta enemy_target
         lda #$7F
@@ -634,6 +711,8 @@ enemy_best_dist dta 0
         bcs ?have
         lda unit_hp,x
         beq ?next
+        lda unit_team,x
+        bne ?next
         stx scan_id
         ldx enemy_id
         lda unit_cell,x
@@ -649,32 +728,28 @@ enemy_best_dist dta 0
         ldx scan_id
 ?next   inx
         jmp ?hero
-
 ?have   lda enemy_target
         cmp #$FF
-        bne ?has_target
+        bne ?move
         rts
 ?has_target
-        ldx enemy_id
-        ldy unit_type,x
-        lda type_shoot_range,y
-        bne ?shot_range
-        lda #1
-?shot_range
-        cmp enemy_best_dist
-        bcc ?move
-        ldx enemy_id
-        lda unit_cell,x
-        ldy enemy_target
-        ldx unit_cell,y
-        jsr shot_clear
-        bne ?move
         lda enemy_id
         sta attacker_unit
         lda enemy_target
         sta defender_unit
         mva #1 enemy_attacked
-        jsr animate_attack
+        mva #0 attack_bonus
+        ldx enemy_id
+        ldy unit_type,x
+        lda type_ability,y
+        cmp #4
+        bne ?strike
+        mva #1 unit_charge,x
+        ldy enemy_target
+        mva unit_cell,y unit_mark,x
+        mva #3 ability_event
+        rts
+?strike jsr animate_attack
         jmp attack_units
 
 ?move   lda #$FF
@@ -708,7 +783,7 @@ enemy_best_dist dta 0
         lda enemy_best
         cmp #$FF
         beq ?done
-        ldx enemy_id
+?walk   ldx enemy_id
         stx animation_unit
         lda unit_cell,x
         sta animation_from
@@ -723,6 +798,22 @@ enemy_best_dist dta 0
 .proc summon_enemy
         sta summon_kind
         mva #1 enemy_attacked
+        lda turn_number
+        cmp #2
+        bcc ?done
+        ldx #0
+        ldy #0
+?count  cpx unit_count
+        bcs ?limit
+        lda unit_summoned,x
+        beq ?cn
+        lda unit_hp,x
+        beq ?cn
+        iny
+?cn     inx
+        bne ?count
+?limit  cpy #2
+        bcs ?done
         mva #0 summon_cell
 ?scan   lda summon_cell
         jsr is_open
@@ -743,6 +834,10 @@ enemy_best_dist dta 0
         jsr add_unit
         bcc ?done
         sta defender_unit
+        tax
+        mva #1 unit_summoned,x
+        mva turn_number unit_spawned,x
+        mva #6 ability_event
         mva enemy_id attacker_unit
         jsr animate_attack
         rts
@@ -787,6 +882,8 @@ candidate_dist dta 0
         bne ?done
         lda #2
         sta game_state
+        lda #SFX_RETREAT
+        jsr sfx.play
 ?done   rts
 .endp
 hero_alive  dta 0
@@ -796,35 +893,76 @@ enemy_alive dta 0
 enemy_attacked dta 0
 enemy_busy dta 0
 
-.proc award
-        lda reward_committed
-        bne ?done
-        mva #1 reward_committed
-        ldx region
-        lda region_wins,x
-        cmp #3
-        bcs ?repeat
+; reward = this battle's victory purse, difficulty-scaled.
+.proc victory_reward
+        lda duel
+        beq ?contract
+        ldx duel_kind
+        lda duel_reward,x
+        sta reward
+        mva #0 reward+1
+        jmp ?scale
+?contract
         ldy contract
         lda reward_lo,y
         sta reward
         lda reward_hi,y
         sta reward+1
-        inc region_wins,x
+?scale  jmp scale_reward
+.endp
+
+; Retreating costs a third of the victory purse; gold never goes negative.
+; reward holds the loss for the result screen.
+.proc retreat
+        lda #SFX_RETREAT
+        jsr sfx.play
+        mva #3 game_state
+        jsr victory_reward
+        mwa reward ?purse
+        mwa #0 reward
+?third  sec
+        lda ?purse
+        sbc #3
+        tax
+        lda ?purse+1
+        sbc #0
+        bcc ?pay
+        sta ?purse+1
+        stx ?purse
+        inc reward
+        bne ?third
+        inc reward+1
+        jmp ?third
+?pay    sec
+        lda gold
+        sbc reward
+        sta gold
+        lda gold+1
+        sbc reward+1
+        sta gold+1
+        bcs ?done
+        mwa #0 gold
+?done   rts
+?purse  dta a(0)
+.endp
+
+.proc award
+        lda reward_committed
+        bne ?done
+        mva #1 reward_committed
+        lda #SFX_FANFARE
+        jsr sfx.play
+        jsr duel_award
+        bcs ?done
+        inc encounter_seed
+        ldx region
         lda region_wins,x
-        cmp #3
-        bne ?pay
+        cmp #255
+        beq ?reward
+        inc region_wins,x
+?reward jsr gallery.record_win
+        jsr victory_reward
         clc
-        lda reward
-        adc bonus_lo,x
-        sta reward
-        lda reward+1
-        adc bonus_hi,x
-        sta reward+1
-        jmp ?pay
-?repeat lda practice,x
-        sta reward
-        mva #0 reward+1
-?pay    clc
         lda gold
         adc reward
         sta gold
@@ -913,13 +1051,14 @@ enemy_busy dta 0
         jsr skip_hero
         jmp ?redraw
 ?retreat
-        mva #3 game_state
+        jsr retreat
         jmp ?redraw
 ?cell   lda cursor_cell
         cmp #42
         bcc ?select
         beq ?skip
-        jmp cancel
+        jsr retreat
+        jmp ?redraw
 ?skip   jsr skip_hero
         jmp ?redraw
 ?select jsr unit_at
@@ -944,11 +1083,16 @@ enemy_busy dta 0
         bcs ?first
         jsr skip_hero
         jmp ?redraw
-?first  stx selected_unit
-        stx click_unit
+?first  cpx selected_unit
+        beq ?arm
+        stx selected_unit
+        mva #1 dirty
+?arm    stx click_unit
         mva RTCLOK+2 click_time
         mva RTCLOK+1 click_time+1
-        jmp ?redraw
+        ; Arming the selected soldier changes no pixels. A blocking repaint
+        ; here can swallow the release/second Fire on real VBXE hardware.
+        rts
 ?action mva #255 click_unit
         jsr confirm_cell
 ?redraw mva #1 dirty

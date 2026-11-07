@@ -1,0 +1,70 @@
+{
+  "notesAfterWins": 2,
+  "regionWinsToFind": 1,
+  "paintings": [
+    {
+      "image": "../../art/gallery-v1/painter-sitting.png",
+      "title": "THE ARTIST AND HIS MUSE",
+      "lines": [
+        "THE ARTIST AND HIS MUSE",
+        "FROM MASTER GRUBBRUSH'S LOST WORKS."
+      ]
+    },
+    {
+      "image": "../../art/gallery-v1/tavern-dance.png",
+      "title": "THE TAVERN DANCE",
+      "lines": [
+        "THE TAVERN DANCE",
+        "FROM MASTER GRUBBRUSH'S LOST WORKS."
+      ]
+    },
+    {
+      "image": "../../art/gallery-v1/lake-reflection.png",
+      "title": "A MOMENT OF VANITY",
+      "lines": [
+        "A MOMENT OF VANITY",
+        "FROM MASTER GRUBBRUSH'S LOST WORKS."
+      ]
+    },
+    {
+      "image": "../../art/gallery-v1/flower-pentagram.png",
+      "title": "FLOWERS AND SECRETS",
+      "lines": [
+        "FLOWERS AND SECRETS",
+        "FROM MASTER GRUBBRUSH'S LOST WORKS."
+      ]
+    },
+    {
+      "image": "../../art/gallery-v1/apple-thief.png",
+      "title": "THE APPLE THIEF",
+      "lines": [
+        "THE APPLE THIEF",
+        "FROM MASTER GRUBBRUSH'S LOST WORKS."
+      ]
+    },
+    {
+      "image": "../../art/gallery-v1/loaded-dice.png",
+      "title": "THE LOADED DICE",
+      "lines": [
+        "THE LOADED DICE",
+        "FROM MASTER GRUBBRUSH'S LOST WORKS."
+      ]
+    },
+    {
+      "image": "../../art/gallery-v1/borrowed-crown.png",
+      "title": "A BORROWED CROWN",
+      "lines": [
+        "A BORROWED CROWN",
+        "FROM MASTER GRUBBRUSH'S LOST WORKS."
+      ]
+    },
+    {
+      "image": "../../art/gallery-v1/moonlight-dance.png",
+      "title": "THE MOONLIGHT DANCE",
+      "lines": [
+        "THE MOONLIGHT DANCE",
+        "FROM MASTER GRUBBRUSH'S LOST WORKS."
+      ]
+    }
+  ]
+}

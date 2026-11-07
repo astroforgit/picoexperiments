@@ -41,6 +41,19 @@ BCB_OFF=$100
 XDL_B_OFF=$20
 SCR_W=320
 SCR_H=200
+; Sound cues (sfx.play with the number in A), data in release-ui.inc.
+SFX_CLICK = 0
+SFX_COIN = 1
+SFX_THUD = 2
+SFX_FANFARE = 3
+SFX_LAMENT = 4
+SFX_DENIED = 5
+SFX_MOVE = 6
+SFX_BACK = 7
+SFX_FALL = 8
+SFX_MARCH = 9
+SFX_RETREAT = 10
+SFX_SPARKLE = 11
 work_ptr=$CB
 data_ptr=$CD
 text_src=$CF
@@ -62,9 +75,13 @@ calc_out=$D3
         jsr fill_rect
 .endm
 
+        icl 'generated/asset-profile.inc'
         org $2000
 .proc loader_init
         cld
+        lda PORTB
+        ora #2
+        sta PORTB
         jsr detect_vbxe
         bcc ?done
         mva #1 hardware_ok
@@ -103,7 +120,8 @@ reg_restore
 ?done   rts
 .endp
 hardware_ok dta 0
-upload_index dta 32
+upload_index dta 0
+sfx_ready dta 0
 
 main
         cld
@@ -119,36 +137,42 @@ main
 no_vbxe
         jmp no_vbxe
 hardware_ready
+        mva #1 sfx_ready
         jsr setup_xdl
         jsr blit_init
         jsr load_city_palette
         jsr new_city
         mva #0 front_bank
         mva #1 back_bank
-        ; Paint both buffers before enabling the overlay.
-        mva #0 render_bank
-        jsr copy_background_cache
-        jsr wait_blit
-        mva #1 render_bank
-        jsr copy_background_cache
-        jsr wait_blit
+        ; The title picture waits in bank 1; the menu shows it from bank 0.
+        jsr release_ui.show
         jsr enable_display
+        ; Present the city from bank 1, then repaint the hidden bank 0.
         jsr draw_city
+        mva back_bank render_bank
+        jsr copy_background_cache
+        jsr wait_blit
 main_loop
         jsr wait_frame
         jsr poll_input
+        jsr gallery.check_events
+        jsr outro.check
+        jsr check_game_over
         lda dirty
         beq main_loop
         jsr draw_city
         jmp main_loop
 
 .proc new_city
-        mwa #START_GOLD gold
+        jsr starting_gold
         ldx #4
 ?copy   lda initial_levels,x
         sta building_levels,x
         dex
         bpl ?copy
+        lda $D20A
+        eor RTCLOK+2
+        sta battle.encounter_seed
         mva #0 selected_plot
         sta screen_mode
         sta selected_location
@@ -177,15 +201,66 @@ main_loop
         mva #0 region_wins,x
         dex
         bpl ?progress
+        jsr gallery.new_game
         mva #1 dirty
         rts
 .endp
 
+; Campaign gold for the selected difficulty level.
+.proc starting_gold
+        ldx difficulty
+        mva battle.start_gold_lo,x gold
+        mva battle.start_gold_hi,x gold+1
+        rts
+.endp
+
+; Easy adds reward>>n, Hard subtracts reward>>n; Medium leaves it unchanged.
+.proc scale_reward
+        ldx difficulty
+        lda battle.reward_bonus_shift,x
+        beq ?cut
+        jsr ?part
+        clc
+        lda battle.reward
+        adc ?amount
+        sta battle.reward
+        lda battle.reward+1
+        adc ?amount+1
+        sta battle.reward+1
+        rts
+?cut    lda battle.reward_cut_shift,x
+        beq ?done
+        jsr ?part
+        sec
+        lda battle.reward
+        sbc ?amount
+        sta battle.reward
+        lda battle.reward+1
+        sbc ?amount+1
+        sta battle.reward+1
+?done   rts
+?part   tay
+        mwa battle.reward ?amount
+?shift  lsr ?amount+1
+        ror ?amount
+        dey
+        bne ?shift
+        rts
+?amount dta a(0)
+.endp
+
         icl 'army.inc'
+        icl 'game-over.inc'
 
 ; A is 0 up, 1 down, 2 left, 3 right. Fixed directional neighbour graph.
 .proc navigate
         tax
+        lda screen_mode
+        cmp #3
+        bne ?active
+        rts
+?active lda #SFX_MOVE
+        jsr sfx.play
         lda screen_mode
         cmp #2
         bne ?not_battle
@@ -220,12 +295,17 @@ main_loop
         lda neighbours,x
         sta selected_plot
         mva #0 notice
-?redraw mva #1 dirty
+?redraw jsr gallery.skip_disabled
+        mva #1 dirty
         rts
 .endp
 
 .proc close_popup
         lda screen_mode
+        cmp #3
+        bne ?active
+        rts
+?active lda screen_mode
         cmp #2
         bne ?not_battle
         jmp battle.cancel
@@ -233,8 +313,11 @@ main_loop
         lda popup_open
         bne ?dismiss
         lda screen_mode
-        beq ?dismiss
+        beq ?city
         jmp show_city
+?city   lda savegame.boot_disk  ; game menu (save/load) only on the boot ATR
+        beq ?dismiss
+        jmp savegame.menu
 ?dismiss
         mva #0 popup_open
         sta notice
@@ -306,7 +389,14 @@ main_loop
         mva #1 action_latched
         lda action_mask
         and #2
-        beq ?confirm
+        beq ?click
+        lda #SFX_BACK
+        jsr sfx.play
+        jmp ?cancel
+?click  lda #SFX_CLICK
+        jsr sfx.play
+        jmp ?confirm
+?cancel
         jsr close_popup        ; cancel wins if sources disagree
         jmp ?directions
 ?confirm
@@ -375,6 +465,7 @@ main_loop
 .endp
 
 gold dta a(0)
+difficulty dta battle.DEFAULT_DIFFICULTY ; 0 easy, 1 medium, 2 hard (difficulty.json)
 building_levels :5 dta 0
 army_units :5 dta 255
 army_count dta 0
@@ -404,6 +495,10 @@ neighbours
 
 .proc draw_city
         lda screen_mode
+        cmp #3
+        bne ?active
+        jmp draw_game_over
+?active lda screen_mode
         cmp #2
         bne ?not_battle
         jmp battle.draw
@@ -620,9 +715,33 @@ pip_offsets dta 0,6,12
         lda sprite_hi,x
         sta bl_src+1
         mva #3 bl_src+2
+        .if CROPPED_BUILDINGS
+        clc
+        lda calc_x
+        adc sprite_crop_x,x
+        sta calc_x
+        bcc ?crop_x
+        inc calc_x+1
+?crop_x clc
+        lda calc_y
+        adc sprite_crop_y,x
+        sta calc_y
+        lda sprite_width,x
+        sta bl_ssy
+        sec
+        sbc #1
+        sta bl_w
+        mva #0 bl_ssy+1
+        sta bl_w+1
+        lda sprite_height,x
+        sec
+        sbc #1
+        sta bl_h
+        .else
         mwa #SPRITE_W bl_ssy
         mwa #SPRITE_W-1 bl_w
         mva #SPRITE_H-1 bl_h
+        .endif
         jmp transparent_blit
 .endp
 
@@ -831,7 +950,26 @@ code_end
         ert code_end>$6000
         ini loader_init
         icl 'generated/uploads.inc'
+        .local battle
+        org $6000
+        icl 'generated/battle-content.inc'
+battle_data_end equ *
+        ert battle_data_end>$8000
+        .endl
+        icl 'enemy-path.inc'
+        icl 'outro.inc'
+runtime_data_end
+        ert runtime_data_end>$8000
         org $8000
 text_screen
         :1024 dta 0
+        org $A000
+        icl 'release-ui.inc'
+        ; Outside release_ui_end: the gallery viewer reuses the block above.
+        icl 'savegame.inc'
+        .local battle
+        icl 'generated/battle-groups.inc'
+        .endl
+battle_groups_end
+        ert battle_groups_end>$C000
         run main

@@ -1,0 +1,1 @@
+Previous matched game XEX, story ATR, gallery test XEX and gallery config before applying the user-confirmed eight-picture selection. Source artwork versions remain in art/gallery-v1 through gallery-v4.

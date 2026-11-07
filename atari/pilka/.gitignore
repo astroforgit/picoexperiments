@@ -1,0 +1,13 @@
+# Third-party sources and extractions (see README: reproduce locally)
+SWOS-RE-main/
+amiga/
+*.lha
+# Old snapshots, screenshots and memory dumps from test runs
+analysis/before-speed/
+analysis/renderer-v1/
+analysis/*.png
+analysis/atari-*.bin
+analysis/logic-*.bin
+analysis/title-*
+analysis/trace-*
+analysis/under-io.json

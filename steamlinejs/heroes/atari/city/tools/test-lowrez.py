@@ -12,13 +12,13 @@ def play_logic(m):
 
 def check(page,capture=False):
  m=r.Machine(page)
- assert m.get('gold',2)==50 and m.array('army_units')==[1,1,255,255,255]
- assert m.array('building_levels')==[2,0,0,0,0] and m.get('army_count')==2
+ assert m.get('gold',2)==r.START_GOLD and m.array('army_units')==[0,0,255,255,255]
+ assert m.array('building_levels')==[1,0,0,0,0] and m.get('army_count')==2
  assert m.mem.vram[0x20000:0x7f000]==(r.ROOT/'generated/vram.bin').read_bytes()
- m.fire();assert m.get('popup_open')==1;m.idle(60);assert m.get('gold',2)==50
+ m.fire();assert m.get('popup_open')==1;m.idle(60);assert m.get('gold',2)==r.START_GOLD
  m.release();m.call('close_popup')
  m.put('selected_location',0);m.call('battle.start');assert play_logic(m)==1
- assert m.get('gold',2)==100 and m.mem.ram[r.LABELS['region_wins']]==1
+ assert m.get('gold',2)==r.START_GOLD+50 and m.mem.ram[r.LABELS['region_wins']]==1
  m.call('battle.award');assert m.get('gold',2)==100
  if capture:m.screenshot('lowrez-first-victory.png')
  m.call('new_city');m.put('selected_plot',0);m.call('describe_selection')
@@ -32,12 +32,14 @@ def check(page,capture=False):
  for region,location in enumerate([0,1,2,4]):
   m.put('selected_location',location)
   for stage in range(3):
-   if region>=2:m.mem.ram[r.LABELS['army_units']:r.LABELS['army_units']+5]=bytes([14]*5)
+   # Fresh test army per contract; actual casualty persistence has its own tests.
+   m.mem.ram[r.LABELS['army_units']:r.LABELS['army_units']+5]=bytes([14 if region>=2 else 8]*5);m.put('army_count',5)
    m.call('battle.start');idx=region*3+stage;assert m.get('battle.contract')==idx
    outcome=play_logic(m);assert outcome in (1,2),(page,idx)
    if outcome==2:
     # Imported user balance can defeat the greedy test player. Validate unlocks
     # and reward wiring with an explicit victory fixture, not inflated live stats.
+    m.mem.ram[r.LABELS['army_units']:r.LABELS['army_units']+5]=bytes([14]*5);m.put('army_count',5)
     m.call('battle.start')
     for unit in range(m.get('battle.hero_count'),m.get('battle.unit_count')):m.mem.ram[r.LABELS['battle.unit_hp']+unit]=0
     m.call('battle.check_result');assert m.get('battle.game_state')==1
@@ -46,8 +48,8 @@ def check(page,capture=False):
    m.call('battle.confirm')
   assert m.mem.ram[r.LABELS['region_wins']+region]==3
  m.call('battle.start');n=m.get('battle.unit_count');warlock=b.arr(m,'unit_type').index(22)
- m.put('battle.enemy_id',warlock);m.call('battle.enemy_act');assert m.get('battle.unit_count')==n+1
- assert b.arr(m,'unit_type')[n]==26 and b.arr(m,'unit_hp')[n]==content['enemies'][11]['hp']
+ m.put('battle.turn_number',2);m.put('battle.enemy_id',warlock);m.call('battle.enemy_act');assert m.get('battle.unit_count')==n+1
+ assert b.arr(m,'unit_type')[n]==18 and b.arr(m,'unit_hp')[n]==min(99,content['enemies'][3]['hp']+m.get('battle.enemy_hp_bonus'))
  m.put('battle.attacker_unit',0);m.put('battle.defender_unit',warlock);m.mem.ram[r.LABELS['battle.unit_hp']+warlock]=1
  m.call('battle.attack_units');assert m.get('battle.game_state')==1
  before=m.get('gold',2);m.call('battle.check_result');assert m.get('gold',2)==before

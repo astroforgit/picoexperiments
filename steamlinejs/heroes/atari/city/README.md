@@ -1,10 +1,15 @@
-# Greenhaven — native Atari VBXE city
+# Prince and the Nymph — Atari VBXE
+
+Author: **astrofor**.
+
+The release includes a painted title screen with a menu, instructions and
+credits (art in `art/title-v1/`). It has short, soft POKEY sound cues, without music or save/load. See [release notes](../../release/README.txt)
+for the complete package and [native notes](../../NATIVE-V3.txt) for validation.
 
 A playable native city, encounter map and tactical battle game. The Lowrez-based
-preset starts with **50 gold, level-2 Barracks and two Spearmen**. Other buildings
-start empty. Each building has three appearances. Four buildings unlock stronger recruits;
-building upgrades do not alter troops already recruited. Chapel is a support building: level 1 unlocks slot 4, level 2 unlocks slot 5, and level 3 reduces every recruit price by 10 gold. Starting capacity is 3. See
-[LOWREZ-UPDATE.md](LOWREZ-UPDATE.md) for current prices, encounters and limitations.
+preset starts with **100 gold, a level-1 Barracks and two Militia**. Other buildings
+start empty and are bought at level 1. Each building has three appearances. Four buildings unlock stronger recruits;
+building upgrades do not alter troops already recruited. Chapel is a support building: level 1 unlocks slot 4, level 2 unlocks slot 5, and level 3 reduces every recruit price by 10 gold. Starting capacity is 3. See [NATIVE-V3.txt](../../NATIVE-V3.txt) for current balance, abilities, build instructions and validation. [LOWREZ-UPDATE.md](LOWREZ-UPDATE.md) describes the earlier fixed-encounter version.
 
 The city connects to a dark fantasy encounter map and an integrated native VBXE
 battle view. Recruit any combination of up to five individual fighters after Chapel upgrades: **five Militia
@@ -12,13 +17,27 @@ or five Swordsmen are legal**, as are mixed armies. Each fighter has independent
 HP, actions, upgrades and dismissal. No stacks or troop quantities are used.
 The earlier standalone battle prototype remains independently runnable.
 Restarting the executable starts a new city; disk saves are not implemented.
+If your army is empty and you cannot afford any currently available recruit,
+GAME OVER appears. Fire starts a new campaign. Surviving soldiers let you keep
+fighting even with no gold.
 
 ![City](generated/city-start.png)
 
 ## Play
 
-Open **[city-vbxe.xex](city-vbxe.xex)** in Altirra with VBXE enabled, or on an
-XL/XE with VBXE FX 1.2x. No external asset files are needed when playing.
+**Single file:** boot **[city-vbxe.atr](city-vbxe.atr)** in D1: (released as
+`prince-and-the-nymph-boot.atr`). The 170-byte loader in `boot.asm` occupies
+sectors 1-2, disables BASIC and streams the unchanged XEX stored after the
+pictures (from sector 3004); the story signature sits in sector 3.
+
+**XEX + story disk (alternative):**
+Run `../run-prince-and-the-nymph.sh` (WSL) or `../run-prince-and-the-nymph.cmd` (Windows)
+with VBXE enabled. The runner attaches `heroes-story.atr` to D1: before loading
+the game. For manual loading, mount `generated/heroes-story.atr` in D1: and open
+**[city-vbxe.xex](city-vbxe.xex)**. The intro reclaims all its memory after loading;
+the full-quality ending and game-over pictures stream from the companion disk.
+The release removes the O preview shortcut. The separate
+`../run-outro-full-quality-test.sh` viewer now shows only the eight new gallery paintings.
 
 - **Joystick:** move between buildings, the gate and five army slots. Down from
   a lower-row building enters the army strip; Left/Right selects a slot and Up
@@ -35,7 +54,7 @@ XL/XE with VBXE FX 1.2x. No external asset files are needed when playing.
 Select the **dark gate in the top-center city wall**, then press Fire.
 Press Up from any top-row building to reach it. The original wall gate is
 slightly enlarged and shows the dark enemy territory inside, with no text sign.
-The large left-side portal has been removed. The city starts with two Spearmen and 50 gold.
+The large left-side portal has been removed. The city starts with two Militia and 100 gold.
 
 On the map, joystick or W/A/S/D moves between five fixed landmarks:
 
@@ -46,10 +65,14 @@ On the map, joystick or W/A/S/D moves between five fixed landmarks:
 - **Back to Greenhaven:** the larger lower-left stone arch, with a peaceful green landscape and warm sunlight inside; Fire returns to the city.
 
 Selecting a hostile location opens its report. Choose **Fight** or **Back**.
-An empty army cannot enter combat. Dark Forest is available first; three victories
-on its successive contracts unlock Catacombs, then Monster Caves, then Necromancer
-Ruins. Each region has three authored contracts, for twelve total. Replaying a
-completed region pays a smaller practice reward without advancing its counter.
+Fight is disabled while the lair is locked or the army is empty. Three victories
+unlock the next lair in the chain. Every unlocked lair remains available for
+unlimited battles; no win counter or fixed battle quota appears in the popup.
+The first three difficulty stages use 34 weighted enemy groups. After the unlock
+threshold, each further victory adds 1 enemy HP, every three adds another damage
+point, and rewards rise by 10 gold per step. Enemy stats stop at 99 HP / 9 base
+damage to fit the native display; battles remain unlimited at that limit.
+The separate fixed-difficulty Practice option has been removed.
 
 ![Encounter map](generated/encounters-map.png)
 
@@ -59,8 +82,8 @@ completed region pays a smaller practice reward without advancing its counter.
 
 - Move the hex cursor with joystick, WASD or arrows. Fire on an unacted friendly
   fighter selects it; Fire on a cyan destination moves; Fire on a red-highlighted
-  enemy attacks. Gold outlines show the cursor; bases are blue for friends, red
-  for enemies, and gold for the active hero. Health is shown numerically in the bottom panel; no floating health bars.
+  enemy attacks. Gold outlines show the cursor. Health is shown numerically in the bottom panel;
+  colored bars beneath characters have been removed.
 - Retain the old prototype's turn rule: a Move-2 hero can move one hex and attack,
   or spend both movement points moving and finish. Attacking without moving is
   allowed. Heroes can be selected in any order; their spent actions persist.
@@ -75,11 +98,12 @@ completed region pays a smaller practice reward without advancing its counter.
 - Trees, pillars and rocks occupy the same two central cells in this first set
   of layouts. They block movement and shots. Precomputed symmetric sight tests
   use the same terrain as the movement grid. Bodies block movement, not shots.
-- Combat uses fixed damage and the recovered low-HP Lowrez values and labeled additional-unit proposals.
+- Combat uses the editor balance plus Vampire lifesteal, zombie conversion, skeleton arrow resistance, prepared Ogre strikes, Imp retreat hops and capped delayed Warlock skeleton summons. The Vampire uses the existing Dark sprite set.
   Movement animates, attacked sprites flash, bottom HP, damage, remaining movement and shooting stats update.
 - Victory pays gold exactly once and advances the current contract. Completing
-  three contracts unlocks the next region; there are no extra region bonuses. Defeat or retreat pays nothing. All recruited
-  fighters recover after combat; campaign army slots are never removed by death.
+  three contracts unlocks the next region; there are no extra region bonuses. Defeat or retreat pays nothing. Killed or converted soldiers are permanently removed from the campaign army,
+  including after victory or retreat. Survivors recover HP. Empty slots require
+  paid replacements; deaths give no refund.
 - Fire or Escape on the result returns to the encounter map. The city return
   gate remains available. Held Fire cannot also trigger the next action.
 
@@ -292,3 +316,11 @@ row is removed. Floating health bars remain hidden.
 
 `python3 tools/test-battle-controls.py` checks double-Fire input and panel focus
 on both supported VBXE register pages.
+
+## Chapel Art Gallery
+
+Build the Chapel to enable its free Art Gallery action. Scouts find the goblin
+master painter’s notebook after two victories. Further victories recover eight
+unique portraits, shuffled among the four lairs, two per lair, each campaign. Missing portraits
+remain locked; viewing an owned painting does not change gold or the army.
+The collection resets on a new game. The companion ATR is now 1 MB.

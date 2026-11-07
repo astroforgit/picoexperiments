@@ -231,8 +231,8 @@ e_pg    = e_nfr+MAXENT        ; sprite page of the frames (0 / 1)
 e_chg   = e_pg+MAXENT         ; ability state: 1 used, 2 moved, $30 summon wait
 ent_list = e_chg+MAXENT       ; draw/update order
 e_end   = ent_list+MAXENT
-        .if e_end > $c000
-        .error "entity arrays overflow"
+        .if e_end > $bdc0
+        .error "entity arrays overlap scenery helpers"
         .endif
 ; entity flags
 F_MOB   = $01
@@ -540,8 +540,15 @@ cr_p    sta $0400,y
 cr_hi   stx cr_h+2
 cr_h    sta $a000,y
         iny
+        beq cr_next
+        cpx #$bd
         bne cr_h
-        inx
+        cpy #$c0
+        bne cr_h
+        ; $bdc0-$bfff holds the loaded scenery helpers, not entity RAM.
+        ldx #$bf
+        ldy #0
+cr_next inx
         cpx #$c9            ; $c900-$cfff: sound effects (loaded)
         bne cr_hi
         ldx #$d8
@@ -759,4 +766,9 @@ code_end
         org $a000
         ins 'data/sfx.bin'
         ini stage_sfx
+        org $bdc0
+        icl 'src/scenery.asm'
+        .if * > $c000
+        .error "scenery code overlaps windows"
+        .endif
         run main

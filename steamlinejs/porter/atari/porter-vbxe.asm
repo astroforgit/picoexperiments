@@ -166,6 +166,22 @@ music_row       dta 0
 music_pattern   dta 0
 music_pitch     dta 0,0
 music_volume    dta 0,0
+; 30 Hz game clock (the cartridge's _update rate), counted in the VBI
+tick_count      dta 0
+tick_acc        dta 0
+tick_hz         dta 50
+; teleport buttons sampled in the VBI: joystick 2 fire, SHIFT and the
+; second/third button of a 2-button joystick (POT 0 / POT 1)
+tb_prev         dta $ff
+tb_now          dta 0
+tb_new          dta 0
+pot_delay       dta 25
+pot_rest        dta $ff,$ff
+; animated tiles to redraw in the room cache: local column, row
+DIRTY_MAX       = 16
+dirty_n         dta 0
+dirty_col       :DIRTY_MAX dta 0
+dirty_row       :DIRTY_MAX dta 0
         icl 'data/music.inc.asm'
         ert * > $2000
 
@@ -182,6 +198,8 @@ nmi
         pha
         tya
         pha
+        jsr game_clock
+        jsr poll_teleport_buttons
         jsr sound_update            ; fixed VBL rate, independent of rendering
         jsr poll_audio_input
         jsr music_update
@@ -265,6 +283,15 @@ start
         sta colbaks
         lda #1
         sta audio_fire_prev
+        ; 50 VBLs per second on PAL, 60 on NTSC
+        lda pal
+        and #$0e
+        beq @start_pal
+        lda #60-50
+@start_pal
+        clc
+        adc #50
+        sta tick_hz
         lda #3
         sta skctl
         ; Expose RAM under the ROMs for vectors. All game assets are deliberately
@@ -300,8 +327,7 @@ start
         jsr draw_title
 
 main_loop
-        jsr wait_vbl
-main_loop_after_wait
+        jsr wait_tick
         jsr read_joystick
         jsr read_keyboard
         jsr update_sound_toggle
@@ -320,9 +346,9 @@ main_loop_after_wait
         beq main_loop
         jsr draw_game
         inc frame
-        ; draw_game presents at VBL, so begin constructing the next frame
-        ; immediately instead of waiting through a second vertical blank.
-        jmp main_loop_after_wait
+        ; the game runs at the cartridge's 30 updates per second on PAL and
+        ; NTSC; a frame that took longer has left a tick waiting already
+        jmp main_loop
 
 title_loop
         inc frame
@@ -358,6 +384,97 @@ wait_vbl
         cmp vblank
         beq @wait_vbl_wait
         rts
+
+; Wait for the next 30 Hz game tick (dec is atomic against the VBI).
+wait_tick
+        lda tick_count
+        beq wait_tick
+        dec tick_count
+        rts
+
+; VBI: 30 ticks per second from 50 or 60 VBLs. At most two wait, so a slow
+; frame is caught up without the game racing afterwards.
+game_clock
+        lda tick_acc
+        clc
+        adc #30
+        cmp tick_hz
+        bcc @game_clock_store
+        sbc tick_hz
+        ldx tick_count
+        cpx #2
+        bcs @game_clock_store
+        inc tick_count
+@game_clock_store
+        sta tick_acc
+        rts
+
+; VBI: teleport from joystick 2's fire, SHIFT, or button 2/3 of a 2-button
+; joystick (Joy2B+: pin 5 / pin 9, read as POT 0 / POT 1). As in the Celeste
+; port, a POT button is any change from the level the line had once the
+; first scans finished, since the wiring differs (Altirra reads high when
+; pressed, Joy2B+ low). Each source acts on its press, so one held while
+; the game loads counts only after it was released. Joystick 2's fire is
+; ignored while joystick 1's is held: an emulator mapping the same key to
+; both sticks would otherwise teleport on every jump.
+poll_teleport_buttons
+        lda #0
+        sta tb_now
+        lda trig1
+        bne @tb_shift
+        lda trig0
+        beq @tb_shift
+        lda #1
+        sta tb_now
+@tb_shift
+        lda skstat
+        and #8
+        bne @tb_pots
+        lda tb_now
+        ora #2
+        sta tb_now
+@tb_pots
+        lda pot_delay
+        beq @tb_pot_read
+        dec pot_delay
+        jmp @tb_scan
+@tb_pot_read
+        ldx #1
+@tb_pot_line
+        lda pot0,x                  ; the scan of the previous VBL has finished
+        cmp #128
+        lda #0
+        rol                         ; 1 = high
+        ldy pot_rest,x
+        bpl @tb_pot_known
+        sta pot_rest,x              ; first read: the resting level
+        bmi @tb_pot_next
+@tb_pot_known
+        cmp pot_rest,x
+        beq @tb_pot_next
+        lda tb_now
+        ora tb_pot_bit,x
+        sta tb_now
+@tb_pot_next
+        dex
+        bpl @tb_pot_line
+@tb_scan
+        sta potg0                   ; start the next paddle scan
+        lda tb_prev
+        eor #$ff
+        and tb_now
+        sta tb_new
+        lda tb_now
+        sta tb_prev
+        lda tb_new
+        beq @tb_done
+        lda #1
+        sta space_pending
+        sta audio_tele_pending
+@tb_done
+        rts
+tb_pot_bit
+        dta 4,8
 
 ; ============================================================================
 ; Input, game initialization and state
@@ -1947,8 +2064,6 @@ update_animations
         lda frame
         and #7
         bne @update_animations_clock
-        lda #1
-        sta room_dirty
         lda cam_y
         sta tmp1
         lda #0
@@ -1988,6 +2103,7 @@ update_animations
 @update_animations_write
         ldy #0
         sta (map_ptr),y
+        jsr mark_tile_dirty
 @update_animations_next
         inc tmp0
         inc col_no
@@ -2008,8 +2124,6 @@ update_animations
         rts
 
 animate_clock_room
-        lda #1
-        sta room_dirty
         lda cam_y
         sta tmp1
         lda #0
@@ -2033,6 +2147,7 @@ animate_clock_room
 @animate_clock_room_store
         ldy #0
         sta (map_ptr),y
+        jsr mark_tile_dirty
         cmp #119
         beq @animate_clock_room_toggle
         cmp #123
@@ -2383,10 +2498,17 @@ draw_game
         ; Build the complete frame in the hidden framebuffer. The displayed
         ; framebuffer is never modified while VBXE is scanning it.
         lda room_dirty
-        beq @draw_game_cached
+        beq @draw_game_tiles
         jsr draw_room
         lda #0
         sta room_dirty
+        sta dirty_n
+        beq @draw_game_cached
+@draw_game_tiles
+        ; only animated tiles changed: redraw just those in the cache
+        lda dirty_n
+        beq @draw_game_cached
+        jsr draw_dirty_tiles
 @draw_game_cached
         jsr copy_room_cache
         jsr set_screen_target
@@ -2444,6 +2566,129 @@ draw_room
         lda row_no
         cmp #16
         bne @draw_room_row
+        rts
+
+; Remember that the tile at local col_no/row_no changed (keeps A). A full
+; list rebuilds the whole room instead.
+mark_tile_dirty
+        pha
+        ldx dirty_n
+        cpx #DIRTY_MAX
+        bcs @mark_tile_dirty_full
+        lda col_no
+        sta dirty_col,x
+        lda row_no
+        sta dirty_row,x
+        inc dirty_n
+        pla
+        rts
+@mark_tile_dirty_full
+        lda #1
+        sta room_dirty
+        pla
+        rts
+
+; Redraw the listed tiles in the room cache: their background, then the tile.
+draw_dirty_tiles
+        lda #ROOM_CACHE_V>>16
+        sta dest_bank
+        mwa #192 dest_pitch
+        lda #0
+        sta sprite_flip
+@draw_dirty_tiles_loop
+        dec dirty_n
+        bmi @draw_dirty_tiles_done
+        ldx dirty_n
+        lda dirty_col,x
+        sta col_no
+        clc
+        adc cam_x
+        sta tmp0
+        lda dirty_row,x
+        sta row_no
+        clc
+        adc cam_y
+        sta tmp1
+        ; cache address: row * 12 * 192 ($900) + col * 12
+        lda col_no
+        asl
+        asl
+        sta tmp2
+        asl
+        adc tmp2
+        sta dst_ptr
+        lda row_no
+        asl
+        asl
+        asl
+        adc row_no
+        sta dst_ptr+1
+        jsr restore_tile_background
+        jsr map_at_tile
+        jsr blit_tile
+        jmp @draw_dirty_tiles_loop
+@draw_dirty_tiles_done
+        lda #0
+        sta dirty_n
+        rts
+
+; Opaque 12x12 copy of the cavern behind local tile row_no / dst_ptr (the
+; tile's cache address): background (VIEW_Y + row*12) * 320 + VIEW_X +
+; col*12 = $540 + row * $f00 + col * 12.
+restore_tile_background
+        jsr wait_blitter
+        ldy #$5d
+        lda #$80+[BCB_V>>14]
+        sta (fx_ptr),y
+        lda dst_ptr
+        clc
+        adc #<[VIEW_Y*SCR_W+VIEW_X]
+        sta MEMW+[BCB_V&$3fff]+0
+        lda row_no
+        asl
+        asl
+        asl
+        asl
+        sec
+        sbc row_no
+        clc
+        adc #>[VIEW_Y*SCR_W+VIEW_X]
+        sta MEMW+[BCB_V&$3fff]+1
+        lda #BACKGROUND_V>>16
+        sta MEMW+[BCB_V&$3fff]+2
+        lda #<SCR_W
+        sta MEMW+[BCB_V&$3fff]+3
+        lda #>SCR_W
+        sta MEMW+[BCB_V&$3fff]+4
+        lda #1
+        sta MEMW+[BCB_V&$3fff]+5
+        sta MEMW+[BCB_V&$3fff]+11
+        lda dst_ptr
+        sta MEMW+[BCB_V&$3fff]+6
+        lda dst_ptr+1
+        sta MEMW+[BCB_V&$3fff]+7
+        lda #ROOM_CACHE_V>>16
+        sta MEMW+[BCB_V&$3fff]+8
+        lda #<VIEW_SIZE
+        sta MEMW+[BCB_V&$3fff]+9
+        lda #>VIEW_SIZE
+        sta MEMW+[BCB_V&$3fff]+10
+        lda #TILE_DRAW-1
+        sta MEMW+[BCB_V&$3fff]+12
+        sta MEMW+[BCB_V&$3fff]+14
+        lda #0
+        sta MEMW+[BCB_V&$3fff]+13
+        sta MEMW+[BCB_V&$3fff]+16
+        sta MEMW+[BCB_V&$3fff]+17
+        sta MEMW+[BCB_V&$3fff]+18
+        sta MEMW+[BCB_V&$3fff]+19
+        sta MEMW+[BCB_V&$3fff]+20
+        lda #$ff
+        sta MEMW+[BCB_V&$3fff]+15
+        jsr start_blitter           ; the next blit waits for it
+        ldy #$5d
+        lda #0
+        sta (fx_ptr),y
         rts
 
 background_to_screen
@@ -2531,8 +2776,7 @@ copy_room_cache
         sta MEMW+[BCB_V&$3fff]+18
         sta MEMW+[BCB_V&$3fff]+19
         sta MEMW+[BCB_V&$3fff]+20
-        jsr start_blitter
-        jsr wait_blitter
+        jsr start_blitter           ; the next blit waits for it
         ldy #$5d
         lda #0
         sta (fx_ptr),y
@@ -2547,6 +2791,7 @@ set_screen_target
 ; Publish only a completely rendered framebuffer. Switching the XDL pointer
 ; during vertical blank is atomic from the viewer's perspective.
 present_back_buffer
+        jsr wait_blitter            ; the frame is complete
         jsr wait_vbl
         lda front_bank
         pha
@@ -3248,8 +3493,8 @@ blit_common
         lda tmp4
         sta MEMW+[BCB_V&$3fff]+20
         jsr start_blitter
-        jsr wait_blitter
-        ; MEMAC-B shadows $4000-$7FFF. Release it before gameplay/map code;
+        ; The CPU goes on while the blitter draws: the next blit and the
+        ; buffer flip wait for it.  MEMAC-B shadows $4000-$7FFF. Release it before gameplay/map code;
         ; tile_flags is in that range and must remain visible to the CPU.
         ldy #$5d
         lda #0

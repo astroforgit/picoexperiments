@@ -1,0 +1,90 @@
+PRINCE AND THE NYMPH - version 1.3
+Author: astrofor
+
+A humorous fantasy strategy game for Atari XL/XE with VBXE FX 1.2x.
+Recruit an army in Greenhaven, clear the four lairs, defeat the necromancer,
+and rescue the nymph. The story continues through a three-picture wedding ending.
+
+START - SINGLE FILE
+prince-and-the-nymph-boot.atr holds the whole game, including all pictures.
+Mount it as D1: and boot (Altirra: File > Boot Image) on an XL/XE with VBXE.
+WSL: run ./run-prince-and-the-nymph-boot.sh.
+BASIC is switched off automatically. Loading at standard SIO speed takes a few
+minutes on real hardware; emulators with SIO acceleration load it instantly.
+The 256-byte-sector 1.4 MB ATR needs an SIO device that supports large images.
+
+START - XEX AND STORY DISK (alternative)
+Windows: extract the complete package, then run run-prince-and-the-nymph.cmd.
+WSL: run ./run-prince-and-the-nymph.sh from the extracted directory.
+The launcher finds an existing Altirra installation and uses its persistent
+hardware profile. Enable VBXE in that profile. Set ALTIRRA_PATH if necessary.
+It mounts prince-and-the-nymph.atr in D1: and starts prince-and-the-nymph.xex.
+
+Manual loading / real Atari: use an XL/XE with 64 KB and VBXE FX 1.2x,
+load prince-and-the-nymph.xex with BASIC disabled and mount the companion
+prince-and-the-nymph.atr as D1:. The disk has 256-byte sectors; the drive or
+SIO peripheral must support the supplied 1 MB ATR. The full-quality ending
+and game-over artwork need this disk. Additional extended CPU RAM is not needed.
+The introduction reclaims its picture/code memory after loading.
+
+MENU AND CONTROLS
+After the picture introduction, choose Start Game, How to Play, or Enemy Info
+(special enemies and their abilities).
+Joystick, WASD or arrow keys navigate. Fire, Enter or Space chooses an action.
+Release between presses. Escape or SELECT goes back or opens the battle menu.
+The RETREAT button ends a battle at once but costs a third of its victory gold.
+At the palace, inspect buildings to build/upgrade or recruit. Select soldiers
+in the lower army row to upgrade or dismiss them. The wall gate opens the map.
+In battle, select a soldier, then a highlighted destination or valid enemy.
+Attacking ends that soldier's turn. Double-press Fire on the selected soldier,
+or choose Skip, to finish its turn. After all soldiers finish, enemies act.
+
+CAMPAIGN
+Start: 100 gold, two Militia, three army slots. Level (title menu): EASY,
+MEDIUM or HARD changes only the enemy groups - Medium and Hard send bigger
+groups of stronger enemy types; gold and unit stats are the same. Only the Barracks stands at
+level 1; other buildings are bought at level 1. Upgrade them for stronger recruits.
+Three victories in each lair unlock the next. Cleared lairs remain available
+for farming gold: replays keep the same enemies and reward. Chapel upgrades unlock the
+fourth/fifth army slots and eventually reduce recruitment costs.
+Survivors recover HP; dead soldiers stay dead and replacements cost gold.
+Keep money for replacements, and avoid buying buildings you cannot afford
+soldiers for. Different purchasing routes carry different risks.
+Killing the final Warlock wins immediately and plays the wedding ending.
+Losing every soldier without enough gold for any available recruit is game over.
+Fire starts a fresh campaign after defeat or after the final ending page.
+DUEL: the Dark Forest scout report also offers a duel against one random enemy
+(rarely a Vampire, which pays more) for a small purse and no lair progress.
+SAVE/LOAD (single-file ATR only): in the city press Escape or SELECT for the
+GAME MENU (Save Game, Load Game, Back); the title menu also has Load Game.
+There is one save slot on the disk, so the disk must be writable. Altirra keeps
+writes only in memory by default: set File > Disk drives > write mode to
+Read/Write, or start it with: Altirra64.exe /bootrw prince-and-the-nymph-boot.atr
+The XEX version has no saves. The Chapel has a free ART GALLERY action after it is built. After two
+victories, scouts find the notes of goblin master painter Grubbrush, whose
+portraits of the nymph were scattered by bandits. Later victories recover eight
+unique paintings, two hidden in each lair, with locations shuffled each campaign.
+The Forest yields its paintings on the third and fourth wins; each other lair
+yields one on its first win and another on its second. Revisit the Forest once
+for the full collection. All eight can be recovered before the final boss. Viewing the
+collection changes no gold or troops. A new campaign clears the collection. Short sound effects are included,
+without music. The development O shortcut is removed from the release game.
+For direct picture inspection, the separate story-test XEX now shows ONLY
+the eight new gallery paintings. It now also streams from the companion ATR; its runner mounts the disk
+automatically. It remains in the source repository and is not needed to play.
+
+CREDITS
+Author: astrofor.
+Game, code, art, story, design and balance: astrofor.
+
+VALIDATION
+Automated tests execute the assembled 6502 program on both D600/D700 VBXE
+mappings. A complete 12-victory campaign replays legal purchases, upgrades,
+movement and combat with real economy/AI/casualty code, no free gold/troops,
+and no forced victories. Menu, input, sound-register writes, defeat, final
+victory, intro reclamation, exact disk-streamed pictures and missing media
+are checked separately. SHA256SUMS verifies the package files.
+The model substitutes the OS SIO call and VBXE device behavior. Live Altirra
+playback and physical VBXE/disk timing remain unverified: the desktop-control
+connection was unavailable. The stats-bot completion rates are not human win
+probabilities. See the release-check report beside the downloadable package.

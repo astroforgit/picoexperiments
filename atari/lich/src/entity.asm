@@ -214,6 +214,13 @@ mp_id   dta 0
 
 ; make_mob(A = id) at a0, a1 -> X
 make_mob
+        tay
+        lda m_enabled,y
+        bne mm_enabled
+        sec
+        rts
+mm_enabled
+        tya
         jsr make_e
         bcs mm_r
         jsr set_mob_frames
@@ -258,6 +265,8 @@ me_e    tax
         beq me_n
         sta tmp+3
         tay
+        lda m_enabled,y
+        beq me_clear
         lda m_prop,y
         beq me_mob
         lda tmp+3
@@ -267,6 +276,7 @@ me_mob  lda tmp+3
         jsr make_mob
 me_set  bcs me_n
         jsr addhash
+me_clear
         ldy a0
         ldx a1
         lda #1

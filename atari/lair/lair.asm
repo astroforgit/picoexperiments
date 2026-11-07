@@ -67,6 +67,7 @@ VR_STAGE = $40000
 
 SOUND   = 1
 PLAY_MUSIC = 0
+PARTICLES = 0               ; 0: no decorative particles (only the texts)
 MAXE    = 40                ; entities
 MAXD    = 40                ; drawables
 MAXPS   = 24                ; particle systems
@@ -515,7 +516,8 @@ fm12    = G+222     ; frames mod 12, frames mod 3
 fm3     = G+223
 mon_cnt = G+224     ; monsters at the start of the update
 rtclok_h = G+225
-        .if rtclok_h >= SG
+pot_val = G+226     ; POT 0 / POT 1 after a finished scan (2 bytes)
+        .if pot_val+1 >= SG
         .error "globals overflow"
         .endif
 strbuf  = $c200     ; 64 bytes string builder
@@ -673,12 +675,23 @@ wait_present
         lda back_bank
         sta prev_bank
         jmp main_loop
-ml_rot  lda #3
+ml_rot  lda back_bank
+        cmp prev_bank
+        bne ml_r3
+        ; just after the game over both are the melted buffer: go on
+        ; with the next one
+        clc
+        adc #1
+        cmp #3
+        bcc ml_r1
+        lda #0
+        beq ml_r1
+ml_r3   lda #3
         sec
         sbc prev_bank
         sec
         sbc back_bank
-        ldx back_bank
+ml_r1   ldx back_bank
         stx prev_bank
         sta back_bank
         jmp main_loop
@@ -757,7 +770,13 @@ vbi_noTick
         .if SOUND
         jsr sound_tick
         .endif
-        sta POTGO           ; the next paddle scan (POT 0 / POT 1 buttons)
+        ; paddle lines: the scan started a frame ago has finished; keep the
+        ; values (as the OS does with PADDL0/1) and start the next scan
+        lda POT0
+        sta pot_val
+        lda POT0+1
+        sta pot_val+1
+        sta POTGO
         pla
         tay
         pla
@@ -770,8 +789,8 @@ xdl_mid dta $d0,$d4,$d8
 ; PICO-8 buttons: 0 left, 1 right, 2 up, 3 down, 4 O (stab), 5 X (shield).
 ; As in the Celeste port: joystick 0 moves, its fire is O; the second fire
 ; is X: SHIFT, joystick 1's fire, or button 2/3 of a 2-button joystick
-; (Joy2B+: pin 5 / pin 9, read as POT 0 / POT 1).  Keyboard: W/A/S/D or the
-; arrow keys, Z/C/N/O = O, X/V/M/SPACE/RETURN = X.
+; (Joy2B+: pin 5 / pin 9, read as POT 0 / POT 1).  Keys are fire buttons
+; only: Z/C/N/O = O, X/V/M/SPACE/RETURN = X.
 ; Each source counts only after it was seen released once (Altirra holds
 ; OPTION while booting; an unused POT line may read as pressed).  A POT
 ; button is any change from the level the line had at startup, since the
@@ -873,7 +892,7 @@ pot_button
         lda rtclok
         cmp #30
         bcc pb_none
-pb_go   lda POT0,x
+pb_go   lda pot_val,x
         cmp #128
         lda #0
         rol                 ; 1 = high
@@ -912,13 +931,13 @@ bit_tab dta 1,2,4,8,16,32
 ; PORTA nibble (inverted: 1 = pressed): up 1, down 2, left 4, right 8
 stick_bits
         dta 0,4,8,12,1,5,9,13,2,6,10,14,3,7,11,15
-; keyboard code -> buttons: A D W S, + * - = (arrows), Z C N O = O,
-; X V M SPACE RETURN = X
+; keyboard code -> buttons (fire keys only; the joystick moves):
+; Z C N O = O, X V M SPACE RETURN = X
 key_bits
-        dta $00,$00,$00,$00,$00,$00,$01,$02,$10,$00,$00,$00,$20,$00,$04,$08
+        dta $00,$00,$00,$00,$00,$00,$00,$00,$10,$00,$00,$00,$20,$00,$00,$00
         dta $20,$00,$10,$00,$00,$00,$20,$10,$00,$00,$00,$00,$00,$00,$00,$00
-        dta $00,$20,$00,$10,$00,$20,$00,$00,$00,$00,$00,$00,$00,$00,$04,$00
-        dta $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$02,$00,$00,$00,$08,$01
+        dta $00,$20,$00,$10,$00,$20,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+        dta $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
 
 ; ------------------------------------------------------------ no VBXE
 no_vbxe

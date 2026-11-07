@@ -1,0 +1,1 @@
+Previous full-quality viewer: the three wedding ending scenes followed by game over. The original main XEX and 360 KB story ATR are also preserved. The updated test viewer shows only the four new gallery paintings; the main game retains its original intro and endings and adds the Chapel gallery.

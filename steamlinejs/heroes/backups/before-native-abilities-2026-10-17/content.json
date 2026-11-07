@@ -1,0 +1,524 @@
+{
+  "startingGold": 50,
+  "buildings": [
+    {
+      "id": "barracks",
+      "name": "BARRACKS",
+      "startLevel": 2,
+      "x": 62,
+      "y": 32,
+      "costs": [
+        50,
+        100,
+        130
+      ],
+      "units": [
+        "MILITIA",
+        "SPEARMAN",
+        "SWORDSMAN"
+      ],
+      "hp": [
+        2,
+        3,
+        4
+      ],
+      "damage": [
+        1,
+        2,
+        3
+      ],
+      "range": [
+        1,
+        1,
+        1
+      ],
+      "recruitCosts": [
+        15,
+        25,
+        75
+      ],
+      "move": [
+        2,
+        2,
+        2
+      ],
+      "shootRange": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "archery",
+      "name": "ARCHERY RANGE",
+      "startLevel": 0,
+      "x": 128,
+      "y": 32,
+      "costs": [
+        60,
+        110,
+        160
+      ],
+      "units": [
+        "HUNTER",
+        "ARCHER",
+        "MARKSMAN"
+      ],
+      "hp": [
+        2,
+        3,
+        3
+      ],
+      "damage": [
+        1,
+        1,
+        1
+      ],
+      "range": [
+        3,
+        5,
+        7
+      ],
+      "recruitCosts": [
+        25,
+        65,
+        100
+      ],
+      "move": [
+        1,
+        1,
+        2
+      ],
+      "shootRange": [
+        3,
+        5,
+        7
+      ]
+    },
+    {
+      "id": "lodge",
+      "name": "RANGER LODGE",
+      "startLevel": 0,
+      "x": 194,
+      "y": 32,
+      "costs": [
+        70,
+        120,
+        180
+      ],
+      "units": [
+        "SCOUT",
+        "RANGER",
+        "CAVALRY"
+      ],
+      "hp": [
+        2,
+        3,
+        4
+      ],
+      "damage": [
+        1,
+        2,
+        2
+      ],
+      "range": [
+        1,
+        1,
+        1
+      ],
+      "recruitCosts": [
+        20,
+        50,
+        90
+      ],
+      "move": [
+        3,
+        4,
+        6
+      ],
+      "shootRange": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "chapel",
+      "name": "CHAPEL",
+      "startLevel": 0,
+      "x": 79,
+      "y": 77,
+      "costs": [
+        80,
+        130,
+        190
+      ],
+      "units": [
+        "ACOLYTE",
+        "HEALER",
+        "PRIEST"
+      ],
+      "hp": [
+        2,
+        3,
+        4
+      ],
+      "damage": [
+        1,
+        1,
+        2
+      ],
+      "range": [
+        1,
+        1,
+        1
+      ],
+      "recruitCosts": [
+        20,
+        45,
+        85
+      ],
+      "move": [
+        1,
+        2,
+        2
+      ],
+      "shootRange": [
+        0,
+        0,
+        0
+      ],
+      "support": true,
+      "effects": [
+        "UNLOCK ARMY SLOT 4",
+        "UNLOCK ARMY SLOT 5",
+        "RECRUITS COST 10 LESS"
+      ]
+    },
+    {
+      "id": "tower",
+      "name": "WIZARD TOWER",
+      "startLevel": 0,
+      "x": 174,
+      "y": 77,
+      "costs": [
+        100,
+        150,
+        220
+      ],
+      "units": [
+        "APPRENTICE",
+        "MAGE",
+        "WIZARD"
+      ],
+      "hp": [
+        2,
+        3,
+        4
+      ],
+      "damage": [
+        1,
+        2,
+        2
+      ],
+      "range": [
+        2,
+        2,
+        3
+      ],
+      "recruitCosts": [
+        30,
+        70,
+        120
+      ],
+      "move": [
+        1,
+        1,
+        1
+      ],
+      "shootRange": [
+        2,
+        2,
+        3
+      ]
+    }
+  ],
+  "startingArmy": [
+    1,
+    1,
+    255,
+    255,
+    255
+  ],
+  "enemies": [
+    {
+      "id": "minibeast",
+      "name": "Minibeast",
+      "hp": 3,
+      "damage": 1,
+      "move": 3,
+      "range": 1,
+      "shootRange": 0,
+      "basis": "Lowrez: minibeast",
+      "notes": "Exact original combat values."
+    },
+    {
+      "id": "wolf",
+      "name": "Wolf",
+      "hp": 3,
+      "damage": 2,
+      "move": 3,
+      "range": 1,
+      "shootRange": 0,
+      "basis": "Proposed",
+      "notes": "Lowrez-scale proposal; not an original unit identifier."
+    },
+    {
+      "id": "bat",
+      "name": "Bat",
+      "hp": 2,
+      "damage": 1,
+      "move": 6,
+      "range": 1,
+      "shootRange": 0,
+      "basis": "Proposed",
+      "notes": "Lowrez-scale proposal; not an original unit identifier."
+    },
+    {
+      "id": "skeleton",
+      "name": "Skeleton",
+      "hp": 3,
+      "damage": 1,
+      "move": 1,
+      "range": 4,
+      "shootRange": 4,
+      "basis": "Lowrez: skeleton",
+      "notes": "Exact original combat values."
+    },
+    {
+      "id": "zombie",
+      "name": "Zombie",
+      "hp": 4,
+      "damage": 2,
+      "move": 1,
+      "range": 1,
+      "shootRange": 0,
+      "basis": "Proposed",
+      "notes": "Lowrez-scale proposal; not an original unit identifier."
+    },
+    {
+      "id": "bone-archer",
+      "name": "Bone Archer",
+      "hp": 3,
+      "damage": 1,
+      "move": 1,
+      "range": 5,
+      "shootRange": 5,
+      "basis": "Proposed",
+      "notes": "Lowrez-scale proposal; not an original unit identifier."
+    },
+    {
+      "id": "ogre",
+      "name": "Ogre",
+      "hp": 5,
+      "damage": 4,
+      "move": 2,
+      "range": 1,
+      "shootRange": 0,
+      "basis": "Lowrez: ogre",
+      "notes": "Exact original combat values."
+    },
+    {
+      "id": "warlock",
+      "name": "Warlock",
+      "hp": 7,
+      "damage": 1,
+      "move": 1,
+      "range": 3,
+      "shootRange": 0,
+      "basis": "Lowrez: warlock",
+      "notes": "Summons Demons within 3 hexes; does not shoot. Stored damage 1 is unused."
+    },
+    {
+      "id": "imp",
+      "name": "Imp",
+      "hp": 3,
+      "damage": 2,
+      "move": 6,
+      "range": 1,
+      "shootRange": 0,
+      "basis": "Proposed",
+      "notes": "Lowrez-scale proposal; not an original unit identifier."
+    },
+    {
+      "id": "beast",
+      "name": "Beast",
+      "hp": 3,
+      "damage": 2,
+      "move": 3,
+      "range": 1,
+      "shootRange": 0,
+      "basis": "Lowrez: beast",
+      "notes": "Exact original combat values."
+    },
+    {
+      "id": "dark",
+      "name": "Dark",
+      "hp": 4,
+      "damage": 3,
+      "move": 2,
+      "range": 1,
+      "shootRange": 0,
+      "basis": "Lowrez: dark",
+      "notes": "Exact original combat values."
+    },
+    {
+      "id": "demon",
+      "name": "Demon",
+      "hp": 5,
+      "damage": 3,
+      "move": 2,
+      "range": 1,
+      "shootRange": 0,
+      "basis": "Lowrez: demon",
+      "notes": "Exact original combat values."
+    },
+    {
+      "id": "sniper",
+      "name": "Sniper",
+      "hp": 3,
+      "damage": 1,
+      "move": 2,
+      "range": 5,
+      "shootRange": 5,
+      "basis": "Lowrez: sniper",
+      "notes": "Exact original combat values."
+    }
+  ],
+  "encounters": [
+    {
+      "name": "BEAST LAIR",
+      "enemies": [
+        "minibeast",
+        "minibeast"
+      ],
+      "reward": 50
+    },
+    {
+      "name": "RUINS",
+      "enemies": [
+        "beast",
+        "beast",
+        "beast"
+      ],
+      "reward": 100
+    },
+    {
+      "name": "ELDER RUINS",
+      "enemies": [
+        "demon",
+        "demon",
+        "demon",
+        "demon",
+        "demon"
+      ],
+      "reward": 110
+    },
+    {
+      "name": "CRYPT",
+      "enemies": [
+        "skeleton",
+        "dark",
+        "dark",
+        "skeleton"
+      ],
+      "reward": 120
+    },
+    {
+      "name": "GRAVEYARD",
+      "enemies": [
+        "skeleton",
+        "dark",
+        "dark",
+        "dark",
+        "skeleton"
+      ],
+      "reward": 160
+    },
+    {
+      "name": "MERRY MEN",
+      "enemies": [
+        "sniper",
+        "sniper",
+        "ogre",
+        "sniper",
+        "sniper"
+      ],
+      "reward": 200
+    },
+    {
+      "name": "FOREST",
+      "enemies": [
+        "beast",
+        "beast",
+        "beast",
+        "beast",
+        "minibeast"
+      ],
+      "reward": 120
+    },
+    {
+      "name": "DEEP FOREST",
+      "enemies": [
+        "beast",
+        "beast",
+        "ogre",
+        "beast",
+        "beast"
+      ],
+      "reward": 150
+    },
+    {
+      "name": "OGRE CAMP",
+      "enemies": [
+        "beast",
+        "ogre",
+        "ogre",
+        "ogre",
+        "beast"
+      ],
+      "reward": 200
+    },
+    {
+      "name": "WARLOCK GUARD",
+      "enemies": [
+        "skeleton",
+        "demon",
+        "dark"
+      ],
+      "reward": 160
+    },
+    {
+      "name": "INNER RUINS",
+      "enemies": [
+        "skeleton",
+        "dark",
+        "demon",
+        "sniper"
+      ],
+      "reward": 200
+    },
+    {
+      "name": "WARLOCK",
+      "enemies": [
+        "skeleton",
+        "warlock",
+        "demon",
+        "skeleton",
+        "demon"
+      ],
+      "reward": 1000
+    }
+  ],
+  "baseArmyCapacity": 3
+}
