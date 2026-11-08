@@ -27,7 +27,7 @@ for pc,c in cycles.items():
  elif 0x1000<=pc<0x2800 or 0xc000<=pc<0xd000 or 0xd800<=pc<0xf000:g=ranges[bisect.bisect_right(addresses,pc)-1][1]
  else:g='other'
  s[g]+=c
-want=n*6//5 if a.pal else n
+want=n*6//5 if a.mem.ram[L['TICK_MODE']] else n
 total=sum(s.values())
 print(json.dumps({'frames':n,'ticks':ticks,'ticks_wanted':want,'lost_pct':round(100*(want-ticks)/want,1),
  'pictures':(len(a.xdl_addr_log)-flips)//3,'cycles_per_frame':total//n,

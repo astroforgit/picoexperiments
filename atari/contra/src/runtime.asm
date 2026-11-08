@@ -132,6 +132,13 @@ mi_arm  .ds 1
 bu_t    .ds 1
 bu_wait .ds 1
 bu_dir  .ds 1
+; CHR scan cache (mark_chr_dirty): the marks of the last full scan, valid
+; while no nametable cell changes, reused for any subset of its tile set
+mdc_nkey .ds 32                 ; inverted tile set of the cached scan
+mdc_valid .ds 1
+mdc_clean .ds 1                 ; 0: a nametable cell changed since scan start
+mdc_n   .ds 1
+mdc_over .ds 1
 pot_val .ds 4
 pot_rest .ds 4
 src_armed .ds 1
@@ -278,6 +285,7 @@ st_ntsc stx pitch_k
         sta kb_tail
         sta kdir
         sta mi_arm
+        sta mdc_valid
         sta bu_t
         sta bu_wait
         sta kpulse
@@ -321,10 +329,14 @@ ti_pace stx pace
         sta tick_phase
         sta ticks_owed
         sta tick_mode
+    .if PAL_60HZ
         lda $D014
         and #$0E
         bne ti_ntsc
         inc tick_mode
+    .else
+        jmp ti_ntsc             ; one tick per frame on PAL too
+    .endif
         ; five display lists: blank lines, a DLI at the end of line L, JVB
         ldx #0
 ti_dl   txa

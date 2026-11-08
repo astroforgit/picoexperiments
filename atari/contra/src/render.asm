@@ -1913,6 +1913,41 @@ md_bit_next
         bne md_start
         rts
 md_start
+        ; The same few animated tiles change again and again while the
+        ; nametables stay put: replay the last full scan's marks when this
+        ; change is a subset of its tiles (extra marks only redraw cells).
+        lda mdc_valid
+        beq md_full
+        ldx #31
+md_key  lda CHR_SNAP,x
+        and mdc_nkey,x
+        bne md_full
+        dex
+        bpl md_key
+        ldx mdc_n
+        beq md_rdone
+        lda #1
+        sta any_dirty
+md_rep  dex
+        ldy MDC_IDX,x
+        lda MDC_VAL,x
+        ora DIRTY,y
+        sta DIRTY,y
+        tya
+        lsr
+        lsr
+        tay
+        lda #1
+        sta ROWDIRTY,y
+        txa
+        bne md_rep
+md_rdone rts
+md_full lda #0
+        sta mdc_valid
+        sta mdc_n
+        sta mdc_over
+        lda #1
+        sta mdc_clean
         lda #0
         sta md_phys
 md_table
@@ -1964,6 +1999,18 @@ md_byte
         .endr
         lda md_col
         eor #$FF
+        beq md_rec_done
+        ldx mdc_n               ; record the marks for md_rep
+        cpx #MDC_MAX
+        bcs md_ovf
+        sta MDC_VAL,x
+        lda md_di
+        sta MDC_IDX,x
+        inc mdc_n
+        lda MDC_VAL,x
+        bne md_rec_done
+md_ovf  sta mdc_over
+md_rec_done
         ldx md_di
         ora DIRTY,x
         sta DIRTY,x
@@ -1974,7 +2021,9 @@ md_byte
 md_byte_clean
         inc md_di
         cpy #32
-        bne md_byte
+        beq md_row_done
+        jmp md_byte
+md_row_done
         ldx md_ri
         lda md_changed
         beq md_advance
@@ -2010,4 +2059,18 @@ md_table_done
         cmp #2
         beq md_done
         jmp md_table
-md_done rts
+md_done lda mdc_over
+        bne md_nocache
+        ldx #31
+md_sk   lda CHR_SNAP,x
+        eor #$FF
+        sta mdc_nkey,x
+        dex
+        bpl md_sk
+        lda #1
+        sta mdc_valid
+        lda mdc_clean           ; checked after validating: a nametable
+        bne md_nocache          ; write in between clears both
+        sta mdc_valid
+md_nocache
+        rts

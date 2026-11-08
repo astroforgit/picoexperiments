@@ -114,6 +114,9 @@ CHR_BITS = $3800       ; background patterns changed since last renderer scan
 CHR_SNAP = $3820
 CHR_LIST = $3840
 CHR_COUNT = $3860
+MDC_MAX  = 96           ; cached CHR scan marks: DIRTY index and bits
+MDC_IDX  = $3B40        ; (free gap after the NES palette tables)
+MDC_VAL  = $3BA0
 
 ; Fail the build if any allocation reaches the following VRAM region.
         ert V_PRG + 7*$4000 > V_SLOT_BG
@@ -132,4 +135,13 @@ CHR_COUNT = $3860
 ; Game ticks per picture (see flip_due): NTSC 60 ticks/s -> 30 pictures/s;
 ; PAL 60 ticks/s in 50 frames -> 20 pictures/s, each exactly 3 ticks.
 PACE_NTSC = 2
+; PAL_60HZ = 1 drives the game at the NES's 60 ticks per second on PAL as
+; well (an extra DLI tick in five of six frames). 0 runs one tick per frame,
+; 50 per second like the European NES release: the game is a sixth slower
+; but a sixth of the CPU goes to drawing instead.
+PAL_60HZ = 0
+    .if PAL_60HZ
 PACE_PAL = 3
+    .else
+PACE_PAL = 2
+    .endif

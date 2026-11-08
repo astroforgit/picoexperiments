@@ -7,8 +7,10 @@ The supplied `pc_cntra.zip` is the NES-based PlayChoice-10 release, not the dist
 Konami arcade-board game; this build uses `Contra/Contra (USA).nes`.
 
 Requires 64 KB Atari XL/XE and 512 KB VBXE with an FX 1.2x core at `$D600` or `$D700`.
-The output is **`contra.xex`**. PAL and NTSC scheduling are supported. The game logic runs at
-the original 60 ticks per second; pictures are paced (see *Frame pacing*).
+The output is **`contra.xex`**. PAL and NTSC scheduling are supported. On NTSC the game
+logic runs at the original 60 ticks per second; on PAL at 50, like the European NES
+release, so the game is a sixth slower but has a sixth more CPU time for drawing
+(`PAL_60HZ` in `src/defs.asm` restores 60). Pictures are paced (see *Frame pacing*).
 A newly loaded stage waits for its background to be ready before play starts.
 
 There is no music: tunes, the pause jingle and the boss fanfare are dropped to free
@@ -32,11 +34,12 @@ next vertical blank, so each one covered anything from 1 to 10 game ticks and
 stayed on screen for 1 to 8 video frames: steady scrolling and movement looked
 like jumps. Now a picture is sampled every `pace` game ticks and shown `pace`
 ticks after its sample (`flip_due` / `sample_due` in `src/render.asm`;
-`PACE_NTSC = 2`, `PACE_PAL = 3` in `src/defs.asm`):
+`PACE_NTSC = 2`, `PACE_PAL` in `src/defs.asm`):
 
 * NTSC: 30 pictures per second, each exactly 2 ticks.
-* PAL: 60 ticks in 50 frames give 20 pictures per second, each exactly 3
-  ticks, shown alternately for 2 and 3 video frames.
+* PAL (default, 50 ticks per second): 25 pictures per second, each exactly 2
+  ticks. With `PAL_60HZ = 1`: 60 ticks in 50 frames give 20 pictures per
+  second, each exactly 3 ticks, shown alternately for 2 and 3 video frames.
 
 When a picture is not finished in time it is shown at the next vertical blank
 and the next sample follows it. Without game ticks (loads, NMI off) a picture
@@ -56,6 +59,12 @@ model:
 
 The remaining late pictures come from scrolling, when a new column of tiles
 must be expanded and drawn.
+
+The base stages animate a few background patterns (tiles $FC-$FF) every few
+frames. Each change used to rescan about 30 nametable rows for cells using
+them (`mark_chr_dirty`, 18% of the CPU on stage 4). The marks of the last full
+scan are now kept with their tile set and replayed for any change within that
+set until a nametable cell changes: about 1,500 instead of 58,000 cycles.
 
 ## Build and run
 

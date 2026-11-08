@@ -246,6 +246,9 @@ mad_3   sta ROWDIRTY,x
 
 ; Y = physical tile row; pw_val = new pattern. Track membership in RAM.
 record_row_tile
+        lda #0
+        sta mdc_valid           ; the cached CHR scan no longer matches
+        sta mdc_clean
         tya
         lsr
         lsr

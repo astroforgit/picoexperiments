@@ -131,12 +131,36 @@ def check_dirty_packing():
    a.mem.ram[0x2800+p*1024:0x2c00+p*1024]=bytes(tiles[p])
    for cell in range(960):
     if not valid[tiles[p,cell]]:expected[p*128+cell//8]|=1<<(cell&7)
+  a.mem.ram[L['MDC_VALID']]=0          # nametables written directly, not via the PPU
   a.call(L['MARK_CHR_DIRTY'])
   assert a.mem.ram[L['DIRTY']:L['DIRTY']+256]==expected,trial
   for p in range(2):
    for row in range(30):
     assert a.mem.ram[L['ROWDIRTY']+p*32+row]==int(any(expected[p*128+row*4:p*128+row*4+4]))
  print('Randomized dirty-bit packing preserves all affected and previously dirty cells',flush=True)
+
+def check_chr_scan_cache():
+ a=initialized();ram=a.mem.ram
+ cells=[(0,3,7),(0,20,31),(1,0,0),(1,29,12)]   # (nametable, row, col) holding tile 252
+ for p in range(2):ram[0x2800+p*1024:0x2800+p*1024+960]=bytes(960)
+ for p,r,c in cells:ram[0x2800+p*1024+r*32+c]=252
+ ram[L['ROW_USES']:L['ROW_USES']+2048]=bytes([255])*2048
+ ram[L['MDC_VALID']]=0
+ def scan(bits):
+  ram[L['EXPF_BG']:L['EXPF_BG']+256]=bytes([1])*256
+  for t in (252,253):ram[L['EXPF_BG']+t]=0
+  ram[L['DIRTY']:L['DIRTY']+256]=bytes(256);ram[L['ROWDIRTY']:L['ROWDIRTY']+64]=bytes(64)
+  ram[L['CHR_BITS']:L['CHR_BITS']+32]=bytes(31)+bytes([bits])
+  start=a.cpu.processorCycles;a.call(L['MARK_CHR_DIRTY'])
+  return bytes(ram[L['DIRTY']:L['DIRTY']+256]),a.cpu.processorCycles-start
+ expected=bytearray(256)
+ for p,r,c in cells:expected[p*128+r*4+c//8]|=1<<(c&7)
+ full,c1=scan(0x30);assert full==expected and ram[L['MDC_VALID']]==1
+ again,c2=scan(0x30);assert again==expected and c2*10<c1,(c1,c2)
+ sub,_=scan(0x10);assert sub==expected     # subset: the cached marks cover it
+ ram[L['VMADDH']]=0x20;ram[L['VMADDL']]=5;a.cpu.a=7;a.call(L['PPU_W_A'])
+ assert ram[L['MDC_VALID']]==0,'nametable write must drop the cached scan'
+ print(f'CHR scan cache replays a repeated change in {c2} cycles instead of {c1}',flush=True)
 
 def check_audio_pitch():
  worst=0
@@ -163,3 +187,4 @@ if __name__=='__main__':
  check_chr_coalescing()
  check_audio_pitch()
  check_dirty_packing()
+ check_chr_scan_cache()
