@@ -178,6 +178,20 @@ Main RAM: NES state `$0000–$07FF`; OAM snapshot `$0800–$08FF`; PAL display l
 `$3800–$387F`; tables `$3A80–$3FFF`; fixed game bank `$4000–$7FFF`; banked game code
 `$8000–$BFFF`; PPU services `$C000–$CFFF`; sound services from `$D800`.
 
+## Spawn protection visibility
+
+At the start of a life and after respawning, the player stays visible and flashes
+between palette colours while protected. The original NES routine hid the player
+on alternate game ticks; a renderer sampling every two ticks could capture only
+the hidden phase. The palette flash avoids that problem without changing the
+invulnerability timer or collision rules. Intentional hiding still works.
+
+`python3 tools/test_invulnerability.py` checks both players through all 256 frame
+phases, including normal appearance, barrier protection and explicit hiding.
+`python3 tools/test_respawn_visibility.py` starts through the real menu and tests
+spawn protection and the game's death/respawn path on PAL and NTSC. The latter
+uses a test-only breakpoint to invoke the normal death routine.
+
 ## Verification
 
 ```sh

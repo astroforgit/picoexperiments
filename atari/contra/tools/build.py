@@ -144,6 +144,21 @@ def main():
   p=gs/f'bank{bank}.asm';t=p.read_text()
   for old,new in BUNNY_PATCHES.get(bank,[]):
    assert t.count(old)==1,(bank,old);t=t.replace(old,new)
+  if bank==2:
+   # Every-other-tick hiding aliases with the paced renderer. Keep the
+   # player sprite present and signal spawn immunity with the existing
+   # barrier palette pulse instead; collision/timer logic is untouched.
+   a=t.index('    lda NEW_LIFE_INVINCIBILITY_TIMER,x',t.index('set_player_paused_sprite_attr:'))
+   b=t.index('\n@continue:',a)
+   assert 'lda FRAME_COUNTER' in t[a:b] and 'bcc @set_y_to_player_sprite' in t[a:b]
+   t=t[:a]+'    jmp @set_y_to_player_sprite\n'+t[b:]
+   old='    ldy INVINCIBILITY_TIMER,x\n    beq @set_player_recoil_and_bg_priority'
+   new='    ldy INVINCIBILITY_TIMER,x\n    bne @native_protection_palette\n    ldy NEW_LIFE_INVINCIBILITY_TIMER,x\n    beq @set_player_recoil_and_bg_priority'
+   assert t.count(old)==1
+   t=t.replace(old,new)
+   old='    lda #$04                               ; a = #$04 (sprite code palette override bit)'
+   assert t.count(old)==1
+   t=t.replace(old,'@native_protection_palette:\n'+old)
   if bank==7:
    # No music: tunes $26..$51, the pause jingle $54 and the boss-destroyed
    # fanfare $57..$59 are dropped; sound effects remain.
