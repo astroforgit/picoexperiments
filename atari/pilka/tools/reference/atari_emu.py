@@ -54,8 +54,9 @@ class Mem:
             return
         w = self._window(addr)
         if w is not None:
-            if 0x6f100 <= w < 0x6f115 and self.a.cpu.processorCycles < self.a.blit_busy_until:
-                raise AssertionError("Shared BCB modified while blitter is busy")
+            a = self.a
+            if a.cpu.processorCycles < a.blit_busy_until and any(lo <= w < hi for lo, hi in a.blit_ranges):
+                raise AssertionError(f"VRAM ${w:05x} written at PC ${a.cpu.pc:04x} while the blitter uses it")
             self.a.vram[w] = value
             self.a.memac_writes += 1
             return
@@ -88,6 +89,8 @@ class Atari:
         self.next_frame = self.frame_cycles
         self.blits = 0
         self.blit_busy_until = 0
+        self.blit_ranges = []         # VRAM the running list reads or writes
+        self.blit_cycles = 0
         self.consol = 7
         self.skstat = 0xFF
         self.kbcode = 0xFF
@@ -216,10 +219,16 @@ class Atari:
     def run_blitter(self):
         if self.cpu.processorCycles < self.blit_busy_until:
             raise AssertionError('blitter started while busy')
+        self.blit_ranges = []
         accesses = self.blit_list()
-        self.blit_busy_until = self.cpu.processorCycles + int(accesses / BLIT_RATE)
+        busy = int(accesses / BLIT_RATE)
+        self.blit_cycles += busy
+        self.blit_busy_until = self.cpu.processorCycles + busy
 
     def blit_list(self):
+        """Run a whole blitter list at once. Results appear immediately; the
+        busy time is modelled, and the CPU may not write any VRAM the list
+        uses until it has passed (see Mem.__setitem__)."""
         accesses = 0
         v = self.vregs
         addr = v[0x50] | (v[0x51] << 8) | ((v[0x52] & 7) << 16)
@@ -240,29 +249,52 @@ class Atari:
             zoom, patt = int(b[18]), int(b[19])
             ctrl = int(b[20])
             mode = ctrl & 7
-            assert zoom == 0 and patt == 0, f'zoom/pattern used at ${addr:05x}'
+            zx, zy = (zoom & 7) + 1, ((zoom >> 4) & 7) + 1
+            assert patt == 0, f'pattern used at ${addr:05x}'
+            assert mode <= 5, f'blitter mode {mode}'
+            self.blit_ranges.append((addr, addr + 21))
             ys = np.arange(h)[:, None]
             xs = np.arange(w)[None, :]
             si = (src + ys * ssy + xs * ssx) & 0x7FFFF
-            di = (dst + ys * dsy + xs * dsx) & 0x7FFFF
-            s = (vram[si] & andm) ^ xorm
-            # Real hardware copies pixel by pixel: no pixel may be read after
-            # this blit has already overwritten it.
-            if andm and si.min() <= di.max() and di.min() <= si.max():
-                order = np.full(0x80000, h * w, dtype=np.int64)
-                order[di.ravel()[::-1]] = np.arange(h * w)[::-1]
-                assert (order[si.ravel()] >= np.arange(h * w)).all(), \
-                    f'overlapping blit in unsafe direction at ${addr:05x}'
+            oy = np.arange(h * zy)[:, None]
+            ox = np.arange(w * zx)[None, :]
+            di = (dst + oy * dsy + ox * dsx) & 0x7FFFF
+            if andm:
+                self.blit_ranges.append((int(si.min()), int(si.max()) + 1))
+            self.blit_ranges.append((int(di.min()), int(di.max()) + 1))
             accesses += 21
-            if mode == 0:
-                vram[di] = s
-                accesses += w * h * (1 if andm == 0 else 2)
-            elif mode == 1:
-                m = s != 0
-                vram[di[m]] = s[m]
-                accesses += (w * h if andm else 0) + int(m.sum())
+            if mode <= 1 and zoom == 0 and dsx and dsy:
+                s = (vram[si] & andm) ^ xorm
+                # Real hardware copies pixel by pixel: no pixel may be read
+                # after this blit has already overwritten it.
+                if andm and si.min() <= di.max() and di.min() <= si.max():
+                    order = np.full(0x80000, h * w, dtype=np.int64)
+                    order[di.ravel()[::-1]] = np.arange(h * w)[::-1]
+                    assert (order[si.ravel()] >= np.arange(h * w)).all(), \
+                        f'overlapping blit in unsafe direction at ${addr:05x}'
+                if mode == 0:
+                    vram[di] = s
+                    accesses += w * h * (1 if andm == 0 else 2)
+                else:
+                    m = s != 0
+                    vram[di[m]] = s[m]
+                    accesses += (w * h if andm else 0) + int(m.sum())
             else:
-                raise AssertionError(f'blitter mode {mode}')
+                # Pixel by pixel, in hardware order (accumulating blits with
+                # a zero destination step, logic modes, zoom).
+                for y in range(h * zy):
+                    for x in range(w * zx):
+                        s = (int(vram[si[y // zy, x // zx]]) & andm) ^ xorm
+                        d = int(di[y, x])
+                        accesses += 1 if andm else 0
+                        if mode == 0:
+                            vram[d] = s; accesses += 1
+                        elif mode == 4:
+                            vram[d] = int(vram[d]) & s; accesses += 2
+                        elif s:
+                            old = int(vram[d])
+                            vram[d] = (s, (old + s) & 255, old | s, 0, old ^ s)[mode - 1]
+                            accesses += 2
             self.blits += 1
             if not ctrl & 8:
                 break

@@ -1,83 +1,58 @@
-; Arlasoft Soccer native 6502 bridge. Original logic stays at original addresses.
-; Runtime occupies former VIC-only graphics RAM. All art is uploaded to VBXE.
-        org $dc10
-busy    .ds 1
-frames  .ds 1
-render_phase .ds 1
-front   .ds 1
-back    .ds 1
-vbpage  .ds 1
-rowno   .ds 1
-colno   .ds 1
-charid  .ds 1
-colorid .ds 1
-sprno   .ds 1
-xx      .ds 2
-yy      .ds 1
-idx     .ds 1
-joyone  .ds 1
-joytwo  .ds 1
-bannerrow .ds 1
-invw .ds 1
-invh .ds 1
-invrow .ds 1
-destrow .ds 2
-startframe .ds 1
-scrollx .ds 1
-scrolly .ds 1
-pending .ds 1
-clipx .ds 1
-clipy .ds 1
-srcskip .ds 1
-lastwait .ds 1
-skipped .ds 1
-clears .ds 1
-ptrsave .ds 2
-sstep .ds 1
-colbase .ds 1
-colleft .ds 1
-sframe .ds 1
-scol .ds 1
-sand .ds 1
-skip .ds 1
-skiplo .ds 1
-skiphi .ds 1
-scrhi .ds 1
-scanblk .ds 1
-scanx .ds 1
-scanbase .ds 2
-scancache .ds 2
-idxhi .ds 1
-scanend .ds 1
-scanrot .ds 1
-lastscrhi .ds 1
-lastd018 .ds 1
-flipdir .ds 1
-flipseq .ds 1
-lastseq .ds 1
-render_full .ds 1
-menu_mode .ds 1
-rowbanner .ds 25
-        org $dd80
-irqvec  .ds 2
-nmivec  .ds 2
-        org $dd90
-joy1    .ds 1
-joy2    .ds 1
-ptr = $fc
-LIST = $7200             ; chained BCB list for compose/sprites (VRAM $6F200)
+; Arlasoft Soccer native 6502 bridge. Original logic stays at original
+; addresses. This file is the resident part: the interrupt, the game-loop
+; hooks and the data the C64 kept in RAM under its I/O area. The renderer
+; itself (render.asm) lives in VRAM and is mapped at $C000 only while it runs.
+        icl 'vars.asm'
 
-SMALL   = $dd10        ; small tables, copied from small_src at boot
-banner_signature = SMALL+0
-row40_lo = SMALL+4
-row40_hi = SMALL+29
-row_dest = SMALL+54
-blk_lo = SMALL+79
-blk_hi = SMALL+83
-dir_dx = SMALL+87
-SMALL_LEN = 95
+GBANK   = $80|$7c       ; MEMAC-A bank: the game's own $C000-$CFFF (VRAM $7C000)
+RBANK   = $80|$7d       ; MEMAC-A bank: renderer code (VRAM $7D000)
 
+; ------------------------------------------------------------------
+; Always visible: former VIC-only character set RAM.
+; ------------------------------------------------------------------
         org $f000
+; VBXE access for the renderer bank (it holds no hardware addresses, so
+; only this file needs relocating for a VBXE at $D700).
+memb
+vbrel_0
+        sta $d65d
+        rts
+blit_at                         ; X/Y/A = blitter list address low/mid/high
+vbrel_1
+        stx $d650
+vbrel_2
+        sty $d651
+vbrel_3
+        sta $d652
+        lda #1
+vbrel_4
+        sta $d653
+        rts
+blit_wait
+vbrel_5
+        lda $d653
+        bne blit_wait
+        rts
+
+; Draw one picture. The renderer replaces the game's $C000-$CFFF while it
+; runs; the blitter reads the C64 screens straight from that VRAM bank.
+render_tramp
+        ldx $c3ff
+        lda $11d9
+        and #$10
+        beq rt_screen0
+        ldx $c7ff
+rt_screen0
+        stx ballframe
+        lda #RBANK
+vbrel_6
+        sta $d65f
+        jsr $c000
+        lda #GBANK
+vbrel_7
+        sta $d65f
+        rts
+
 nmi
         pha
         txa
@@ -85,31 +60,56 @@ nmi
         tya
         pha
         ; The game may be interrupted inside SED code; RTI restores its D flag.
-        ; The runtime itself always works in binary.
         cld
         lda #0
         sta $d40f
         inc frames
-        ; Publish only completed frames, during vertical blank. Both XDLs
+        ; Show a finished picture, and only during vertical blank. Both XDLs
         ; are immutable, so a frame cannot mix the old/new screen addresses.
         lda pending
         beq no_publish
-vbrel_0
+vbrel_8
         lda $d653
         bne no_publish
-        lda pending
-        sec
-        sbc #1
-        sta front
+        ldx pending
+        dex
+        stx front
+        txa
         asl
         asl
         asl
         asl
         asl
-vbrel_1
+vbrel_9
         sta $d641
         lda #0
         sta pending
+        ; The colours that follow VIC registers change with the picture.
+        lda palflag
+        beq no_publish
+        lda #0
+        sta palflag
+        tax
+        tay
+publish_palette
+        lda palidx,x
+vbrel_10
+        sta $d644
+        lda palbuf,y
+vbrel_11
+        sta $d646
+        lda palbuf+1,y
+vbrel_12
+        sta $d647
+        lda palbuf+2,y
+vbrel_13
+        sta $d648
+        iny
+        iny
+        iny
+        inx
+        cpx #7
+        bne publish_palette
 no_publish
         lda $d300
         and #15
@@ -128,10 +128,8 @@ input1  sta joy1
         bne input2
         and #$ef
 input2  sta joy2
-        lda busy
-        bne skip_tick
-        ; Keep VIC screen/scroll/ball shadows stable throughout composition.
-        ; Respect the interrupted game's SEI critical sections.
+        ; The C64 raster interrupt: only when the game has enabled it and
+        ; is outside its SEI critical sections.
         tsx
         lda $0104,x
         and #4
@@ -147,18 +145,6 @@ input2  sta joy2
 tick_binary
         jsr tick
 skip_tick
-        ; The game flips its double-buffered screen after copying it shifted
-        ; by one character; $11db holds that copy's direction (0-7, see the
-        ; game's offset table at $1471), or $ff.
-        lda $de18
-        cmp lastd018
-        beq no_flip
-        sta lastd018
-        lda $11db
-        sta flipdir
-        inc flipseq
-no_flip
-nmi_done
         pla
         tay
         pla
@@ -178,881 +164,131 @@ tick
 tick_return
         rts
 
-; Menu input/update is called from its own loop, without the match wait.
-menu_frame
-        lda #1
-        sta menu_mode
-        jsr frame_wait
-        lda #0
-        sta menu_mode
-        jmp $9524
+palidx  dta 1,2,3,4,8,$20,$40
 
-; Replacement for the game's raster-dependent frame wait.
+; Formation tables the C64 game reads with its I/O area banked out (the
+; build copies them here and points the game's reader at them):
+rec0    .ds 1155                ; C64 RAM $DA7D-$DEFF, 33 records of 35 bytes
+rec1    .ds 280                 ; $C980,$CA80..$CF80 and $D080, 35 bytes each
+        ert * > $f800
+
+; ------------------------------------------------------------------
+; Game context only: unused C64 sprite-pattern RAM (in the game's bank).
+; $C900-$CBFF holds the menu table relocated from under the C64 I/O.
+; ------------------------------------------------------------------
+        org $cc00
+; Replacement for the game's raster-dependent frame wait: consume exactly
+; one vertical blank. If the loop has fallen behind, the following waits
+; return at once (and pictures are skipped) until it has caught up.
 frame_wait
         php
         cld
-        txa
-        pha
-        tya
-        pha
-        ; Draw only when the game loop is on time and the previous picture
-        ; has been shown; skip late pictures to reduce game-loop stalls.
-        lda pending
-        bne fw_wait
-        lda frames
-        cmp lastwait
-        beq fw_draw
-        inc skipped
-        lda skipped
-        cmp #3
-        bcc fw_wait
-fw_draw
-        inc busy
-        lda #0
-        sta render_full
-        jsr render
-        lda #0
-        sta render_phase
-        sta skipped
-        dec busy
-fw_wait
         lda lastwait
-wait_tick
-        cmp frames
-        beq wait_tick
+fw_idle cmp frames
+        beq fw_idle
+        inc lastwait
+        lda frames
+        sec
+        sbc lastwait
+        cmp #4
+        bcc fw_debt
         lda frames
         sta lastwait
-        pla
-        tay
-        pla
-        tax
+        lda #0
+fw_debt sta debt
         lda #0
         sta $91ff
         plp
         rts
 
-render
+; Called where the game loop runs its logic, right after it has sorted the
+; sprite list: scroll, screen, sprites and ball are one consistent state.
+game_hook
+        lda #0
+        sta menu_mode
         lda pending
-        bne render
-        lda $de16
-        and #7
-        sta scrollx
-        lda $de11
-        and #7
-        sta scrolly
-        lda #$f4
-vbrel_2
-        sta $d65f
-        lda #$9b
-vbrel_3
-        sta $d65d
-        ; The previous frame's list has finished (it was published). Point
-        ; the blitter back at the shared single BCB.
-        jsr wait_blit
-        lda #0
-vbrel_4
-        sta $d650
-        lda #$f1
-vbrel_5
-        sta $d651
-        lda #6
-vbrel_6
-        sta $d652
-        lda ptr
-        sta ptrsave
-        lda ptr+1
-        sta ptrsave+1
-        lda front
-        eor #1
-        sta back
-        lda #$a0
-        sta cache_char+2
-        sta save_char+2
-        clc
-        adc #4
-        sta cache_color+2
-        sta save_color+2
-        lda #0
-        sta cache_char+1
-        sta save_char+1
-        sta cache_color+1
-        sta save_color+1
-        ; update 3 VIC shared palette colours (all others fixed)
-        ldx #0
-shared_pal
-        txa
-vbrel_7
-        sta $d644
-        lda $de21,x
-        and #15
-        tay
-        lda c64_r,y
-vbrel_8
-        sta $d646
-        lda c64_g,y
-vbrel_9
-        sta $d647
-        lda c64_b,y
-vbrel_10
-        sta $d648
-        inx
-        cpx #3
-        bne shared_pal
-        lda #3
-        ldx $de21
-        jsr set_c64_colour
-        ; Sprite multicolours 0 and 1 ($D025/$D026) at palette $40 and $20.
-        lda #$40
-        ldx $de25
-        jsr set_c64_colour
-        lda #$20
-        ldx $de26
-        jsr set_c64_colour
-        lda $de18
-        and #$10
-        lsr
-        lsr
-        ora #$c0
-        sta scrhi
-        ; tiles: 8x8, source stride 8, opaque
-        lda #8
-        sta $7103
-        lda #0
-        sta $7104
-        sta $7114
-        lda #7
-        sta $710c
-        sta $710e
-        lda #0
-        sta $710d
-        sta $7106
-        sta $7107
-        lda #2
-        sta $7108
-        ; After one C64 screen flip, move the existing picture by the copy
-        ; offset with the blitter and then check every cell. Otherwise check
-        ; every character and colour for a complete, coherent picture.
-        ldx flipseq
-        lda flipdir
-        sta charid
-        txa
-        sec
-        sbc lastseq
-        stx lastseq
-        tay
-        lda scrhi
-        cmp lastscrhi
-        beq same_screen
-        sta lastscrhi
-        cpy #1
-        bne full_scan
-        lda charid
-        jsr shift_picture
-        jmp full_scan
-same_screen
-full_scan
-        lda #0
-        sta scanblk
-        lda #4
-        sta scanend
-scan_chosen
-        ; Compare every colour row, including colour-only menu highlights.
-        lda #0
-        sta rowno
-        lda #25
-        sta colleft
-colour_rows
-        jsr setup_row
-        lda get_color+1
-        sta cq_color+1
-        sta cq_rawc+1
-        lda get_color+2
-        sta cq_color+2
-        lda cache_char+2
-        clc
-        adc #12
-        sta cq_rawc+2
-        ldx #39
-cq_loop
-cq_color
-        lda $d800,x
-cq_rawc
-        cmp $ac00,x
-        bne cq_dirty
-        dex
-        bpl cq_loop
-        bmi cq_next
-cq_dirty
-        jsr process_row
-cq_next
-        ldx rowno
-        inx
-        cpx #25
-        bcc cq_row_ok
-        ldx #0
-cq_row_ok
-        stx rowno
-        dec colleft
-        bne colour_rows
-        stx colbase
-        ; Characters: an unrolled linear pass over 250-byte blocks of the
-        ; 1000 cells; a mismatch redraws the whole row it belongs to.
-scan_block
-        ldy scanblk
-        lda blk_lo,y
-        sta scanbase
-        clc
-        adc #<$a800
-        sta scancache
-        lda blk_hi,y
-        adc #>$a800
-        sta scancache+1
-        lda blk_hi,y
-        clc
-        adc scrhi
-        sta scanbase+1
-        lda scanbase
-        clc
-        adc #0
-        sta sl0+1
-        lda scanbase+1
-        adc #0
-        sta sl0+2
-        lda scancache
-        clc
-        adc #0
-        sta sc0+1
-        lda scancache+1
-        adc #0
-        sta sc0+2
-        lda scanbase
-        clc
-        adc #1
-        sta sl1+1
-        lda scanbase+1
-        adc #0
-        sta sl1+2
-        lda scancache
-        clc
-        adc #1
-        sta sc1+1
-        lda scancache+1
-        adc #0
-        sta sc1+2
-        lda scanbase
-        clc
-        adc #2
-        sta sl2+1
-        lda scanbase+1
-        adc #0
-        sta sl2+2
-        lda scancache
-        clc
-        adc #2
-        sta sc2+1
-        lda scancache+1
-        adc #0
-        sta sc2+2
-        lda scanbase
-        clc
-        adc #3
-        sta sl3+1
-        lda scanbase+1
-        adc #0
-        sta sl3+2
-        lda scancache
-        clc
-        adc #3
-        sta sc3+1
-        lda scancache+1
-        adc #0
-        sta sc3+2
-        lda scanbase
-        clc
-        adc #4
-        sta sl4+1
-        lda scanbase+1
-        adc #0
-        sta sl4+2
-        lda scancache
-        clc
-        adc #4
-        sta sc4+1
-        lda scancache+1
-        adc #0
-        sta sc4+2
-        ldx #245
-scan_loop
-sl4
-        lda $ffff,x
-sc4
-        cmp $ffff,x
-        bne sm4
-sl3
-        lda $ffff,x
-sc3
-        cmp $ffff,x
-        bne sm3
-sl2
-        lda $ffff,x
-sc2
-        cmp $ffff,x
-        bne sm2
-sl1
-        lda $ffff,x
-sc1
-        cmp $ffff,x
-        bne sm1
-sl0
-        lda $ffff,x
-sc0
-        cmp $ffff,x
-        bne sm0
-        txa
-        sec
-        sbc #5
-        tax
-        bcs scan_loop
-        inc scanblk
-        lda scanblk
-        cmp scanend
-        jne scan_block
-        jmp scan_done
-sm4
-        lda #4
-        bpl scan_hit
-sm3
-        lda #3
-        bpl scan_hit
-sm2
-        lda #2
-        bpl scan_hit
-sm1
+        bne gh_skip
+        lda debt
+        beq gh_draw
+        inc skipn
+        lda skipn
+        cmp #3
+        bcc gh_skip
+gh_draw lda #0
+        sta skipn
+        jsr render_tramp
+gh_skip jmp $85e4
+
+; Menu input/update is called from its own loop, once per frame.
+menu_frame
         lda #1
-        bpl scan_hit
-sm0
-        lda #0
-        bpl scan_hit
-scan_hit
-        ; Row = (block*250 + x + k) / 40.
-        stx scanx
+        sta menu_mode
+        lda pending
+        bne mf_skip
+        jsr render_tramp
+mf_skip jmp $9524
+
+; The game arms a screen flip: the new screen is the old one moved by one
+; character in direction $11DB (0-7). Move the ring origin the same way.
+flip_hook
+        ldx $11db
+        cpx #8
+        bcs fh_done
+        lda ox
         clc
-        adc scanx
-        ldy scanblk
+        adc dir_dx,x
+        bpl fh_x1
         clc
-        adc blk_lo,y
-        sta idx
-        lda blk_hi,y
-        adc #0
-        sta idxhi
-        ldx #0
-row_div
-        lda idx
-        sec
+        adc #40
+        dec oy
+        jmp fh_x2
+fh_x1   cmp #40
+        bcc fh_x2
         sbc #40
-        tay
-        lda idxhi
-        sbc #0
-        bcc row_found
-        sta idxhi
-        sty idx
-        inx
-        bne row_div
-row_found
-        stx rowno
-        jsr setup_row
-        jsr process_row
-        ldx scanx
-        jmp scan_loop
-scan_done
-        jsr compose_background
-        jsr players
-        jsr ball
-        jsr start_list
-        lda ptrsave
-        sta ptr
-        lda ptrsave+1
-        sta ptr+1
-        lda back
+        inc oy
+fh_x2   sta ox
+        lda oy
+        clc
+        adc dir_dy,x
+        bpl fh_y1
+        clc
+        adc #25
+fh_y1   cmp #25
+        bcc fh_y2
+        sbc #25
+fh_y2   sta oy
+fh_done lda $11e5
+        rts
+; C64 screen-copy offsets $1471: -40,-39,+1,+41,+40,+39,-1,-41
+dir_dx  dta 0,1,1,1,0,$ff,$ff,$ff
+dir_dy  dta $ff,$ff,0,1,1,1,0,$ff
+
+; C64 raster line (9 bits: X low, A bit 7 high) for the game's time-sliced
+; screen copy. The VBI is scanline 248; the C64 interrupt is line $FA.
+raster9
+        lda $d40b
         clc
         adc #1
-        sta pending
-        lda #0
-vbrel_11
-        sta $d65d
-vbrel_12
-        sta $d65f
-        rts
-
-process_row
-        ; Save every raw source byte. The mapped cache remains independent
-        ; because advertising uses generated glyphs instead of source glyphs.
-        lda get_char+1
-        sta raw_fetch_char+1
-        lda get_char+2
-        sta raw_fetch_char+2
-        lda get_color+1
-        sta raw_fetch_color+1
-        lda get_color+2
-        sta raw_fetch_color+2
-        lda cache_char+1
-        sta raw_save_char+1
-        sta raw_save_color+1
-        lda cache_char+2
-        clc
-        adc #8
-        sta raw_save_char+2
-        adc #4
-        sta raw_save_color+2
-        ldx #39
-raw_copy
-raw_fetch_char
-        lda $c000,x
-raw_save_char
-        sta $a800,x
-raw_fetch_color
-        lda $d800,x
-raw_save_color
-        sta $ac00,x
-        dex
-        bpl raw_copy
-        lda #0
-        sta bannerrow
-        ; Recognize ARLA in the original advertising text at any scroll column.
-        ; The menu retains its original title/credits, regardless of colours.
-        lda menu_mode
-        bne banner_checked
-        lda get_char+1
-        sta banner_probe+1
-        lda get_char+2
-        sta banner_probe+2
-        ldy #0
-        ldx #0
-banner_probe
-        lda $ffff,y
-        cmp banner_signature,x
-        bne banner_restart
-        inx
-        cpx #4
-        beq banner_found
-        bne banner_step
-banner_restart
-        ldx #0
-        cmp #217
-        bne banner_step
-        inx
-banner_step
-        iny
-        cpy #40
-        bne banner_probe
-        beq banner_checked
-banner_found
-        inc bannerrow
-banner_checked
-        ldx rowno
-        lda bannerrow
-        sta rowbanner,x
-        ldx #0
-char_loop
-get_char
-        lda $c000,x
-        tay
-get_color
-        lda $d800,x
-        and #15
-        sta colorid
-        lda bannerrow
-        beq normal_cache
-        txa
-        tay
-        lda #16
-        sta colorid
-normal_cache
-        lda colorid
-cache_color
-        cmp $a400,x
-        bne tile_dirty
-        tya
-cache_char
-        cmp $a000,x
-        bne tile_dirty
-        inx
-        cpx #40
-        bne char_loop
-        rts
-tile_dirty
-        ; A picture move may still be running: the shared BCB is in use.
-        jsr wait_blit
-        sty charid
-
-char_changed
-        stx colno
-        ; Calculate destination only for changed cells.
-        txa
         asl
-        asl
-        asl
-        sta $7106
-        lda #0
-        adc destrow+1
-        sta $7107
-        clc
-        lda $7106
-        adc destrow
-        sta $7106
-        bcc dest_ready
-        inc $7107
-dest_ready
-        lda charid
-save_char
-        sta $a000,x
-        lda colorid
-save_color
-        sta $a400,x
-        jsr wait_blit
-        lda bannerrow
-        beq normal_tile
-        lda colno
-        and #3
-        asl
-        asl
-        asl
-        asl
-        asl
-        asl
-        sta $7100
-        lda colno
-        lsr
-        lsr
-        ora #$80
-        sta $7101
-        lda #7
-        sta $7102
-        jsr blit
-        jmp char_advance
-normal_tile
-        ; 4096-entry planar address lookup mapped beside the BCB.
-        lda colorid
-        ora #$40
-        sta lookup_lo+2
-        lda colorid
-        ora #$50
-        sta lookup_hi+2
-        lda colorid
-        ora #$60
-        sta lookup_bank+2
-        ldx charid
-lookup_lo
-        lda $4000,x
-        sta $7100
-lookup_hi
-        lda $5000,x
-        sta $7101
-lookup_bank
-        lda $6000,x
-        sta $7102
-        ldx colno
-        jsr blit
-char_advance
-        inx
-        cpx #40
-        jne char_loop
-        rts
-
-; Move character rows 1-24 of the char layer and of the four cell caches
-; by one cell in C64 copy direction A (0-7). Uses the per-direction BCB
-; lists the build stores at $6F500 + 128*direction: four cache moves,
-; then the char layer move (left running).
-shift_picture
-        cmp #8
-        bcc shift_found
-        rts
-shift_found
         tax
-        stx sprno
-        txa
-        lsr
-        tay
         lda #0
         ror
-vbrel_13
-        sta $d650
-        tya
-        clc
-        adc #$f5
-vbrel_14
-        sta $d651
-        lda #6
-vbrel_15
-        sta $d652
-        lda #1
-vbrel_16
-        sta $d653
-        jsr wait_blit
-        lda sprno
-        lsr
-        lda #0
-        ror
-        clc
-        adc #84
-vbrel_17
-        sta $d650
-        lda #1
-vbrel_18
-        sta $d653
-        ; Advertising glyphs follow screen columns: horizontal moves must
-        ; redraw those rows (and their neighbours, which a vertical part
-        ; of the move may have shifted them to).
-        ldx sprno
-        lda dir_dx,x
-        beq shift_done
-        ldy #24
-shift_banner
-        lda rowbanner,y
-        beq shift_next
-        lda #0
-        sta rowbanner,y
-        dey
-        jsr invalidate_row
-        iny
-        jsr invalidate_row
-        iny
-        jsr invalidate_row
-        dey
-shift_next
-        dey
-        bne shift_banner
-shift_done
         rts
 
-; Make the raw cache of row Y (1-24, others ignored) differ from its source.
-invalidate_row
-        cpy #1
-        bcc inv_skip
-        cpy #25
-        bcs inv_skip
-        lda row40_lo,y
-        sta inv_load+1
-        sta inv_store+1
-        lda row40_hi,y
-        clc
-        adc #$a8
-        sta inv_load+2
-        sta inv_store+2
-inv_load
-        lda $a800
-        eor #$ff
-inv_store
-        sta $a800
-inv_skip
+; Formation record address for index Y = $21-$28.
+rec1ptr
+        lda rec1_hi-$21,y
+        sta $17
+        lda rec1_lo-$21,y
         rts
-
-; Palette entry A := C64 colour X.
-set_c64_colour
-vbrel_19
-        sta $d644
-        txa
-        and #15
-        tax
-        lda c64_r,x
-vbrel_20
-        sta $d646
-        lda c64_g,x
-vbrel_21
-        sta $d647
-        lda c64_b,x
-vbrel_22
-        sta $d648
-        rts
-
-; Point the row routines at character row rowno.
-setup_row
-        ldy rowno
-        lda row40_lo,y
-        sta get_char+1
-        sta get_color+1
-        sta cache_char+1
-        sta save_char+1
-        sta cache_color+1
-        sta save_color+1
-        lda row40_hi,y
-        clc
-        adc scrhi
-        sta get_char+2
-        lda row40_hi,y
-        clc
-        adc #$d8
-        sta get_color+2
-        lda row40_hi,y
-        clc
-        adc #$a0
-        sta cache_char+2
-        sta save_char+2
-        adc #4
-        sta cache_color+2
-        sta save_color+2
-        lda #0
-        sta destrow
-        lda row_dest,y
-        sta destrow+1
-        rts
-
-compose_background
-        ; Borders and the bottom strip are never drawn, so each framebuffer
-        ; needs a single clear after boot.
-        lda clears
-        beq compose_list
-        dec clears
-        lda #0
-        sta $7114
-        sta $7106
-        sta $7107
-        sta $7103
-        sta $7104
-        sta $7100
-        sta $7101
-        sta $7102
-        sta $710f
-        sta $7110
-        lda back
-        sta $7108
-        lda #$3f
-        sta $710c
-        lda #1
-        sta $710d
-        lda #199
-        sta $710e
-        jsr blit
-        lda #0
-        sta $710d
-        lda #$ff
-        sta $710f
-compose_list
-        ; List entry 0: pitch. C64 origin is x=24+fineX, y=51+fineY-3. Crop
-        ; eight pixels around the viewport, so no uninitialised scroll edge
-        ; is exposed. Entry 1: the unscrolled top character row.
-        lda #11
-        sec
-        sbc scrolly
-        tay
-        lda #8
-        sec
-        sbc scrollx
-        clc
-        adc pixel_y_lo,y
-        sta LIST
-        lda pixel_y_hi,y
-        adc #0
-        sta LIST+1
-        lda back
-        sta LIST+8
-        sta LIST+21+8
-        lda #<(LIST+42)
-        sta ptr
-        lda #>(LIST+42)
-        sta ptr+1
-        rts
-
-; Append a sprite BCB: source lo/mid in srcskip/idx (bank 6), width-1
-; in clipx, height-1 in clipy, source row step in sstep, AND mask in sand,
-; destination in destrow (in the back buffer).
-add_sprite
-        ldy #0
-        lda srcskip
-        sta (ptr),y
-        iny
-        lda idx
-        sta (ptr),y
-        ldy #3
-        lda sstep
-        sta (ptr),y
-        ldy #6
-        lda destrow
-        sta (ptr),y
-        iny
-        lda destrow+1
-        sta (ptr),y
-        iny
-        lda back
-        sta (ptr),y
-        ldy #12
-        lda clipx
-        sta (ptr),y
-        ldy #14
-        lda clipy
-        sta (ptr),y
-        iny
-        lda sand
-        sta (ptr),y
-        ldy #20
-        lda #9
-        sta (ptr),y
-        clc
-        lda ptr
-        adc #21
-        sta ptr
-        bcc add_done
-        inc ptr+1
-add_done
-        rts
-
-; Terminate the list with a blit whose AND mask makes every pixel
-; transparent, then start it. The CPU does not wait for it.
-start_list
-        jsr wait_blit
-        lda #0
-        ldy #12
-        sta (ptr),y
-        ldy #14
-        sta (ptr),y
-        iny
-        sta (ptr),y
-        ldy #20
-        lda #1
-        sta (ptr),y
-        lda #0
-vbrel_23
-        sta $d650
-        lda #$f2
-vbrel_24
-        sta $d651
-        lda #6
-vbrel_25
-        sta $d652
-        lda #1
-vbrel_26
-        sta $d653
-        rts
-
-
-
-wait_blit
-vbrel_27
-        lda $d653
-        bne wait_blit
-        rts
-blit
-        jsr wait_blit
-        lda #0
-vbrel_28
-        sta $d650
-        lda #$f1
-vbrel_29
-        sta $d651
-        lda #6
-vbrel_30
-        sta $d652
-        lda #1
-vbrel_31
-        sta $d653
-        ; Wait before the next operation edits this shared BCB.
-        jmp wait_blit
+rec1_lo dta <rec1,<(rec1+35),<(rec1+70),<(rec1+105),<(rec1+140),<(rec1+175),<(rec1+210),<(rec1+245)
+rec1_hi dta >rec1,>(rec1+35),>(rec1+70),>(rec1+105),>(rec1+140),>(rec1+175),>(rec1+210),>(rec1+245)
 
 ; Last boot step, outside $F800-$FFFF: put back the C64 game code the
 ; boot-only part occupied (staged at VRAM $5F000), then start the game.
 finish_boot
         lda #$80|$17
-vbrel_32
+vbrel_14
         sta $d65d
         ldx #0
 fb_copy
@@ -1075,7 +311,7 @@ fb_copy
         inx
         bne fb_copy
         lda #0
-vbrel_33
+vbrel_15
         sta $d65d
         lda #<nmi
         sta $fffa
@@ -1088,229 +324,31 @@ vbrel_33
         lda #$40
         sta $d40e
         jmp $975b
-        ert * > $f800
-
-
-; Sprite list building and its tables live in unused C64 sprite-pattern RAM.
-        org $cc40
-players
-        lda #0
-        sta sprno
-player_loop
-        ldx sprno
-        lda $9f,x
-        sta xx
-        lda $e4,x
-        cmp #$ff
-        beq players_done
-        sta yy
-        lda $cd,x
-        sta sframe
-        lda $b6,x
-        sta scol
-        and #$80
-        beq player_low
-        lda #1
-player_low
-        sta xx+1
-        jsr draw_sprite
-        inc sprno
-        lda sprno
-        cmp #23
-        bne player_loop
-players_done
-        rts
-
-; VIC sprite 7 is the ball; its frame is the pointer of the shown screen.
-ball
-        lda $de15
-        and #$80
-        beq ball_end
-        lda $de0e
-        sta xx
-        lda $de10
-        and #$80
-        beq ball_low
-        lda #1
-ball_low
-        sta xx+1
-        lda $de0f
-        sta yy
-        lda $de2e
-        sta scol
-        lda $de18
-        and #$10
-        beq ball_screen0
-        lda $c7ff
-        jmp ball_frame
-ball_screen0
-        lda $c3ff
-ball_frame
-        sta sframe
-        jmp draw_sprite
-ball_end
-        rts
-
-; Queue C64 sprite frame sframe (32-127, stored as 24x21 bytes per 512 at
-; VRAM $60000) at C64 position xx (9 bits), yy in colour scol, clipped to
-; the visible field x 8-311, y 8-191. The first sprite line is Y+1, so the
-; framebuffer position is (X-24, Y-50). Sprite-colour pixels are stored as
-; $FF and become $60+colour through the AND mask; multicolours are fixed
-; palette entries $40 and $20.
-draw_sprite
-        lda sframe
-        sec
-        sbc #32
-        bcc ds_out
-        cmp #96
-        bcs ds_out
-        asl
-        sta idx
-        lda #0
-        sta srcskip
-        lda #20
-        sta clipy
-        lda #23
-        sta clipx
-        lda yy
-        sec
-        sbc #50
-        sta yy
-        bcc ds_top
-        cmp #8
-        bcc ds_top
-        cmp #192
-        bcs ds_out
-        cmp #172
-        bcc ds_x
-        lda #191
-        sec
-        sbc yy
-        sta clipy
-        jmp ds_x
-ds_out
-        rts
-ds_top
-        ; Hide 8-y lines: skip that many 24-byte source rows.
-        lda #8
-        sec
-        sbc yy
-        cmp #21
-        bcs ds_out
-        sta skip
-        lda #20
-        sec
-        sbc skip
-        sta clipy
-        lda skip
-        asl
-        asl
-        asl
-        sta skiplo
-        asl
-        sta srcskip
-        lda #0
-        rol
-        sta skiphi
-        clc
-        lda srcskip
-        adc skiplo
-        sta srcskip
-        lda idx
-        adc skiphi
-        sta idx
-        lda #8
-        sta yy
-ds_x
-        sec
-        lda xx
-        sbc #24
-        sta xx
-        lda xx+1
-        sbc #0
-        sta xx+1
-        bmi ds_left
-        bne ds_right
-        lda xx
-        cmp #8
-        bcs ds_xin
-ds_left
-        lda #8
-        sec
-        sbc xx
-        cmp #24
-        bcs ds_out
-        sta skip
-        clc
-        adc srcskip
-        sta srcskip
-        bcc ds_left_mid
-        inc idx
-ds_left_mid
-        lda #23
-        sec
-        sbc skip
-        sta clipx
-        lda #8
-        sta xx
-        lda #0
-        sta xx+1
-        beq ds_xin
-ds_right
-        lda xx
-        cmp #56
-        jcs ds_out
-        cmp #33
-        bcc ds_xin
-        lda #55
-        sec
-        sbc xx
-        sta clipx
-ds_xin
-        ldy yy
-        clc
-        lda pixel_y_lo,y
-        adc xx
-        sta destrow
-        lda pixel_y_hi,y
-        adc xx+1
-        sta destrow+1
-        lda scol
-        and #15
-        ora #$60
-        sta sand
-        lda #24
-        sta sstep
-        jmp add_sprite
-
-pixel_y_lo ins '../gen/y-lo.bin',0,208
-pixel_y_hi ins '../gen/y-hi.bin',0,208
-c64_r   ins '../gen/c64-r.bin'
-c64_g   ins '../gen/c64-g.bin'
-c64_b   ins '../gen/c64-b.bin'
         ert * > $d000
 
+; ------------------------------------------------------------------
 ; Boot-only code and data. finish_boot overwrites it with game code.
+; ------------------------------------------------------------------
         org $f800
 rt_boot
         sei
         cld
         sta vbpage
-        cmp #$d6
-        beq reloc_done
-        ldx #0
-reloc_loop
-        lda reloc_lo,x
-        sta ptr
-        lda reloc_hi,x
-        sta ptr+1
-        ldy #0
-        lda #$d7
-        sta (ptr),y
-        inx
-        cpx #RELOC_COUNT
-        bne reloc_loop
-reloc_done
+        jsr relocate
+        ; OS ROM must stay disabled: this code executes underneath it.
+        lda #$fe
+        sta $d301
+        ; MEMAC-A: 4K at $C000 = VRAM $7C000, where the loader staged the
+        ; game's $C000-$CFFF. It stays mapped for good.
+        lda #$c8
+vbrel_16
+        sta $d65e
+        lda #GBANK
+vbrel_17
+        sta $d65f
+        ; Again, now for the bridge code inside that bank.
+        jsr relocate
+        ; Copy the staged C64 RAM image (VRAM $70000) into place.
         ldx #0
 restore_page
         txa
@@ -1326,7 +364,7 @@ restore_page
         lsr
         lsr
         ora #$9c
-vbrel_34
+vbrel_18
         sta $d65d
         ldy #0
 restore_src
@@ -1335,7 +373,7 @@ restore_src
         iny
         bne restore_src
         lda #0
-vbrel_35
+vbrel_19
         sta $d65d
 restore_copy
         lda $dd00,y
@@ -1344,32 +382,27 @@ restore_dst
         iny
         bne restore_copy
         inx
-        cpx #$d0
-        bne restore_not_io
-        ldx #$d8
-restore_not_io
-        cpx #$dc
-        bne restore_not_vars
-        ldx #$e0
-restore_not_vars
+        cpx #$c0
+        bne restore_not_bank
+        ldx #$e0                ; $C0-$CF is VRAM already; $D0-$DF is not game RAM
+restore_not_bank
         cpx #$f0
         bne restore_page
         ldx #$ff
         txs
+        ; Runtime variables and colour RAM start clean.
         lda #0
-        sta busy
-        sta menu_mode
-        sta frames
-        sta render_phase
-        sta front
-        sta pending
-        sta lastwait
-        sta skipped
-        sta scanrot
-        sta flipseq
-        sta lastseq
-        sta lastscrhi
-        sta colbase
+        tax
+clear_vars
+        sta $dc00,x
+        sta $dd00,x
+        sta $d800,x
+        sta $d900,x
+        sta $da00,x
+        sta $db00,x
+        inx
+        bne clear_vars
+        inc first
         sta $d400
         sta $d01a
         sta $d01b
@@ -1381,11 +414,6 @@ silence_pokey
         bpl silence_pokey
         lda #3
         sta $d20f
-        lda #2
-        sta clears
-        ; OS ROM must stay disabled: this code executes underneath it at $F000.
-        lda #$fe
-        sta $d301
         lda #<nmi
         sta $fffa
         lda #>nmi
@@ -1394,146 +422,69 @@ silence_pokey
         sta $fffe
         lda #>irq_exit
         sta $ffff
-        lda #$f8 ; map 4K window $F000? renderer needs own code so use C800? use B window
-        ; Keep MEMAC-A disabled.
-        lda #0
-vbrel_36
-        sta $d65e
-        lda #$a8
-vbrel_37
-        sta $d65e
-        lda #$f4
-vbrel_38
-        sta $d65f
-        ldx #0
-        lda #$ff
-clear_cache
-        sta $a000,x
-        sta $a100,x
-        sta $a200,x
-        sta $a300,x
-        sta $a400,x
-        sta $a500,x
-        sta $a600,x
-        sta $a700,x
-        sta $a800,x
-        sta $a900,x
-        sta $aa00,x
-        sta $ab00,x
-        sta $ac00,x
-        sta $ad00,x
-        sta $ae00,x
-        sta $af00,x
-        inx
-        bne clear_cache
-        lda #0
-vbrel_39
-        sta $d65f
+        ; One-off blits through the scratch BCB at VRAM $6F100.
         lda #$9b
-vbrel_40
+vbrel_20
         sta $d65d
-        ldx #xdl_end-xdl_data-1
-setup_xdl
-        lda xdl_data,x
-        sta $7000,x
-        sta $7020,x
-        dex
-        bpl setup_xdl
-        lda #1
-        sta $702f
-        ldx #20
-setup_bcb
-        lda bcb_data,x
+        ldy #0
+boot_blits
+        ldx #0
+boot_bcb
+        lda boot_list,y
         sta $7100,x
-        dex
-        bpl setup_bcb
-        lda #0
-vbrel_41
-        sta $d650
-        lda #$f1
-vbrel_42
-        sta $d651
+        iny
+        inx
+        cpx #21
+        bne boot_bcb
+        sty $fc
+        ldx #0
+        ldy #$f1
         lda #6
-vbrel_43
-        sta $d652
-        ; Copy banner tiles from temporary FB1 storage to $78000.
+        jsr blit_at
+        jsr blit_wait
+        ldy $fc
+        cpy #4*21
+        bne boot_blits
         lda #0
-        sta $7100
-        sta $7101
+vbrel_21
+        sta $d65d
+        ; Fixed palette entries (palette 1): character and sprite colours.
         lda #1
-        sta $7102
-        lda #0
-        sta $7106
-        lda #$80
-        sta $7107
-        lda #7
-        sta $7108
-        lda #$ff
-        sta $710c
-        lda #0
-        sta $710d
-        lda #9
-        sta $710e
-        lda #0
-        sta $7103
-        sta $7109
-        lda #1
-        sta $7104
-        sta $710a
-        jsr blit
-        jsr wait_blit
-        ldx #20
-reset_bcb
-        lda bcb_data,x
-        sta $7100,x
-        dex
-        bpl reset_bcb
-        lda #1
-vbrel_44
+vbrel_22
         sta $d645
-        lda #0
-vbrel_45
-        sta $d644
         ldx #0
 pal_loop
         lda palette,x
-vbrel_46
+        beq pal_done
+vbrel_23
+        sta $d644
+        lda palette+1,x
+vbrel_24
         sta $d646
-        inx
-        lda palette,x
-vbrel_47
+        lda palette+2,x
+vbrel_25
         sta $d647
-        inx
-        lda palette,x
-vbrel_48
+        lda palette+3,x
+vbrel_26
         sta $d648
         inx
-        cpx #192
-        bne pal_loop
-        ; C64 colours for sprite pixels: $60 + colour (AND-masked $FF).
-        ldx #0
-sprite_pal
-        txa
-        ora #$60
-        jsr set_c64_colour
         inx
-        cpx #16
-        bne sprite_pal
+        inx
+        inx
+        bne pal_loop
+pal_done
         lda #0
-vbrel_49
+vbrel_27
         sta $d641
         lda #$f0
-vbrel_50
+vbrel_28
         sta $d642
         lda #6
-vbrel_51
+vbrel_29
         sta $d643
         lda #3
-vbrel_52
+vbrel_30
         sta $d640
-        lda #0
-vbrel_53
-        sta $d65d
         ; C64 reset-state register shadows.
         ldx #63
         lda #0
@@ -1549,28 +500,35 @@ clear_vic
         sta $de18
         lda #$3f
         sta $dd00
-        ldx #SMALL_LEN-1
-copy_small
-        lda small_src,x
-        sta SMALL,x
-        dex
-        bpl copy_small
         jmp finish_boot
 
-small_src
-        dta 217,234,228,217
-        dta 0,40,80,120,160,200,240,24,64,104,144,184,224,8,48,88,128,168,208,248,32,72,112,152,192
-        dta 0,0,0,0,0,0,0,1,1,1,1,1,1,2,2,2,2,2,2,2,3,3,3,3,3
-        dta 0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240
-        dta 0,250,244,238
-        dta 0,0,1,2
-        dta 0,1,1,1,0,1,1,1
-xdl_data
-        dta $74,$08,7,0,0,0,$40,1,$11,$ff
-        dta $62,$88,199,0,0,0,$40,1,$11,$ff
-xdl_end
-bcb_data
-        dta 0,0,2,8,0,1,0,0,0,$40,1,1,7,0,7,$ff,0,0,0,0,0
+; A VBXE at $D700: patch the high byte of every VBXE register operand.
+relocate
+        lda vbpage
+        cmp #$d6
+        beq reloc_done
+        ldx #0
+reloc_loop
+        lda reloc_lo,x
+        sta $fc
+        lda reloc_hi,x
+        sta $fd
+        ldy #0
+        lda #$d7
+        sta ($fc),y
+        inx
+        cpx #RELOC_COUNT
+        bne reloc_loop
+reloc_done
+        rts
+
+; Advertising tiles and the list templates wait in framebuffer 1 while the
+; RAM image occupies their place; then both framebuffers are cleared.
+boot_list
+        dta $00,$00,$01, $00,$01,1, $00,$80,$07, $00,$01,1, $ff,$00,9, $ff,0,0,0,0,0
+        dta $00,$0a,$01, $00,$01,1, $00,$00,$07, $00,$01,1, $ff,$00,4, $ff,0,0,0,0,0
+        dta $00,$00,$00, $40,$01,1, $00,$00,$00, $40,$01,1, $3f,$01,199, 0,0,0,0,0,0
+        dta $00,$00,$00, $40,$01,1, $00,$00,$01, $40,$01,1, $3f,$01,199, 0,0,0,0,0,0
 palette
         ins '../gen/palette.bin'
         icl '../gen/relocs.asm'

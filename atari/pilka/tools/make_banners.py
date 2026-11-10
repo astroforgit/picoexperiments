@@ -28,7 +28,9 @@ def build():
     palette=[(0,0,0)]*16+PEPTO
     im.putpalette([v for c in palette for v in c]+[0]*(768-3*len(palette)))
     (ROOT/'gen').mkdir(exist_ok=True)
-    tiles=b''.join(bytes(im.crop((x,0,x+8,8)).getdata()) for x in range(0,320,8))
+    # The picture uses 16 + C64 colour; the char layer wants foreground indices.
+    from build_assets import FGI
+    tiles=b''.join(bytes(FGI[v-16] for v in im.crop((x,0,x+8,8)).getdata()) for x in range(0,320,8))
     (ROOT/'gen/banners.bin').write_bytes(tiles)
     (ROOT/'assets').mkdir(exist_ok=True)
     im.resize((1280,32),Image.Resampling.NEAREST).save(ROOT/'assets/banners-preview.png')

@@ -1,0 +1,3 @@
+MEMB = $f000
+BLIT_AT = $f004
+BLIT_WAIT = $f013
