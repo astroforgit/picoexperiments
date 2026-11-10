@@ -25,6 +25,14 @@ BG2=8
 SHADE={0:2,7:3,9:4}          # SWOS palette entry -> background shade index
 GRASS_AT=(304,208)           # 8x8 grass cell in the decoded SWOS pitch
 
+# Displayed colour of each of the 16 C64 colours, as 12-bit Amiga RGB.
+# Taken from the SWOS game palette (preview_swos.COLORS) wherever it has a
+# counterpart; SWOS has no cyan and a single grey, so cyan and the two other
+# greys are plain Amiga-style values.
+AMIGA12=[0x000,0xfff,0xf00,0x0cc,0x702,0x250,0x00f,0xff0,
+         0xa40,0x721,0xf71,0x444,0x666,0x380,0x88f,0x999]
+SHOWN=[tuple(((c>>s)&15)*17 for s in (8,4,0)) for c in AMIGA12]
+
 def build():
  ram=(ROOT/'analysis/unpacked-64k.bin').read_bytes()
  pitch=(ROOT/'assets/swos/unpacked/SWCPICH1.MAP').read_bytes()

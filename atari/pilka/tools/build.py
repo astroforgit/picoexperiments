@@ -46,14 +46,14 @@ def bcb(src,ssy,ssx,dst,dsy,dsx,w,h,andm=255,xorm=0,zoom=0,ctrl=0):
  return bytes([src&255,src>>8&255,src>>16,ssy&255,ssy>>8,ssx&255,dst&255,dst>>8&255,dst>>16,dsy&255,dsy>>8,dsx&255,(w-1)&255,(w-1)>>8,h-1,andm,xorm,0,zoom,0,ctrl])
 
 def main():
- from build_assets import FGI
+ from build_assets import FGI,SHOWN
  from preview_swos import PALETTE as SWOS
  assets()
  banners()
  # Fixed palette entries (index, R, G, B; index 0 ends): character colours
  # and sprite colours. Entries that follow VIC registers are set at run time.
  pal=bytearray()
- for c,rgb in enumerate(PEPTO):
+ for c,rgb in enumerate(SHOWN):
   pal+=bytes([FGI[c],*rgb]);pal+=bytes([0x60+c,*rgb])
  (GEN/'palette.bin').write_bytes(bytes(pal)+b'\0')
  def dta(name,values):
@@ -65,7 +65,7 @@ def main():
  t+=dta('mul24lo',[(i*24)&255 for i in range(21)])+dta('mul24hi',[(i*24)>>8 for i in range(21)])
  t+=dta('ban_lo',[(i*64)&255 for i in range(40)])+dta('ban_mid',[0x80+((i*64)>>8) for i in range(40)])
  t+=dta('b0lut',[(i&3)<<6 for i in range(24)])+dta('b2lut',[i>>2 for i in range(24)])
- for n,i in (('c64r',0),('c64g',1),('c64b',2)):t+=dta(n,[c[i] for c in PEPTO])
+ for n,i in (('c64r',0),('c64g',1),('c64b',2)):t+=dta(n,[c[i] for c in SHOWN])
  t+=dta('grassrgb',[v for k in (0,7,9) for v in SWOS[k*3:k*3+3]])
  (GEN/'render-tables.asm').write_text(t)
  # Label each bridge hardware operand to relocate precisely for a D700 VBXE.

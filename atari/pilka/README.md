@@ -77,6 +77,10 @@ Renderer (one picture per game loop when the blitter keeps up):
 - Advertising text cells (pitch colour, characters `$D9`+) are replaced by the
   generated strip, chosen by map column so it scrolls with the pitch.
 
+Colours: each of the 16 C64 colours is shown as a 12-bit Amiga colour, taken
+from the SWOS game palette where it has a counterpart (`AMIGA12` in
+`tools/build_assets.py`); the graphics themselves are unchanged.
+
 C64 sprite frames 32-127 are converted at build time to 24x21 VRAM images
 (one per 512 bytes at `$60000`). The 23 multiplexed sprites come from the
 game's tables (`$9F`, `$E4`, `$CD`, `$B6`); the first `$FF` Y entry ends the

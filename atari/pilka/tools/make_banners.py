@@ -24,8 +24,8 @@ def build():
                     im.putpixel((x0+x+dx,dy),26 if x!=15 else 20)
                 im.putpixel((x0+x,2),23)
                 im.putpixel((x0+x+1,6),21)
-    from reference.vic import PEPTO
-    palette=[(0,0,0)]*16+PEPTO
+    from build_assets import SHOWN
+    palette=[(0,0,0)]*16+SHOWN
     im.putpalette([v for c in palette for v in c]+[0]*(768-3*len(palette)))
     (ROOT/'gen').mkdir(exist_ok=True)
     # The picture uses 16 + C64 colour; the char layer wants foreground indices.

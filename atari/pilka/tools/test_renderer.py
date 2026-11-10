@@ -14,7 +14,7 @@ from PIL import Image
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT/'tools/reference'));sys.path.insert(0,str(ROOT/'tools'))
 from atari_emu import Atari,load_labels
 from vic import PEPTO
-from build_assets import FGI
+from build_assets import FGI,SHOWN
 OUT=Path(os.environ.get('OUT',ROOT/'analysis/pictures'))
 FR=int(sys.argv[1]) if len(sys.argv)>1 else 1500
 r=load_labels(ROOT/'gen/runtime.asm.lab');rr=load_labels(ROOT/'gen/render.asm.lab')
@@ -80,7 +80,8 @@ def ref(s):
  out[:4]=-1;out[196:]=-1;out[:,:7]=-1;out[:,311:]=-1
  oban[:4]=False;oban[196:]=False;oban[:,:7]=False;oban[:,311:]=False
  return out,oban,frames
-pal=np.array(PEPTO+[(0,0,0)],np.uint8)
+pal=np.array(PEPTO+[(0,0,0)],np.uint8)        # reference panel: C64 colours
+shown_pal=np.array(SHOWN+[(0,0,0)],np.uint8)    # what the port must display
 def shown():
  v=a.vregs;xdl=v[0x41]|(v[0x42]<<8)|((v[0x43]&7)<<16)
  fb=0x10000 if xdl&0x20 else 0
@@ -105,8 +106,8 @@ def published():
  e,oban,fr=ref(s);allframes.update(fr)
  got=to_c64(idx,ram)
  d=(got!=e)&~oban;n=int(d.sum())
- # palette must show C64 colours (grass for the pitch background)
- ok=(e<0)|oban|(got!=e)|(idx>=2)&(idx<=4)&(ram[0xde21]&15==5)|np.all(rgb==pal[np.clip(e,0,16)],axis=2)
+ # palette must show the Amiga colour of each C64 colour (grass for the pitch background)
+ ok=(e<0)|oban|(got!=e)|(idx>=2)&(idx<=4)&(ram[0xde21]&15==5)|np.all(rgb==shown_pal[np.clip(e,0,16)],axis=2)
  if not ok.all():palerr+=1
  if n:
   bad+=1;worst.append((n,pics,a.frame))
