@@ -14,7 +14,7 @@ from PIL import Image
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT/'tools/reference'));sys.path.insert(0,str(ROOT/'tools'))
 from atari_emu import Atari,load_labels
 from vic import PEPTO
-from build_assets import FGI,SHOWN
+from build_assets import FGI,SHOWN,CROWD_CHARS,striped,STRIPE_ROWS
 OUT=Path(os.environ.get('OUT',ROOT/'analysis/pictures'))
 FR=int(sys.argv[1]) if len(sys.argv)>1 else 1500
 r=load_labels(ROOT/'gen/runtime.asm.lab');rr=load_labels(ROOT/'gen/render.asm.lab')
@@ -31,11 +31,14 @@ def ref(s):
  scr=0xc000+((ram[0x11d9]>>4)&3)*0x400
  sx=ram[0x11d7]&7;sy=ram[0x11d8]&7
  bg=[ram[0xde21+i]&15 for i in range(3)]
- pix=np.zeros((200,320),np.int16);fg=np.zeros((200,320),bool);ban=np.zeros((200,320),bool)
+ pix=np.zeros((200,320),np.int16);fg=np.zeros((200,320),bool);ban=np.zeros((200,320),bool);light=np.zeros((200,320),bool)
  for row in range(25):
   for col in range(40):
    ch=ram[scr+row*40+col];cc=ram[0xd800+row*40+col]&15
-   if not menu and cc==9 and ch>=0xd9:ban[row*8:row*8+8,col*8:col*8+8]=True
+   # generated art: advertising and recoloured crowd cells are not compared
+   if not menu and cc==9 and (ch>=0xd9 or ch in CROWD_CHARS):ban[row*8:row*8+8,col*8:col*8+8]=True
+   # light mowing stripe: pitch characters on map rows with bit STRIPE_ROWS set
+   if not menu and cc==9 and striped(ch) and (ram[0xe80f]+row)&STRIPE_ROWS:light[row*8:row*8+8,col*8:col*8+8]=True
    for py in range(8):
     b=src[0xf000+ch*8+py]
     for i in range(8):
@@ -44,12 +47,12 @@ def ref(s):
      else:
       on=b>>(7-i)&1;c=cc if on else bg[0];f=bool(on)
      pix[row*8+py,col*8+i]=c;fg[row*8+py,col*8+i]=f
- out=np.full((200,320),bg[0],np.int16);ofg=np.zeros((200,320),bool);oban=np.zeros((200,320),bool)
+ out=np.full((200,320),bg[0],np.int16);ofg=np.zeros((200,320),bool);oban=np.zeros((200,320),bool);olight=np.zeros((200,320),bool)
  dy=sy-3
  for y in range(200):
   yy=y-dy
   if 0<=yy<200:
-   out[y,sx:]=pix[yy,:320-sx];ofg[y,sx:]=fg[yy,:320-sx];oban[y,sx:]=ban[yy,:320-sx]
+   out[y,sx:]=pix[yy,:320-sx];ofg[y,sx:]=fg[yy,:320-sx];oban[y,sx:]=ban[yy,:320-sx];olight[y,sx:]=light[yy,:320-sx]
  beh=[];frn=[]
  for i in range(23):
   if ram[0xe4+i]==0xff:break
@@ -79,7 +82,7 @@ def ref(s):
       if 7<=X<311 and not(behind and ofg[Y,X]):out[Y,X]=colr
  out[:4]=-1;out[196:]=-1;out[:,:7]=-1;out[:,311:]=-1
  oban[:4]=False;oban[196:]=False;oban[:,:7]=False;oban[:,311:]=False
- return out,oban,frames
+ return out,oban,frames,olight
 pal=np.array(PEPTO+[(0,0,0)],np.uint8)        # reference panel: C64 colours
 shown_pal=np.array(SHOWN+[(0,0,0)],np.uint8)    # what the port must display
 def shown():
@@ -89,7 +92,7 @@ def shown():
  return idx,a.palette[1][idx]
 def to_c64(idx,ram):
  lut=np.full(256,99,np.int16);lut[0]=-1
- lut[1]=ram[0xde22]&15;lut[2]=lut[3]=lut[4]=ram[0xde21]&15;lut[8]=ram[0xde23]&15
+ lut[1]=ram[0xde22]&15;lut[2:8]=ram[0xde21]&15;lut[8]=ram[0xde23]&15
  for i in range(16):lut[FGI[i]]=i;lut[0x60+i]=i
  lut[0x20]=ram[0xde26]&15;lut[0x40]=ram[0xde25]&15
  return lut[idx]
@@ -103,11 +106,15 @@ def published():
  if s is None:return
  idx,rgb=shown();idx=idx.copy();rgb=rgb.copy()
  ram=s['ram']
- e,oban,fr=ref(s);allframes.update(fr)
+ e,oban,fr,olight=ref(s);allframes.update(fr)
  got=to_c64(idx,ram)
- d=(got!=e)&~oban;n=int(d.sum())
+ d=(got!=e)&~oban
+ # background pixels: light shades (5-7) exactly on the stripes
+ bgpix=(idx>=2)&(idx<=7)&~oban&(e>=0)
+ d|=bgpix&((idx>=5)!=olight)
+ n=int(d.sum())
  # palette must show the Amiga colour of each C64 colour (grass for the pitch background)
- ok=(e<0)|oban|(got!=e)|(idx>=2)&(idx<=4)&(ram[0xde21]&15==5)|np.all(rgb==shown_pal[np.clip(e,0,16)],axis=2)
+ ok=(e<0)|oban|(got!=e)|(idx>=2)&(idx<=7)&(ram[0xde21]&15==5)|(idx==1)&(ram[0xde22]&15==7)|np.all(rgb==shown_pal[np.clip(e,0,16)],axis=2)
  if not ok.all():palerr+=1
  if n:
   bad+=1;worst.append((n,pics,a.frame))

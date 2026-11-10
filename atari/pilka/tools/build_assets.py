@@ -33,6 +33,19 @@ AMIGA12=[0x000,0xfff,0xf00,0x0cc,0x702,0x250,0x00f,0xff0,
          0xa40,0x721,0xf71,0x444,0x666,0x380,0x88f,0x999]
 SHOWN=[tuple(((c>>s)&15)*17 for s in (8,4,0)) for c in AMIGA12]
 
+# Amiga-style dressing of the match graphics (pitch colour 9 only):
+# - crowd characters: every lit pixel pair takes one of several colours;
+# - the stand structure (multicolour 1, yellow on the C64) is shown grey;
+# - pitch characters exist a second time with lighter grass (indices 5-7)
+#   for the mowing stripes.
+CROWD_CHARS=[3,4,5]+list(range(0xcc,0xd3))   # top stand, bottom stand
+CROWD=[1,7,2,6,14,10,1,15,7,1]         # C64 colour numbers
+STAND12=0x999                          # shown instead of yellow multicolour 1
+LIGHT12=[0x370,0x260,0x480]            # lighter grass for shades 2,3,4
+def striped(ch):                       # pitch characters; 1-7 are stand
+ return ch==0 or 8<=ch<203
+STRIPE_ROWS=4                          # stripe height in characters
+
 def build():
  ram=(ROOT/'analysis/unpacked-64k.bin').read_bytes()
  pitch=(ROOT/'assets/swos/unpacked/SWCPICH1.MAP').read_bytes()
@@ -61,6 +74,8 @@ def build():
      else:
       q=(row>>(6-(x//2)*2))&3
       v=(grass[y][x],BG1,BG2,FGI[color&7])[q]
+      if color==9 and char in CROWD_CHARS and q in (1,3):
+       u,w=x//2,y//2;v=FGI[CROWD[(char*7+u*5+w*3+u*w)%len(CROWD)]]
      atlas.append(v)
  unique={};packed=bytearray();addresses=[]
  for start in range(0,len(atlas),64):
@@ -70,6 +85,8 @@ def build():
   addresses.append(unique[tile])
  assert len(packed)<=0x2f000,len(packed)
  (ROOT/'gen/tiles.bin').write_bytes(packed)
+ # Colour 9 again with the lighter grass shades: character*64, VRAM $74000.
+ (ROOT/'gen/tiles-light.bin').write_bytes(bytes(v+3 if 2<=v<=4 else v for v in atlas[9*16384:10*16384]))
  # Two bytes per (colour, character): address bits 8-15, then
  # (bank << 2) | (address bits 6-7).
  (ROOT/'gen/tile-map.bin').write_bytes(bytes((a>>8)&255 for a in addresses)+bytes(((a>>16)<<2)|((a&255)>>6) for a in addresses))

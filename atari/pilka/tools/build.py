@@ -46,7 +46,7 @@ def bcb(src,ssy,ssx,dst,dsy,dsx,w,h,andm=255,xorm=0,zoom=0,ctrl=0):
  return bytes([src&255,src>>8&255,src>>16,ssy&255,ssy>>8,ssx&255,dst&255,dst>>8&255,dst>>16,dsy&255,dsy>>8,dsx&255,(w-1)&255,(w-1)>>8,h-1,andm,xorm,0,zoom,0,ctrl])
 
 def main():
- from build_assets import FGI,SHOWN
+ from build_assets import FGI,SHOWN,STAND12,LIGHT12
  from preview_swos import PALETTE as SWOS
  assets()
  banners()
@@ -66,7 +66,9 @@ def main():
  t+=dta('ban_lo',[(i*64)&255 for i in range(40)])+dta('ban_mid',[0x80+((i*64)>>8) for i in range(40)])
  t+=dta('b0lut',[(i&3)<<6 for i in range(24)])+dta('b2lut',[i>>2 for i in range(24)])
  for n,i in (('c64r',0),('c64g',1),('c64b',2)):t+=dta(n,[c[i] for c in SHOWN])
- t+=dta('grassrgb',[v for k in (0,7,9) for v in SWOS[k*3:k*3+3]])
+ rgb12=lambda c:[((c>>s)&15)*17 for s in (8,4,0)]
+ t+=dta('grassrgb',[v for k in (0,7,9) for v in SWOS[k*3:k*3+3]]+[v for c in LIGHT12 for v in rgb12(c)])
+ t+=dta('standrgb',rgb12(STAND12))
  (GEN/'render-tables.asm').write_text(t)
  # Label each bridge hardware operand to relocate precisely for a D700 VBXE.
  source=(SRC/'runtime.asm').read_text();source=re.sub(r'^vbrel_\d+\n','',source,flags=re.M)
@@ -182,7 +184,7 @@ def main():
  piece=bcb(LAYER,320,1,0,320,1,1,1,andm=0,ctrl=9);sprite=bcb(0x60000,24,1,0,320,1,1,1,andm=0,ctrl=9)
  lists=piece*4+sprite*4+piece*16+sprite*26
  assert len(lists)<=1280
- payloads=[(0x30000,(GEN/'tiles.bin').read_bytes()),(0x60000,bytes(sprites)),(0x6c000,(GEN/'tile-map.bin').read_bytes()),(0x70000,ram),(0x5f000,game_top),(0x10000,(GEN/'banners.bin').read_bytes()+lists)]
+ payloads=[(0x30000,(GEN/'tiles.bin').read_bytes()),(0x60000,bytes(sprites)),(0x6c000,(GEN/'tile-map.bin').read_bytes()),(0x70000,ram),(0x5f000,game_top),(0x10000,(GEN/'banners.bin').read_bytes()+lists),(0x11000,(GEN/'tiles-light.bin').read_bytes())]
  for dest,data in payloads:
   for offset in range(0,len(data),4096):
    address=dest+offset;chunk=data[offset:offset+4096];chunk+=bytes(4096-len(chunk))

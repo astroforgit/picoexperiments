@@ -108,7 +108,7 @@ vbrel_13
         iny
         iny
         inx
-        cpx #7
+        cpx #10
         bne publish_palette
 no_publish
         lda $d300
@@ -164,7 +164,7 @@ tick
 tick_return
         rts
 
-palidx  dta 1,2,3,4,8,$20,$40
+palidx  dta 1,2,3,4,5,6,7,8,$20,$40
 
 ; Formation tables the C64 game reads with its I/O area banked out (the
 ; build copies them here and points the game's reader at them):
@@ -234,6 +234,14 @@ flip_hook
         ldx $11db
         cpx #8
         bcs fh_done
+        lda flipdx
+        clc
+        adc dir_dx,x
+        sta flipdx
+        lda flipdy
+        clc
+        adc dir_dy,x
+        sta flipdy
         lda ox
         clc
         adc dir_dx,x
@@ -247,6 +255,14 @@ fh_x1   cmp #40
         sbc #40
         inc oy
 fh_x2   sta ox
+        lda expmx
+        clc
+        adc dir_dx,x
+        sta expmx
+        lda expmy
+        clc
+        adc dir_dy,x
+        sta expmy
         lda oy
         clc
         adc dir_dy,x
@@ -443,7 +459,7 @@ boot_bcb
         jsr blit_at
         jsr blit_wait
         ldy $fc
-        cpy #4*21
+        cpy #5*21
         bne boot_blits
         lda #0
 vbrel_21
@@ -522,11 +538,12 @@ reloc_loop
 reloc_done
         rts
 
-; Advertising tiles and the list templates wait in framebuffer 1 while the
+; Advertising tiles, list templates and light pitch tiles wait in framebuffer 1 while the
 ; RAM image occupies their place; then both framebuffers are cleared.
 boot_list
         dta $00,$00,$01, $00,$01,1, $00,$80,$07, $00,$01,1, $ff,$00,9, $ff,0,0,0,0,0
         dta $00,$0a,$01, $00,$01,1, $00,$00,$07, $00,$01,1, $ff,$00,4, $ff,0,0,0,0,0
+        dta $00,$10,$01, $00,$01,1, $00,$40,$07, $00,$01,1, $ff,$00,63, $ff,0,0,0,0,0
         dta $00,$00,$00, $40,$01,1, $00,$00,$00, $40,$01,1, $3f,$01,199, 0,0,0,0,0,0
         dta $00,$00,$00, $40,$01,1, $00,$00,$01, $40,$01,1, $3f,$01,199, 0,0,0,0,0,0
 palette

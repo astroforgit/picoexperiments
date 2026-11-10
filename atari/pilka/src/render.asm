@@ -66,6 +66,11 @@ cnt     .ds 1
 cnt2    .ds 1
 colrot  .ds 1
 mapxm   .ds 1
+mapy    .ds 1
+stripe  .ds 1
+ecolno  .ds 1
+ecols   .ds 1
+ecnt    .ds 1
 nb      .ds 1
 prevnb  .ds 1
 nfront  .ds 1
@@ -170,7 +175,7 @@ save_zp lda $20,x
         lda #0
         sta palchg
         lda first
-        beq compare
+        beq map_check
         ; First picture: nothing is known about the layer. Draw every cell.
         ldx #<$f0e0
         ldy #>$f0e0
@@ -180,6 +185,26 @@ save_zp lda $20,x
         lda #1
         sta force
         sta palchg
+        bne compare
+        ; A cut to another part of the pitch: cells whose character stays
+        ; the same may still change (stripes and advertising follow the
+        ; map position), so draw them all.
+map_check
+        lda menu_mode
+        bne compare
+        lda $e80e
+        cmp expmx
+        bne map_jump
+        lda $e80f
+        cmp expmy
+        beq compare
+map_jump
+        lda $e80e
+        sta expmx
+        lda $e80f
+        sta expmy
+        lda #1
+        sta force
 compare
         clc
         lda offlo
@@ -208,13 +233,22 @@ pal_same
         bpl pal_keys
         lda palchg
         beq pal_done
-        ldx palkey+1            ; $D022
+        ldx palkey+1            ; $D022; the C64 yellow of the stands is shown grey
         ldy #0
         jsr putrgb
+        cpx #7
+        bne pal_bg0
+        ldx #2
+pal_stand
+        lda standrgb,x
+        sta palbuf,x
+        dex
+        bpl pal_stand
+pal_bg0
         ldx palkey              ; $D021: grass when it is the pitch green
         cpx #5
         bne pal_plain
-        ldx #8
+        ldx #17
 pal_grass
         lda grassrgb,x
         sta palbuf+3,x
@@ -228,14 +262,20 @@ pal_plain
         jsr putrgb
         ldy #9
         jsr putrgb
-pal_bg2 ldx palkey+2            ; $D023
         ldy #12
         jsr putrgb
-        ldx palkey+4            ; $D026
         ldy #15
         jsr putrgb
-        ldx palkey+3            ; $D025
         ldy #18
+        jsr putrgb
+pal_bg2 ldx palkey+2            ; $D023
+        ldy #21
+        jsr putrgb
+        ldx palkey+4            ; $D026
+        ldy #24
+        jsr putrgb
+        ldx palkey+3            ; $D025
+        ldy #27
         jsr putrgb
         lda #1
         sta palflag
@@ -357,6 +397,98 @@ map_mod cmp #40
         sbc #40
         bcs map_mod
 map_ok  sta mapxm
+        lda $e80f
+        sta mapy
+        ; Coarse scrolls brought in rows and/or columns of cells. Their
+        ; layer slots held other cells, which may have had the same
+        ; character but another stripe or advertising tile.
+        ldx #0                  ; rows: first, count
+        lda flipdy
+        beq edge_rows_set
+        bmi edge_rows_top
+        sta ecnt
+        lda #25
+        sec
+        sbc ecnt
+        tax
+        lda ecnt
+        bne edge_rows_set
+edge_rows_top
+        eor #$ff
+        clc
+        adc #1
+edge_rows_set
+        sta ecnt
+        stx rowno
+        ldx #0                  ; columns: first, count
+        lda flipdx
+        beq edge_cols_set
+        bmi edge_cols_left
+        sta ecols
+        lda #40
+        sec
+        sbc ecols
+        tax
+        lda ecols
+        bne edge_cols_set
+edge_cols_left
+        eor #$ff
+        clc
+        adc #1
+edge_cols_set
+        sta ecols
+        stx ecolno
+        lda #0
+        sta flipdx
+        sta flipdy
+        lda ecnt
+        ora ecols
+        beq edges_done
+        lda ecnt
+        cmp #4
+        bcs edge_all
+        lda ecols
+        cmp #4
+        bcc edge_rows
+edge_all
+        lda #1                  ; a long way: draw everything
+        sta force
+edge_rows
+        lda force
+        bne edges_done
+        lda ecnt
+        beq edge_cols
+edge_row
+        jsr setup_row
+        ldy #0
+edge_row_cell
+        jsr edge_cell
+        iny
+        cpy #40
+        bne edge_row_cell
+        inc rowno
+        dec ecnt
+        bne edge_row
+edge_cols
+        lda ecols
+        beq edges_done
+        lda #0
+        sta rowno
+edge_col_row
+        jsr setup_row
+        ldy ecolno
+        lda ecols
+        sta cnt
+edge_col_cell
+        jsr edge_cell
+        iny
+        dec cnt
+        bne edge_col_cell
+        inc rowno
+        lda rowno
+        cmp #25
+        bne edge_col_row
+edges_done
         lda #0
         sta rowno
 rows    ldx rowno
@@ -416,7 +548,8 @@ colour_row
         ldy #0
 colour_cell
         lda (colp),y
-        cmp (cr),y
+        eor (cr),y
+        and #15
         beq colour_same
         jsr emit_cell
 colour_same
@@ -690,12 +823,66 @@ sr_r1   sec
         sec
         sbc ox
         sta splitc
+        lda mapy                ; mowing stripes follow the map row
+        clc
+        adc rowno
+        and #4
+        sta stripe
         rts
 
 ; Redraw screen cell (rowno, Y) from the C64 screen and colour RAM. Within
 ; a row, cells must come in ascending column order. Keeps Y.
 emit_cell
         sty ccol
+        jsr ec_switch
+        lda (dp),y
+        eor (pr),y
+        sta chr
+        sta (pr),y
+        lda #0
+        sta (dp),y
+        lda (colp),y
+        and #15
+        sta col
+        sta (cr),y              ; bit 4 is added for a light-stripe tile
+        jmp ec_count
+
+; Redraw an incoming cell (rowno, Y) unless its slot already shows the
+; right tile. Keeps Y.
+edge_cell
+        jsr ec_switch
+        lda (dp),y
+        bne ee_emit
+        lda menu_mode
+        bne ee_done
+        lda (colp),y
+        and #15
+        cmp #9
+        bne ee_plain
+        lda (pr),y
+        cmp #$d9
+        bcs ee_emit
+        cmp #203
+        bcs ee_plain
+        cmp #8
+        bcs ee_stripe
+        cmp #0
+        bne ee_plain
+ee_stripe
+        lda stripe
+        beq ee_plain
+        lda #$10
+        bne ee_cmp
+ee_plain
+        lda #0
+ee_cmp  eor (cr),y
+        and #$10
+        beq ee_done
+ee_emit jmp emit_cell
+ee_done rts
+
+; Step the row's layer and ring pointers past column Y where needed.
+ec_switch
         cpy splitc
         bcc ec_dst
         lda dstblo
@@ -719,16 +906,8 @@ ec_dst  cpy wrapcol
         sta cr+1
         lda #$ff
         sta wrapcol
-ec_ring lda (dp),y
-        eor (pr),y
-        sta chr
-        sta (pr),y
-        lda #0
-        sta (dp),y
-        lda (colp),y
-        sta (cr),y
-        and #15
-        sta col
+ec_ring rts
+ec_count
         lda tcount
         bne ec_slot
         jsr flush
@@ -765,7 +944,7 @@ ec_addr lda ccol
         bne ec_tile
         lda chr
         cmp #$d9
-        bcc ec_tile
+        bcc ec_pitch
         lda ccol
         clc
         adc mapxm
@@ -781,6 +960,39 @@ ec_ban  tax
         sta (tptr),y
         iny
         lda #7
+        sta (tptr),y
+        ldy ccol
+        rts
+        ; Pitch characters on a light stripe: the second tile set, VRAM
+        ; $74000 + character*64.
+ec_pitch
+        cmp #203
+        bcs ec_tile
+        cmp #8                  ; 1-7 are stand characters: no stripes
+        bcs ec_stripe
+        cmp #0
+        bne ec_tile
+ec_stripe
+        lda stripe
+        beq ec_tile
+        ldy ccol
+        lda col
+        ora #$10
+        sta (cr),y
+        lda chr
+        and #3
+        tax
+        lda b0lut,x
+        ldy #0
+        sta (tptr),y
+        lda chr
+        lsr
+        lsr
+        ora #$40
+        iny
+        sta (tptr),y
+        lda #7
+        iny
         sta (tptr),y
         ldy ccol
         rts

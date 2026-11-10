@@ -15,7 +15,11 @@ first     .ds 1         ; nonzero until the first complete picture
 palflag   .ds 1         ; palbuf must be loaded when the picture is shown
 ballframe .ds 1         ; sprite pointer 7 of the pictured C64 screen
 vbpage    .ds 1
-palbuf    .ds 21        ; RGB of palette entries 1,2,3,4,8,$20,$40
+expmx     .ds 1         ; map position the layer was drawn for
+expmy     .ds 1
+palbuf    .ds 30        ; RGB of palette entries 1-8,$20,$40
+flipdx    .ds 1         ; net coarse scroll since the last picture, in
+flipdy    .ds 1         ; characters (signed)
         org $dd80
 irqvec    .ds 2
 nmivec    .ds 2

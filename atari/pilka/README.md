@@ -77,6 +77,15 @@ Renderer (one picture per game loop when the blitter keeps up):
 - Advertising text cells (pitch colour, characters `$D9`+) are replaced by the
   generated strip, chosen by map column so it scrolls with the pitch.
 
+Amiga-style dressing (match only, pitch colour 9; `tools/build_assets.py`):
+crowd characters take several colours per pixel pair, the stand structure
+(yellow multicolour 1 on the C64) is shown grey, and the pitch has mowing
+stripes: on every second band of four map rows, pitch characters use a second
+tile set with lighter grass (VRAM `$74000`). Stripes and advertising depend on
+the map position, not only on the character, so each cache entry also records
+the light-stripe flag, cells brought in by a coarse scroll are checked against
+it, and a jump of the map position (`$E80E/$E80F`) redraws everything.
+
 Colours: each of the 16 C64 colours is shown as a 12-bit Amiga colour, taken
 from the SWOS game palette where it has a counterpart (`AMIGA12` in
 `tools/build_assets.py`); the graphics themselves are unchanged.
