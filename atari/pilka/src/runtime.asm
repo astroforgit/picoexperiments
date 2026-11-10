@@ -254,6 +254,14 @@ classic_direction
 ; Replace the fire read at $93BE. Check here so the return chord takes
 ; precedence over starting a match, even between menu redraws.
 classic_fire
+        lda $d20f
+        and #4
+        bne classic_console
+        lda $d209
+        and #$3f
+        cmp #28
+        beq classic_return
+classic_console
         lda $d01f
         and #2
         beq classic_return

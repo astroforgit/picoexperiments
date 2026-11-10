@@ -47,6 +47,8 @@ player_goals_hi .ds 128
 pitch_choice .ds 1      ; zero is random, 1-7 are the original pitches
 length_choice .ds 1
 option_row .ds 1
+escape_held .ds 1
+hub_choice .ds 1
         ert * > LEAGUE_MATCH_SCORERS
 
 dst = $20
@@ -62,6 +64,7 @@ league_main
         lda #$9e
         jsr MEMB
         lda #$1f
+        sta escape_held
         sta last_input           ; require a fresh press after a match
         lda league_return
         beq show_page
@@ -103,12 +106,35 @@ show_page
         sta page_call+2
 page_call
         jsr $ffff
+        lda #23
+        sta row
+        ldx #3
+        lda #<escape_help
+        ldy #>escape_help
+        jsr print_at
+        lda #3
+        jsr colour_row
         jsr LEAGUE_DRAW
 menu_wait
         lda frames
 menu_vbi
         cmp frames
         beq menu_vbi
+        lda $d20f
+        and #4
+        bne escape_release
+        lda $d209
+        and #$3f
+        cmp #28
+        bne escape_release
+        lda escape_held
+        bne menu_wait
+        inc escape_held
+        jsr parent_menu
+        jmp show_page
+escape_release
+        lda #0
+        sta escape_held
         lda joy1
         eor #$1f
         and #$1f
@@ -130,8 +156,8 @@ action_call
         jsr $ffff
         jmp show_page
 
-pages   dta a(home_page,pick_page,table_page,squad_page,fixtures_page,results_page,friendly_result,options_page)
-actions dta a(home_action,pick_action,table_action,squad_action,fixtures_action,results_action,home_return,options_action)
+pages   dta a(home_page,pick_page,table_page,squad_page,fixtures_page,results_page,friendly_result,options_page,hub_page)
+actions dta a(home_action,pick_action,table_action,squad_action,fixtures_action,results_action,home_return,options_action,hub_action)
 
 home_page
         lda selection
@@ -169,7 +195,17 @@ home_next
         ldy #>no_season
         jsr print_at
 home_help
-        lda #20
+        lda menu_page
+        bne help_controls
+        lda #21
+        sta row
+        ldx selection
+        lda help_lo,x
+        ldy help_hi,x
+        ldx #3
+        jsr print_at
+help_controls
+        lda #22
         sta row
         ldx #3
         lda #<pick_help
@@ -190,7 +226,7 @@ home_fire
         bne begin_picker
         lda season_live
         beq action_done
-        lda #2
+        lda #8
         sta menu_page
 action_done
         rts
@@ -278,7 +314,9 @@ reset_goals
         sta random_seed
         lda #1
         sta season_live
-        lda #2
+        lda #0
+        sta hub_choice
+        lda #8
         sta menu_page
         rts
 pick_friendly
@@ -306,6 +344,119 @@ home_return
         sta menu_page
         sta selection
         rts
+
+parent_menu
+        lda menu_page
+        cmp #1
+        bne parent_league
+        lda pick_mode
+        cmp #2
+        bne parent_home
+        dec pick_mode
+        lda home_team
+        sta selection
+        rts
+parent_league
+        cmp #2
+        bcc parent_home
+        cmp #6
+        bcs parent_home
+        lda #8
+        sta menu_page
+        rts
+parent_home
+        jmp home_return
+
+hub_page
+        lda #2
+        sta league_art_id
+        lda #3
+        sta row
+        ldy season_team
+        ldx #3
+        jsr print_club
+        lda #6
+        sta row
+        lda #0
+        sta list_index
+hub_line
+        ldx list_index
+        cpx #0
+        bne hub_label
+        lda season_round
+        cmp #14
+        bcc hub_label
+        lda #<finished_label
+        ldy #>finished_label
+        bne hub_print
+hub_label
+        lda hub_lo,x
+        ldy hub_hi,x
+hub_print
+        ldx #5
+        jsr print_at
+        lda list_index
+        cmp hub_choice
+        bne hub_next
+        jsr highlight
+hub_next
+        inc row
+        inc row
+        inc list_index
+        lda list_index
+        cmp #6
+        bcc hub_line
+        jmp home_help
+hub_action
+        bit fire_mask
+        bne hub_fire
+        ldx selection
+        stx temp
+        ldx hub_choice
+        stx selection
+        ldx #6
+        jsr move_selection
+        lda selection
+        sta hub_choice
+        lda temp
+        sta selection
+        rts
+hub_fire
+        ldx hub_choice
+        beq hub_play
+        lda hub_pages,x
+        sta menu_page
+        lda season_team
+        sta squad_team
+        lda season_round
+        cmp #14
+        bcc hub_round
+        lda #13
+hub_round
+        sta fixture_round
+        cpx #4
+        bne hub_done
+        lda season_round
+        bne hub_done
+        lda #4
+        sta menu_page
+hub_done
+        rts
+hub_play
+        lda season_round
+        cmp #14
+        jcs dashboard_return
+        lda #16
+        jmp table_action
+hub_pages dta 2,2,3,4,5,0
+hub_lo dta <play_label,<standings_label,<squad_label,<schedule_label,<scores_label,<back_label
+hub_hi dta >play_label,>standings_label,>squad_label,>schedule_label,>scores_label,>back_label
+play_label dta c'PLAY NEXT MATCH',0
+standings_label dta c'LEAGUE TABLE',0
+squad_label dta c'VIEW SQUADS',0
+schedule_label dta c'MATCH SCHEDULE',0
+scores_label dta c'LAST RESULTS',0
+back_label dta c'MAIN MENU',0
 
 ; Up/down moves among the X choices.
 move_selection
@@ -510,7 +661,7 @@ squad_offset
         lda list_index
         cmp #16
         bcc squad_line
-        lda #23
+        lda #4
         sta row
         ldx #3
         lda #<squad_help
@@ -577,16 +728,20 @@ fixture_line
         lda result_home,x
         ldx #29
         jsr number_at
-        ldx fixture_index
-        lda result_away,x
-        ldx #33
-        jsr number_at
 fixture_away_line
         inc row
         ldx fixture_index
         ldy fixture_away,x
-        ldx #5
+        ldx #3
         jsr print_club
+        lda fixture_round
+        cmp season_round
+        bcs fixture_no_score
+        ldx fixture_index
+        lda result_away,x
+        ldx #29
+        jsr number_at
+fixture_no_score
         inc row
         inc row
         inc fixture_index
@@ -1258,7 +1413,14 @@ number_units
         pha
         txa
         ldy #0
+        cpx #0
+        bne number_nonzero
+        lda #$fd
+        sta (dst),y
+        jmp number_last
+number_nonzero
         jsr print_digit
+number_last
         pla
         iny
 print_digit
@@ -1272,6 +1434,14 @@ row_lo
 row_hi
         :25 dta >(#*40)
 fire_mask dta 16
+finished_label dta c'FINAL TABLE',0
+help_lo dta <help_new,<help_friendly,<help_continue,<help_options,<help_classic
+help_hi dta >help_new,>help_friendly,>help_continue,>help_options,>help_classic
+help_new dta c'START A NEW 14 ROUND SEASON',0
+help_friendly dta c'PICK TWO CLUBS AND PLAY ONE MATCH',0
+help_continue dta c'RESUME YOUR SEASON',0
+help_options dta c'SET PITCH AND MATCH DURATION',0
+help_classic dta c'ORIGINAL GAME MODES AND SETTINGS',0
 title dta c'RETRO FANS LEAGUE',0
 new_label dta c'NEW LEAGUE',0
 friendly_label dta c'FRIENDLY',0
@@ -1281,7 +1451,8 @@ options_label dta c'MATCH OPTIONS',0
 classic_label dta c'CLASSIC GAME',0
 home_lo dta <new_label,<friendly_label,<continue_label,<options_label,<classic_label
 home_hi dta >new_label,>friendly_label,>continue_label,>options_label,>classic_label
-pick_help dta c'UP DOWN  SELECT    FIRE  CONFIRM',0
+pick_help dta c'UP DOWN CHOOSE   FIRE OPEN',0
+escape_help dta c'ESC BACK TO PARENT MENU',0
 choose_club dta c'CHOOSE YOUR CLUB',0
 choose_away dta c'CHOOSE THE AWAY CLUB',0
 table_header dta c'CLUB                   W  D  L  PTS',0
@@ -1289,10 +1460,10 @@ champion_label dta c'CHAMPION',0
 joint_label dta c'JOINT CHAMPIONS',0
 scorer_label dta c'TOP',0
 round_label dta c'ROUND',0
-table_help dta c'FIRE  PLAY        UP  FIXTURES',0
-table_help2 dta c'LEFT RESULTS  RIGHT SQUAD  DOWN MENU',0
-starting_label dta c'STARTING XI',0
-reserve_label dta c'RESERVES',0
+table_help dta c'W WINS  D DRAWS  L LOSSES  PTS POINTS',0
+table_help2 dta c'FIRE PLAY NEXT   ESC LEAGUE MENU',0
+starting_label dta c'SHIRT NUMBER   STARTING TEAM',0
+reserve_label dta c'RESERVES   VIEW ONLY',0
 squad_help dta c'LEFT RIGHT CLUB    FIRE TABLE',0
 fixtures_help dta c'LEFT RIGHT ROUND   FIRE TABLE',0
 return_help dta c'FIRE  RETURN TO MENU',0
@@ -1300,7 +1471,7 @@ result_help dta c'FIRE  RETURN TO TABLE',0
 vertical_mask dta 3
 pitch_label dta c'PITCH',0
 length_label dta c'MATCH LENGTH',0
-option_help dta c'LEFT RIGHT CHANGE   FIRE BACK',0
+option_help dta c'UP DOWN PICK   LEFT RIGHT CHANGE',0
 pitch0 dta c'RANDOM',0
 pitch1 dta c'FROZEN',0
 pitch2 dta c'MUDDY',0

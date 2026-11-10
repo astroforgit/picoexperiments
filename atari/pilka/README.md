@@ -25,9 +25,15 @@ Start a league by choosing one of eight clubs, or choose Friendly and select
 home and away clubs. In a friendly, joystick 1 controls the home club.
 Continue League resumes the current season in memory.
 
-On the league table, fire starts the next match. Press up for fixtures, left
-for the latest results, right for squads, and down for the main menu. The squad
-screen shows each club's starting eleven and five reserves. During a match,
+Choosing or continuing a league opens a club menu. Use up/down and fire for
+Play Next Match, League Table, View Squads, Match Schedule, Last Results or
+Main Menu. At season end Play Next Match becomes Final Table. Escape returns
+one level from every menu, including Classic Game. Holding Escape only moves
+back once. In the friendly picker it returns from the opponent to your club.
+
+The table labels wins, draws, losses and points. Scores appear beside their
+teams. Squad numbers are shirt numbers and the squad is a read-only list of
+the starting eleven and five reserves. During a match,
 joystick 1 controls the chosen club at home or away.
 
 **Match Options** applies the original eight pitch settings and the 3, 5, 7
@@ -35,7 +41,7 @@ and 10 minute match lengths to league matches and named friendlies. Use up/down
 to pick a setting, left/right to change it, and fire to return. **Classic Game**
 opens the original Arlasoft Friendly/Cup menu, including controllers,
 formations, shirts, and strength. Press left and fire together on joystick 1
-to return to the league menu. The Atari SELECT key also returns. Holding
+to return to the league menu. Escape and the Atari SELECT key also return. Holding
 OPTION during startup opens Classic Game.
 
 The five main menu choices each have their own football illustration, with a
@@ -155,6 +161,7 @@ python3 tools/preview_swos.py
 python3 tools/coverage.py
 ./build.sh
 python3 tools/test_league.py     # league, half-time, result, standings
+python3 tools/test_league_navigation.py # parent menus, held Escape and explicit league choices
 python3 tools/test_league_art.py # illustrated menus, options and Classic Game return
 python3 tools/test_port.py       # original menu, match start, formation data
 python3 tools/test_renderer.py   # every picture against a C64 rendering
