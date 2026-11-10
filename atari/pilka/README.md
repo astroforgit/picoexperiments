@@ -80,7 +80,9 @@ Renderer (one picture per game loop when the blitter keeps up):
 C64 sprite frames 32-127 are converted at build time to 24x21 VRAM images
 (one per 512 bytes at `$60000`). The 23 multiplexed sprites come from the
 game's tables (`$9F`, `$E4`, `$CD`, `$B6`); the first `$FF` Y entry ends the
-list. The ball is VIC sprite 7 and is drawn last. Sprite-colour pixels are
+list. A sprite is behind the foreground when bit 6 of its colour is set and
+the game has patched its multiplexer slot (mask `$8E8D`, slot = list index
+mod 7), as the C64 raster code does. The ball is VIC sprite 7 and is drawn last. Sprite-colour pixels are
 stored as `$FF`, and the blit's AND mask turns them into palette entry
 `$60` + the sprite's C64 colour. The menu's expanded sprites use blitter zoom.
 

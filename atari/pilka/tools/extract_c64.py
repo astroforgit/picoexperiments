@@ -61,7 +61,26 @@ def main():
     if not program.startswith(bytes.fromhex('01080b081e009e32303631000000')):
         raise ValueError('Unexpected BASIC loader; unpacker requires review')
     (out / 'arlasoc.prg').write_bytes(program)
-    cpu = MPU()
+    # The unpacker switches the C64 I/O area in and out ($01). Writes made
+    # while I/O is visible go to the chips, not to the RAM underneath; the
+    # game keeps sprite patterns and tables in that RAM.
+    class Banked(list):
+        io = bytearray(4096)
+        writes = set()
+        def io_on(self):
+            port = list.__getitem__(self, 1)
+            return port & 3 != 0 and port & 4 != 0
+        def __getitem__(self, a):
+            if isinstance(a, int) and 0xd000 <= a < 0xe000 and self.io_on():
+                return self.io[a - 0xd000]
+            return list.__getitem__(self, a)
+        def __setitem__(self, a, v):
+            if isinstance(a, int) and 0xd000 <= a < 0xe000 and self.io_on():
+                self.io[a - 0xd000] = v
+                self.writes.add(a)
+                return
+            list.__setitem__(self, a, v)
+    cpu = MPU(memory=Banked([0] * 65536))
     start = int.from_bytes(program[:2], 'little')
     cpu.memory[start:start + len(program) - 2] = program[2:]
     cpu.memory[1] = 0x37
@@ -76,7 +95,8 @@ def main():
         cpu.step()
     else:
         raise ValueError('Unpacker instruction limit exceeded')
-    ram = bytes(cpu.memory)
+    ram = bytes(list.__getitem__(cpu.memory, slice(0, 65536)))
+    print('I/O registers written by the unpacker:', ' '.join(f'${a:04X}' for a in sorted(cpu.memory.writes)))
     (out / 'unpacked-64k.bin').write_bytes(ram)
     dis = Disassembler(cpu)
     pc = cpu.pc

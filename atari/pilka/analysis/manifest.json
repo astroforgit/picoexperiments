@@ -18,6 +18,6 @@
     "sp": 255,
     "p": 49
   },
-  "ram_sha256": "4e4a6608bc4ff2a3e86a02129235173612a94c6cf746a547c150dcc6e94d861d",
+  "ram_sha256": "b48a9c05dca6ca6aac84c9e1f5d9f217a1a6b1468eb252e2b6fa7471da66b648",
   "note": "RAM captured after decompression, before game initialization. Not an emulator save state or Atari executable."
 }

@@ -55,7 +55,8 @@ def ref(s):
   if ram[0xe4+i]==0xff:break
   z=2 if (menu and i<8 and ram[0xde1d]>>i&1) else 1
   e=(ram[0x9f+i]|((ram[0xb6+i]&0x80)<<1),ram[0xe4+i],ram[0xcd+i],ram[0xb6+i]&15,z)
-  (beh if ram[0xb6+i]&0x40 and len(beh)<4 else frn).append(e)
+  # behind foreground: flagged, and the game patched multiplexer slot i mod 7
+  (beh if ram[0xb6+i]&0x40 and ram[0x8e8d]>>(i%7)&1 and len(beh)<4 else frn).append(e)
  if ram[0xde15]&0x80:
   e=(ram[0x24d8]|((ram[0xde10]&0x80)<<1),ram[0x24e0],ram[r['BALLFRAME']],ram[0xde2e]&15,1)
   (beh if ram[0x24e2]&0x80 and len(beh)<4 else frn).append(e)

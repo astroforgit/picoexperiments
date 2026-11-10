@@ -35,7 +35,7 @@ def record_check():
  # On the C64 that is RAM under the I/O area; it must be the same data.
  global records
  idx=a.mem.ram[0x22]&0x3f
- c64=0xda7d+35*idx if idx<0x21 else 0xc980+0x100*(idx-0x21) if idx<0x29 else 0xe9c3+35*(idx-0x29)
+ c64=0xda7d+35*idx if idx<0x21 else 0xc980+0x100*(idx-0x21) if idx<0x29 else 0xe9c3+35*idx
  at=a.mem.ram[0x16]|a.mem.ram[0x17]<<8
  assert bytes(a.mem[at+i] for i in range(35))==source[c64:c64+35],f'formation record {idx} differs'
  records+=1

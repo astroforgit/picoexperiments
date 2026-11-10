@@ -251,7 +251,7 @@ pal_done
         sta lptr+1
         ldx #0
 sprites ; The game's sorted list ends at the first Y of $FF; what follows
-        ; is stale. Bit 7 of the colour is X bit 8, bit 6 "behind foreground".
+        ; is stale. Bit 7 of the colour is X bit 8.
         lda $e4,x
         cmp #$ff
         beq sprites_done
@@ -262,7 +262,14 @@ sprites ; The game's sorted list ends at the first Y of $FF; what follows
         sta sframe
         lda $b6,x
         sta scol
+        ; Behind the foreground: only where the game has patched this
+        ; sprite's multiplexer slot (mask $8E8D, slot = index mod 7); it
+        ; does that for a limited number of flagged sprites per frame.
         and #$40
+        beq spr_prio
+        lda $8e8d
+        and slotbit,x
+spr_prio
         sta sbehind
         lda #0
         sta szoom
@@ -1232,6 +1239,7 @@ ds_write
 
 palreg  dta $21,$22,$23,$25,$26
 bitmask dta 1,2,4,8,16,32,64,128
+slotbit dta 1,2,4,8,16,32,64,1,2,4,8,16,32,64,1,2,4,8,16,32,64,1,2
 seg25   dta 0,25,50,75,100
 seg8    dta 0,8,16,24,32
 behlo   dta <LBEH,<(LBEH+21),<(LBEH+42),<(LBEH+63)
