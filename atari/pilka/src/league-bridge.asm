@@ -23,6 +23,12 @@ legacy_boot
 league_match_setup
         lda league_match
         beq legacy_setup
+        ldx #10
+save_classic
+        lda $92b7,x
+        sta classic_settings,x
+        dex
+        bpl save_classic
         ldx #7
 league_settings
         lda league_cfg,x
@@ -74,6 +80,12 @@ league_match_end
         sta league_goals
         lda $010f
         sta league_goals+1
+        ldx #10
+restore_classic
+        lda classic_settings,x
+        sta $92b7,x
+        dex
+        bpl restore_classic
         lda #1
         sta league_return
         jmp league_enter

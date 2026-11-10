@@ -44,6 +44,10 @@ gd_hi .ds 8
 ranking .ds 8
 player_goals_lo .ds 128
 player_goals_hi .ds 128
+pitch_choice .ds 1      ; zero is random, 1-7 are the original pitches
+length_choice .ds 1
+option_row .ds 1
+        ert * > $7400   ; crest pixels start here
 
 dst = $20
 source = $22
@@ -81,6 +85,8 @@ match_return
         lda #0
         sta league_match
 show_page
+        lda #$ff
+        sta league_art_id
         jsr clear_screen
         lda #1
         sta row
@@ -124,10 +130,12 @@ action_call
         jsr $ffff
         jmp show_page
 
-pages   dta a(home_page,pick_page,table_page,squad_page,fixtures_page,results_page,friendly_result)
-actions dta a(home_action,pick_action,table_action,squad_action,fixtures_action,results_action,home_return)
+pages   dta a(home_page,pick_page,table_page,squad_page,fixtures_page,results_page,friendly_result,options_page)
+actions dta a(home_action,pick_action,table_action,squad_action,fixtures_action,results_action,home_return,options_action)
 
 home_page
+        lda selection
+        sta league_art_id
         lda #6
         sta row
         lda #0
@@ -136,7 +144,7 @@ home_line
         ldx list_index
         lda home_lo,x
         ldy home_hi,x
-        ldx #5
+        ldx #3
         jsr print_at
         lda list_index
         cmp selection
@@ -147,13 +155,16 @@ home_next
         inc row
         inc list_index
         lda list_index
-        cmp #3
+        cmp #5
         bcc home_line
         lda season_live
         bne home_help
-        lda #10
+        lda selection
+        cmp #2
+        bne home_help
+        lda #16
         sta row
-        ldx #5
+        ldx #3
         lda #<no_season
         ldy #>no_season
         jsr print_at
@@ -167,10 +178,14 @@ home_help
 home_action
         bit fire_mask
         bne home_fire
-        ldx #3
+        ldx #5
         jmp move_selection
 home_fire
         lda selection
+        cmp #4
+        beq open_classic
+        cmp #3
+        beq open_options
         cmp #2
         bne begin_picker
         lda season_live
@@ -178,6 +193,16 @@ home_fire
         lda #2
         sta menu_page
 action_done
+        rts
+open_classic
+        lda #0
+        sta league_match
+        jmp LEAGUE_LAUNCH
+open_options
+        lda #0
+        sta option_row
+        lda #7
+        sta menu_page
         rts
 begin_picker
         sta pick_mode
@@ -628,6 +653,89 @@ friendly_result
         ldy #>return_help
         jmp print_at
 
+options_page
+        lda #5
+        sta league_art_id
+        lda #6
+        sta row
+        ldx #5
+        lda #<pitch_label
+        ldy #>pitch_label
+        jsr print_at
+        inc row
+        ldx pitch_choice
+        lda pitch_lo,x
+        ldy pitch_hi,x
+        ldx #5
+        jsr print_at
+        lda option_row
+        bne option_length
+        jsr highlight
+option_length
+        lda #10
+        sta row
+        ldx #5
+        lda #<length_label
+        ldy #>length_label
+        jsr print_at
+        inc row
+        ldx length_choice
+        lda length_lo,x
+        ldy length_hi,x
+        ldx #5
+        jsr print_at
+        lda option_row
+        beq options_footer
+        jsr highlight
+options_footer
+        lda #20
+        sta row
+        ldx #3
+        lda #<option_help
+        ldy #>option_help
+        jmp print_at
+
+options_action
+        bit fire_mask
+        beq option_move
+        lda #3
+        sta selection
+        lda #0
+        sta menu_page
+        rts
+option_move
+        bit vertical_mask
+        beq option_change
+        lda option_row
+        eor #1
+        sta option_row
+        rts
+option_change
+        and #12
+        beq option_done
+        and #4
+        beq option_increase
+        lda #$ff
+        bne option_apply
+option_increase
+        lda #1
+option_apply
+        ldx option_row
+        bne change_length
+        clc
+        adc pitch_choice
+        and #7
+        sta pitch_choice
+        rts
+change_length
+        clc
+        adc length_choice
+        and #3
+        sta length_choice
+option_done
+        rts
+
+
 find_fixture
         lda season_round
         asl
@@ -660,10 +768,14 @@ reset_scorers
         bpl reset_scorers
         lda #0
         sta league_cfg          ; friendly engine rules allow draws
-        sta league_cfg+2        ; three-minute match
         sta league_cfg+3        ; player 1 controls home unless playing away
-        lda #7
-        sta league_cfg+1        ; random pitch
+        lda length_choice
+        sta league_cfg+2
+        lda pitch_choice
+        sec
+        sbc #1
+        and #7
+        sta league_cfg+1
         lda #4
         sta league_cfg+6        ; normal strength
         lda #1
@@ -680,11 +792,13 @@ reset_scorers
         sta league_cfg+7        ; away human (resident bridge routes joystick 1)
 match_kits
         ldx home_team
+        stx league_home_badge
         lda club_formation,x
         sta league_cfg+4
         lda club_shirt,x
         sta league_cfg+5
         ldx away_team
+        stx league_away_badge
         lda club_formation,x
         sta league_away_formation
         lda club_shirt,x
@@ -1164,9 +1278,11 @@ title dta c'RETRO FANS LEAGUE',0
 new_label dta c'NEW LEAGUE',0
 friendly_label dta c'FRIENDLY',0
 continue_label dta c'CONTINUE LEAGUE',0
-no_season dta c'CONTINUE LEAGUE    NO SEASON',0
-home_lo dta <new_label,<friendly_label,<continue_label
-home_hi dta >new_label,>friendly_label,>continue_label
+no_season dta c'NO ACTIVE SEASON',0
+options_label dta c'MATCH OPTIONS',0
+classic_label dta c'CLASSIC GAME',0
+home_lo dta <new_label,<friendly_label,<continue_label,<options_label,<classic_label
+home_hi dta >new_label,>friendly_label,>continue_label,>options_label,>classic_label
 pick_help dta c'UP DOWN  SELECT    FIRE  CONFIRM',0
 choose_club dta c'CHOOSE YOUR CLUB',0
 choose_away dta c'CHOOSE THE AWAY CLUB',0
@@ -1183,5 +1299,25 @@ squad_help dta c'LEFT RIGHT CLUB    FIRE TABLE',0
 fixtures_help dta c'LEFT RIGHT ROUND   FIRE TABLE',0
 return_help dta c'FIRE  RETURN TO MENU',0
 result_help dta c'FIRE  RETURN TO TABLE',0
+vertical_mask dta 3
+pitch_label dta c'PITCH',0
+length_label dta c'MATCH LENGTH',0
+option_help dta c'LEFT RIGHT CHANGE   FIRE BACK',0
+pitch0 dta c'RANDOM',0
+pitch1 dta c'FROZEN',0
+pitch2 dta c'MUDDY',0
+pitch3 dta c'WET',0
+pitch4 dta c'SOFT',0
+pitch5 dta c'NORMAL',0
+pitch6 dta c'DRY',0
+pitch7 dta c'HARD',0
+pitch_lo dta <pitch0,<pitch1,<pitch2,<pitch3,<pitch4,<pitch5,<pitch6,<pitch7
+pitch_hi dta >pitch0,>pitch1,>pitch2,>pitch3,>pitch4,>pitch5,>pitch6,>pitch7
+length0 dta c'3 MINUTES',0
+length1 dta c'5 MINUTES',0
+length2 dta c'7 MINUTES',0
+length3 dta c'10 MINUTES',0
+length_lo dta <length0,<length1,<length2,<length3
+length_hi dta >length0,>length1,>length2,>length3
         icl '../gen/league-tables.asm'
         ert * > $d000

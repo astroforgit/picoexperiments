@@ -28,8 +28,22 @@ Continue League resumes the current season in memory.
 On the league table, fire starts the next match. Press up for fixtures, left
 for the latest results, right for squads, and down for the main menu. The squad
 screen shows each club's starting eleven and five reserves. During a match,
-joystick 1 controls the chosen club at home or away. Hold OPTION during startup
-to open the original Arlasoft Friendly/Cup menu.
+joystick 1 controls the chosen club at home or away. Computer badges sit beside
+the players' shirts, with the two clubs matched to the original player slots.
+
+**Match Options** applies the original eight pitch settings and the 3, 5, 7
+and 10 minute match lengths to league matches and named friendlies. Use up/down
+to pick a setting, left/right to change it, and fire to return. **Classic Game**
+opens the original Arlasoft Friendly/Cup menu, including controllers,
+formations, shirts, and strength. Press SELECT in that menu to return to the
+league. Holding OPTION during startup also opens Classic Game.
+
+The five main menu choices each have their own football illustration, with a
+sixth illustration in Match Options. The built-in image generator produced
+the six-panel source sheet from a prompt for a floodlit trophy, footballers
+duelling for the ball, a tactics clipboard with boots, a whistle and ball,
+a classic cup with joysticks, and a team lineup, in retro football pixel art.
+The build reduces the panels to a shared 16-colour palette.
 
 Atari Fuji FC, C64 SID United, Amiga Boing Athletic, ZX Spectrum Rainbow,
 Amstrad CPC City, BBC Micro Owls, Apple II Orchard, and IBM PC United play
@@ -72,7 +86,10 @@ Names at `$79000` and state and menu cells at `$7B000` use MEMAC-B. The
 existing character renderer draws league menus. The loader stages the CPU
 RAM image in framebuffer 0 and restores it before clearing that framebuffer.
 It uploads the game and renderer banks separately to `$7C000` and `$7D000`.
-The build checks that uploaded ranges do not overlap.
+The build checks that uploaded ranges do not overlap. Six 4 KiB pages at
+`$5D000`, `$5E000`, `$72000`, `$7A000`, `$7E000` and `$7F000` hold the
+menu pictures. The 392 bytes of badge pixels sit inside the league state page.
+The renderer appends artwork and badges to the same blit list as the frame.
 
 Timing: the Atari VBI plays the C64 raster interrupt (`$922E`). The game loop
 is hooked where it has just sorted its sprite list (`$973C`): there the scroll
@@ -138,6 +155,7 @@ python3 tools/preview_swos.py
 python3 tools/coverage.py
 ./build.sh
 python3 tools/test_league.py     # league, half-time, result, standings
+python3 tools/test_league_art.py # illustrated menus, options and club badges
 python3 tools/test_port.py       # original menu, match start, formation data
 python3 tools/test_renderer.py   # every picture against a C64 rendering
 python3 tools/speed.py           # cycles per frame by routine

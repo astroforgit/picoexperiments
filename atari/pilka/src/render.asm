@@ -29,7 +29,7 @@ NT      = 120
 LCOMP   = $4000         ; 4 slots: character layer -> framebuffer
 LBEH    = $4054         ; 4 slots: sprites behind the foreground
 LOVL    = $40a8         ; 16 slots: foreground over those sprites
-LFRONT  = $41f8         ; 26 slots: other sprites, list end
+LFRONT  = $41f8         ; 50 slots: sprites, club badges and menu pictures
 
 dp      = $20           ; zero page $20-$2d is saved and restored
 colp    = $22
@@ -127,6 +127,10 @@ pxdhi   .ds 4
 py0     .ds 4
 py1     .ds 4
 pyd     .ds 4
+prior_front .ds 1
+source_bank .ds 1
+source_stride .ds 1
+source_mask .ds 1
         ert * > $dd00
 
         org $c000
@@ -328,7 +332,13 @@ spr_low sta xx+1
         sta szoom
 spr_draw
         stx sprno
+        lda nfront
+        sta prior_front
         jsr draw_sprite
+        lda league_match
+        beq spr_next
+        jsr queue_crest
+spr_next
         ldx sprno
         inx
         cpx #23
@@ -357,6 +367,13 @@ ball_low
         sta sframe
         jsr draw_sprite
 ball_done
+        lda league_screen
+        beq front_end
+        ldx league_art_id
+        cpx #6
+        bcs front_end
+        jsr queue_art
+front_end
         ; The last sprite ends the list.
         lda nfront
         bne end_last
@@ -1402,24 +1419,28 @@ ds_dst  ldy sdy
         inc nb
         bne ds_write
 ds_front
-        lda lptr
-        sta sp
-        lda lptr+1
-        sta sp+1
-        clc
-        lda lptr
-        adc #21
-        sta lptr
-        bcc ds_count
-        inc lptr+1
-ds_count
-        inc nfront
+        jsr front_slot
 ds_write
+        lda #6
+        sta source_bank
+        lda #24
+        sta source_stride
+        lda scol
+        and #15
+        ora #$60
+        sta source_mask
+write_front
         ldy #0
         lda ssrclo
         sta (sp),y
         iny
         lda ssrcmid
+        sta (sp),y
+        iny
+        lda source_bank
+        sta (sp),y
+        iny
+        lda source_stride
         sta (sp),y
         ldy #6
         lda sdstlo
@@ -1437,9 +1458,7 @@ ds_write
         lda sh
         sta (sp),y
         iny
-        lda scol
-        and #15
-        ora #$60
+        lda source_mask
         sta (sp),y
         ldy #18
         lda szoom
@@ -1454,6 +1473,98 @@ bitmask dta 1,2,4,8,16,32,64,128
 slotbit dta 1,2,4,8,16,32,64,1,2,4,8,16,32,64,1,2,4,8,16,32,64,1,2
 seg25   dta 0,25,50,75,100
 seg8    dta 0,8,16,24,32
+front_slot
+        lda lptr
+        sta sp
+        lda lptr+1
+        sta sp+1
+        clc
+        lda lptr
+        adc #21
+        sta lptr
+        bcc front_count
+        inc lptr+1
+front_count
+        inc nfront
+        rts
+
+; A crest sits beside the shirt, inside the original sprite rectangle.
+; $88 gives the original player slot for the sorted sprite, even when
+; the engine changes the active player's colour. Leave the referee, ball
+; and partly clipped or foreground-obscured sprites untouched.
+queue_crest
+        lda nfront
+        cmp prior_front
+        beq no_crest
+        lda sbehind
+        ora ssrclo
+        bne no_crest
+        lda sw
+        cmp #23
+        bne no_crest
+        lda sh
+        cmp #20
+        bne no_crest
+        ldx sprno
+        lda $88,x
+        cmp #22
+        bcs no_crest
+        cmp #11
+        bcc home_crest
+        ldx league_away_badge
+        bcs crest_selected
+home_crest
+        ldx league_home_badge
+crest_selected
+        lda crest_lo,x
+        sta ssrclo
+        lda crest_mid,x
+        sta ssrcmid
+        lda #7
+        sta source_bank
+        sta source_stride
+        lda #6
+        sta sw
+        sta sh
+        lda sdstlo
+        clc
+        adc #<(4*320+17)
+        sta sdstlo
+        lda sdstmid
+        adc #>(4*320+17)
+        sta sdstmid
+        jmp stamp_front
+no_crest
+        rts
+
+; The original menu tiles and the illustration publish as one VBXE list.
+queue_art
+        lda art_bank,x
+        sta source_bank
+        lda art_mid,x
+        sta ssrcmid
+        lda #0
+        sta ssrclo
+        lda #64
+        sta source_stride
+        lda #63
+        sta sw
+        lda #59
+        sta sh
+        lda #<(40*320+176)
+        sta sdstlo
+        lda #>(40*320+176)
+        sta sdstmid
+        lda #$11
+        sta szoom
+stamp_front
+        lda #$ff
+        sta source_mask
+        jsr front_slot
+        jmp write_front
+
+        icl '../gen/league-art.asm'
+
 behlo   dta <LBEH,<(LBEH+21),<(LBEH+42),<(LBEH+63)
 ovllo   dta <LOVL,<(LOVL+84),<(LOVL+168),<(LOVL+252)
 ovlhi   dta >LOVL,>(LOVL+84),>(LOVL+168),>(LOVL+252)

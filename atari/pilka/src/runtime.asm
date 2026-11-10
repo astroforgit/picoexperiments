@@ -225,12 +225,28 @@ gh_skip jmp $85e4
 
 ; Menu input/update is called from its own loop, once per frame.
 menu_frame
+        lda $d01f
+        and #2
+        bne mf_original
+        jmp league_enter
+mf_original
         lda #1
         sta menu_mode
         lda pending
         bne mf_skip
+        ldx #12
+classic_help
+        lda classic_hint,x
+        sta $c000+922,x
+        sta $c400+922,x
+        lda #1
+        sta $d800+922,x
+        dex
+        bpl classic_help
         jsr render_tramp
 mf_skip jmp $9524
+; C64 menu glyphs for SELECT LEAGUE.
+classic_hint dta $eb,$dd,$e4,$dd,$db,$ec,$fd,$e4,$dd,$d9,$df,$ed,$dd
 
 ; The game arms a screen flip: the new screen is the old one moved by one
 ; character in direction $11DB (0-7). Move the ring origin the same way.
@@ -578,8 +594,8 @@ reloc_done
 ; RAM image occupies their place; then both framebuffers are cleared.
 boot_list
         dta $00,$00,$01, $00,$01,1, $00,$80,$07, $00,$01,1, $ff,$00,9, $ff,0,0,0,0,0
-        dta $00,$0a,$01, $00,$01,1, $00,$00,$07, $00,$01,1, $ff,$00,4, $ff,0,0,0,0,0
-        dta $00,$10,$01, $00,$01,1, $00,$40,$07, $00,$01,1, $ff,$00,63, $ff,0,0,0,0,0
+        dta $00,$0a,$01, $00,$01,1, $00,$00,$07, $00,$01,1, $ff,$00,6, $ff,0,0,0,0,0
+        dta $00,$20,$01, $00,$01,1, $00,$40,$07, $00,$01,1, $ff,$00,63, $ff,0,0,0,0,0
         dta $00,$00,$00, $40,$01,1, $00,$00,$00, $40,$01,1, $3f,$01,199, 0,0,0,0,0,0
         dta $00,$00,$00, $40,$01,1, $00,$00,$01, $40,$01,1, $3f,$01,199, 0,0,0,0,0,0
 palette

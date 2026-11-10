@@ -28,6 +28,10 @@ league_goals .ds 2      ; scores in stable home/away order
 league_cfg .ds 8        ; engine settings, copied from the league on launch
 league_away_formation .ds 1
 league_away_shirt .ds 1
+league_art_id .ds 1     ; picture 0-5, or $FF for text-only menus
+league_home_badge .ds 1
+league_away_badge .ds 1
+classic_settings .ds 11 ; original menu settings while a league match runs
         org $dd80
 irqvec    .ds 2
 nmivec    .ds 2

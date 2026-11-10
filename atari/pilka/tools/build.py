@@ -7,6 +7,7 @@ from build_assets import build as assets
 from preview_swos import PALETTE
 from make_banners import build as banners
 from league_data import build as league_data
+from league_art import build as league_art
 ROOT=Path(__file__).resolve().parents[1]
 GEN=ROOT/'gen';SRC=ROOT/'src'
 sys.path.insert(0,str(ROOT/'tools/reference'))
@@ -52,12 +53,13 @@ def main():
  assets()
  banners()
  league_data(GEN)
+ art_palette,art_payloads,league_state=league_art(ROOT)
  # Fixed palette entries (index, R, G, B; index 0 ends): character colours
  # and sprite colours. Entries that follow VIC registers are set at run time.
  pal=bytearray()
  for c,rgb in enumerate(SHOWN):
   pal+=bytes([FGI[c],*rgb]);pal+=bytes([0x60+c,*rgb])
- (GEN/'palette.bin').write_bytes(bytes(pal)+b'\0')
+ (GEN/'palette.bin').write_bytes(bytes(pal)+art_palette+b'\0')
  def dta(name,values):
   values=list(values)
   return ''.join((name if i==0 else '')+' dta '+','.join(str(v) for v in values[i:i+16])+'\n' for i in range(0,len(values),16))
@@ -195,8 +197,8 @@ def main():
  put(0x70000-21*NT,bcb(0,8,1,LAYER,320,1,8,8,ctrl=8)*NT)
  # Lists of VRAM $70000 (copied from $10A00 at boot): all slots draw nothing.
  piece=bcb(LAYER,320,1,0,320,1,1,1,andm=0,ctrl=9);sprite=bcb(0x60000,24,1,0,320,1,1,1,andm=0,ctrl=9)
- lists=piece*4+sprite*4+piece*16+sprite*26
- assert len(lists)<=1280
+ lists=piece*4+sprite*4+piece*16+sprite*50
+ assert len(lists)<=1792
  # Stage CPU RAM in framebuffer 0; boot clears it after restoring the image.
  # The league's reserved VRAM then survives startup without extra copies.
  payloads=[
@@ -204,8 +206,8 @@ def main():
   (0x60000,bytes(sprites[:0xc000])),(0x6e000,bytes(sprites[0xe000:])),(0x6c000,(GEN/'tile-map.bin').read_bytes()),
   (0x7c000,ram[0xc000:0xd000]),(0x7d000,render),
   (0x5f000,game_top),(0x10000,(GEN/'banners.bin').read_bytes()+lists),
-  (0x11000,(GEN/'tiles-light.bin').read_bytes()),(0x71000,league_code),
-  (0x79000,(GEN/'league-rosters.bin').read_bytes()),(0x7b000,bytes(4096)),
+  (0x12000,(GEN/'tiles-light.bin').read_bytes()),(0x71000,league_code),
+  (0x79000,(GEN/'league-rosters.bin').read_bytes()),(0x7b000,league_state),*art_payloads,
  ]
  ranges=sorted((dest,dest+((len(data)+4095)//4096)*4096) for dest,data in payloads)
  assert all(end<=next_start for (_,end),(next_start,_) in zip(ranges,ranges[1:]))
