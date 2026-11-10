@@ -29,7 +29,7 @@ NT      = 120
 LCOMP   = $4000         ; 4 slots: character layer -> framebuffer
 LBEH    = $4054         ; 4 slots: sprites behind the foreground
 LOVL    = $40a8         ; 16 slots: foreground over those sprites
-LFRONT  = $41f8         ; 50 slots: sprites, club badges and menu pictures
+LFRONT  = $41f8         ; 26 slots: sprites or a menu picture
 
 dp      = $20           ; zero page $20-$2d is saved and restored
 colp    = $22
@@ -127,7 +127,6 @@ pxdhi   .ds 4
 py0     .ds 4
 py1     .ds 4
 pyd     .ds 4
-prior_front .ds 1
 source_bank .ds 1
 source_stride .ds 1
 source_mask .ds 1
@@ -332,13 +331,7 @@ spr_low sta xx+1
         sta szoom
 spr_draw
         stx sprno
-        lda nfront
-        sta prior_front
         jsr draw_sprite
-        lda league_match
-        beq spr_next
-        jsr queue_crest
-spr_next
         ldx sprno
         inx
         cpx #23
@@ -1488,55 +1481,6 @@ front_count
         inc nfront
         rts
 
-; A crest sits beside the shirt, inside the original sprite rectangle.
-; $88 gives the original player slot for the sorted sprite, even when
-; the engine changes the active player's colour. Leave the referee, ball
-; and partly clipped or foreground-obscured sprites untouched.
-queue_crest
-        lda nfront
-        cmp prior_front
-        beq no_crest
-        lda sbehind
-        ora ssrclo
-        bne no_crest
-        lda sw
-        cmp #23
-        bne no_crest
-        lda sh
-        cmp #20
-        bne no_crest
-        ldx sprno
-        lda $88,x
-        cmp #22
-        bcs no_crest
-        cmp #11
-        bcc home_crest
-        ldx league_away_badge
-        bcs crest_selected
-home_crest
-        ldx league_home_badge
-crest_selected
-        lda crest_lo,x
-        sta ssrclo
-        lda crest_mid,x
-        sta ssrcmid
-        lda #7
-        sta source_bank
-        sta source_stride
-        lda #6
-        sta sw
-        sta sh
-        lda sdstlo
-        clc
-        adc #<(4*320+17)
-        sta sdstlo
-        lda sdstmid
-        adc #>(4*320+17)
-        sta sdstmid
-        jmp stamp_front
-no_crest
-        rts
-
 ; The original menu tiles and the illustration publish as one VBXE list.
 queue_art
         lda art_bank,x
@@ -1557,7 +1501,6 @@ queue_art
         sta sdstmid
         lda #$11
         sta szoom
-stamp_front
         lda #$ff
         sta source_mask
         jsr front_slot

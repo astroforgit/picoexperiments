@@ -225,16 +225,11 @@ gh_skip jmp $85e4
 
 ; Menu input/update is called from its own loop, once per frame.
 menu_frame
-        lda $d01f
-        and #2
-        bne mf_original
-        jmp league_enter
-mf_original
         lda #1
         sta menu_mode
         lda pending
         bne mf_skip
-        ldx #12
+        ldx #22
 classic_help
         lda classic_hint,x
         sta $c000+922,x
@@ -245,8 +240,32 @@ classic_help
         bpl classic_help
         jsr render_tramp
 mf_skip jmp $9524
-; C64 menu glyphs for SELECT LEAGUE.
-classic_hint dta $eb,$dd,$e4,$dd,$db,$ec,$fd,$e4,$dd,$d9,$df,$ed,$dd
+
+; Check the exact input sample the Classic menu is about to use for
+; changing a setting, even if a VBI arrived during the redraw.
+classic_direction
+        lda $082b
+        pha
+        and #$14
+        beq classic_return
+        pla
+        rts
+
+; Replace the fire read at $93BE. Check here so the return chord takes
+; precedence over starting a match, even between menu redraws.
+classic_fire
+        lda $d01f
+        and #2
+        beq classic_return
+        lda joy1
+        and #$14               ; active-low left and fire
+        beq classic_return
+        lda joy1
+        rts
+classic_return
+        jmp league_enter
+; C64 menu glyphs for LEFT AND FIRE TO RETURN.
+classic_hint dta $e4,$dd,$de,$ec,$fd,$d9,$e6,$dc,$fd,$de,$e1,$ea,$dd,$fd,$ec,$e7,$fd,$ea,$dd,$ec,$ed,$ea,$e6
 
 ; The game arms a screen flip: the new screen is the old one moved by one
 ; character in direction $11DB (0-7). Move the ring origin the same way.
@@ -594,8 +613,8 @@ reloc_done
 ; RAM image occupies their place; then both framebuffers are cleared.
 boot_list
         dta $00,$00,$01, $00,$01,1, $00,$80,$07, $00,$01,1, $ff,$00,9, $ff,0,0,0,0,0
-        dta $00,$0a,$01, $00,$01,1, $00,$00,$07, $00,$01,1, $ff,$00,6, $ff,0,0,0,0,0
-        dta $00,$20,$01, $00,$01,1, $00,$40,$07, $00,$01,1, $ff,$00,63, $ff,0,0,0,0,0
+        dta $00,$0a,$01, $00,$01,1, $00,$00,$07, $00,$01,1, $ff,$00,4, $ff,0,0,0,0,0
+        dta $00,$10,$01, $00,$01,1, $00,$40,$07, $00,$01,1, $ff,$00,63, $ff,0,0,0,0,0
         dta $00,$00,$00, $40,$01,1, $00,$00,$00, $40,$01,1, $3f,$01,199, 0,0,0,0,0,0
         dta $00,$00,$00, $40,$01,1, $00,$00,$01, $40,$01,1, $3f,$01,199, 0,0,0,0,0,0
 palette

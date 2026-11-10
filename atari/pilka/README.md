@@ -28,15 +28,15 @@ Continue League resumes the current season in memory.
 On the league table, fire starts the next match. Press up for fixtures, left
 for the latest results, right for squads, and down for the main menu. The squad
 screen shows each club's starting eleven and five reserves. During a match,
-joystick 1 controls the chosen club at home or away. Computer badges sit beside
-the players' shirts, with the two clubs matched to the original player slots.
+joystick 1 controls the chosen club at home or away.
 
 **Match Options** applies the original eight pitch settings and the 3, 5, 7
 and 10 minute match lengths to league matches and named friendlies. Use up/down
 to pick a setting, left/right to change it, and fire to return. **Classic Game**
 opens the original Arlasoft Friendly/Cup menu, including controllers,
-formations, shirts, and strength. Press SELECT in that menu to return to the
-league. Holding OPTION during startup also opens Classic Game.
+formations, shirts, and strength. Press left and fire together on joystick 1
+to return to the league menu. The Atari SELECT key also returns. Holding
+OPTION during startup opens Classic Game.
 
 The five main menu choices each have their own football illustration, with a
 sixth illustration in Match Options. The built-in image generator produced
@@ -88,8 +88,8 @@ RAM image in framebuffer 0 and restores it before clearing that framebuffer.
 It uploads the game and renderer banks separately to `$7C000` and `$7D000`.
 The build checks that uploaded ranges do not overlap. Six 4 KiB pages at
 `$5D000`, `$5E000`, `$72000`, `$7A000`, `$7E000` and `$7F000` hold the
-menu pictures. The 392 bytes of badge pixels sit inside the league state page.
-The renderer appends artwork and badges to the same blit list as the frame.
+menu pictures. The renderer appends artwork to the same blit list as the
+menu frame.
 
 Timing: the Atari VBI plays the C64 raster interrupt (`$922E`). The game loop
 is hooked where it has just sorted its sprite list (`$973C`): there the scroll
@@ -155,7 +155,7 @@ python3 tools/preview_swos.py
 python3 tools/coverage.py
 ./build.sh
 python3 tools/test_league.py     # league, half-time, result, standings
-python3 tools/test_league_art.py # illustrated menus, options and club badges
+python3 tools/test_league_art.py # illustrated menus, options and Classic Game return
 python3 tools/test_port.py       # original menu, match start, formation data
 python3 tools/test_renderer.py   # every picture against a C64 rendering
 python3 tools/speed.py           # cycles per frame by routine

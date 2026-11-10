@@ -47,7 +47,7 @@ player_goals_hi .ds 128
 pitch_choice .ds 1      ; zero is random, 1-7 are the original pitches
 length_choice .ds 1
 option_row .ds 1
-        ert * > $7400   ; crest pixels start here
+        ert * > LEAGUE_MATCH_SCORERS
 
 dst = $20
 source = $22
@@ -792,13 +792,11 @@ reset_scorers
         sta league_cfg+7        ; away human (resident bridge routes joystick 1)
 match_kits
         ldx home_team
-        stx league_home_badge
         lda club_formation,x
         sta league_cfg+4
         lda club_shirt,x
         sta league_cfg+5
         ldx away_team
-        stx league_away_badge
         lda club_formation,x
         sta league_away_formation
         lda club_shirt,x

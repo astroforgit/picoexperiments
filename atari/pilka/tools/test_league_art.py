@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Exercise the league's illustrated menus, classic path and club badges."""
+"""Exercise the league's illustrated menus, classic return and plain match sprites."""
 import argparse
 from pathlib import Path
 import sys
@@ -9,7 +9,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools/reference"))
 from atari_emu import Atari, load_labels
-from league_art import ART_PAGES, ART_WIDTH, ART_HEIGHT, BADGES
+from league_art import ART_PAGES, ART_WIDTH, ART_HEIGHT
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--page", type=lambda value: int(value, 16), default=0xd6)
@@ -75,8 +75,16 @@ assert ram[0x92b7] != original_mode, "Classic match mode did not change"
 classic_mode = ram[0x92b7]
 front = ram[runtime["FRONT"]] << 16
 assert not np.any((atari.vram[front:front+64000] & 0xf0) == 0xb0)
+hint = "LEFT AND FIRE TO RETURN"
+glyphs = bytes(ord(c)+0x98 if c != " " else 0xfd for c in hint)
+assert bytes(atari.vram[0x7c000+922:0x7c000+922+len(glyphs)]) == glyphs
 preview("classic")
-press(consol=5)  # SELECT
+press(stick=11, fire=True)
+check_art(4)
+assert ram[0x92b7] == classic_mode, "Return chord changed the Classic mode"
+press(fire=True)
+assert not ram[runtime["LEAGUE_SCREEN"]]
+press(consol=5)  # SELECT remains available
 check_art(4)
 press(stick=14)
 press(fire=True)
@@ -95,37 +103,30 @@ press(fire=True)  # Atari home
 press(fire=True)  # C64 away
 assert ram[runtime["LEAGUE_MATCH"]] == 2
 assert ram[0x9757] == 0 and ram[0x9751] == 1, "Engine did not receive pitch/duration"
-assert (ram[runtime["LEAGUE_HOME_BADGE"]], ram[runtime["LEAGUE_AWAY_BADGE"]]) == (0, 1)
-
-
-def badge_sources():
-    addresses = set()
-    for address in range(0x701f8, 0x701f8+50*21, 21):
+# Check a populated match display list. Its visible sprite entries must all
+# draw from the original sprite atlas, including when league mode is active.
+for attempt in range(30):
+    atari.set_input(trig=(attempt % 3) == 0)
+    atari.run_frames(8)
+    active_sprites = 0
+    for address in range(0x701f8, 0x701f8+26*21, 21):
         block = atari.vram[address:address+21]
-        source = int(block[0]) | int(block[1]) << 8 | int(block[2]) << 16
-        if BADGES <= source < BADGES+8*49:
-            assert int(block[3]) == 7 and tuple(block[12:15]) == (6, 0, 6)
-            addresses.add(source)
+        if int(block[15]):
+            source = int(block[0]) | int(block[1]) << 8 | int(block[2]) << 16
+            assert 0x60000 <= source < 0x6c000, hex(source)
+            active_sprites += 1
         if not int(block[20]) & 8:
             break
-    return addresses
-
-
-for _ in range(30):
-    atari.set_input(trig=(_ % 3) == 0)
-    atari.run_frames(8)
-    if {BADGES, BADGES+49} <= badge_sources():
-        if args.preview:
-            for i in range(20):
-                atari.set_input(stick=7 if i % 2 else 15, trig=(i % 3) == 0)
-                atari.run_frames(8)
-            preview("match-badges")
+    if active_sprites >= 3:
         break
 else:
-    raise AssertionError("Both club badges were not drawn during a match")
+    raise AssertionError("The named match did not draw players")
+preview("match")
 
 atari.cpu.pc = runtime["LEAGUE_MATCH_END"]
 atari.run_frames(8)
-assert ram[runtime["LEAGUE_SCREEN"]] and ram[0x92b7] == classic_mode
+assert ram[runtime["LEAGUE_SCREEN"]] and ram[0x92b7] == classic_mode, (
+    ram[runtime["LEAGUE_SCREEN"]], ram[0x92b7], classic_mode
+)
 
-print(f"PASS at ${args.page:02X}00: six pictures, classic menu and settings, options applied, both player badges")
+print(f"PASS at ${args.page:02X}00: six pictures, both Classic return controls, options applied, original player sprites")

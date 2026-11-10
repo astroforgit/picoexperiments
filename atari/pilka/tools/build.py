@@ -53,7 +53,7 @@ def main():
  assets()
  banners()
  league_data(GEN)
- art_palette,art_payloads,league_state=league_art(ROOT)
+ art_palette,art_payloads=league_art(ROOT)
  # Fixed palette entries (index, R, G, B; index 0 ends): character colours
  # and sprite colours. Entries that follow VIC registers are set at run time.
  pal=bytearray()
@@ -133,6 +133,8 @@ def main():
  ram[0x97b7:0x97ba]=b'\x4c'+struct.pack('<H',labels['FRAME_WAIT'])
  jsr(0x973c,'GAME_HOOK')
  jsr(0x93b3,'MENU_FRAME')
+ jsr(0x93be,'CLASSIC_FIRE')
+ jsr(0x9524,'CLASSIC_DIRECTION')
  jsr(0x9717,'LEAGUE_MATCH_SETUP')
  jsr(0x8bf2,'LEAGUE_GOAL')
  for pc,label in [(0x9771,'LEAGUE_BOOT'),(0x9747,'LEAGUE_MATCH_END')]:
@@ -197,8 +199,8 @@ def main():
  put(0x70000-21*NT,bcb(0,8,1,LAYER,320,1,8,8,ctrl=8)*NT)
  # Lists of VRAM $70000 (copied from $10A00 at boot): all slots draw nothing.
  piece=bcb(LAYER,320,1,0,320,1,1,1,andm=0,ctrl=9);sprite=bcb(0x60000,24,1,0,320,1,1,1,andm=0,ctrl=9)
- lists=piece*4+sprite*4+piece*16+sprite*50
- assert len(lists)<=1792
+ lists=piece*4+sprite*4+piece*16+sprite*26
+ assert len(lists)<=1280
  # Stage CPU RAM in framebuffer 0; boot clears it after restoring the image.
  # The league's reserved VRAM then survives startup without extra copies.
  payloads=[
@@ -206,8 +208,8 @@ def main():
   (0x60000,bytes(sprites[:0xc000])),(0x6e000,bytes(sprites[0xe000:])),(0x6c000,(GEN/'tile-map.bin').read_bytes()),
   (0x7c000,ram[0xc000:0xd000]),(0x7d000,render),
   (0x5f000,game_top),(0x10000,(GEN/'banners.bin').read_bytes()+lists),
-  (0x12000,(GEN/'tiles-light.bin').read_bytes()),(0x71000,league_code),
-  (0x79000,(GEN/'league-rosters.bin').read_bytes()),(0x7b000,league_state),*art_payloads,
+  (0x11000,(GEN/'tiles-light.bin').read_bytes()),(0x71000,league_code),
+  (0x79000,(GEN/'league-rosters.bin').read_bytes()),(0x7b000,bytes(4096)),*art_payloads,
  ]
  ranges=sorted((dest,dest+((len(data)+4095)//4096)*4096) for dest,data in payloads)
  assert all(end<=next_start for (_,end),(next_start,_) in zip(ranges,ranges[1:]))
