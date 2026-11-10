@@ -128,6 +128,8 @@ input1  sta joy1
         bne input2
         and #$ef
 input2  sta joy2
+        lda league_screen
+        bne skip_tick
         ; The C64 raster interrupt: only when the game has enabled it and
         ; is outside its SEI critical sections.
         tsx
@@ -165,6 +167,8 @@ tick_return
         rts
 
 palidx  dta 1,2,3,4,5,6,7,8,$20,$40
+
+        icl 'league-bridge.asm'
 
 ; Formation tables the C64 game reads with its I/O area banked out (the
 ; build copies them here and points the game's reader at them):
@@ -300,6 +304,38 @@ rec1ptr
 rec1_lo dta <rec1,<(rec1+35),<(rec1+70),<(rec1+105),<(rec1+140),<(rec1+175),<(rec1+210),<(rec1+245)
 rec1_hi dta >rec1,>(rec1+35),>(rec1+70),>(rec1+105),>(rec1+140),>(rec1+175),>(rec1+210),>(rec1+245)
 
+; Goal path at $8BF2. The original routine returns the pre-goal score
+; in A. Credit the last touch only when it belongs to the scoring team.
+league_goal
+        jsr $8c3f
+        php
+        pha
+        cmp #99
+        bcs goal_done
+        lda league_match
+        cmp #1
+        bne goal_done
+        lda $0121
+        cmp $10
+        bne goal_done
+        lda $0122
+        cmp #22
+        bcs goal_done
+        txa
+        pha
+        ldx $0122
+        lda #LEAGUE_DATA
+        jsr memb
+        inc LEAGUE_MATCH_SCORERS,x
+        lda #0
+        jsr memb
+        pla
+        tax
+goal_done
+        pla
+        plp
+        rts
+
 ; Last boot step, outside $F800-$FFFF: put back the C64 game code the
 ; boot-only part occupied (staged at VRAM $5F000), then start the game.
 finish_boot
@@ -364,7 +400,7 @@ vbrel_17
         sta $d65f
         ; Again, now for the bridge code inside that bank.
         jsr relocate
-        ; Copy the staged C64 RAM image (VRAM $70000) into place.
+        ; Copy the staged C64 RAM image (VRAM $00000) into place.
         ldx #0
 restore_page
         txa
@@ -379,7 +415,7 @@ restore_page
         lsr
         lsr
         lsr
-        ora #$9c
+        ora #$80
 vbrel_18
         sta $d65d
         ldy #0

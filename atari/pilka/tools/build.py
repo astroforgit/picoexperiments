@@ -6,6 +6,7 @@ from py65.disassembler import Disassembler
 from build_assets import build as assets
 from preview_swos import PALETTE
 from make_banners import build as banners
+from league_data import build as league_data
 ROOT=Path(__file__).resolve().parents[1]
 GEN=ROOT/'gen';SRC=ROOT/'src'
 sys.path.insert(0,str(ROOT/'tools/reference'))
@@ -50,6 +51,7 @@ def main():
  from preview_swos import PALETTE as SWOS
  assets()
  banners()
+ league_data(GEN)
  # Fixed palette entries (index, R, G, B; index 0 ends): character colours
  # and sprite colours. Entries that follow VIC registers are set at run time.
  pal=bytearray()
@@ -71,17 +73,26 @@ def main():
  t+=dta('standrgb',rgb12(STAND12))
  (GEN/'render-tables.asm').write_text(t)
  # Label each bridge hardware operand to relocate precisely for a D700 VBXE.
- source=(SRC/'runtime.asm').read_text();source=re.sub(r'^vbrel_\d+\n','',source,flags=re.M)
- count=0;lines=[]
- for line in source.splitlines():
-  if re.search(r'^\s+(?:sta|lda|ldx|ldy|stx|sty)\s+\$d6[45][0-9a-f]\b',line,re.I):
-   lines.append(f'vbrel_{count}');count+=1
-  lines.append(line)
- (SRC/'runtime.asm').write_text('\n'.join(lines)+'\n')
+ count=0
+ for filename in ('runtime.asm','league-bridge.asm'):
+  path=SRC/filename
+  source=re.sub(r'^vbrel_\d+\n','',path.read_text(),flags=re.M)
+  lines=[]
+  for line in source.splitlines():
+   if re.search(r'^\s+(?:sta|lda|ldx|ldy|stx|sty)\s+\$d6[45][0-9a-f]\b',line,re.I):
+    lines.append(f'vbrel_{count}');count+=1
+   lines.append(line)
+  path.write_text('\n'.join(lines)+'\n')
  (GEN/'relocs.asm').write_text(f'RELOC_COUNT = {count}\nreloc_lo dta '+','.join(f'<(vbrel_{i}+2)' for i in range(count))+'\nreloc_hi dta '+','.join(f'>(vbrel_{i}+2)' for i in range(count))+'\n')
  labels=assemble('runtime.asm')
- (GEN/'rt-labels.asm').write_text(''.join(f"{n} = ${labels[n]:04x}\n" for n in ('MEMB','BLIT_AT','BLIT_WAIT')))
+ (GEN/'rt-labels.asm').write_text(''.join(f"{n} = ${labels[n]:04x}\n" for n in ('MEMB','BLIT_AT','BLIT_WAIT','LEAGUE_DRAW','LEAGUE_LAUNCH')))
  assemble('render.asm')
+ league_labels=assemble('league.asm')
+ league_code=bytearray(4096)
+ for addr,data in segments((GEN/'league.asm.obx').read_bytes()):
+  assert 0xc000<=addr and addr+len(data)<=0xd000
+  league_code[addr-0xc000:addr-0xc000+len(data)]=data
+ assert league_labels['LEAGUE_MAIN']==0xc000
  original=(ROOT/'analysis/unpacked-64k.bin').read_bytes()
  ram=bytearray(original);ram[0]=0x2f
  cov=json.loads((ROOT/'analysis/coverage.json').read_text())
@@ -120,6 +131,10 @@ def main():
  ram[0x97b7:0x97ba]=b'\x4c'+struct.pack('<H',labels['FRAME_WAIT'])
  jsr(0x973c,'GAME_HOOK')
  jsr(0x93b3,'MENU_FRAME')
+ jsr(0x9717,'LEAGUE_MATCH_SETUP')
+ jsr(0x8bf2,'LEAGUE_GOAL')
+ for pc,label in [(0x9771,'LEAGUE_BOOT'),(0x9747,'LEAGUE_MATCH_END')]:
+  ram[pc:pc+3]=b'\x4c'+struct.pack('<H',labels[label])
  jsr(0x1269,'FLIP_HOOK')                    # was LDA $11E5 (the hook ends with it)
  # The game slices its screen copy by the raster position.
  jsr(0x242f,'RASTER9');ram[0x2432:0x2435]=b'\x4c\x3a\x24'
@@ -146,12 +161,10 @@ def main():
  ram[labels['REC0']:labels['REC0']+1155]=original[0xda7d:0xda7d+1155]
  for k in range(8):
   at=0xc980+0x100*k;ram[labels['REC1']+35*k:labels['REC1']+35*k+35]=original[at:at+35]
- # The renderer bank is VRAM $7D000: the image's slot for $D000-$DFFF,
- # which is never copied to RAM.
+ # Screen/game and renderer banks are uploaded separately from CPU RAM staging.
  render=bytearray(4096)
  for addr,data in segments((GEN/'render.asm.obx').read_bytes()):
   if data and 0xc000<=addr<0xd000:render[addr-0xc000:addr-0xc000+len(data)]=data
- ram[0xd000:0xe000]=render
  (GEN/'ram.bin').write_bytes(ram)
  (GEN/'patches.json').write_text(json.dumps(patches,indent=2)+'\n')
  # A traced disassembly, with data left as bytes. Does not claim high-level C recovery.
@@ -184,7 +197,19 @@ def main():
  piece=bcb(LAYER,320,1,0,320,1,1,1,andm=0,ctrl=9);sprite=bcb(0x60000,24,1,0,320,1,1,1,andm=0,ctrl=9)
  lists=piece*4+sprite*4+piece*16+sprite*26
  assert len(lists)<=1280
- payloads=[(0x30000,(GEN/'tiles.bin').read_bytes()),(0x60000,bytes(sprites)),(0x6c000,(GEN/'tile-map.bin').read_bytes()),(0x70000,ram),(0x5f000,game_top),(0x10000,(GEN/'banners.bin').read_bytes()+lists),(0x11000,(GEN/'tiles-light.bin').read_bytes())]
+ # Stage CPU RAM in framebuffer 0; boot clears it after restoring the image.
+ # The league's reserved VRAM then survives startup without extra copies.
+ payloads=[
+  (0x00000,ram),(0x30000,(GEN/'tiles.bin').read_bytes()),
+  (0x60000,bytes(sprites[:0xc000])),(0x6e000,bytes(sprites[0xe000:])),(0x6c000,(GEN/'tile-map.bin').read_bytes()),
+  (0x7c000,ram[0xc000:0xd000]),(0x7d000,render),
+  (0x5f000,game_top),(0x10000,(GEN/'banners.bin').read_bytes()+lists),
+  (0x11000,(GEN/'tiles-light.bin').read_bytes()),(0x71000,league_code),
+  (0x79000,(GEN/'league-rosters.bin').read_bytes()),(0x7b000,bytes(4096)),
+ ]
+ ranges=sorted((dest,dest+((len(data)+4095)//4096)*4096) for dest,data in payloads)
+ assert all(end<=next_start for (_,end),(next_start,_) in zip(ranges,ranges[1:]))
+ assert ranges[-1][1]<=0x80000
  for dest,data in payloads:
   for offset in range(0,len(data),4096):
    address=dest+offset;chunk=data[offset:offset+4096];chunk+=bytes(4096-len(chunk))

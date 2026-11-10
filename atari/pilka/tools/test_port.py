@@ -11,6 +11,9 @@ for _ in range(2_000_000):
  if a.cpu.pc==0x975b:break
  a.cpu.step()
 else:raise AssertionError('Startup did not enter the C64 game')
+a.consol=3  # Hold OPTION to start the original Arlasoft menu.
+while a.cpu.pc!=0x970f:a.cpu.step()
+a.consol=7
 a.next_frame=a.cpu.processorCycles+a.frame_cycles
 assert a.vregs[0x40]==3
 # The banner upload must survive loading/restoration and match the generated art.

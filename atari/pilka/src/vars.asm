@@ -20,9 +20,20 @@ expmy     .ds 1
 palbuf    .ds 30        ; RGB of palette entries 1-8,$20,$40
 flipdx    .ds 1         ; net coarse scroll since the last picture, in
 flipdy    .ds 1         ; characters (signed)
+        org $dd30
+league_screen .ds 1     ; league owns input and screen, C64 raster handler paused
+league_match .ds 1      ; 0 original game, 1 season fixture, 2 named friendly
+league_return .ds 1     ; completed match to consume in the league menu
+league_goals .ds 2      ; scores in stable home/away order
+league_cfg .ds 8        ; engine settings, copied from the league on launch
+league_away_formation .ds 1
+league_away_shirt .ds 1
         org $dd80
 irqvec    .ds 2
 nmivec    .ds 2
         org $dd90
 joy1      .ds 1
 joy2      .ds 1
+
+; League data bank mapped with MEMAC-B at $4000-$7FFF.
+LEAGUE_MATCH_SCORERS = $7600

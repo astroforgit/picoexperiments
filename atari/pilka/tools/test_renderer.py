@@ -20,6 +20,9 @@ FR=int(sys.argv[1]) if len(sys.argv)>1 else 1500
 r=load_labels(ROOT/'gen/runtime.asm.lab');rr=load_labels(ROOT/'gen/render.asm.lab')
 a=Atari(ROOT/'pilka.xex',vbxe_page=int(os.environ.get('PAGE','d6'),16));a.boot()
 while a.cpu.pc!=0x975b:a.cpu.step()
+a.consol=3  # Hold OPTION to start the original Arlasoft menu.
+while a.cpu.pc!=0x970f:a.cpu.step()
+a.consol=7
 a.next_frame=a.cpu.processorCycles+a.frame_cycles
 src=(ROOT/'analysis/unpacked-64k.bin').read_bytes()
 m=a.mem.ram

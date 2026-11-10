@@ -7,6 +7,9 @@ from atari_emu import Atari,load_labels
 r=load_labels(ROOT/'gen/runtime.asm.lab');rr=load_labels(ROOT/'gen/render.asm.lab')
 a=Atari(ROOT/'pilka.xex');a.boot()
 while a.cpu.pc!=0x975b:a.cpu.step()
+a.consol=3  # Hold OPTION to start the original Arlasoft menu.
+while a.cpu.pc!=0x970f:a.cpu.step()
+a.consol=7
 a.next_frame=a.cpu.processorCycles+a.frame_cycles
 names=['RENDER','COMPARE','PAL_KEYS','SPRITES','CELLS','ROWS','COLOUR_ROW','COLOURS_DONE','OVERLAYS','START','SETUP_ROW','EMIT_CELL','FLUSH','SETUP_PIECES','EMIT_PIECES','DRAW_SPRITE','PUTRGB','NOOP']
 reg=sorted((rr[n],n) for n in names)

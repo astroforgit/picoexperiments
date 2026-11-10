@@ -1,4 +1,4 @@
-# Pilka — Arlasoft Soccer / Atari XL/XE + VBXE
+# Pilka — Retro Fans League / Atari XL/XE + VBXE
 
 Work-in-progress native 6502 conversion of the supplied `arlasoc.d64`.
 Players, goalkeepers and the ball use the original C64 sprites. Pitch geometry
@@ -18,9 +18,31 @@ NumPy. `run.sh` uses the existing workspace Atari VBXE toolkit / Altirra profile
 Target: PAL Atari XL/XE, 64 KB RAM, VBXE FX 1.2x with 512 KB VRAM. The loader
 probes `$D600` and `$D700`. NTSC match timing has not been validated.
 
-Joystick 1 maps to C64 joystick port 2. Joystick 2 maps to C64 port 1.
-Use joystick directions in the original options menu; fire starts a match.
-The original menu offers controller assignment, formation, shirts and strength.
+## Retro Fans League
+
+The XEX opens the league menu. Use joystick 1 to navigate and fire to confirm.
+Start a league by choosing one of eight clubs, or choose Friendly and select
+home and away clubs. In a friendly, joystick 1 controls the home club.
+Continue League resumes the current season in memory.
+
+On the league table, fire starts the next match. Press up for fixtures, left
+for the latest results, right for squads, and down for the main menu. The squad
+screen shows each club's starting eleven and five reserves. During a match,
+joystick 1 controls the chosen club at home or away. Hold OPTION during startup
+to open the original Arlasoft Friendly/Cup menu.
+
+Atari Fuji FC, C64 SID United, Amiga Boing Athletic, ZX Spectrum Rainbow,
+Amstrad CPC City, BBC Micro Owls, Apple II Orchard, and IBM PC United play
+14 home-and-away rounds (56 fixtures). The league plays out the user's
+match in Arlasoft and simulates the other three matches in the round.
+Standings use points, goal difference, then goals scored. Teams level
+on all three share the title. The scorer line uses the last touch for
+played goals when it belongs to the scoring club and credits the forwards
+for simulated goals.
+
+The first build has fixed starting lineups and club-level formation and shirt
+settings. Reserve selection, individual abilities, and disk saves are future
+work. Reset or reload clears the season.
 
 ## Implementation
 
@@ -44,6 +66,13 @@ Memory:
   (`$DA7D-$DEFF`, and `$C980,$CA80..$CF80,$D080`). The Atari has hardware,
   colour RAM and bridge variables at those addresses, so the build moves the
   data and points the game's two readers at the copies (`tools/build.py`).
+
+League VRAM uses three 4 KiB pages. Code at `$71000` runs through MEMAC-A.
+Names at `$79000` and state and menu cells at `$7B000` use MEMAC-B. The
+existing character renderer draws league menus. The loader stages the CPU
+RAM image in framebuffer 0 and restores it before clearing that framebuffer.
+It uploads the game and renderer banks separately to `$7C000` and `$7D000`.
+The build checks that uploaded ranges do not overlap.
 
 Timing: the Atari VBI plays the C64 raster interrupt (`$922E`). The game loop
 is hooked where it has just sorted its sprite list (`$973C`): there the scroll
@@ -108,7 +137,8 @@ python3 tools/extract_swos.py
 python3 tools/preview_swos.py
 python3 tools/coverage.py
 ./build.sh
-python3 tools/test_port.py       # boot, menu, match start, formation data
+python3 tools/test_league.py     # league, half-time, result, standings
+python3 tools/test_port.py       # original menu, match start, formation data
 python3 tools/test_renderer.py   # every picture against a C64 rendering
 python3 tools/speed.py           # cycles per frame by routine
 ```
@@ -135,6 +165,12 @@ testing in Altirra or on real hardware.
 No source archives or sibling projects are modified by the build.
 
 ## Validation
+
+`tools/test_league.py` navigates the league, accelerates the match clock at
+the engine's update point, and checks the real half-time and full-time
+transitions. It exercises both controller assignments, goal attribution,
+friendly isolation, and the season routines across all 56 results.
+Use `--page d7` to repeat against VBXE at `$D700`.
 
 `tools/test_renderer.py` plays a match and compares every picture shown with
 an independent C64 rendering of the state the renderer sampled (advertising

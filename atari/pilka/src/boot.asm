@@ -93,7 +93,7 @@ starter sei
         sta DMACTL
         lda #$FE
         sta PORTB
-        lda #$9f
+        lda #$83
 st_mb   sta $D65D
         ldx #0
 st_page ldy #0
