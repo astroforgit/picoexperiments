@@ -89,6 +89,13 @@ match_return
         lda #0
         sta league_match
 show_page
+        lda match_abort
+        beq abort_done
+        lda #0
+        sta match_abort
+        sta menu_page
+        sta selection
+abort_done
         lda #$ff
         sta league_art_id
         jsr clear_screen

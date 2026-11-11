@@ -87,7 +87,7 @@ def main():
   path.write_text('\n'.join(lines)+'\n')
  (GEN/'relocs.asm').write_text(f'RELOC_COUNT = {count}\nreloc_lo dta '+','.join(f'<(vbrel_{i}+2)' for i in range(count))+'\nreloc_hi dta '+','.join(f'>(vbrel_{i}+2)' for i in range(count))+'\n')
  labels=assemble('runtime.asm')
- (GEN/'rt-labels.asm').write_text(''.join(f"{n} = ${labels[n]:04x}\n" for n in ('MEMB','BLIT_AT','BLIT_WAIT','LEAGUE_DRAW','LEAGUE_LAUNCH')))
+ (GEN/'rt-labels.asm').write_text(''.join(f"{n} = ${labels[n]:04x}\n" for n in ('MEMB','BLIT_AT','BLIT_WAIT','LEAGUE_DRAW','LEAGUE_LAUNCH','LEAGUE_GAME_BANK')))
  assemble('render.asm')
  league_labels=assemble('league.asm')
  league_code=bytearray(4096)
@@ -95,6 +95,22 @@ def main():
   assert 0xc000<=addr and addr+len(data)<=0xd000
   league_code[addr-0xc000:addr-0xc000+len(data)]=data
  assert league_labels['LEAGUE_MAIN']==0xc000
+ from PIL import Image, ImageDraw, ImageFont
+ popup=Image.new('1',(320,32))
+ draw=ImageDraw.Draw(popup)
+ draw.rectangle((0,0,319,31),outline=1)
+ for y,line in ((0,'STOP MATCH?'),(10,'LEAGUE: FORFEIT 0-3'),(20,'FIRE YES    ESC NO / RESUME')):
+  draw.text((12,y),line,font=ImageFont.load_default(),fill=1)
+ (GEN/'pause-bitmap.bin').write_bytes(popup.tobytes())
+ draw.rectangle((1,10,318,19),fill=0)
+ draw.text((12,10),'RETURN TO MAIN MENU',font=ImageFont.load_default(),fill=1)
+ (GEN/'pause-friendly.bin').write_bytes(popup.tobytes())
+ (GEN/'pause-state.asm').write_text(f"SEASON_TEAM = ${league_labels['SEASON_TEAM']:04x}\nHOME_TEAM = ${league_labels['HOME_TEAM']:04x}\n")
+ assemble('pause.asm')
+ pause=bytearray(4096)
+ for addr,data in segments((GEN/'pause.asm.obx').read_bytes()):
+  assert 0xc000<=addr and addr+len(data)<=0xd000
+  pause[addr-0xc000:addr-0xc000+len(data)]=data
  original=(ROOT/'analysis/unpacked-64k.bin').read_bytes()
  ram=bytearray(original);ram[0]=0x2f
  cov=json.loads((ROOT/'analysis/coverage.json').read_text())
@@ -208,7 +224,7 @@ def main():
   (0x60000,bytes(sprites[:0xc000])),(0x6e000,bytes(sprites[0xe000:])),(0x6c000,(GEN/'tile-map.bin').read_bytes()),
   (0x7c000,ram[0xc000:0xd000]),(0x7d000,render),
   (0x5f000,game_top),(0x10000,(GEN/'banners.bin').read_bytes()+lists),
-  (0x11000,(GEN/'tiles-light.bin').read_bytes()),(0x71000,league_code),
+  (0x11000,(GEN/'tiles-light.bin').read_bytes()),(0x71000,league_code),(0x73000,pause),
   (0x79000,(GEN/'league-rosters.bin').read_bytes()),(0x7b000,bytes(4096)),*art_payloads,
  ]
  ranges=sorted((dest,dest+((len(data)+4095)//4096)*4096) for dest,data in payloads)

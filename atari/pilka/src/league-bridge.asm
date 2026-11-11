@@ -14,7 +14,7 @@ league_enter
         sta league_screen
         sta menu_mode
         lda #LEAGUE_BANK
-vbrel_31
+vbrel_32
         sta $d65f
         jmp $c000
 legacy_boot
@@ -94,7 +94,7 @@ legacy_match_end
 
 league_game_bank
         lda #GBANK
-vbrel_32
+vbrel_33
         sta $d65f
         rts
 
@@ -132,7 +132,7 @@ league_copy_next
         sta $11d9
         jsr render_tramp
         lda #LEAGUE_BANK
-vbrel_33
+vbrel_34
         sta $d65f
         lda #LEAGUE_DATA
         jmp memb

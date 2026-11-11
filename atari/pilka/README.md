@@ -216,3 +216,18 @@ to the club menu. Only Play Next Match starts league play. Selecting a club
 for a new season while a season exists asks before deleting results; Cancel
 is selected initially. Continue retains the current season in VBXE memory.
 This is session storage, not a disk save, and does not survive rebooting.
+
+During a match, Escape pauses play and opens a confirmation over the pitch.
+Escape resumes; Fire stops the match and returns to the main menu. In a
+league match this records a 0–3 loss for your club, completes the round,
+and retains the season for Continue League. Friendly and Classic matches
+are abandoned without changing the league. The confirmation warns of a
+league forfeit and the match clock is frozen while it is open.
+
+`python3 tools/test_match_cancel.py` checks pause/resume, home and away
+forfeits, friendly isolation and Classic cancellation (`--page d7` supported).
+
+The pause overlay uses one additional 4 KiB VRAM page at `$73000` for code
+and monochrome artwork. It backs up the covered pixels in the idle
+framebuffer, restores them on resume, and forces the next game render to
+refresh that framebuffer. It does not change the roster or season allocation.
