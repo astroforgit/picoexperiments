@@ -41,7 +41,9 @@ joystick 1 controls the chosen club at home or away.
 **Match Options**, inside the league menu, sets pitch and duration for league
 matches. Defaults are Random pitch and 3 minutes. **Difficulty** is a ten-step
 Easy–Hard slider controlled by left/right. Easy gives your club strength 10;
-Hard gives it strength 1. The CPU stays at strength 5. It defaults to step 5
+Hard gives it strength 1. CPU opponents use their season-assigned strength.
+The slider shows only its numeric strength value, 10 at Easy through 1 at
+Hard, and defaults to step 5
 (your strength 6), applies at home and away, and persists while continuing
 the season. Fire or Escape returns to the league menu. Friendly has
 its own pitch and duration settings. On the Friendly screen, use up/down to
@@ -256,3 +258,17 @@ option wrapping, removed previews and league isolation when cancelling.
 
 `tools/test_league_options.py` checks defaults, all ten slider positions,
 endpoint clamping, and engine strength values for home and away matches.
+
+At each new season, all eight clubs receive a persistent 1–10 strength.
+The weighted draw is `1,2,3,4,4,5,5,5,5,5,6,6,7,8,9,10`, so 5 is most
+likely and 4–6 cover most draws. A hardware-random/frame-counter seed varies
+new seasons. Continue preserves strengths; cancelling replacement never
+rerolls them. The player's in-match strength still follows Difficulty.
+
+CPU fixtures use each side's strength against its opponent plus two random
+0–15 form rolls. Goals are `clamp(floor((attack - defence + roll1 + roll2 -
+10) / 4), 0, 5)`. The random generator advances twice per roll to reduce
+adjacent-roll correlation. Stronger clubs tend to win, but draws and upsets
+remain possible. Results feed the existing points/goal-difference table.
+`tools/test_league_simulation.py` checks rating distributions, score bounds,
+strength effects and upsets across every nonzero random seed.

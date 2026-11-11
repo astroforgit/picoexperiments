@@ -36,7 +36,7 @@ def store_state(name, value):
 
 
 def schedule(name, index):
-    return int(atari.vram[0x65000 + league[name] + index])
+    return int(atari.vram[0x74000 + league[name] + index])
 
 
 def press(stick=15, fire=False):
@@ -88,7 +88,7 @@ press(stick=13)
 press(stick=13)
 press(fire=True)
 atari.run_frames(30)
-assert ram[0xe288]==9 and ram[0xe289]==4, (ram[0xe288],ram[0xe289])
+assert ram[0xe288]==9 and ram[0xe289]==state("TEAM_STRENGTH", state("AWAY_TEAM"))-1, (ram[0xe288],ram[0xe289])
 assert ram[0x9751]==0
 ram[0x010e]=0
 ram[0x010f]=0
@@ -107,5 +107,5 @@ press(stick=13)
 press(fire=True)
 atari.run_frames(30)
 assert state("AWAY_TEAM")==state("SEASON_TEAM")
-assert ram[0xe288]==4 and ram[0xe289]==0, (ram[0xe288],ram[0xe289])
-print("PASS: three main choices, league options defaults, ten difficulty steps, clamps, parent return, home/away strength and fixed CPU")
+assert ram[0xe288]==state("TEAM_STRENGTH", state("HOME_TEAM"))-1 and ram[0xe289]==0, (ram[0xe288],ram[0xe289])
+print("PASS: three main choices, league options defaults, ten difficulty steps, clamps, parent return, home/away strength and assigned CPU strength")

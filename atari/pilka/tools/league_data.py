@@ -44,12 +44,19 @@ def build(gen: Path):
             seen.add(player)
             roster.extend(player.encode("ascii").ljust(24))
     assert len(roster) == 8 * 17 * 24
+    # Keep immutable tables alongside the roster, freeing league code space.
+    tables = {
+        "fixture_home": [h for h, _ in fixtures],
+        "fixture_away": [a for _, a in fixtures],
+        "club_shirt": [shirt for _, shirt, _, _ in CLUBS],
+        "club_formation": [formation for _, _, formation, _ in CLUBS],
+        "roster_lo": [(team * 408) & 255 for team in range(8)],
+        "roster_hi": [0x50 + (team * 408 >> 8) for team in range(8)],
+    }
+    labels=[]
+    for name,data in tables.items():
+        labels.append(f"{name} = ${0x5000+len(roster):04x}")
+        roster.extend(data)
+    assert len(roster)<=4096
     (gen / "league-rosters.bin").write_bytes(roster)
-    (gen / "league-tables.asm").write_text(
-        table("fixture_home", [[h for h, _ in fixtures]])
-        + table("fixture_away", [[a for _, a in fixtures]])
-        + table("club_shirt", [[shirt for _, shirt, _, _ in CLUBS]])
-        + table("club_formation", [[formation for _, _, formation, _ in CLUBS]])
-        + table("roster_lo", [[(team * 408) & 255 for team in range(8)]])
-        + table("roster_hi", [[0x50 + (team * 408 >> 8) for team in range(8)]])
-    )
+    (gen / "league-tables.asm").write_text("\n".join(labels)+"\n")

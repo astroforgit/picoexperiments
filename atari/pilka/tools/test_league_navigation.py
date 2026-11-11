@@ -36,7 +36,7 @@ def store_state(name, value):
 
 
 def schedule(name, index):
-    return int(atari.vram[0x65000 + league[name] + index])
+    return int(atari.vram[0x74000 + league[name] + index])
 
 
 def press(stick=15, fire=False):

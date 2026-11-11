@@ -51,6 +51,9 @@ escape_held .ds 1
 hub_choice .ds 1
 confirm_choice .ds 1
 difficulty .ds 1
+team_strength .ds 8
+sim_defence .ds 1
+sim_total .ds 1
         ert * > LEAGUE_MATCH_SCORERS
 
 dst = $20
@@ -311,8 +314,21 @@ reset_goals
         dex
         bpl reset_goals
         sta season_round
-        lda #$a7
+        lda $d20a
+        eor frames
+        bne season_seed
+        lda #1
+season_seed
         sta random_seed
+        ldx #7
+assign_strength
+        jsr roll_random
+        and #15
+        tay
+        lda strength_distribution,y
+        sta team_strength,x
+        dex
+        bpl assign_strength
         lda #1
         sta season_live
         lda #0
@@ -906,14 +922,10 @@ slider_loop
         sta (dst),y
         lda #13
         sta row
-        ldx #5
-        lda #<strength_label
-        ldy #>strength_label
-        jsr print_at
         lda #10
         sec
         sbc difficulty
-        ldx #27
+        ldx #19
         jsr number_at
         jmp options_footer
 difficulty_action
@@ -937,7 +949,6 @@ difficulty_done
 difficulty_help dta c'LEFT RIGHT CHANGE   FIRE BACK',0
 difficulty_label dta c'DIFFICULTY',0
 scale_label dta c'EASY                  HARD',0
-strength_label dta c'YOUR TEAM STRENGTH',0
 
 find_fixture
         lda season_round
@@ -979,7 +990,10 @@ reset_scorers
         sbc #1
         and #7
         sta league_cfg+1
-        lda #4
+        ldy away_team
+        lda team_strength,y
+        sec
+        sbc #1
         sta league_away_strength
         lda #9
         sec
@@ -999,7 +1013,10 @@ reset_scorers
         sta league_cfg+7        ; away human (resident bridge routes joystick 1)
         lda league_cfg+6
         sta league_away_strength
-        lda #4
+        ldy home_team
+        lda team_strength,y
+        sec
+        sbc #1
         sta league_cfg+6
 match_kits
         ldx home_team
@@ -1031,8 +1048,16 @@ commit_fixture
         lda away_score
         jmp store_away
 simulate_fixture
+        ldy fixture_away,x
+        lda team_strength,y
+        sta sim_defence
+        ldy fixture_home,x
         jsr simulated_goals
         sta result_home,x
+        ldy fixture_home,x
+        lda team_strength,y
+        sta sim_defence
+        ldy fixture_away,x
         jsr simulated_goals
 store_away
         sta result_away,x
@@ -1055,12 +1080,41 @@ fixture_points
         inc season_round
         rts
 
+; Goal count = clamp((attack - defence + two 0..15 rolls - 10) / 4, 0, 5).
+; Independent match noise allows draws and upsets even at strength extremes.
 simulated_goals
+        lda team_strength,y
+        clc
+        adc #20
+        sec
+        sbc sim_defence
+        sta sim_total
         jsr roll_random
-        and #7
-        tay
-        lda goal_distribution,y
+        jsr roll_random
+        and #15
+        clc
+        adc sim_total
+        sta sim_total
+        jsr roll_random
+        jsr roll_random
+        and #15
+        clc
+        adc sim_total
+        sec
+        sbc #30
+        bcc no_goals
+        lsr
+        lsr
+        cmp #6
+        bcc goals_done
+        lda #5
+goals_done
         rts
+no_goals
+        lda #0
+        rts
+strength_distribution dta 1,2,3,4,4,5,5,5,5,5,6,6,7,8,9,10
+
 roll_random
         lda random_seed
         lsr
@@ -1069,7 +1123,6 @@ roll_random
 seed_ready
         sta random_seed
         rts
-goal_distribution dta 0,0,1,1,1,2,2,3
 
 credit_played_goals
         ldx #0
