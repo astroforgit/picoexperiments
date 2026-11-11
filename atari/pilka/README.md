@@ -238,3 +238,8 @@ and gold headings. Classic Game and match glyphs retain their original
 assets. The menu font is stored in spare VRAM beside the boot staging code,
 advertising tiles and character layer; it does not reduce season capacity.
 `tools/menu_style.py` generates these tiles and the renderer lookup tables.
+
+The main title is a wide cyan-to-pink retrowave wordmark with italic pixel
+lettering and a purple shadow. `tools/title_art.py` builds its glyphs into
+the unused final 256 bytes of three illustration pages. The renderer scales
+them 2x, replacing the old title strip without reserving another VRAM page.

@@ -46,6 +46,9 @@ def check_art(index):
     front = ram[runtime["FRONT"]] << 16
     frame = atari.vram[front:front+64000].reshape(200, 320)
     assert {0xc0, 0xc1, 0xc4}.issubset(set(frame.flat)), "Menu font or theme did not render"
+    title = frame[4:20, 24:296]
+    assert {0xd0, 0xd2, 0xd4, 0xd6}.issubset(set(title.flat)), "Neon title missing"
+    assert not np.any(title == 0xc2), "Old red title strip remains"
     start = ART_PAGES[index]
     expected = atari.vram[start:start+ART_WIDTH*ART_HEIGHT].reshape(ART_HEIGHT, ART_WIDTH)
     assert np.unique(expected).size > 8

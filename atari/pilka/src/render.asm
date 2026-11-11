@@ -362,6 +362,7 @@ ball_low
 ball_done
         lda league_screen
         beq front_end
+        jsr queue_title
         ldx league_art_id
         cpx #6
         bcs front_end
@@ -1535,6 +1536,47 @@ queue_art
         sta source_mask
         jsr front_slot
         jmp write_front
+
+queue_title
+        lda #<(4*320+24)
+        sta sdstlo
+        lda #>(4*320+24)
+        sta sdstmid
+        ldx #0
+title_glyph
+        txa
+        pha
+        lda title_lo,x
+        sta ssrclo
+        lda title_mid,x
+        sta ssrcmid
+        lda title_bank,x
+        sta source_bank
+        lda #8
+        sta source_stride
+        lda #7
+        sta sw
+        sta sh
+        lda #$11
+        sta szoom
+        lda #$ff
+        sta source_mask
+        jsr front_slot
+        jsr write_front
+        clc
+        lda sdstlo
+        adc #16
+        sta sdstlo
+        bcc title_next
+        inc sdstmid
+title_next
+        pla
+        tax
+        inx
+        cpx #17
+        bne title_glyph
+        rts
+        icl '../gen/title-art.asm'
 
         icl '../gen/league-art.asm'
 

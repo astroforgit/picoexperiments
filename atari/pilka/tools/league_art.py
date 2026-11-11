@@ -21,4 +21,6 @@ def build(root):
         "art_mid dta " + ",".join(str(address >> 8 & 255) for address in ART_PAGES) + "\n"
         "art_bank dta " + ",".join(str(address >> 16) for address in ART_PAGES) + "\n"
     )
+    from title_art import build as title_art
+    palette += title_art(root, ART_PAGES, pictures)
     return palette, pictures

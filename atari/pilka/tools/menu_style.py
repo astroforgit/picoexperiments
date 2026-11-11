@@ -4,7 +4,7 @@ from pathlib import Path
 def build(root):
     raw=(root/'assets/swos/unpacked/CHARSET.RAW').read_bytes()
     packed=bytearray()
-    themes=((0xc0,0xc1),(0xc2,0xc4),(0xc2,0xc4))
+    themes=((0xc0,0xc1),(0xc2,0xc4))
     unique={}
     addresses=[]
     for bg,fg in themes:
@@ -28,6 +28,6 @@ def build(root):
     (root/'gen/menu-font.bin').write_bytes(packed[:2048])
     (root/'gen/menu-tail.bin').write_bytes(bytes(2560)+packed[2048:3584])
     (root/'gen/menu-layer.bin').write_bytes(bytes(2560)+packed[3584:])
-    addresses=[addresses[theme*256+code] for theme in range(3) for code in range(0xd9,0xfe)]
+    addresses=[addresses[theme*256+code] for theme in range(2) for code in range(0xd9,0xfe)]
     (root/'gen/menu-style.asm').write_text('menu_mid dta '+','.join(str(a>>8&255) for a in addresses)+'\nmenu_bits dta '+','.join(str((a>>16<<2)|((a&255)>>6)) for a in addresses)+'\n')
     return bytes(v for index,rgb in enumerate(((24,64,48),(255,255,221),(153,34,34),(24,40,88),(255,221,85)),0xc0) for v in (index,*rgb))

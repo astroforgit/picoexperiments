@@ -101,10 +101,7 @@ abort_done
         jsr clear_screen
         lda #1
         sta row
-        ldx #12
-        lda #<title
-        ldy #>title
-        jsr print_at
+
         lda menu_page
         asl
         tax
@@ -1339,12 +1336,7 @@ clear_colours
         sta $db00,x
         inx
         bne clear_colours
-        lda #3
-        pha
-        lda #1
-        sta row
-        pla
-        jmp colour_row
+        rts
 highlight
         lda #7
 colour_row
