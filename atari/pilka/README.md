@@ -25,7 +25,11 @@ Start a league by choosing one of eight clubs. Friendly opens the match
 settings with pitch, length, and each side's controller, formation, shirt
 and strength. Friendly is the only match type on this screen; there is no
 Mode selector or player preview. The separate Classic Game entry is removed.
-Continue League resumes the current season in memory.
+Continue League resumes the current season in memory. Credits is the last
+main-menu item and opens a modal credit panel; Fire or Escape closes it and
+returns to Credits. The main-menu footer reads GAME BY ASTROFOR. The panel
+credits Amiga Sensible World of Soccer as a major inspiration and Arlasoft
+Soccer by Arlasoft as the C64 game this conversion is based on.
 
 Choosing or continuing a league opens a club menu. Use up/down and fire for
 Play Next Match, League Table, View Squads, Match Schedule, Last Results,
@@ -51,7 +55,7 @@ select an option, left/right to change it and Fire to start. Escape returns
 to the main menu; SELECT and left+Fire also work. Holding OPTION at startup
 opens Friendly settings directly.
 
-The three main menu choices each have their own football illustration, with a
+The four main menu choices each have their own football illustration, with a
 separate illustration in Match Options. The built-in image generator produced
 the six-panel source sheet from a prompt for a floodlit trophy, footballers
 duelling for the ball, a tactics clipboard with boots, a whistle and ball,
@@ -95,7 +99,8 @@ Memory:
   data and points the game's two readers at the copies (`tools/build.py`).
 
 League VRAM uses three 4 KiB pages. Code at `$71000` runs through MEMAC-A.
-Names at `$79000` and state and menu cells at `$7B000` use MEMAC-B. The
+Names, immutable tables and menu text at `$79000`, and state and menu cells
+at `$7B000`, use MEMAC-B. The
 existing character renderer draws league menus. The loader stages the CPU
 RAM image in framebuffer 0 and restores it before clearing that framebuffer.
 It uploads the game and renderer banks separately to `$7C000` and `$7D000`.
@@ -198,6 +203,9 @@ No source archives or sibling projects are modified by the build.
 
 ## Validation
 
+`tools/test_credits.py` checks the author footer, Credits popup text, safe
+directional input, Fire/Escape return, and unchanged season state.
+
 `tools/test_league.py` navigates the league, accelerates the match clock at
 the engine's update point, and checks the real half-time and full-time
 transitions. It exercises both controller assignments, goal attribution,
@@ -253,7 +261,7 @@ lettering and a purple shadow. `tools/title_art.py` builds its glyphs into
 the unused final 256 bytes of three illustration pages. The renderer scales
 them 2x, replacing the old title strip without reserving another VRAM page.
 
-`tools/test_friendly_menu.py` checks the three-entry menu, fixed Friendly mode,
+`tools/test_friendly_menu.py` checks the four-entry menu, fixed Friendly mode,
 option wrapping, removed previews and league isolation when cancelling.
 
 `tools/test_league_options.py` checks defaults, all ten slider positions,

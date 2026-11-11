@@ -54,7 +54,7 @@ def check_page(page):
 
 atari.run_frames(24)
 press(stick=14)
-assert state("SELECTION")==2
+assert state("SELECTION")==3
 press(stick=13)
 press(fire=True)
 press(fire=True)
@@ -108,4 +108,4 @@ press(fire=True)
 atari.run_frames(30)
 assert state("AWAY_TEAM")==state("SEASON_TEAM")
 assert ram[0xe288]==state("TEAM_STRENGTH", state("HOME_TEAM"))-1 and ram[0xe289]==0, (ram[0xe288],ram[0xe289])
-print("PASS: three main choices, league options defaults, ten difficulty steps, clamps, parent return, home/away strength and assigned CPU strength")
+print("PASS: four main choices, league options defaults, ten difficulty steps, clamps, parent return, home/away strength and assigned CPU strength")

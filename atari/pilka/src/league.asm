@@ -115,6 +115,10 @@ abort_done
         sta page_call+2
 page_call
         jsr $ffff
+        lda menu_page
+        beq draw_page
+        cmp #11
+        beq draw_page
         lda #23
         sta row
         ldx #3
@@ -123,6 +127,7 @@ page_call
         jsr print_at
         lda #3
         jsr colour_row
+draw_page
         jsr LEAGUE_DRAW
 menu_wait
         lda frames
@@ -165,10 +170,16 @@ action_call
         jsr $ffff
         jmp show_page
 
-pages   dta a(home_page,pick_page,table_page,squad_page,fixtures_page,results_page,friendly_result,options_page,hub_page,confirm_page,difficulty_page)
-actions dta a(home_action,pick_action,table_action,squad_action,fixtures_action,results_action,home_return,options_action,hub_action,confirm_action,difficulty_action)
+pages   dta a(home_page,pick_page,table_page,squad_page,fixtures_page,results_page,friendly_result,options_page,hub_page,confirm_page,difficulty_page,credits_page)
+actions dta a(home_action,pick_action,table_action,squad_action,fixtures_action,results_action,home_return,options_action,hub_action,confirm_action,difficulty_action,credits_action)
 
 home_page
+        lda #23
+        sta row
+        ldx #12
+        lda #<author_label
+        ldy #>author_label
+        jsr print_at
         lda selection
         sta league_art_id
         lda #6
@@ -190,7 +201,7 @@ home_next
         inc row
         inc list_index
         lda list_index
-        cmp #3
+        cmp #4
         bcc home_line
         lda season_live
         bne home_help
@@ -223,10 +234,16 @@ help_controls
 home_action
         bit fire_mask
         bne home_fire
-        ldx #3
+        ldx #4
         jmp move_selection
 home_fire
         lda selection
+        cmp #3
+        bne home_game
+        lda #11
+        sta menu_page
+        rts
+home_game
         cmp #1
         beq open_classic
 
@@ -252,6 +269,66 @@ begin_picker
         lda #1
         sta menu_page
         rts
+
+; Modal credits panel. Direction input cannot launch or change a game.
+credits_page
+        jsr home_page
+        lda #$ff
+        sta league_art_id
+        lda #5
+        sta row
+credits_panel
+        ldx #2
+        jsr position
+        ldy #35
+        lda #$fd
+credits_clear
+        sta (dst),y
+        dey
+        bpl credits_clear
+        lda #3
+        jsr colour_row
+        inc row
+        lda row
+        cmp #20
+        bcc credits_panel
+        ldx #0
+credits_line
+        stx list_index
+        lda credits_rows,x
+        sta row
+        lda credits_lo,x
+        ldy credits_hi,x
+        ldx #5
+        jsr print_at
+        ldx list_index
+        inx
+        cpx #7
+        bcc credits_line
+        lda #22
+        sta row
+        ldx #3
+        jsr position
+        ldy #33
+        lda #$fd
+credits_clear_help
+        sta (dst),y
+        dey
+        bpl credits_clear_help
+        rts
+credits_action
+        bit fire_mask
+        beq credits_done
+credits_close
+        lda #0
+        sta menu_page
+        lda #3
+        sta selection
+credits_done
+        rts
+credits_rows dta 7,9,11,12,14,15,18
+credits_lo dta <credits_label,<author_label,<credits_amiga_intro,<credits_amiga,<credits_c64_intro,<credits_c64,<credits_help
+credits_hi dta >credits_label,>author_label,>credits_amiga_intro,>credits_amiga,>credits_c64_intro,>credits_c64,>credits_help
 
 pick_page
         lda #4
@@ -351,6 +428,8 @@ cancel_new
         sta menu_page
         rts
 parent_normal
+        cmp #11
+        jeq credits_close
         cmp #7
         jeq dashboard_return
         cmp #10
@@ -1540,8 +1619,8 @@ row_hi
         :25 dta >(#*40)
 fire_mask dta 16
 finished_label dta c'FINAL TABLE',0
-help_lo dta <help_new,<help_friendly,<help_continue
-help_hi dta >help_new,>help_friendly,>help_continue
+help_lo dta <help_new,<help_friendly,<help_continue,<help_credits
+help_hi dta >help_new,>help_friendly,>help_continue,>help_credits
 help_new dta c'START A NEW 14 ROUND SEASON',0
 help_friendly dta c'SET UP TEAMS AND PLAY A FRIENDLY',0
 help_continue dta c'RESUME YOUR SEASON',0
@@ -1549,10 +1628,21 @@ title dta c'RETRO FANS LEAGUE',0
 new_label dta c'NEW LEAGUE',0
 friendly_label dta c'FRIENDLY',0
 continue_label dta c'CONTINUE LEAGUE',0
+credits_label dta c'CREDITS',0
+author_label dta c'GAME BY ASTROFOR',0
+help_credits dta c'ABOUT THE GAME AND ITS INSPIRATIONS',0
+credits_amiga_intro dta c'HEAVILY INSPIRED BY',0
+credits_amiga dta c'AMIGA SENSIBLE WORLD OF SOCCER',0
+credits_c64_intro dta c'BASED ON THE C64 GAME',0
+credits_c64 dta c'ARLASOFT SOCCER BY ARLASOFT',0
+credits_help dta c'FIRE OR ESC CLOSE',0
+        ert * > $d000
+        ; Immutable menu text shares spare roster-bank space.
+        org LEAGUE_TEXT_DATA
 no_season dta c'NO ACTIVE SEASON',0
 options_label dta c'MATCH OPTIONS',0
-home_lo dta <new_label,<friendly_label,<continue_label
-home_hi dta >new_label,>friendly_label,>continue_label
+home_lo dta <new_label,<friendly_label,<continue_label,<credits_label
+home_hi dta >new_label,>friendly_label,>continue_label,>credits_label
 pick_help dta c'UP DOWN CHOOSE   FIRE OPEN',0
 escape_help dta c'ESC BACK TO PARENT MENU',0
 choose_club dta c'CHOOSE YOUR CLUB',0
@@ -1588,5 +1678,5 @@ length2 dta c'7 MINUTES',0
 length3 dta c'10 MINUTES',0
 length_lo dta <length0,<length1,<length2,<length3
 length_hi dta >length0,>length1,>length2,>length3
+        ert * > $6000
         icl '../gen/league-tables.asm'
-        ert * > $d000

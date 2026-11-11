@@ -57,6 +57,7 @@ def build(gen: Path):
     for name,data in tables.items():
         labels.append(f"{name} = ${0x5000+len(roster):04x}")
         roster.extend(data)
+    labels.append(f"LEAGUE_TEXT_DATA = ${0x5000+len(roster):04x}")
     assert len(roster)<=4096
     (gen / "league-rosters.bin").write_bytes(roster)
     (gen / "league-tables.asm").write_text("\n".join(labels)+"\n")

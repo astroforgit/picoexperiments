@@ -93,9 +93,15 @@ def main():
  assemble('render.asm')
  league_labels=assemble('league.asm')
  league_code=bytearray(4096)
+ league_roster=bytearray((GEN/'league-rosters.bin').read_bytes())
  for addr,data in segments((GEN/'league.asm.obx').read_bytes()):
+  if 0x5000<=addr<0x6000:
+   assert addr==0x5000+len(league_roster) and addr+len(data)<=0x6000
+   league_roster.extend(data)
+   continue
   assert 0xc000<=addr and addr+len(data)<=0xd000
   league_code[addr-0xc000:addr-0xc000+len(data)]=data
+ (GEN/'league-rosters.bin').write_bytes(league_roster)
  assert league_labels['LEAGUE_MAIN']==0xc000
  from PIL import Image, ImageDraw, ImageFont
  popup=Image.new('1',(320,32))
