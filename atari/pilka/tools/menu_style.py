@@ -1,5 +1,10 @@
 """Pack the supplied SWOS compact font into menu-only VBXE tiles."""
-from pathlib import Path
+# SWOS packs narrow I/1 proportionally. Our character grid has a fixed
+# eight-pixel advance, so use legible five-pixel forms for those glyphs.
+FIXED_WIDTH = {
+    'I': ('#####', '..#..', '..#..', '..#..', '#####'),
+    '1': ('..#..', '.##..', '..#..', '..#..', '#####'),
+}
 
 def build(root):
     raw=(root/'assets/swos/unpacked/CHARSET.RAW').read_bytes()
@@ -19,12 +24,22 @@ def build(root):
                         value=sum(((raw[(oy+y)*160+p*40+(ox+x)//8]>>(7-(ox+x)%8))&1)<<p for p in range(4))
                         if value == 2: tile[y*8+x]=fg
                         elif value == 8: tile[y*8+x]=0xc3
+            if char in FIXED_WIDTH:
+                tile=bytearray([bg]*64)
+                shape=FIXED_WIDTH[char]
+                # Preserve the same one-pixel shadow as the other letters.
+                for y,line in enumerate(shape):
+                    for x,pixel in enumerate(line):
+                        if pixel == '#': tile[(y+1)*8+x+1]=0xc3
+                for y,line in enumerate(shape):
+                    for x,pixel in enumerate(line):
+                        if pixel == '#': tile[y*8+x]=fg
             tile=bytes(tile)
             if tile not in unique:
                 unique[tile]=(0x5f800+len(packed) if len(packed)<2048 else (0x78a00+len(packed)-2048 if len(packed)<3584 else 0x2fa00+len(packed)-3584))
                 packed.extend(tile)
             addresses.append(unique[tile])
-    assert len(packed)<=4608, len(packed) # reserved fragments beside boot code, banners and the layer
+    assert len(packed)<=5120, len(packed) # reserved fragments beside boot code, banners and the layer
     (root/'gen/menu-font.bin').write_bytes(packed[:2048])
     (root/'gen/menu-tail.bin').write_bytes(bytes(2560)+packed[2048:3584])
     (root/'gen/menu-layer.bin').write_bytes(bytes(2560)+packed[3584:])
