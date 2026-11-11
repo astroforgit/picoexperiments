@@ -13,6 +13,7 @@ league_enter
         lda #1
         sta league_screen
         sta menu_mode
+        sta first
         lda #LEAGUE_BANK
 vbrel_32
         sta $d65f

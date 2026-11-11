@@ -360,9 +360,11 @@ ball_low
         sta sframe
         jsr draw_sprite
 ball_done
-        lda league_screen
+        lda menu_mode
         beq front_end
         jsr queue_title
+        lda league_screen
+        beq front_end
         ldx league_art_id
         cpx #6
         bcs front_end
@@ -1007,7 +1009,7 @@ ec_stripe
         sta (tptr),y
         ldy ccol
         rts
-ec_tile lda league_screen
+ec_tile lda menu_mode
         bne menu_tile
         lda col
         cmp lastcol
@@ -1034,6 +1036,10 @@ ec_hi   lda THI,x
 
 menu_tile
         lda chr
+        cmp #$d9
+        bcs menu_char
+        lda #$fd
+menu_char
         sec
         sbc #$d9
         ldx col
@@ -1043,7 +1049,7 @@ menu_tile
         bne menu_lookup
 menu_selected
         clc
-        adc #37
+        adc #39
 menu_lookup
         tax
         lda menu_mid,x

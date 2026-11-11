@@ -228,6 +228,11 @@ fw_debt sta debt
 ; sprite list: scroll, screen, sprites and ball are one consistent state.
 game_hook
         jsr pause_bridge
+        lda menu_mode
+        beq game_style_ready
+        lda #1
+        sta first
+game_style_ready
         lda #0
         sta menu_mode
         lda pending
@@ -249,7 +254,19 @@ menu_frame
         sta menu_mode
         lda pending
         bne mf_skip
-        ldx #22
+        ldx #39
+        lda #$fd
+classic_clear
+        sta $c000+40,x
+        sta $c400+40,x
+        sta $c000+920,x
+        sta $c400+920,x
+        lda #1
+        sta $d800+40,x
+        lda #$fd
+        dex
+        bpl classic_clear
+        ldx #26
 classic_help
         lda classic_hint,x
         sta $c000+922,x
@@ -292,8 +309,8 @@ classic_console
         rts
 classic_return
         jmp league_enter
-; C64 menu glyphs for LEFT AND FIRE TO RETURN.
-classic_hint dta $e4,$dd,$de,$ec,$fd,$d9,$e6,$dc,$fd,$de,$e1,$ea,$dd,$fd,$ec,$e7,$fd,$ea,$dd,$ec,$ed,$ea,$e6
+; Shared-style Classic menu footer.
+classic_hint dta $dd,$eb,$db,$fd,$da,$d9,$db,$e3,$fd,$fd,$e4,$dd,$de,$ec,$fd,$ea,$e1,$df,$e0,$ec,$fd,$db,$e0,$d9,$e6,$df,$dd
 
 ; The game arms a screen flip: the new screen is the old one moved by one
 ; character in direction $11DB (0-7). Move the ring origin the same way.

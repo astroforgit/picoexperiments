@@ -32,9 +32,9 @@ atari.next_frame = atari.cpu.processorCycles + atari.frame_cycles
 
 def press(stick=15, fire=False, consol=7):
     atari.set_input(stick=stick, trig=fire, consol=consol)
-    atari.run_frames(8)
+    atari.run_frames(20)
     atari.set_input()
-    atari.run_frames(8)
+    atari.run_frames(20)
 
 
 def state(name):
@@ -66,25 +66,33 @@ for index in range(5):
     check_art(index)
     if index in (0, 1, 4):
         preview(f"menu-{index}")
+    if index == 4:
+        front = ram[runtime["FRONT"]] << 16
+        expected_main = atari.vram[front:front+64000].copy()
     if index < 4:
         press(stick=13)
 
 press(fire=True)
 assert not ram[runtime["LEAGUE_SCREEN"]] and not ram[runtime["LEAGUE_MATCH"]]
 assert ram[runtime["MENU_MODE"]] == 1
-atari.run_frames(12)
+atari.run_frames(32)
 original_mode = ram[0x92b7]
 press(stick=7)
 assert ram[0x92b7] != original_mode, "Classic match mode did not change"
 classic_mode = ram[0x92b7]
 front = ram[runtime["FRONT"]] << 16
+preview("classic-transition")
 assert not np.any((atari.vram[front:front+64000] & 0xf0) == 0xb0)
-hint = "LEFT AND FIRE TO RETURN"
+hint = "ESC BACK  LEFT RIGHT CHANGE"
 glyphs = bytes(ord(c)+0x98 if c != " " else 0xfd for c in hint)
 assert bytes(atari.vram[0x7c000+922:0x7c000+922+len(glyphs)]) == glyphs
+frame = atari.vram[front:front+64000].reshape(200, 320)
+assert {0xc0, 0xc1, 0xd0, 0xd4}.issubset(set(frame.flat)), "Classic menu theme missing"
 preview("classic")
 press(stick=11, fire=True)
 check_art(4)
+front = ram[runtime["FRONT"]] << 16
+assert np.array_equal(atari.vram[front:front+64000], expected_main), "Classic return corrupted main menu"
 assert ram[0x92b7] == classic_mode, "Return chord changed the Classic mode"
 press(fire=True)
 assert not ram[runtime["LEAGUE_SCREEN"]]
@@ -111,7 +119,7 @@ assert ram[0x9757] == 0 and ram[0x9751] == 1, "Engine did not receive pitch/dura
 # draw from the original sprite atlas, including when league mode is active.
 for attempt in range(30):
     atari.set_input(trig=(attempt % 3) == 0)
-    atari.run_frames(8)
+    atari.run_frames(20)
     active_sprites = 0
     for address in range(0x701f8, 0x701f8+26*21, 21):
         block = atari.vram[address:address+21]
@@ -128,7 +136,7 @@ else:
 preview("match")
 
 atari.cpu.pc = runtime["LEAGUE_MATCH_END"]
-atari.run_frames(8)
+atari.run_frames(20)
 assert ram[runtime["LEAGUE_SCREEN"]] and ram[0x92b7] == classic_mode, (
     ram[runtime["LEAGUE_SCREEN"]], ram[0x92b7], classic_mode
 )

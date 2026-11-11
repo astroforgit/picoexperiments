@@ -14,7 +14,7 @@ def build(root):
     addresses=[]
     for bg,fg in themes:
         for code in range(256):
-            char=chr(code-0x98) if 0xd9<=code<=0xf2 else chr(code-0xc3) if 0xf3<=code<=0xfc else ' '
+            char=chr(code-0x98) if 0xd9<=code<=0xf2 else chr(code-0xc3) if 0xf3<=code<=0xfc else ':' if code==0xfe else '-' if code==0xff else ' '
             ox=((ord(char)-32)%16)*16
             oy=((ord(char)-32)//16)*8
             tile=bytearray([bg]*64)
@@ -43,6 +43,6 @@ def build(root):
     (root/'gen/menu-font.bin').write_bytes(packed[:2048])
     (root/'gen/menu-tail.bin').write_bytes(bytes(2560)+packed[2048:3584])
     (root/'gen/menu-layer.bin').write_bytes(bytes(2560)+packed[3584:])
-    addresses=[addresses[theme*256+code] for theme in range(2) for code in range(0xd9,0xfe)]
+    addresses=[addresses[theme*256+code] for theme in range(2) for code in range(0xd9,0x100)]
     (root/'gen/menu-style.asm').write_text('menu_mid dta '+','.join(str(a>>8&255) for a in addresses)+'\nmenu_bits dta '+','.join(str((a>>16<<2)|((a&255)>>6)) for a in addresses)+'\n')
     return bytes(v for index,rgb in enumerate(((24,64,48),(255,255,221),(153,34,34),(24,40,88),(255,221,85)),0xc0) for v in (index,*rgb))

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Pixel oracle. Plays the port in the headless model and compares every
-picture it shows with an independent C64 rendering (VIC-II rules: 38-column,
+match picture it shows with an independent C64 rendering (VIC-II rules: 38-column,
 24-row window, fine scroll, multicolour text, sprite order, sprites behind
 foreground) of the game state the renderer sampled. Generated advertising
-cells are excluded. Also reports game-loop and picture rates.
+cells are excluded. Styled menus are covered by test_league_art.py instead
+of the original C64 font oracle. Also reports game-loop and picture rates.
 
   python3 tools/test_renderer.py [frames]   (SCRIPT=a|up|down|rnd, PAGE=d6|d7,
                                              OUT=dir EVERY=n to save pictures)"""
@@ -102,13 +103,16 @@ def to_c64(idx,ram):
 pend=None;cur=None;last_xdl=a.vregs[0x41];pics=0;bad=0;worst=[];loops=0;renders=0;flushes=0;allframes=set();rstart=0;rcyc=[];cells=0
 every=int(os.environ.get('EVERY','0'));SAVEBAD=int(os.environ.get('SAVEBAD','12'));SAVEPICS=set(int(x) for x in os.environ.get('SAVEPICS','').split(',') if x)
 palerr=0
+matchpics=0
 def published():
- global pics,bad,palerr
+ global pics,bad,palerr,matchpics
  pics+=1
  s=cur
  if s is None:return
  idx,rgb=shown();idx=idx.copy();rgb=rgb.copy()
  ram=s['ram']
+ if ram[r['MENU_MODE']]:return
+ matchpics+=1
  e,oban,fr,olight=ref(s);allframes.update(fr)
  got=to_c64(idx,ram)
  d=(got!=e)&~oban
@@ -158,7 +162,8 @@ print(f'pictures {pics} frames {FR} bad {bad} palette-errors {palerr} flushes {f
 print(f'after frame {MEAS}: game loops/frame {(loops-l0)/n:.3f}, pictures/frame {(pics-p0)/n:.3f}, render cycles avg {sum(rc)//len(rc)} max {max(rc)}')
 print('sprite frames',min(allframes or [0]),max(allframes or [0]),'worst',worst[:10])
 assert pics>FR//3,'too few pictures'
+assert matchpics>0,'no match pictures checked'
 assert bad==0 and palerr==0,'pictures differ from the C64 reference'
 assert allframes and min(allframes-{0})>=32 and max(allframes)<128,'sprite frame without an image'
 assert (loops-l0)/n>0.97,'game loop slower than one iteration per frame'
-print('PASS: every picture matches the C64 reference; game loop at frame rate.')
+print('PASS: every match picture matches the C64 reference; game loop at frame rate.')

@@ -39,7 +39,8 @@ joystick 1 controls the chosen club at home or away.
 **Match Options** applies the original eight pitch settings and the 3, 5, 7
 and 10 minute match lengths to league matches and named friendlies. Use up/down
 to pick a setting, left/right to change it, and fire to return. **Classic Game**
-opens the original Arlasoft Friendly/Cup menu, including controllers,
+opens the Arlasoft Friendly/Cup settings in the shared neon-title menu style,
+including controllers,
 formations, shirts, and strength. Press left and fire together on joystick 1
 to return to the league menu. Escape and the Atari SELECT key also return. Holding
 OPTION during startup opens Classic Game.
@@ -233,10 +234,10 @@ and monochrome artwork. It backs up the covered pixels in the idle
 framebuffer, restores them on resume, and forces the next game render to
 refresh that framebuffer. It does not change the roster or season allocation.
 
-The league menus use the compact font and shadow pixels from the supplied
+The league and Classic menus use the compact font and shadow pixels from the supplied
 Amiga `CHARSET.RAW`, with dark green panels, red selection bars, cream text
-and gold headings. Classic Game and match glyphs retain their original
-assets. The narrow SWOS I and 1 use full-width forms to avoid false word
+and gold headings. Classic Game uses the same menu font and colours; match glyphs retain their
+original assets. The narrow SWOS I and 1 use full-width forms to avoid false word
 breaks in the fixed-width Atari menu grid. The menu font is stored in spare VRAM beside the boot staging code,
 advertising tiles and character layer; it does not reduce season capacity.
 `tools/menu_style.py` generates these tiles and the renderer lookup tables.
