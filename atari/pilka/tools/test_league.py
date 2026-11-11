@@ -62,19 +62,9 @@ press(stick=13)
 press(fire=True)
 check_page(2)
 assert state("SEASON_LIVE") and state("SEASON_ROUND") == 0
-press(stick=7)
-check_page(3)
-if args.preview:
-    args.preview.mkdir(parents=True, exist_ok=True)
-    atari.screenshot(args.preview / "league-squad.png")
 press(fire=True)
-check_page(2)
-press(stick=14)
-check_page(4)
-press(stick=7)
-assert state("FIXTURE_ROUND") == 1
-press(fire=True)
-check_page(2)
+check_page(8)
+press(stick=14)  # Play next match
 
 # Accelerate the match clock at its normal update point. The engine still
 # performs its own kick-offs, half-time change of ends and full-time exit.
@@ -145,14 +135,11 @@ assert int(atari.vram[0x74000 + league["RESULT_HOME"] + first]) == 2
 assert int(atari.vram[0x74000 + league["RESULT_AWAY"] + first]) == 1
 assert state("POINTS") == 3
 press(fire=True)
-check_page(2)
-if args.preview:
-    atari.screenshot(args.preview / "league-table.png")
-press(stick=11)
-check_page(5)
+check_page(8)
+assert state("POINTS") == 3
+for _ in range(5):
+    press(stick=13)
 press(fire=True)
-assert state("POINTS") == 3, "Reopening results duplicated points"
-press(stick=13)
 check_page(0)
 press(stick=13)
 press(fire=True)
@@ -176,7 +163,7 @@ press(stick=13)
 press(stick=13)
 press(fire=True)
 check_page(8)
-press(stick=14)  # Play next match
+press(stick=13)  # Wrap Main Menu selection to Play Next Match
 press(fire=True)
 assert ram[runtime["LEAGUE_MATCH"]] == 1
 assert state("AWAY_TEAM") == state("SEASON_TEAM")

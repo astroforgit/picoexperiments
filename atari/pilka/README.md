@@ -210,3 +210,9 @@ MEMAC-A at `$C000` with the OS ROM off, code executed from VRAM, blitter OR/XOR
 modes and a zero destination step), NTSC timing, complete matches and every
 menu mode. Blitter speed in the model is an estimate, so the real picture
 rate may differ. Sound remains disabled.
+
+League menu safety: Fire on the table, squads, fixtures and results returns
+to the club menu. Only Play Next Match starts league play. Selecting a club
+for a new season while a season exists asks before deleting results; Cancel
+is selected initially. Continue retains the current season in VBXE memory.
+This is session storage, not a disk save, and does not survive rebooting.

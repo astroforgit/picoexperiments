@@ -49,6 +49,7 @@ length_choice .ds 1
 option_row .ds 1
 escape_held .ds 1
 hub_choice .ds 1
+confirm_choice .ds 1
         ert * > LEAGUE_MATCH_SCORERS
 
 dst = $20
@@ -156,8 +157,8 @@ action_call
         jsr $ffff
         jmp show_page
 
-pages   dta a(home_page,pick_page,table_page,squad_page,fixtures_page,results_page,friendly_result,options_page,hub_page)
-actions dta a(home_action,pick_action,table_action,squad_action,fixtures_action,results_action,home_return,options_action,hub_action)
+pages   dta a(home_page,pick_page,table_page,squad_page,fixtures_page,results_page,friendly_result,options_page,hub_page,confirm_page)
+actions dta a(home_action,pick_action,table_action,squad_action,fixtures_action,results_action,home_return,options_action,hub_action,confirm_action)
 
 home_page
         lda selection
@@ -287,13 +288,21 @@ pick_action
         bit fire_mask
         bne pick_fire
         and #4
-        bne home_return
+        jne home_return
         lda last_input
         ldx #8
         jmp move_selection
 pick_fire
         lda pick_mode
         bne pick_friendly
+        lda season_live
+        beq new_season
+        lda #0
+        sta confirm_choice
+        lda #9
+        sta menu_page
+        rts
+new_season
         lda selection
         sta season_team
         lda #0
@@ -347,6 +356,13 @@ home_return
 
 parent_menu
         lda menu_page
+        cmp #9
+        bne parent_normal
+cancel_new
+        lda #1
+        sta menu_page
+        rts
+parent_normal
         cmp #1
         bne parent_league
         lda pick_mode
@@ -446,8 +462,51 @@ hub_play
         lda season_round
         cmp #14
         jcs dashboard_return
-        lda #16
-        jmp table_action
+        jsr find_fixture
+        lda #1
+        jmp start_match
+confirm_page
+        lda #7
+        sta row
+        ldx #3
+        lda #<confirm_text
+        ldy #>confirm_text
+        jsr print_at
+        lda #10
+        sta row
+        ldx #3
+        lda #<confirm_cancel
+        ldy #>confirm_cancel
+        jsr print_at
+        lda #12
+        sta row
+        ldx #3
+        lda #<confirm_yes
+        ldy #>confirm_yes
+        jsr print_at
+        lda confirm_choice
+        asl
+        clc
+        adc #10
+        sta row
+        jmp highlight
+confirm_action
+        bit fire_mask
+        beq confirm_move
+        lda confirm_choice
+        jeq cancel_new
+        jmp new_season
+confirm_move
+        and #3
+        beq confirm_done
+        lda confirm_choice
+        eor #1
+        sta confirm_choice
+confirm_done
+        rts
+confirm_text dta c'REPLACE SEASON AND DELETE RESULTS',0
+confirm_cancel dta c'CANCEL  KEEP CURRENT LEAGUE',0
+confirm_yes dta c'YES  START NEW LEAGUE',0
 hub_pages dta 2,2,3,4,5,0
 hub_lo dta <play_label,<standings_label,<squad_label,<schedule_label,<scores_label,<back_label
 hub_hi dta >play_label,>standings_label,>squad_label,>schedule_label,>scores_label,>back_label
@@ -581,40 +640,7 @@ table_footer
 
 table_action
         bit fire_mask
-        beq table_direction
-        lda season_round
-        cmp #14
-        jcs dashboard_return
-        jsr find_fixture
-        lda #1
-        jmp start_match
-table_direction
-        lsr
-        bcc table_down
-        lda #4
-        sta menu_page
-        lda season_round
-        cmp #14
-        bcc fixtures_select
-        lda #13
-fixtures_select
-        sta fixture_round
-        rts
-table_down
-        lsr
-        jcs home_return
-        lsr
-        bcc view_squad
-        lda season_round
-        jeq dashboard_return
-        lda #5
-        sta menu_page
-        rts
-view_squad
-        lda #3
-        sta menu_page
-        lda season_team
-        sta squad_team
+        jne dashboard_return
         rts
 
 squad_page
@@ -687,7 +713,7 @@ dashboard_done
         rts
 
 dashboard_return
-        lda #2
+        lda #8
         sta menu_page
         rts
 
@@ -1461,13 +1487,13 @@ joint_label dta c'JOINT CHAMPIONS',0
 scorer_label dta c'TOP',0
 round_label dta c'ROUND',0
 table_help dta c'W WINS  D DRAWS  L LOSSES  PTS POINTS',0
-table_help2 dta c'FIRE PLAY NEXT   ESC LEAGUE MENU',0
+table_help2 dta c'FIRE OR ESC BACK TO LEAGUE MENU',0
 starting_label dta c'SHIRT NUMBER   STARTING TEAM',0
 reserve_label dta c'RESERVES   VIEW ONLY',0
-squad_help dta c'LEFT RIGHT CLUB    FIRE TABLE',0
-fixtures_help dta c'LEFT RIGHT ROUND   FIRE TABLE',0
+squad_help dta c'LEFT RIGHT CLUB    FIRE BACK',0
+fixtures_help dta c'LEFT RIGHT ROUND   FIRE BACK',0
 return_help dta c'FIRE  RETURN TO MENU',0
-result_help dta c'FIRE  RETURN TO TABLE',0
+result_help dta c'FIRE  BACK TO LEAGUE MENU',0
 vertical_mask dta 3
 pitch_label dta c'PITCH',0
 length_label dta c'MATCH LENGTH',0

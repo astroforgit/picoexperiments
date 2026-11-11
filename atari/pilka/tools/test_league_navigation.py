@@ -76,6 +76,11 @@ for choice, page in ((1, 2), (2, 3), (3, 4), (4, 4)):
     assert state("HUB_CHOICE") == choice
     press(fire=True)
     check_page(page)
+    press(fire=True)
+    check_page(8)
+    assert not ram[runtime["LEAGUE_MATCH"]]
+    press(fire=True)
+    check_page(page)
     escape()
     check_page(8)
 escape()
@@ -103,3 +108,30 @@ assert not ram[runtime["LEAGUE_SCREEN"]]
 escape()
 check_page(0)
 print(f"PASS at ${args.page:02X}00: Escape parents, held key, league hub, friendly picker, options and Classic")
+
+# Selecting a replacement club must preserve results until explicitly confirmed.
+escape()
+check_page(0)
+store_state("SEASON_ROUND", 3)
+store_state("POINTS", 7)
+press(fire=True)
+press(fire=True)
+check_page(9)
+assert state("SEASON_ROUND") == 3 and state("POINTS") == 7
+press(fire=True)  # Cancel is the default.
+check_page(1)
+escape()
+press(stick=13)
+press(stick=13)
+press(fire=True)
+check_page(8)
+assert state("SEASON_ROUND") == 3 and state("POINTS") == 7
+escape()
+press(fire=True)
+press(fire=True)
+check_page(9)
+press(stick=13)
+press(fire=True)
+check_page(8)
+assert state("SEASON_ROUND") == 0 and state("POINTS") == 0
+print("PASS: read-only views never launch matches; continue, cancellation and confirmed replacement preserve/reset state correctly")
