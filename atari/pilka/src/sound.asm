@@ -18,10 +18,6 @@ sound_kick
         sta effect_time
         lda #0
         sta effect_kind
-        lda crowd_time
-        bne sound_whistle
-        lda #12
-        sta crowd_time
 sound_whistle
         lda $97de
         beq sound_goal
@@ -39,7 +35,7 @@ sound_goal
         lda #90
         sta crowd_time
 sound_crowd
-        ldx #CROWD_IDLE_VOLUME
+        ldx #0                 ; no continuous match ambience
         ldy #CROWD_IDLE_FREQUENCY
         lda crowd_time
         beq crowd_target
@@ -79,7 +75,9 @@ crowd_output
         lda crowd_freq
         sta $d202
         lda crowd_volume
+        beq crowd_store
         ora #$80
+crowd_store
         sta $d203
         jmp sound_effect
 sound_menu

@@ -29,10 +29,11 @@ for page in (0xd6, 0xd7):
     ram[r['LEAGUE_SCREEN']] = 0
     ram[0x97dd] = 17
     tick(12)
-    assert a.pokey[2:4] == bytes((54, 0x82))
+    assert a.pokey[2:4] == bytes((54, 0))
     ram[0x97dc] = 1
     tick()
     assert a.pokey[1] & 15 and value('EFFECT_KIND') == 0
+    assert a.pokey[3] == 0, 'Kicks must not start background crowd noise'
     assert ram[0x97dc] == 0 and ram[0x97dd] == 17
     tick(4)
     assert a.pokey[1] == 0
@@ -56,7 +57,7 @@ for page in (0xd6, 0xd7):
     tick(40)
     assert a.pokey[2:4] == bytes((33, 0x8a))
     tick(100)
-    assert a.pokey[2:4] == bytes((54, 0x82))
+    assert a.pokey[2:4] == bytes((54, 0))
     ram[0x97de] = 1
     tick()
     ram[r['LEAGUE_SCREEN']] = 1

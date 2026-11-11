@@ -276,7 +276,8 @@ strength effects and upsets across every nonzero random seed.
 ## Football sound effects
 
 The 50 Hz POKEY engine uses two channels: kicks/referee whistles/menu clicks
-on channel 1 and crowd noise on channel 2. Whistles take priority over kicks.
+on channel 1 and goal celebration noise on channel 2. There is no continuous
+match ambience or crowd swell on kicks. Whistles take priority over kicks.
 Full-time uses a longer pulsed whistle; goals trigger a crowd roar followed by
 a celebration fade. Pausing mutes match sounds; menus have quiet input clicks.
 
