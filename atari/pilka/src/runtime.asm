@@ -261,11 +261,21 @@ classic_clear
         sta $c400+40,x
         sta $c000+920,x
         sta $c400+920,x
+        sta $c000+160,x
+        sta $c400+160,x
         lda #1
         sta $d800+40,x
+        sta $d800+160,x
         lda #$fd
         dex
         bpl classic_clear
+        ldx #13
+friendly_heading
+        lda friendly_text,x
+        sta $c000+124,x
+        sta $c400+124,x
+        dex
+        bpl friendly_heading
         ldx #26
 classic_help
         lda classic_hint,x
@@ -309,6 +319,7 @@ classic_console
         rts
 classic_return
         jmp league_enter
+friendly_text dta $de,$ea,$e1,$dd,$e6,$dc,$e4,$f1,$fd,$e5,$d9,$ec,$db,$e0
 ; Shared-style Classic menu footer.
 classic_hint dta $dd,$eb,$db,$fd,$da,$d9,$db,$e3,$fd,$fd,$e4,$dd,$de,$ec,$fd,$ea,$e1,$df,$e0,$ec,$fd,$db,$e0,$d9,$e6,$df,$dd
 

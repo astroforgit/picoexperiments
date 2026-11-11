@@ -186,7 +186,7 @@ home_next
         inc row
         inc list_index
         lda list_index
-        cmp #5
+        cmp #4
         bcc home_line
         lda season_live
         bne home_help
@@ -219,11 +219,11 @@ help_controls
 home_action
         bit fire_mask
         bne home_fire
-        ldx #5
+        ldx #4
         jmp move_selection
 home_fire
         lda selection
-        cmp #4
+        cmp #1
         beq open_classic
         cmp #3
         beq open_options
@@ -237,7 +237,10 @@ action_done
         rts
 open_classic
         lda #0
+        sta $92b7
         sta league_match
+        lda #1
+        sta $92c2
         jmp LEAGUE_LAUNCH
 open_options
         lda #0
@@ -1467,10 +1470,10 @@ row_hi
         :25 dta >(#*40)
 fire_mask dta 16
 finished_label dta c'FINAL TABLE',0
-help_lo dta <help_new,<help_friendly,<help_continue,<help_options,<help_classic
-help_hi dta >help_new,>help_friendly,>help_continue,>help_options,>help_classic
+help_lo dta <help_new,<help_friendly,<help_continue,<help_options
+help_hi dta >help_new,>help_friendly,>help_continue,>help_options
 help_new dta c'START A NEW 14 ROUND SEASON',0
-help_friendly dta c'PICK TWO CLUBS AND PLAY ONE MATCH',0
+help_friendly dta c'SET UP TEAMS AND PLAY A FRIENDLY',0
 help_continue dta c'RESUME YOUR SEASON',0
 help_options dta c'SET PITCH AND MATCH DURATION',0
 help_classic dta c'ORIGINAL GAME MODES AND SETTINGS',0
@@ -1481,8 +1484,8 @@ continue_label dta c'CONTINUE LEAGUE',0
 no_season dta c'NO ACTIVE SEASON',0
 options_label dta c'MATCH OPTIONS',0
 classic_label dta c'CLASSIC GAME',0
-home_lo dta <new_label,<friendly_label,<continue_label,<options_label,<classic_label
-home_hi dta >new_label,>friendly_label,>continue_label,>options_label,>classic_label
+home_lo dta <new_label,<friendly_label,<continue_label,<options_label
+home_hi dta >new_label,>friendly_label,>continue_label,>options_label
 pick_help dta c'UP DOWN CHOOSE   FIRE OPEN',0
 escape_help dta c'ESC BACK TO PARENT MENU',0
 choose_club dta c'CHOOSE YOUR CLUB',0

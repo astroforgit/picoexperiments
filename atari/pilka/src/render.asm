@@ -292,6 +292,8 @@ pal_done
         sta lptr
         lda #>LFRONT
         sta lptr+1
+        lda menu_mode
+        jne ball_done
         ldx #0
 sprites ; The game's sorted list ends at the first Y of $FF; what follows
         ; is stale. Bit 7 of the colour is X bit 8.

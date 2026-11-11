@@ -153,6 +153,12 @@ def main():
  jsr(0x93b3,'MENU_FRAME')
  jsr(0x93be,'CLASSIC_FIRE')
  jsr(0x9524,'CLASSIC_DIRECTION')
+ # Friendly settings: omit option zero (mode) from selection and wrapping.
+ ram[0x92b7]=0
+ ram[0x92c2]=1
+ ram[0x92d5]=1
+ ram[0x9566]=0xd0 # BNE after decrement: wrap when selection reaches zero
+ ram[0x9578]=1    # wrap down to pitch, never the hidden mode row
  jsr(0x9717,'LEAGUE_MATCH_SETUP')
  jsr(0x8bf2,'LEAGUE_GOAL')
  for pc,label in [(0x9771,'LEAGUE_BOOT'),(0x9747,'LEAGUE_MATCH_END')]:

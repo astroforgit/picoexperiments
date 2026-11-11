@@ -85,29 +85,13 @@ for choice, page in ((1, 2), (2, 3), (3, 4), (4, 4)):
     check_page(8)
 escape()
 check_page(0)
-# Friendly opponent selection goes back one level, preserving the home club.
-press(stick=13)
-press(fire=True)
-press(fire=True)
-assert state("PICK_MODE") == 2
-escape()
-check_page(1)
-assert state("PICK_MODE") == 1 and state("SELECTION") == state("HOME_TEAM")
-escape()
-check_page(0)
 for _ in range(3):
     press(stick=13)
 press(fire=True)
 check_page(7)
 escape()
 check_page(0)
-for _ in range(4):
-    press(stick=13)
-press(fire=True)
-assert not ram[runtime["LEAGUE_SCREEN"]]
-escape()
-check_page(0)
-print(f"PASS at ${args.page:02X}00: Escape parents, held key, league hub, friendly picker, options and Classic")
+print(f"PASS at ${args.page:02X}00: Escape parents, held key, league hub and options")
 
 # Selecting a replacement club must preserve results until explicitly confirmed.
 escape()

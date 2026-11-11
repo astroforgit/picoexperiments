@@ -142,24 +142,6 @@ for _ in range(5):
 press(fire=True)
 check_page(0)
 press(stick=13)
-press(fire=True)
-check_page(1)
-press(fire=True)
-check_page(1)
-assert state("PICK_MODE") == 2
-press(fire=True)
-assert ram[runtime["LEAGUE_MATCH"]] == 2
-assert state("HOME_TEAM") != state("AWAY_TEAM")
-# Exercise the same full-time bridge for a friendly after selecting two
-# clubs through the menu. League points and the round must stay intact.
-ram[0x010e] = 1
-ram[0x010f] = 0
-atari.cpu.pc = runtime["LEAGUE_MATCH_END"]
-atari.run_frames(16)
-check_page(6)
-assert state("SEASON_ROUND") == 1 and state("POINTS") == 3
-press(fire=True)
-press(stick=13)
 press(stick=13)
 press(fire=True)
 check_page(8)
@@ -221,4 +203,4 @@ for club, record in enumerate(expected):
     assert [state(name, club) for name in ("POINTS", "WINS", "DRAWS", "LOSSES")] + [gd, gf] == record
 order = sorted(range(8), key=lambda club: (expected[club][0], *expected[club][4:]), reverse=True)
 assert [state("RANKING", index) for index in range(8)] == order
-print(f"PASS at ${args.page:02X}00: league menus, both controllers, half-time, full-time, scorers, friendly and all 56 results")
+print(f"PASS at ${args.page:02X}00: league menus, both controllers, half-time, full-time, scorers and all 56 results")

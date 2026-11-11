@@ -62,23 +62,25 @@ def preview(name):
 
 
 atari.run_frames(24)
-for index in range(5):
+for index in range(4):
     check_art(index)
-    if index in (0, 1, 4):
+    if index in (0, 1, 3):
         preview(f"menu-{index}")
-    if index == 4:
-        front = ram[runtime["FRONT"]] << 16
-        expected_main = atari.vram[front:front+64000].copy()
-    if index < 4:
+    if index < 3:
         press(stick=13)
+press(stick=14)
+press(stick=14)
+check_art(1)
+front = ram[runtime["FRONT"]] << 16
+expected_main = atari.vram[front:front+64000].copy()
 
 press(fire=True)
 assert not ram[runtime["LEAGUE_SCREEN"]] and not ram[runtime["LEAGUE_MATCH"]]
 assert ram[runtime["MENU_MODE"]] == 1
 atari.run_frames(32)
-original_mode = ram[0x92b7]
+original_pitch = ram[0x92b8]
 press(stick=7)
-assert ram[0x92b7] != original_mode, "Classic match mode did not change"
+assert ram[0x92b8] != original_pitch and ram[0x92b7] == 0
 classic_mode = ram[0x92b7]
 front = ram[runtime["FRONT"]] << 16
 preview("classic-transition")
@@ -90,15 +92,16 @@ frame = atari.vram[front:front+64000].reshape(200, 320)
 assert {0xc0, 0xc1, 0xd0, 0xd4}.issubset(set(frame.flat)), "Classic menu theme missing"
 preview("classic")
 press(stick=11, fire=True)
-check_art(4)
+check_art(1)
 front = ram[runtime["FRONT"]] << 16
 assert np.array_equal(atari.vram[front:front+64000], expected_main), "Classic return corrupted main menu"
 assert ram[0x92b7] == classic_mode, "Return chord changed the Classic mode"
 press(fire=True)
 assert not ram[runtime["LEAGUE_SCREEN"]]
 press(consol=5)  # SELECT remains available
-check_art(4)
-press(stick=14)
+check_art(1)
+press(stick=13)
+press(stick=13)
 press(fire=True)
 assert state("MENU_PAGE") == 7
 check_art(5)
@@ -110,10 +113,11 @@ preview("options")
 press(fire=True)
 press(stick=14)
 press(stick=14)
-press(fire=True)  # Friendly
-press(fire=True)  # Atari home
-press(fire=True)  # C64 away
-assert ram[runtime["LEAGUE_MATCH"]] == 2
+press(stick=14)
+press(fire=True)  # New League
+press(fire=True)  # Atari club
+press(fire=True)  # Play next match
+assert ram[runtime["LEAGUE_MATCH"]] == 1
 assert ram[0x9757] == 0 and ram[0x9751] == 1, "Engine did not receive pitch/duration"
 # Check a populated match display list. Its visible sprite entries must all
 # draw from the original sprite atlas, including when league mode is active.
@@ -141,4 +145,4 @@ assert ram[runtime["LEAGUE_SCREEN"]] and ram[0x92b7] == classic_mode, (
     ram[runtime["LEAGUE_SCREEN"]], ram[0x92b7], classic_mode
 )
 
-print(f"PASS at ${args.page:02X}00: six pictures, both Classic return controls, options applied, original player sprites")
+print(f"PASS at ${args.page:02X}00: menu pictures, both Friendly return controls, options applied, original player sprites")

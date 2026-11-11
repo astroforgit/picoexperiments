@@ -21,32 +21,31 @@ probes `$D600` and `$D700`. NTSC match timing has not been validated.
 ## Retro Fans League
 
 The XEX opens the league menu. Use joystick 1 to navigate and fire to confirm.
-Start a league by choosing one of eight clubs, or choose Friendly and select
-home and away clubs. In a friendly, joystick 1 controls the home club.
+Start a league by choosing one of eight clubs. Friendly opens the match
+settings with pitch, length, and each side's controller, formation, shirt
+and strength. Friendly is the only match type on this screen; there is no
+Mode selector or player preview. The separate Classic Game entry is removed.
 Continue League resumes the current season in memory.
 
 Choosing or continuing a league opens a club menu. Use up/down and fire for
 Play Next Match, League Table, View Squads, Match Schedule, Last Results or
 Main Menu. At season end Play Next Match becomes Final Table. Escape returns
-one level from every menu, including Classic Game. Holding Escape only moves
-back once. In the friendly picker it returns from the opponent to your club.
+one level from every menu, including Friendly settings. Holding Escape only
+moves back once.
 
 The table labels wins, draws, losses and points. Scores appear beside their
 teams. Squad numbers are shirt numbers and the squad is a read-only list of
 the starting eleven and five reserves. During a match,
 joystick 1 controls the chosen club at home or away.
 
-**Match Options** applies the original eight pitch settings and the 3, 5, 7
-and 10 minute match lengths to league matches and named friendlies. Use up/down
-to pick a setting, left/right to change it, and fire to return. **Classic Game**
-opens the Arlasoft Friendly/Cup settings in the shared neon-title menu style,
-including controllers,
-formations, shirts, and strength. Press left and fire together on joystick 1
-to return to the league menu. Escape and the Atari SELECT key also return. Holding
-OPTION during startup opens Classic Game.
+**Match Options** sets pitch and duration for league matches. Friendly has
+its own pitch and duration settings. On the Friendly screen, use up/down to
+select an option, left/right to change it and Fire to start. Escape returns
+to the main menu; SELECT and left+Fire also work. Holding OPTION at startup
+opens Friendly settings directly.
 
-The five main menu choices each have their own football illustration, with a
-sixth illustration in Match Options. The built-in image generator produced
+The four main menu choices each have their own football illustration, with a
+separate illustration in Match Options. The built-in image generator produced
 the six-panel source sheet from a prompt for a floodlit trophy, footballers
 duelling for the ball, a tactics clipboard with boots, a whistle and ball,
 a classic cup with joysticks, and a team lineup, in retro football pixel art.
@@ -246,3 +245,6 @@ The main title is a wide cyan-to-pink retrowave wordmark with italic pixel
 lettering and a purple shadow. `tools/title_art.py` builds its glyphs into
 the unused final 256 bytes of three illustration pages. The renderer scales
 them 2x, replacing the old title strip without reserving another VRAM page.
+
+`tools/test_friendly_menu.py` checks the four-entry menu, fixed Friendly mode,
+option wrapping, removed previews and league isolation when cancelling.

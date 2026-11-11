@@ -102,10 +102,10 @@ check_page(0)
 fixture=state("NEXT_FIXTURE")
 assert state("RESULT_HOME", fixture) == 3 and state("RESULT_AWAY", fixture) == 0, (fixture, state("SEASON_ROUND"), state("HOME_TEAM"), state("AWAY_TEAM"), state("RESULT_HOME", fixture), state("RESULT_AWAY", fixture))
 assert state("LOSSES") == 2
-# Named friendly abandonment must not change the season.
+# Friendly abandonment must not change the season.
 press(stick=13)
 press(fire=True)
-press(fire=True)
+atari.run_frames(32)
 press(fire=True)
 popup()
 press(fire=True)
@@ -113,14 +113,3 @@ atari.run_frames(24)
 check_page(0)
 assert state("SEASON_ROUND") == 2 and state("LOSSES") == 2
 print(f"PASS ${args.page:02X}00: pause freezes clock, resume, home/away forfeits and friendly cancellation")
-
-for _ in range(4):
-    press(stick=13)
-press(fire=True)
-press(fire=True)
-popup()
-press(fire=True)
-atari.run_frames(24)
-check_page(0)
-assert state("SEASON_ROUND") == 2
-print("PASS: Classic match cancellation returns to main menu")
