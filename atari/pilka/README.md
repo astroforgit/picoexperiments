@@ -28,8 +28,8 @@ Mode selector or player preview. The separate Classic Game entry is removed.
 Continue League resumes the current season in memory.
 
 Choosing or continuing a league opens a club menu. Use up/down and fire for
-Play Next Match, League Table, View Squads, Match Schedule, Last Results or
-Main Menu. At season end Play Next Match becomes Final Table. Escape returns
+Play Next Match, League Table, View Squads, Match Schedule, Last Results,
+Match Options, Difficulty or Main Menu. At season end Play Next Match becomes Final Table. Escape returns
 one level from every menu, including Friendly settings. Holding Escape only
 moves back once.
 
@@ -38,13 +38,18 @@ teams. Squad numbers are shirt numbers and the squad is a read-only list of
 the starting eleven and five reserves. During a match,
 joystick 1 controls the chosen club at home or away.
 
-**Match Options** sets pitch and duration for league matches. Friendly has
+**Match Options**, inside the league menu, sets pitch and duration for league
+matches. Defaults are Random pitch and 3 minutes. **Difficulty** is a ten-step
+Easy–Hard slider controlled by left/right. Easy gives your club strength 10;
+Hard gives it strength 1. The CPU stays at strength 5. It defaults to step 5
+(your strength 6), applies at home and away, and persists while continuing
+the season. Fire or Escape returns to the league menu. Friendly has
 its own pitch and duration settings. On the Friendly screen, use up/down to
 select an option, left/right to change it and Fire to start. Escape returns
 to the main menu; SELECT and left+Fire also work. Holding OPTION at startup
 opens Friendly settings directly.
 
-The four main menu choices each have their own football illustration, with a
+The three main menu choices each have their own football illustration, with a
 separate illustration in Match Options. The built-in image generator produced
 the six-panel source sheet from a prompt for a floodlit trophy, footballers
 duelling for the ball, a tactics clipboard with boots, a whistle and ball,
@@ -246,5 +251,8 @@ lettering and a purple shadow. `tools/title_art.py` builds its glyphs into
 the unused final 256 bytes of three illustration pages. The renderer scales
 them 2x, replacing the old title strip without reserving another VRAM page.
 
-`tools/test_friendly_menu.py` checks the four-entry menu, fixed Friendly mode,
+`tools/test_friendly_menu.py` checks the three-entry menu, fixed Friendly mode,
 option wrapping, removed previews and league isolation when cancelling.
+
+`tools/test_league_options.py` checks defaults, all ten slider positions,
+endpoint clamping, and engine strength values for home and away matches.

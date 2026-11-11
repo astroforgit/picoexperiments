@@ -53,9 +53,9 @@ def check_page(page):
 
 
 atari.run_frames(24)
-# Only four main choices: moving up from New League lands on Match Options.
+# Only three main choices: moving up from New League lands on Continue.
 press(stick=14)
-assert state("SELECTION") == 3
+assert state("SELECTION") == 2
 press(stick=13)
 press(fire=True)
 press(fire=True)
@@ -105,4 +105,4 @@ press(fire=True)
 atari.run_frames(30)
 check_page(0)
 assert state("POINTS") == 7
-print(f"PASS ${args.page:02X}00: four main choices, Friendly-only settings, hidden mode skipped, no previews, return and match launch/cancel preserve league")
+print(f"PASS ${args.page:02X}00: three main choices, Friendly-only settings, hidden mode skipped, no previews, return and match launch/cancel preserve league")

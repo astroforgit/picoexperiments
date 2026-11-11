@@ -43,7 +43,7 @@ league_settings
         sta $92bf
         lda league_away_shirt
         sta $92c0
-        lda #4
+        lda league_away_strength
         sta $92c1
         jsr $941c
         ldx #1

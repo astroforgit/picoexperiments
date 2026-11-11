@@ -85,14 +85,6 @@ for choice, page in ((1, 2), (2, 3), (3, 4), (4, 4)):
     check_page(8)
 escape()
 check_page(0)
-for _ in range(3):
-    press(stick=13)
-press(fire=True)
-check_page(7)
-escape()
-check_page(0)
-print(f"PASS at ${args.page:02X}00: Escape parents, held key, league hub and options")
-
 # Selecting a replacement club must preserve results until explicitly confirmed.
 escape()
 check_page(0)

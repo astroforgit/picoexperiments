@@ -137,7 +137,7 @@ assert state("POINTS") == 3
 press(fire=True)
 check_page(8)
 assert state("POINTS") == 3
-for _ in range(5):
+for _ in range(7):
     press(stick=13)
 press(fire=True)
 check_page(0)

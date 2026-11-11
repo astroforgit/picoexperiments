@@ -62,13 +62,12 @@ def preview(name):
 
 
 atari.run_frames(24)
-for index in range(4):
+for index in range(3):
     check_art(index)
     if index in (0, 1, 3):
         preview(f"menu-{index}")
-    if index < 3:
+    if index < 2:
         press(stick=13)
-press(stick=14)
 press(stick=14)
 check_art(1)
 front = ram[runtime["FRONT"]] << 16
@@ -100,8 +99,10 @@ press(fire=True)
 assert not ram[runtime["LEAGUE_SCREEN"]]
 press(consol=5)  # SELECT remains available
 check_art(1)
-press(stick=13)
-press(stick=13)
+press(stick=14)
+press(fire=True)
+press(fire=True)
+for _ in range(5): press(stick=13)
 press(fire=True)
 assert state("MENU_PAGE") == 7
 check_art(5)
@@ -111,11 +112,7 @@ press(stick=7)  # 3 -> 5 minutes
 assert state("PITCH_CHOICE") == 1 and state("LENGTH_CHOICE") == 1
 preview("options")
 press(fire=True)
-press(stick=14)
-press(stick=14)
-press(stick=14)
-press(fire=True)  # New League
-press(fire=True)  # Atari club
+for _ in range(3): press(stick=13)
 press(fire=True)  # Play next match
 assert ram[runtime["LEAGUE_MATCH"]] == 1
 assert ram[0x9757] == 0 and ram[0x9751] == 1, "Engine did not receive pitch/duration"

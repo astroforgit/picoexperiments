@@ -50,6 +50,7 @@ option_row .ds 1
 escape_held .ds 1
 hub_choice .ds 1
 confirm_choice .ds 1
+difficulty .ds 1
         ert * > LEAGUE_MATCH_SCORERS
 
 dst = $20
@@ -161,8 +162,8 @@ action_call
         jsr $ffff
         jmp show_page
 
-pages   dta a(home_page,pick_page,table_page,squad_page,fixtures_page,results_page,friendly_result,options_page,hub_page,confirm_page)
-actions dta a(home_action,pick_action,table_action,squad_action,fixtures_action,results_action,home_return,options_action,hub_action,confirm_action)
+pages   dta a(home_page,pick_page,table_page,squad_page,fixtures_page,results_page,friendly_result,options_page,hub_page,confirm_page,difficulty_page)
+actions dta a(home_action,pick_action,table_action,squad_action,fixtures_action,results_action,home_return,options_action,hub_action,confirm_action,difficulty_action)
 
 home_page
         lda selection
@@ -186,7 +187,7 @@ home_next
         inc row
         inc list_index
         lda list_index
-        cmp #4
+        cmp #3
         bcc home_line
         lda season_live
         bne home_help
@@ -219,14 +220,13 @@ help_controls
 home_action
         bit fire_mask
         bne home_fire
-        ldx #4
+        ldx #3
         jmp move_selection
 home_fire
         lda selection
         cmp #1
         beq open_classic
-        cmp #3
-        beq open_options
+
         cmp #2
         bne begin_picker
         lda season_live
@@ -242,12 +242,6 @@ open_classic
         lda #1
         sta $92c2
         jmp LEAGUE_LAUNCH
-open_options
-        lda #0
-        sta option_row
-        lda #7
-        sta menu_page
-        rts
 begin_picker
         sta pick_mode
         lda #0
@@ -262,13 +256,6 @@ pick_page
         ldx #3
         lda #<choose_club
         ldy #>choose_club
-        jsr print_at
-        lda pick_mode
-        cmp #2
-        bne pick_list
-        ldx #3
-        lda #<choose_away
-        ldy #>choose_away
         jsr print_at
 pick_list
         lda #6
@@ -300,8 +287,6 @@ pick_action
         ldx #8
         jmp move_selection
 pick_fire
-        lda pick_mode
-        bne pick_friendly
         lda season_live
         beq new_season
         lda #0
@@ -335,26 +320,6 @@ reset_goals
         lda #8
         sta menu_page
         rts
-pick_friendly
-        cmp #2
-        beq pick_opponent
-        lda selection
-        sta home_team
-        lda #2
-        sta pick_mode
-        inc selection
-        lda selection
-        and #7
-        sta selection
-        rts
-pick_opponent
-        lda selection
-        cmp home_team
-        jeq action_done
-        sta away_team
-        lda #2
-        jmp start_match
-
 home_return
         lda #0
         sta menu_page
@@ -370,15 +335,13 @@ cancel_new
         sta menu_page
         rts
 parent_normal
+        cmp #7
+        jeq dashboard_return
+        cmp #10
+        jeq dashboard_return
         cmp #1
         bne parent_league
-        lda pick_mode
-        cmp #2
-        bne parent_home
-        dec pick_mode
-        lda home_team
-        sta selection
-        rts
+        jmp home_return
 parent_league
         cmp #2
         bcc parent_home
@@ -427,7 +390,7 @@ hub_next
         inc row
         inc list_index
         lda list_index
-        cmp #6
+        cmp #8
         bcc hub_line
         jmp home_help
 hub_action
@@ -437,7 +400,7 @@ hub_action
         stx temp
         ldx hub_choice
         stx selection
-        ldx #6
+        ldx #8
         jsr move_selection
         lda selection
         sta hub_choice
@@ -514,9 +477,9 @@ confirm_done
 confirm_text dta c'REPLACE SEASON AND DELETE RESULTS',0
 confirm_cancel dta c'CANCEL  KEEP CURRENT LEAGUE',0
 confirm_yes dta c'YES  START NEW LEAGUE',0
-hub_pages dta 2,2,3,4,5,0
-hub_lo dta <play_label,<standings_label,<squad_label,<schedule_label,<scores_label,<back_label
-hub_hi dta >play_label,>standings_label,>squad_label,>schedule_label,>scores_label,>back_label
+hub_pages dta 2,2,3,4,5,7,10,0
+hub_lo dta <play_label,<standings_label,<squad_label,<schedule_label,<scores_label,<options_label,<difficulty_label,<back_label
+hub_hi dta >play_label,>standings_label,>squad_label,>schedule_label,>scores_label,>options_label,>difficulty_label,>back_label
 play_label dta c'PLAY NEXT MATCH',0
 standings_label dta c'LEAGUE TABLE',0
 squad_label dta c'VIEW SQUADS',0
@@ -824,28 +787,7 @@ results_action
         rts
 
 friendly_result
-        lda #6
-        sta row
-        ldy home_team
-        ldx #3
-        jsr print_club
-        lda home_score
-        ldx #30
-        jsr number_at
-        inc row
-        inc row
-        ldy away_team
-        ldx #3
-        jsr print_club
-        lda away_score
-        ldx #30
-        jsr number_at
-        lda #20
-        sta row
-        ldx #3
-        lda #<return_help
-        ldy #>return_help
-        jmp print_at
+        jmp home_page
 
 options_page
         lda #5
@@ -885,6 +827,13 @@ options_footer
         lda #20
         sta row
         ldx #3
+        lda menu_page
+        cmp #10
+        bne match_option_help
+        lda #<difficulty_help
+        ldy #>difficulty_help
+        jmp print_at
+match_option_help
         lda #<option_help
         ldy #>option_help
         jmp print_at
@@ -892,11 +841,7 @@ options_footer
 options_action
         bit fire_mask
         beq option_move
-        lda #3
-        sta selection
-        lda #0
-        sta menu_page
-        rts
+        jmp dashboard_return
 option_move
         bit vertical_mask
         beq option_change
@@ -929,6 +874,70 @@ change_length
 option_done
         rts
 
+
+difficulty_page
+        lda #6
+        sta row
+        ldx #5
+        lda #<difficulty_label
+        ldy #>difficulty_label
+        jsr print_at
+        lda #8
+        sta row
+        ldx #6
+        lda #<scale_label
+        ldy #>scale_label
+        jsr print_at
+        lda #10
+        sta row
+        ldx #10
+        jsr position
+        ldy #0
+slider_loop
+        lda #$ff
+        sta (dst),y
+        iny
+        cpy #19
+        bcc slider_loop
+        lda difficulty
+        asl
+        tay
+        lda #$f0
+        sta (dst),y
+        lda #13
+        sta row
+        ldx #5
+        lda #<strength_label
+        ldy #>strength_label
+        jsr print_at
+        lda #10
+        sec
+        sbc difficulty
+        ldx #27
+        jsr number_at
+        jmp options_footer
+difficulty_action
+        bit fire_mask
+        jne dashboard_return
+        and #12
+        beq difficulty_done
+        and #4
+        beq harder
+        lda difficulty
+        beq difficulty_done
+        dec difficulty
+        rts
+harder
+        lda difficulty
+        cmp #9
+        bcs difficulty_done
+        inc difficulty
+difficulty_done
+        rts
+difficulty_help dta c'LEFT RIGHT CHANGE   FIRE BACK',0
+difficulty_label dta c'DIFFICULTY',0
+scale_label dta c'EASY                  HARD',0
+strength_label dta c'YOUR TEAM STRENGTH',0
 
 find_fixture
         lda season_round
@@ -971,7 +980,11 @@ reset_scorers
         and #7
         sta league_cfg+1
         lda #4
-        sta league_cfg+6        ; normal strength
+        sta league_away_strength
+        lda #9
+        sec
+        sbc difficulty
+        sta league_cfg+6        ; human strength, internal range 0-9
         lda #1
         sta league_cfg+7        ; away CPU
         lda league_match
@@ -984,6 +997,10 @@ reset_scorers
         sta league_cfg+3        ; home CPU
         lda #0
         sta league_cfg+7        ; away human (resident bridge routes joystick 1)
+        lda league_cfg+6
+        sta league_away_strength
+        lda #4
+        sta league_cfg+6
 match_kits
         ldx home_team
         lda club_formation,x
@@ -1470,26 +1487,22 @@ row_hi
         :25 dta >(#*40)
 fire_mask dta 16
 finished_label dta c'FINAL TABLE',0
-help_lo dta <help_new,<help_friendly,<help_continue,<help_options
-help_hi dta >help_new,>help_friendly,>help_continue,>help_options
+help_lo dta <help_new,<help_friendly,<help_continue
+help_hi dta >help_new,>help_friendly,>help_continue
 help_new dta c'START A NEW 14 ROUND SEASON',0
 help_friendly dta c'SET UP TEAMS AND PLAY A FRIENDLY',0
 help_continue dta c'RESUME YOUR SEASON',0
-help_options dta c'SET PITCH AND MATCH DURATION',0
-help_classic dta c'ORIGINAL GAME MODES AND SETTINGS',0
 title dta c'RETRO FANS LEAGUE',0
 new_label dta c'NEW LEAGUE',0
 friendly_label dta c'FRIENDLY',0
 continue_label dta c'CONTINUE LEAGUE',0
 no_season dta c'NO ACTIVE SEASON',0
 options_label dta c'MATCH OPTIONS',0
-classic_label dta c'CLASSIC GAME',0
-home_lo dta <new_label,<friendly_label,<continue_label,<options_label
-home_hi dta >new_label,>friendly_label,>continue_label,>options_label
+home_lo dta <new_label,<friendly_label,<continue_label
+home_hi dta >new_label,>friendly_label,>continue_label
 pick_help dta c'UP DOWN CHOOSE   FIRE OPEN',0
 escape_help dta c'ESC BACK TO PARENT MENU',0
 choose_club dta c'CHOOSE YOUR CLUB',0
-choose_away dta c'CHOOSE THE AWAY CLUB',0
 table_header dta c'CLUB                   W  D  L  PTS',0
 champion_label dta c'CHAMPION',0
 joint_label dta c'JOINT CHAMPIONS',0
@@ -1501,7 +1514,6 @@ starting_label dta c'SHIRT NUMBER   STARTING TEAM',0
 reserve_label dta c'RESERVES   VIEW ONLY',0
 squad_help dta c'LEFT RIGHT CLUB    FIRE BACK',0
 fixtures_help dta c'LEFT RIGHT ROUND   FIRE BACK',0
-return_help dta c'FIRE  RETURN TO MENU',0
 result_help dta c'FIRE  BACK TO LEAGUE MENU',0
 vertical_mask dta 3
 pitch_label dta c'PITCH',0

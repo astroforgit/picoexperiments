@@ -113,6 +113,8 @@ def main():
  for addr,data in segments((GEN/'pause.asm.obx').read_bytes()):
   assert 0xc000<=addr and addr+len(data)<=0xd000
   pause[addr-0xc000:addr-0xc000+len(data)]=data
+ season_state=bytearray(4096)
+ season_state[league_labels['DIFFICULTY']-0x7000]=4
  original=(ROOT/'analysis/unpacked-64k.bin').read_bytes()
  ram=bytearray(original);ram[0]=0x2f
  cov=json.loads((ROOT/'analysis/coverage.json').read_text())
@@ -233,7 +235,7 @@ def main():
   (0x7c000,ram[0xc000:0xd000]),(0x7d000,render),
   (0x5f000,game_top+(GEN/'menu-font.bin').read_bytes()),(0x10000,(GEN/'banners.bin').read_bytes()+lists),
   (0x11000,(GEN/'tiles-light.bin').read_bytes()),(0x71000,league_code),(0x73000,pause),
-  (0x78000,(GEN/'menu-tail.bin').read_bytes()),(0x2f000,(GEN/'menu-layer.bin').read_bytes()),(0x79000,(GEN/'league-rosters.bin').read_bytes()),(0x7b000,bytes(4096)),*art_payloads,
+  (0x78000,(GEN/'menu-tail.bin').read_bytes()),(0x2f000,(GEN/'menu-layer.bin').read_bytes()),(0x79000,(GEN/'league-rosters.bin').read_bytes()),(0x7b000,season_state),*art_payloads,
  ]
  ranges=sorted((dest,dest+((len(data)+4095)//4096)*4096) for dest,data in payloads)
  assert all(end<=next_start for (_,end),(next_start,_) in zip(ranges,ranges[1:]))
