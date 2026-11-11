@@ -45,6 +45,7 @@ def check_art(index):
     assert ram[runtime["LEAGUE_ART_ID"]] == index
     front = ram[runtime["FRONT"]] << 16
     frame = atari.vram[front:front+64000].reshape(200, 320)
+    assert {0xc0, 0xc1, 0xc4}.issubset(set(frame.flat)), "Menu font or theme did not render"
     start = ART_PAGES[index]
     expected = atari.vram[start:start+ART_WIDTH*ART_HEIGHT].reshape(ART_HEIGHT, ART_WIDTH)
     assert np.unique(expected).size > 8

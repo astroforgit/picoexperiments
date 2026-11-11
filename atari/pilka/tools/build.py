@@ -51,6 +51,8 @@ def main():
  from build_assets import FGI,SHOWN,STAND12,LIGHT12
  from preview_swos import PALETTE as SWOS
  assets()
+ from menu_style import build as menu_style
+ menu_palette=menu_style(ROOT)
  banners()
  league_data(GEN)
  art_palette,art_payloads=league_art(ROOT)
@@ -59,7 +61,7 @@ def main():
  pal=bytearray()
  for c,rgb in enumerate(SHOWN):
   pal+=bytes([FGI[c],*rgb]);pal+=bytes([0x60+c,*rgb])
- (GEN/'palette.bin').write_bytes(bytes(pal)+art_palette+b'\0')
+ (GEN/'palette.bin').write_bytes(bytes(pal)+art_palette+menu_palette+b'\0')
  def dta(name,values):
   values=list(values)
   return ''.join((name if i==0 else '')+' dta '+','.join(str(v) for v in values[i:i+16])+'\n' for i in range(0,len(values),16))
@@ -68,7 +70,7 @@ def main():
  t+=dta('ylo',[(i*320)&255 for i in range(200)])+dta('yhi',[(i*320)>>8 for i in range(200)])
  t+=dta('mul24lo',[(i*24)&255 for i in range(21)])+dta('mul24hi',[(i*24)>>8 for i in range(21)])
  t+=dta('ban_lo',[(i*64)&255 for i in range(40)])+dta('ban_mid',[0x80+((i*64)>>8) for i in range(40)])
- t+=dta('b0lut',[(i&3)<<6 for i in range(24)])+dta('b2lut',[i>>2 for i in range(24)])
+ t+=dta('b0lut',[(i&3)<<6 for i in range(32)])+dta('b2lut',[i>>2 for i in range(32)])
  for n,i in (('c64r',0),('c64g',1),('c64b',2)):t+=dta(n,[c[i] for c in SHOWN])
  rgb12=lambda c:[((c>>s)&15)*17 for s in (8,4,0)]
  t+=dta('grassrgb',[v for k in (0,7,9) for v in SWOS[k*3:k*3+3]]+[v for c in LIGHT12 for v in rgb12(c)])
@@ -223,9 +225,9 @@ def main():
   (0x00000,ram),(0x30000,(GEN/'tiles.bin').read_bytes()),
   (0x60000,bytes(sprites[:0xc000])),(0x6e000,bytes(sprites[0xe000:])),(0x6c000,(GEN/'tile-map.bin').read_bytes()),
   (0x7c000,ram[0xc000:0xd000]),(0x7d000,render),
-  (0x5f000,game_top),(0x10000,(GEN/'banners.bin').read_bytes()+lists),
+  (0x5f000,game_top+(GEN/'menu-font.bin').read_bytes()),(0x10000,(GEN/'banners.bin').read_bytes()+lists),
   (0x11000,(GEN/'tiles-light.bin').read_bytes()),(0x71000,league_code),(0x73000,pause),
-  (0x79000,(GEN/'league-rosters.bin').read_bytes()),(0x7b000,bytes(4096)),*art_payloads,
+  (0x78000,(GEN/'menu-tail.bin').read_bytes()),(0x2f000,(GEN/'menu-layer.bin').read_bytes()),(0x79000,(GEN/'league-rosters.bin').read_bytes()),(0x7b000,bytes(4096)),*art_payloads,
  ]
  ranges=sorted((dest,dest+((len(data)+4095)//4096)*4096) for dest,data in payloads)
  assert all(end<=next_start for (_,end),(next_start,_) in zip(ranges,ranges[1:]))

@@ -231,3 +231,10 @@ The pause overlay uses one additional 4 KiB VRAM page at `$73000` for code
 and monochrome artwork. It backs up the covered pixels in the idle
 framebuffer, restores them on resume, and forces the next game render to
 refresh that framebuffer. It does not change the roster or season allocation.
+
+The league menus use the compact font and shadow pixels from the supplied
+Amiga `CHARSET.RAW`, with dark green panels, red selection bars, cream text
+and gold headings. Classic Game and match glyphs retain their original
+assets. The menu font is stored in spare VRAM beside the boot staging code,
+advertising tiles and character layer; it does not reduce season capacity.
+`tools/menu_style.py` generates these tiles and the renderer lookup tables.

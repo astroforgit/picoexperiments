@@ -101,7 +101,7 @@ abort_done
         jsr clear_screen
         lda #1
         sta row
-        ldx #3
+        ldx #12
         lda #<title
         ldy #>title
         jsr print_at
@@ -552,6 +552,8 @@ table_page
         lda #<table_header
         ldy #>table_header
         jsr print_at
+        lda #3
+        jsr colour_row
         lda #0
         sta list_index
         lda #5
@@ -662,6 +664,8 @@ squad_page
         lda #<starting_label
         ldy #>starting_label
         jsr print_at
+        lda #3
+        jsr colour_row
         inc row
         lda #0
         sta list_index
@@ -673,6 +677,8 @@ squad_line
         lda #<reserve_label
         ldy #>reserve_label
         jsr print_at
+        lda #3
+        jsr colour_row
         inc row
 squad_name
         lda list_index
@@ -1350,11 +1356,12 @@ colour_row
         adc #$60
         sta dst+1
         pla
-        ldy #39
+        ldy #37
 colour_cell
         sta (dst),y
         dey
-        bpl colour_cell
+        cpy #1
+        bne colour_cell
         rts
 
 position

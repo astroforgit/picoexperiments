@@ -1006,7 +1006,9 @@ ec_stripe
         sta (tptr),y
         ldy ccol
         rts
-ec_tile lda col
+ec_tile lda league_screen
+        bne menu_tile
+        lda col
         cmp lastcol
         beq ec_look
         sta lastcol
@@ -1019,6 +1021,34 @@ ec_lo   lda TLO,x
         ldy #1
         sta (tptr),y
 ec_hi   lda THI,x
+        tax
+        lda b0lut,x
+        dey
+        sta (tptr),y
+        lda b2lut,x
+        ldy #2
+        sta (tptr),y
+        ldy ccol
+        rts
+
+menu_tile
+        lda chr
+        sec
+        sbc #$d9
+        ldx col
+        cpx #7
+        beq menu_selected
+        cpx #3
+        bne menu_lookup
+menu_selected
+        clc
+        adc #37
+menu_lookup
+        tax
+        lda menu_mid,x
+        ldy #1
+        sta (tptr),y
+        lda menu_bits,x
         tax
         lda b0lut,x
         dey
@@ -1512,4 +1542,5 @@ behlo   dta <LBEH,<(LBEH+21),<(LBEH+42),<(LBEH+63)
 ovllo   dta <LOVL,<(LOVL+84),<(LOVL+168),<(LOVL+252)
 ovlhi   dta >LOVL,>(LOVL+84),>(LOVL+168),>(LOVL+252)
         icl '../gen/render-tables.asm'
+        icl '../gen/menu-style.asm'
         ert * > $d000
