@@ -218,6 +218,27 @@
         #ai-review[hidden] { display: none; }
         #review-ok { background: #c6dcff; color: #142138; padding: 14px 34px; font-size: 1.1rem; }
         body:has(#ai-review:not([hidden])) .board-overview { display: none; }
+
+        #audio-options {
+            position: absolute; right: 12px; top: 12px; z-index: 150;
+            pointer-events: auto; color: #e6efff; font: 14px/1.5 Arial, sans-serif;
+        }
+        #audio-options summary {
+            cursor: pointer; padding: 8px 13px; background: #151d2ded;
+            border: 1px solid #526782; border-radius: 7px;
+        }
+        .audio-settings {
+            position: absolute; right: 0; width: 210px; margin-top: 6px;
+            background: #111a2bf5; border: 1px solid #526782; border-radius: 8px;
+            padding: 12px; box-shadow: 0 10px 25px #0008;
+        }
+        .audio-settings label { display: flex; gap: 10px; align-items: center; padding: 6px 0; cursor: pointer; }
+        #audio-status { font-size: 12px; color: #b8c8df; margin: 8px 0 0; }
+        @media (max-width: 650px) {
+            #audio-options { top: 5px; right: 5px; font-size: 12px; }
+            #audio-options summary { padding: 4px 8px; }
+            .top-ui { padding-top: 28px; }
+        }
     </style>
 </head> 
 <body>
@@ -226,7 +247,16 @@
         <canvas id="sky"></canvas>
         <canvas id="flight"></canvas>
     </div>
+    <audio id="background-music" src="ambientssace.mp3" loop preload="none"></audio>
     <div id="ui-layer">
+        <details id="audio-options">
+            <summary>Options</summary>
+            <div class="audio-settings">
+                <label><input id="music-enabled" type="checkbox" checked> Music</label>
+                <label><input id="sound-enabled" type="checkbox" checked> Sound effects</label>
+                <p id="audio-status" role="status">Music starts when you interact with the game.</p>
+            </div>
+        </details>
         <div class="top-ui">
             <div id="legend">
                 <div class="legend-item"><span class="box active"></span> Active</div>
@@ -759,6 +789,106 @@
         }
 
 
+
+        class GameAudio {
+            constructor() {
+                this.music = document.getElementById('background-music');
+                this.music.volume = .3;
+                this.musicToggle = document.getElementById('music-enabled');
+                this.soundToggle = document.getElementById('sound-enabled');
+                this.status = document.getElementById('audio-status');
+                try {
+                    const saved = JSON.parse(localStorage.getItem('qubic-audio') || '{}');
+                    this.musicToggle.checked = saved.music !== false;
+                    this.soundToggle.checked = saved.sound !== false;
+                } catch {}
+                this.musicToggle.onchange = this.soundToggle.onchange = () => {
+                    try {
+                        localStorage.setItem('qubic-audio', JSON.stringify({
+                            music: this.musicToggle.checked, sound: this.soundToggle.checked
+                        }));
+                    } catch {}
+                    this.unlock();
+                };
+                this.music.addEventListener('playing', () => { this.status.textContent = 'Music playing'; });
+                this.music.addEventListener('error', () => { this.status.textContent = 'Music could not load. Check ambientssace.mp3 beside the game.'; });
+                const interact = () => this.unlock();
+                document.addEventListener('pointerdown', interact, {passive: true});
+                document.addEventListener('keydown', interact);
+                if (!this.musicToggle.checked) this.status.textContent = 'Music off';
+            }
+
+            unlock() {
+                if (!this.musicToggle.checked) {
+                    this.music.pause();
+                    this.status.textContent = 'Music off';
+                } else if (this.music.paused && !this.startingMusic) {
+                    this.startingMusic = true;
+                    this.music.play().then(() => {
+                        if (!this.musicToggle.checked) this.music.pause();
+                    }).catch(() => {
+                        this.status.textContent = 'Enable Music to try playback again.';
+                    }).finally(() => { this.startingMusic = false; });
+                }
+                if (this.soundToggle.checked && !this.context) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (!AudioContext) return;
+                    this.context = new AudioContext();
+                    this.master = this.context.createGain();
+                    this.master.connect(this.context.destination);
+                }
+                if (this.context) {
+                    this.master.gain.setTargetAtTime(this.soundToggle.checked ? .24 : 0, this.context.currentTime, .015);
+                    if (this.soundToggle.checked) this.context.resume().catch(() => {});
+                }
+            }
+
+            cue(kind) {
+                if (!this.soundToggle.checked || !this.context || this.context.state !== 'running') return;
+                const ctx = this.context;
+                const now = ctx.currentTime;
+                const notes = {
+                    twist: [180, 280], move: [470, 660], capture: [330, 220],
+                    confirm: [440, 660, 880], turn: [520, 780], back: [360, 240]
+                }[kind];
+                notes.forEach((frequency, index) => {
+                    const start = now + index * .075;
+                    const oscillator = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(frequency, start);
+                    oscillator.frequency.exponentialRampToValueAtTime(frequency * .82, start + .15);
+                    gain.gain.setValueAtTime(0, start);
+                    gain.gain.linearRampToValueAtTime(.19, start + .008);
+                    gain.gain.exponentialRampToValueAtTime(.001, start + .18);
+                    oscillator.connect(gain).connect(this.master);
+                    oscillator.start(start);
+                    oscillator.stop(start + .2);
+                    oscillator.onended = () => { oscillator.disconnect(); gain.disconnect(); };
+                });
+                if (kind === 'twist') {
+                    const buffer = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * .32), ctx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+                    const noise = ctx.createBufferSource();
+                    const filter = ctx.createBiquadFilter();
+                    const gain = ctx.createGain();
+                    noise.buffer = buffer;
+                    filter.type = 'bandpass';
+                    filter.frequency.setValueAtTime(650, now);
+                    filter.frequency.exponentialRampToValueAtTime(1800, now + .3);
+                    gain.gain.setValueAtTime(0, now);
+                    gain.gain.linearRampToValueAtTime(.12, now + .06);
+                    gain.gain.linearRampToValueAtTime(0, now + .32);
+                    noise.connect(filter).connect(gain).connect(this.master);
+                    noise.start(now);
+                    noise.onended = () => { noise.disconnect(); filter.disconnect(); gain.disconnect(); };
+                }
+            }
+        }
+
+        let gameAudio;
+
         class Quaternion {
             constructor(x, y, z, w) { this.x = x; this.y = y; this.z = z; this.w = w; }
             static fromRotation(axis, angle) {
@@ -978,6 +1108,7 @@
                     this.aiReview = null;
                     this.reviewPanel.hidden = true;
                     this.turn = 'w';
+                    gameAudio.cue('turn');
                     this._focus();
                     this._beginTurn();
                 };
@@ -1119,6 +1250,7 @@
             }
 
             _movePiece(from, to) {
+                gameAudio.cue(to.piece ? 'capture' : 'move');
                 const computer = this.isAI;
                 if (computer) this.aiReview.move = {from, to, piece: {...from.piece}};
                 to.setPiece(from.piece.type, from.piece.color);
@@ -1280,6 +1412,7 @@
             _turnPendingSlice(steps) {
                 if (this.phase !== 'rubik' && this.phase !== 'preview') return;
                 const {twist, targets} = this.pendingTwist;
+                gameAudio.cue('twist');
                 const firstTurn = this.preview.hidden;
                 this.phase = 'rotating';
                 twist.dir += steps;
@@ -1336,6 +1469,7 @@
 
             _backTwist() {
                 if (this.phase !== 'preview') return;
+                gameAudio.cue('back');
                 const {twist, targets, wasModeLocked, cameraBefore} = this.pendingTwist;
                 this.pendingTwist = null;
                 this.phase = 'rotating';
@@ -1356,6 +1490,7 @@
 
             _acceptTwist() {
                 if (this.phase !== 'preview' || !this.pendingTwist.canAccept) return;
+                gameAudio.cue('confirm');
                 const {twist, targets} = this.pendingTwist;
                 this.pendingTwist = null;
                 this.preview.hidden = true;
@@ -1438,6 +1573,7 @@
                 this.reviewPrevious.disabled = this.reviewNext.disabled = this.reviewOK.disabled = true;
                 this.node.querySelectorAll('.valid-move').forEach(node => node.classList.remove('valid-move'));
                 const twisting = Math.max(next, review.step) === 1;
+                gameAudio.cue(twisting ? 'twist' : 'move');
                 if (twisting) {
                     const {axis, layer, dir} = review.twist;
                     const targets = this.cubes.filter(cube => cube.getPosition()[axis] === layer);
@@ -1550,6 +1686,7 @@
         }
 
         window.onload = () => {
+            gameAudio = new GameAudio();
             startSpace();
             return new Rubik(document.querySelector('.cube-container'));
         };
