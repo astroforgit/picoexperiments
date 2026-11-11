@@ -176,9 +176,13 @@ actions dta a(home_action,pick_action,table_action,squad_action,fixtures_action,
 home_page
         lda #23
         sta row
-        ldx #12
+        ldx #3
         lda #<author_label
         ldy #>author_label
+        jsr print_at
+        ldx #31
+        lda #<version_label
+        ldy #>version_label
         jsr print_at
         lda selection
         sta league_art_id
@@ -1535,6 +1539,11 @@ print_done
         rts
 
 screen_char
+        cmp #'.'
+        bne screen_letter
+        lda #$d8
+        rts
+screen_letter
         cmp #'A'
         bcc below_letter
         clc
@@ -1630,6 +1639,7 @@ friendly_label dta c'FRIENDLY',0
 continue_label dta c'CONTINUE LEAGUE',0
 credits_label dta c'CREDITS',0
 author_label dta c'GAME BY ASTROFOR',0
+version_label dta c'V1.0.0',0
 help_credits dta c'ABOUT THE GAME AND ITS INSPIRATIONS',0
 credits_amiga_intro dta c'HEAVILY INSPIRED BY',0
 credits_amiga dta c'AMIGA SENSIBLE WORLD OF SOCCER',0

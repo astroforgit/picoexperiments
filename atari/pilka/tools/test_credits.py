@@ -19,12 +19,13 @@ def press(stick=15, fire=False, key=None):
     a.set_input()
     a.run_frames(7)
 def check_text(row, col, text):
-    glyphs = bytes(ord(c)+0x98 if 'A'<=c<='Z' else ord(c)+0xc3 if '0'<=c<='9' else 0xfd for c in text)
+    glyphs = bytes(ord(c)+0x98 if 'A'<=c<='Z' else ord(c)+0xc3 if '0'<=c<='9' else 0xd8 if c=='.' else 0xfd for c in text)
     start=0x7b800+row*40+col
     assert bytes(a.vram[start:start+len(glyphs)]) == glyphs, text
 
 a.run_frames(24)
-check_text(23,12,'GAME BY ASTROFOR')
+check_text(23,3,'GAME BY ASTROFOR')
+check_text(23,31,'V1.0.0')
 check_text(12,3,'CREDITS')
 press(stick=14)
 assert state('SELECTION') == 3

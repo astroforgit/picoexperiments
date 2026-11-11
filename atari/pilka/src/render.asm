@@ -1038,12 +1038,12 @@ ec_hi   lda THI,x
 
 menu_tile
         lda chr
-        cmp #$d9
+        cmp #$d8
         bcs menu_char
         lda #$fd
 menu_char
         sec
-        sbc #$d9
+        sbc #$d8
         ldx col
         cpx #7
         beq menu_selected
@@ -1051,7 +1051,7 @@ menu_char
         bne menu_lookup
 menu_selected
         clc
-        adc #39
+        adc #40
 menu_lookup
         tax
         lda menu_mid,x

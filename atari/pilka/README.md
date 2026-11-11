@@ -27,7 +27,7 @@ and strength. Friendly is the only match type on this screen; there is no
 Mode selector or player preview. The separate Classic Game entry is removed.
 Continue League resumes the current season in memory. Credits is the last
 main-menu item and opens a modal credit panel; Fire or Escape closes it and
-returns to Credits. The main-menu footer reads GAME BY ASTROFOR. The panel
+returns to Credits. The main-menu footer reads GAME BY ASTROFOR, with V1.0.0 on the right. The panel
 credits Amiga Sensible World of Soccer as a major inspiration and Arlasoft
 Soccer by Arlasoft as the C64 game that inspired this project.
 
