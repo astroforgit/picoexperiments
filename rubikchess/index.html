@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Qubic Chess 8×8</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+    
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            background: #06060e;
+            perspective: 1500px;
+            font-family: 'Courier New', Courier, monospace;
+            color: #ccc;
+            user-select: none;
+        }
+
+        #space {
+            position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+            background: #02030a;
+        }
+        #sky { position: absolute; left: -70px; top: -70px; will-change: transform; }
+        #flight { position: absolute; inset: 0; width: 100%; height: 100%; }
+        #space::after {
+            content: ""; position: absolute; inset: 0;
+            background: radial-gradient(ellipse 75% 70% at 50% 46%, transparent 55%, #01020799 100%);
+        }
+
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 100;
+            display: flex; flex-direction: column; justify-content: space-between;
+            padding: 10px; box-sizing: border-box;
+        }
+
+        .top-ui { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+
+        #legend {
+            background: rgba(7,11,24,0.62); border: 1px solid #34435f; padding: 6px 12px;
+            backdrop-filter: blur(7px);
+            border-radius: 4px; font-size: 0.75rem; display: flex; gap: 15px;
+            pointer-events: auto; text-transform: uppercase;
+        }
+        .box { width: 10px; height: 10px; display: inline-block; }
+        .box.active { border: 2px solid #fff; }
+        .box.valid { border: 2px solid lime; background: rgba(0,255,0,0.2); }
+        .box.select { border: 2px solid gold; background: gold; }
+
+        #status-bar {
+            background: rgba(7,11,24,0.66); padding: 15px 25px;
+            backdrop-filter: blur(7px); box-shadow: 0 0 28px #5b8cff1f;
+            border: 1px solid #3d4f70; border-radius: 6px; pointer-events: auto;
+            text-align: center; width: min(100%, 480px); box-sizing: border-box;
+        }
+        .dimensions { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 14px; }
+        .dimensions > span { white-space: nowrap; }
+        .hl-active { color: #fff; text-shadow: 0 0 5px #fff; font-weight: 800; }
+        
+        #controls { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+        #controls .btn { padding: 8px 12px; }
+        .btn {
+            background: #222; color: #eee; border: 1px solid #555;
+            padding: 15px 25px; font-weight: bold; cursor: pointer;
+        }
+        .btn:disabled { opacity: .55; cursor: default; }
+        .btn:focus-visible { outline: 2px solid #c7bbff; outline-offset: 3px; }
+
+        /* --- 3D SCENE --- */
+        body { --stage-top: 118px; --dock-space: 180px; }
+        .cube-container {
+            position: absolute; top: var(--stage-top); left: 0; width: 100vw;
+            height: max(0px, calc(100% - var(--stage-top) - var(--dock-space)));
+            display: flex; justify-content: center; align-items: center;
+            transform-style: preserve-3d;
+            pointer-events: none; z-index: 1;
+            --cube-scale: .82;
+        }
+        .cube { position: absolute; transform-style: preserve-3d; pointer-events: none; }
+        body:has(#twist-preview:not([hidden])) { --stage-top: 98px; }
+        body:has(#twist-preview:not([hidden])) :is(.board-overview, #legend) { display: none; }
+        @media (max-height: 580px) {
+            .cube-container { --cube-scale: .62; }
+        }
+        @media (max-height: 440px) {
+            body { --stage-top: 94px; }
+            .cube-container { --cube-scale: .43; }
+        }
+
+        .face {
+            position: absolute; box-sizing: border-box;
+            backface-visibility: hidden;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 26px; font-weight: bold;
+            cursor: pointer;
+            border: 1px solid transparent;
+            pointer-events: auto !important; /* Critical for clicks */
+            transition: box-shadow 0.2s;
+        }
+        
+        /* Board Colors */
+        .f-front { --board-color: #8c2a2a; } .f-back { --board-color: #c76f16; }
+        .f-left { --board-color: #2e6b3f; } .f-right { --board-color: #3b5b8c; }
+        .f-top { --board-color: #b0a9bc; } .f-bottom { --board-color: #c4b036; }
+
+        .board-surface {
+            position: absolute; left: calc(-3.5 * var(--tile)); top: calc(-3.5 * var(--tile));
+            width: calc(8 * var(--tile)); height: calc(8 * var(--tile));
+            backface-visibility: hidden; pointer-events: none;
+            --light: color-mix(in srgb, var(--board-color) 18%, #28282f);
+            --dark: color-mix(in srgb, var(--board-color) 13%, #101015);
+            --grid: #05050b;
+            --grid-width: 1px;
+            background:
+                linear-gradient(to right, var(--grid) var(--grid-width), transparent var(--grid-width)
+                    calc(100% - var(--grid-width)), var(--grid) 0) 0 0 / var(--tile) var(--tile),
+                linear-gradient(to bottom, var(--grid) var(--grid-width), transparent var(--grid-width)
+                    calc(100% - var(--grid-width)), var(--grid) 0) 0 0 / var(--tile) var(--tile),
+                repeating-conic-gradient(from 90deg, var(--light) 0% 25%, var(--dark) 0% 50%)
+                    0 0 / calc(2 * var(--tile)) calc(2 * var(--tile));
+        }
+        .board-surface.active-dim { --light: #292929; --dark: #0f0f0f; --grid: #fff; --grid-width: 2px; }
+        /* A passing gravitational wave (see startSpace) turns the boards to glass; the pieces stay solid. */
+        .board-surface {
+            opacity: var(--cube-fade, 1);
+            box-shadow:
+                0 0 calc(12px + var(--phase, 0) * 48px) rgba(120, 215, 255, calc(.2 + var(--phase, 0) * .8)),
+                inset 0 0 calc(var(--phase, 0) * 70px) rgba(140, 225, 255, var(--phase, 0));
+        }
+        .face.active-dim { border-width: 2px; z-index: 50; }
+        .face.next-dim { border: 1px dashed #737184; }
+        .slice-moving .face { background: #9bd9ff30; border-color: #bfeaff; opacity: .56; }
+        
+        .face.selected { border: 2px solid gold !important; background-color: rgba(255, 215, 0, 0.5) !important; z-index: 100; }
+        .face.valid-move { border: 2px solid lime !important; box-shadow: inset 0 0 15px rgba(0, 255, 0, 0.5) !important; }
+
+        .board-surface::before, .mini-square::before {
+            content: attr(data-zodiac); position: absolute; inset: 0;
+            display: grid; place-items: center; color: #b8daff; opacity: .21;
+            font-family: "Segoe UI Symbol", "DejaVu Sans", sans-serif;
+            font-size: calc(6.15 * var(--tile)); font-weight: normal; line-height: 1; pointer-events: none;
+        }
+        .board-surface::before { overflow: hidden; animation: zodiac-pulse 36s ease-in-out infinite alternate; }
+        @keyframes zodiac-pulse { from { opacity: .13; } to { opacity: .26; } }
+        @media (prefers-reduced-motion: reduce) {
+            .board-surface::before { animation: none; }
+        }
+        .mini-square::before {
+            width: calc(8 * var(--tile)); height: calc(8 * var(--tile));
+            top: calc(-1 * var(--row) * var(--tile)); left: calc(-1 * var(--col) * var(--tile));
+            clip-path: inset(calc(var(--row) * var(--tile)) calc((7 - var(--col)) * var(--tile))
+                calc((7 - var(--row)) * var(--tile)) calc(var(--col) * var(--tile)));
+        }
+        .piece { position: relative; pointer-events: none; transform: translateZ(2px); }
+        .piece.white { color: #fff; text-shadow: 0 0 3px #000; }
+        .piece.black { color: #000; text-shadow: 0 0 3px #fff; }
+
+        @keyframes flash { 0% { filter: brightness(2); } 100% { filter: brightness(1); } }
+        .face.flash { animation: flash 0.2s ease-out; }
+
+        #board-dock {
+            position: absolute; inset: auto 10px 10px; margin-inline: auto; max-width: 1070px;
+            color: #eae7f5; background: #0b1020d9; border: 1px solid #4c617a; border-radius: 10px;
+            backdrop-filter: blur(9px);
+            box-shadow: 0 8px 36px #0009; overflow: hidden; pointer-events: auto;
+        }
+        .preview-header {
+            display: flex; justify-content: space-between; align-items: center; gap: 10px;
+            padding: 8px 12px; border-bottom: 1px solid #344259;
+        }
+        .preview-header[hidden] { display: none; }
+        .preview-header h2 { font-size: .95rem; margin: 0 0 3px; }
+        .preview-header p { color: #c2d0e1; font-size: .7rem; margin: 0; }
+        .preview-boards {
+            display: flex; gap: 8px; padding: 8px 10px;
+            overflow-x: auto; overscroll-behavior-x: contain;
+            scrollbar-color: #5d7190 #141c2b;
+        }
+        .preview-card {
+            flex: 0 0 auto; background: #1a2333; border: 1px solid #34445b;
+            border-radius: 6px; padding: 7px; display: grid; align-content: start;
+        }
+        .preview-card { cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+        .preview-card:hover, .preview-card:focus-visible { box-shadow: 0 0 14px #7fd4ff66; outline: none; }
+        .preview-card.chess-destination { border-color: #a6b9ff; }
+        .preview-card.current-board { border-color: #e8f2ff; }
+        .preview-card h3 { font-size: .78rem; margin: 0 0 6px; white-space: nowrap; }
+        .preview-card h3 .zodiac { color: #aac9ff; font-family: "Segoe UI Symbol", sans-serif; }
+        .mini-board { --tile: 14px; display: grid; grid-template-columns: repeat(8, var(--tile)); grid-auto-rows: var(--tile); }
+        .mini-square {
+            position: relative; display: grid; place-items: center;
+            background: color-mix(in srgb, var(--board-color) 39%, #242b39);
+            box-shadow: inset 0 0 0 1px #111a2566; font: 11px/1 Arial, sans-serif;
+        }
+        .mini-square.light { background: color-mix(in srgb, var(--board-color) 33%, #545c70); }
+        .mini-square.affected {
+            background: color-mix(in srgb, var(--board-color) 32%, #c7ac70);
+            box-shadow: inset 0 0 0 1px #ffe39b;
+        }
+        .mini-square.affected.light { background: color-mix(in srgb, var(--board-color) 22%, #edd5a1); }
+        .mini-square.affected::before { color: #101622; }
+        .mini-square .piece { transform: none; }
+        .preview-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+        .preview-actions .btn { border-radius: 5px; padding: 8px 12px; }
+        #btn-accept { background: #c6dcff; border-color: #c6dcff; color: #142138; }
+        @media (max-width: 650px) {
+            .preview-header { flex-wrap: wrap; gap: 6px; }
+            .preview-actions .btn { padding: 7px 8px; }
+        }
+        @media (max-width: 420px) {
+            #controls .btn { padding: 7px 8px; }
+            #status-bar { padding: 12px; font-size: .875rem; }
+            .mini-board { --tile: 12px; }
+        }
+    </style>
+</head> 
+<body>
+
+    <div id="space" aria-hidden="true">
+        <canvas id="sky"></canvas>
+        <canvas id="flight"></canvas>
+    </div>
+    <div id="ui-layer">
+        <div class="top-ui">
+            <div id="legend">
+                <div class="legend-item"><span class="box active"></span> Active</div>
+                <div class="legend-item"><span class="box valid"></span> Move</div>
+                <div class="legend-item"><span class="box select"></span> Select</div>
+            </div>
+            <div id="status-bar">
+                <div class="dimensions">
+                    <span>Current: <span id="lbl-dimension" class="hl-active">FRONT</span></span>
+                    <span>Next chess board: <span id="lbl-next-dim" style="color:#aaa">RIGHT</span></span>
+                </div>
+                <div style="margin-top:5px; border-top:1px solid #444; padding-top:5px;">
+                    Turn: <span id="lbl-player" style="color:white; font-weight:bold;">WHITE</span>
+                </div>
+                <div id="lbl-phase" role="status" style="font-size:0.8rem; color:#aaa; margin-top:5px;">1. Swipe a cube slice to rotate it</div>
+            </div>
+        </div>
+        <section id="board-dock" aria-label="Cube boards">
+            <div class="preview-header board-overview">
+                <h2>Cube boards</h2>
+                <div id="controls">
+                    <label for="black-player">Black</label>
+                    <select id="black-player" class="btn">
+                        <option value="computer">Computer</option>
+                        <option value="human">Player 2</option>
+                    </select>
+                    <button id="btn-view" class="btn">Focus Active</button>
+                </div>
+            </div>
+            <div class="preview-header" id="twist-preview" hidden>
+                <div>
+                    <h2 id="preview-title">Twist preview</h2>
+                    <p id="preview-description"></p>
+                </div>
+                <div class="preview-actions">
+                    <button id="btn-turn-back" class="btn" type="button" aria-label="Turn the slice backward 90 degrees">↶ 90°</button>
+                    <button id="btn-turn-more" class="btn" type="button" aria-label="Turn the slice forward 90 degrees">↷ 90°</button>
+                    <select id="preview-view" class="btn" aria-label="Preview position">
+                        <option value="after">After twist</option>
+                        <option value="before">Before twist</option>
+                    </select>
+                    <button id="btn-back" class="btn" type="button">Back</button>
+                    <button id="btn-accept" class="btn" type="button">Accept</button>
+                </div>
+            </div>
+            <div class="preview-boards" id="preview-boards" tabindex="0" role="region" aria-label="All six boards"></div>
+        </section>
+    </div>
+
+    <div class="cube-container"></div>
+    
+    <script>
+        const randomItem = items => items[Math.floor(Math.random() * items.length)];
+        const FACE_NORMALS = [[-1,0,0], [1,0,0], [0,-1,0], [0,1,0], [0,0,1], [0,0,-1]];
+        const FACE_COLORS = ['f-left', 'f-right', 'f-top', 'f-bottom', 'f-front', 'f-back'];
+        const FACE_NAMES = ['Left', 'Right', 'Top', 'Bottom', 'Front', 'Back'];
+        const FACE_SIGNS = [...'♊♌♐♒♈♏'].map(sign => sign + '\uFE0E');
+        const TWIST_DURATION = 500;
+
+        // Deep-space backdrop: a painted sky (galaxy band, stars, distant galaxies) that drifts slowly,
+        // plus a live layer with the black hole, twinkling stars, dust, and the cube's containment field.
+        function startSpace() {
+            const sky = document.getElementById('sky');
+            const fx = document.getElementById('flight');
+            const skyCtx = sky.getContext('2d');
+            const ctx = fx.getContext('2d');
+            if (!skyCtx || !ctx) return;
+            const container = document.querySelector('.cube-container');
+            const motion = matchMedia('(prefers-reduced-motion: reduce)');
+            const TAU = Math.PI * 2, MARGIN = 70;
+            const BAND_ANGLE = -.42, BAND_OFFSET = -.14;
+            const DISK_INNER = .27, DISK_TILT = -.2, DISK_SQUASH = .21, DISK_SPIN = [.26, .15, .085];
+            const STAR_COLORS = ['#ffffff', '#e4ecff', '#c3d4ff', '#a9c1ff', '#fff4dc', '#ffe2b4', '#ffc693', '#ffab7d'];
+            const bhCanvas = document.createElement('canvas');
+            const bhCtx = bhCanvas.getContext('2d');
+            let W, H, ratio, frame, seed, twinkles, motes, sparks, hole, cubeRadius, surfaces, lastTime, resizeTimer;
+            let wave = { start: 12 }, meteor = { start: 7 }, lastPhase = 0;
+
+            const rand = () => {
+                seed = (seed + 0x6D2B79F5) | 0;
+                let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+                t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+                return ((t ^ t >>> 14) >>> 0) / 4294967296;
+            };
+            const hash = (x, y) => {
+                let h = Math.imul(x, 374761393) + Math.imul(y, 668265263) | 0;
+                h = Math.imul(h ^ h >>> 13, 1274126177);
+                return ((h ^ h >>> 16) >>> 0) / 4294967296;
+            };
+            const noise = (x, y) => {
+                const xi = Math.floor(x), yi = Math.floor(y), fx = x - xi, fy = y - yi;
+                const u = fx * fx * (3 - 2 * fx), v = fy * fy * (3 - 2 * fy);
+                const a = hash(xi, yi), b = hash(xi + 1, yi), c = hash(xi, yi + 1), d = hash(xi + 1, yi + 1);
+                return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+            };
+            const fbm = (x, y, octaves = 5) => {
+                let sum = 0, amp = .5, norm = 0;
+                for (let i = 0; i < octaves; i++) {
+                    sum += amp * noise(x, y); norm += amp;
+                    x = x * 2.03 + 11.7; y = y * 2.03 + 5.3; amp *= .5;
+                }
+                return sum / norm;
+            };
+            const smooth = (a, b, x) => {
+                const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
+                return t * t * (3 - 2 * t);
+            };
+            const gauss = (x, sigma) => Math.exp(-(x * x) / (2 * sigma * sigma));
+            // Distance from the galactic plane, in screen heights.
+            const bandDistance = (x, y) => -x * Math.sin(BAND_ANGLE) + y * Math.cos(BAND_ANGLE) - BAND_OFFSET;
+
+            function paintNebula(SW, SH) {
+                const nw = 420, nh = Math.max(2, Math.round(nw * SH / SW));
+                const canvas = document.createElement('canvas');
+                canvas.width = nw; canvas.height = nh;
+                const g = canvas.getContext('2d');
+                const image = g.createImageData(nw, nh);
+                const px = image.data;
+                const cos = Math.cos(BAND_ANGLE), sin = Math.sin(BAND_ANGLE);
+                for (let j = 0, k = 0; j < nh; j++) for (let i = 0; i < nw; i++, k += 4) {
+                    const x = (i / nw - .5) * SW / SH, y = j / nh - .5;
+                    const along = x * cos + y * sin;
+                    const d = bandDistance(x, y) + (fbm(x * 1.4 + 3, y * 1.4 + 9, 4) - .5) * .34;
+                    const band = gauss(d, .15);
+                    const cloud = smooth(.25, .8, fbm(x * 2.6 + 20, y * 2.6 + 31));
+                    const lane = 1 - .85 * smooth(.48, .7, fbm(x * 5.5 + 70, y * 5.5 + 13)) * gauss(d, .07);
+                    const density = band * cloud * lane;
+                    const core = gauss(along - .2, .3) * band;
+                    const pink = smooth(.55, .78, fbm(x * 3.1 + 90, y * 3.1 + 47, 4)) * (.22 + band) * lane;
+                    const teal = smooth(.56, .8, fbm(x * 2.3 + 140, y * 2.3 + 77, 4)) * (.2 + band * .6);
+                    const haze = fbm(x * 1.1 + 200, y * 1.1 + 160, 3) ** 3;
+                    const grain = (rand() - .5) * 3;
+                    px[k] = 3 + density * (50 + core * 118) + pink * 48 + teal * 6 + haze * 24 + grain;
+                    px[k + 1] = 4 + density * (58 + core * 80) + pink * 10 + teal * 40 + haze * 20 + grain;
+                    px[k + 2] = 10 + density * (116 + core * 26) + pink * 38 + teal * 50 + haze * 60 + grain;
+                    px[k + 3] = 255;
+                }
+                g.putImageData(image, 0, 0);
+                skyCtx.imageSmoothingQuality = 'high';
+                skyCtx.drawImage(canvas, 0, 0, SW, SH);
+            }
+
+            function paintStars(SW, SH) {
+                const g = skyCtx;
+                const count = Math.round(SW * SH / 430);
+                for (let i = 0; i < count; i++) {
+                    let x = rand() * SW, y = rand() * SH;
+                    // Half the stars crowd toward the galactic plane.
+                    for (let tries = 0; i % 2 && tries < 5; tries++) {
+                        if (rand() < gauss(bandDistance((x - SW / 2) / SH, y / SH - .5), .16)) break;
+                        x = rand() * SW; y = rand() * SH;
+                    }
+                    const magnitude = rand() ** 7;
+                    const radius = .3 + magnitude * 1.5;
+                    const color = STAR_COLORS[Math.floor(rand() ** 1.4 * STAR_COLORS.length)];
+                    g.globalAlpha = Math.min(1, .22 + rand() * .5 + magnitude * .4);
+                    g.fillStyle = color;
+                    g.beginPath(); g.arc(x, y, radius, 0, TAU); g.fill();
+                    if (magnitude > .78) {
+                        const halo = g.createRadialGradient(x, y, 0, x, y, radius * 7);
+                        halo.addColorStop(0, color); halo.addColorStop(1, 'transparent');
+                        g.globalAlpha = .28; g.fillStyle = halo;
+                        g.beginPath(); g.arc(x, y, radius * 7, 0, TAU); g.fill();
+                    }
+                    if (magnitude > .94) {
+                        const reach = radius * 13;
+                        g.globalAlpha = .5; g.strokeStyle = color; g.lineWidth = .6;
+                        g.beginPath();
+                        g.moveTo(x - reach, y); g.lineTo(x + reach, y);
+                        g.moveTo(x, y - reach); g.lineTo(x, y + reach);
+                        g.stroke();
+                        g.globalAlpha = 1; g.fillStyle = '#fff';
+                        g.beginPath(); g.arc(x, y, radius * .8, 0, TAU); g.fill();
+                    }
+                }
+                g.globalAlpha = 1;
+            }
+
+            function paintGalaxy(x, y, size, squash, turn, particles) {
+                const g = skyCtx;
+                g.save();
+                g.translate(x, y); g.rotate(turn); g.scale(1, squash);
+                g.globalCompositeOperation = 'lighter';
+                const core = g.createRadialGradient(0, 0, 0, 0, 0, size);
+                core.addColorStop(0, 'rgba(255,238,208,.9)');
+                core.addColorStop(.1, 'rgba(255,214,170,.4)');
+                core.addColorStop(.42, 'rgba(140,150,230,.11)');
+                core.addColorStop(1, 'rgba(90,110,220,0)');
+                g.fillStyle = core;
+                g.beginPath(); g.arc(0, 0, size, 0, TAU); g.fill();
+                for (let i = 0; i < particles; i++) {
+                    const r = rand() ** .75 * size, warm = 1 - r / size;
+                    const theta = (i % 2) * Math.PI + r / size * 5.2 + (rand() + rand() - 1) * (.85 - .45 * r / size);
+                    const dot = .5 + rand() * .9;
+                    g.fillStyle = rand() < .06
+                        ? `rgba(255,120,165,${.2 + rand() * .3})`
+                        : `rgba(${160 + 90 * warm | 0},${185 + 45 * warm | 0},${255 - 60 * warm | 0},${.08 + rand() * .3})`;
+                    g.fillRect(Math.cos(theta) * r, Math.sin(theta) * r, dot, dot / squash);
+                }
+                g.restore();
+            }
+
+            function heatColor(heat) {
+                const stops = [[0, 120, 40, 24], [.25, 232, 104, 44], [.6, 255, 186, 104], [1, 255, 246, 225]];
+                let i = 1;
+                while (i < stops.length - 1 && heat > stops[i][0]) i++;
+                const a = stops[i - 1], b = stops[i];
+                const t = Math.min(1, Math.max(0, (heat - a[0]) / (b[0] - a[0])));
+                return [1, 2, 3].map(c => Math.round(a[c] + (b[c] - a[c]) * t)).join(',');
+            }
+
+            // One ring of the accretion disk seen face-on; rings spin at different speeds.
+            function diskTexture(from, to, streaks) {
+                const canvas = document.createElement('canvas');
+                canvas.width = canvas.height = 512;
+                const g = canvas.getContext('2d');
+                g.translate(256, 256);
+                g.globalCompositeOperation = 'lighter';
+                g.lineCap = 'round';
+                for (let i = 0; i < streaks; i++) {
+                    const t = rand(), radius = from + (to - from) * t;
+                    const heat = 1 - (radius - DISK_INNER) / (1 - DISK_INNER);
+                    const alpha = (.04 + rand() * .17) * Math.sin(Math.PI * t) ** .6 * (.3 + heat * .7);
+                    const start = rand() * TAU;
+                    g.strokeStyle = `rgba(${heatColor(heat)},${alpha})`;
+                    g.lineWidth = .6 + rand() * 3.4;
+                    g.beginPath(); g.arc(0, 0, radius * 250, start, start + .25 + rand() * 2.3); g.stroke();
+                }
+                return canvas;
+            }
+
+            function build() {
+                seed = 20261111;
+                W = innerWidth; H = innerHeight;
+                ratio = Math.min(devicePixelRatio || 1, 1.5);
+                const SW = W + MARGIN * 2, SH = H + MARGIN * 2;
+                sky.style.width = `${SW}px`; sky.style.height = `${SH}px`;
+                sky.width = Math.round(SW * ratio); sky.height = Math.round(SH * ratio);
+                skyCtx.setTransform(ratio, 0, 0, ratio, 0, 0);
+                paintNebula(SW, SH);
+                paintStars(SW, SH);
+                const unit = Math.min(W, H);
+                paintGalaxy(SW * .85, SH * .23, unit * .105, .42, -.5, 2400);
+                paintGalaxy(SW * .63, SH * .13, 20, .5, .8, 260);
+                paintGalaxy(SW * .07, SH * .74, 15, .34, 2.1, 200);
+                paintGalaxy(SW * .36, SH * .2, 9, .6, 1.2, 90);
+
+                fx.width = Math.round(W * ratio); fx.height = Math.round(H * ratio);
+
+                twinkles = Array.from({length: Math.round(W * H / 15000)}, () => ({
+                    x: -MARGIN + rand() * SW, y: -MARGIN + rand() * SH,
+                    radius: .7 + rand() ** 3 * 1.3, color: STAR_COLORS[Math.floor(rand() * STAR_COLORS.length)],
+                    phase: rand() * TAU, speed: .5 + rand() * 2.2
+                }));
+                motes = Array.from({length: Math.round(Math.sqrt(W * H) / 4)}, () => ({
+                    x: rand() * 2 - 1, y: rand() * 2 - 1, depth: .08 + rand() * .92, speed: .05 + rand() * .11,
+                    color: ['235,246,255', '150,222,255', '160,170,255', '255,214,190'][Math.floor(rand() * 4)]
+                }));
+                sparks = Array.from({length: 46}, () => ({
+                    along: rand(), side: rand() * 2 - 1, speed: .25 + rand() * .5, size: .6 + rand() * 1.4
+                }));
+
+                const wide = W >= 820;
+                const rs = Math.min(58, Math.max(16, unit * (wide ? .052 : .036)));
+                hole = { x: W * .19, y: H * (wide ? .41 : .25), rs, outer: rs * 5.4, size: Math.ceil(rs * 5.4 * 2.12) };
+                hole.layers = [diskTexture(.27, .5, 460), diskTexture(.42, .76, 440), diskTexture(.66, 1, 380)];
+                bhCanvas.width = bhCanvas.height = Math.round(hole.size * ratio);
+
+                const scale = parseFloat(getComputedStyle(container).getPropertyValue('--cube-scale')) || 1;
+                cubeRadius = Rubik.SIZE * Face.SIZE * scale * (1500 / 2100) * .87;
+            }
+
+            function composeHole(t) {
+                const g = bhCtx, {rs, outer, size, layers} = hole;
+                g.setTransform(ratio, 0, 0, ratio, 0, 0);
+                g.globalCompositeOperation = 'source-over';
+                g.globalAlpha = 1;
+                g.clearRect(0, 0, size, size);
+                g.translate(size / 2, size / 2);
+                g.rotate(DISK_TILT);
+                g.globalCompositeOperation = 'lighter';
+                const disk = front => {
+                    g.save();
+                    g.beginPath(); g.rect(-size, front ? 0 : -size, size * 2, size); g.clip();
+                    g.scale(1, DISK_SQUASH);
+                    layers.forEach((texture, i) => {
+                        g.save();
+                        g.rotate(-t * DISK_SPIN[i] + i * 2);
+                        g.drawImage(texture, -outer, -outer, outer * 2, outer * 2);
+                        g.restore();
+                    });
+                    g.restore();
+                };
+                disk(false);
+                // Light from the far side of the disk, bent over and under the shadow.
+                g.save();
+                g.scale(1, .95);
+                const halo = g.createRadialGradient(0, 0, rs * .98, 0, 0, rs * 2.3);
+                halo.addColorStop(0, 'rgba(255,244,222,.95)');
+                halo.addColorStop(.08, 'rgba(255,214,150,.6)');
+                halo.addColorStop(.3, 'rgba(255,150,70,.26)');
+                halo.addColorStop(.65, 'rgba(220,90,40,.08)');
+                halo.addColorStop(1, 'rgba(200,70,30,0)');
+                g.fillStyle = halo;
+                g.beginPath(); g.arc(0, 0, rs * 2.3, 0, TAU); g.fill();
+                g.globalAlpha = .6;
+                g.rotate(-t * .2);
+                g.drawImage(layers[0], -outer * .72, -outer * .72, outer * 1.44, outer * 1.44);
+                g.restore();
+                g.globalCompositeOperation = 'destination-out';
+                g.fillStyle = '#000';
+                g.beginPath(); g.arc(0, 0, rs, 0, TAU); g.fill();
+                g.globalCompositeOperation = 'lighter';
+                g.strokeStyle = 'rgba(255,250,236,.9)';
+                g.lineWidth = Math.max(1, rs * .035);
+                g.beginPath(); g.arc(0, 0, rs * 1.02, 0, TAU); g.stroke();
+                disk(true);
+                // Relativistic beaming: the side turning toward us burns brighter.
+                g.globalCompositeOperation = 'destination-in';
+                const beaming = g.createLinearGradient(-outer, 0, outer, 0);
+                beaming.addColorStop(0, 'rgba(0,0,0,1)');
+                beaming.addColorStop(.45, 'rgba(0,0,0,.9)');
+                beaming.addColorStop(1, 'rgba(0,0,0,.32)');
+                g.fillStyle = beaming;
+                g.fillRect(-size, -size, size * 2, size * 2);
+            }
+
+            function setPhase(phase) {
+                if (phase < .004) phase = 0;
+                if (phase === lastPhase) return;
+                lastPhase = phase;
+                if (!surfaces?.length) surfaces = [...document.querySelectorAll('.board-surface')];
+                for (const surface of surfaces) {
+                    if (phase) {
+                        surface.style.setProperty('--cube-fade', (1 - .68 * phase).toFixed(3));
+                        surface.style.setProperty('--phase', phase.toFixed(3));
+                    } else {
+                        surface.style.removeProperty('--cube-fade');
+                        surface.style.removeProperty('--phase');
+                    }
+                }
+            }
+
+            function draw(now) {
+                const still = motion.matches;
+                const t = still ? 0 : now / 1000;
+                const dt = lastTime === undefined ? 0 : Math.min(t - lastTime, .05);
+                lastTime = t;
+                const ox = Math.sin(t * .021) * MARGIN * .5, oy = Math.cos(t * .016) * MARGIN * .4;
+                sky.style.transform = `translate3d(${ox.toFixed(2)}px, ${oy.toFixed(2)}px, 0)`;
+
+                ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.globalAlpha = 1;
+                ctx.clearRect(0, 0, W, H);
+
+                // Nearer stars: they twinkle and slide a little faster than the sky behind them.
+                for (const star of twinkles) {
+                    const glow = .3 + .7 * (.5 + .5 * Math.sin(t * star.speed + star.phase));
+                    const x = star.x + ox * 1.7, y = star.y + oy * 1.7;
+                    ctx.fillStyle = star.color;
+                    ctx.globalAlpha = glow * .16;
+                    ctx.beginPath(); ctx.arc(x, y, star.radius * 3.2, 0, TAU); ctx.fill();
+                    ctx.globalAlpha = glow;
+                    ctx.beginPath(); ctx.arc(x, y, star.radius, 0, TAU); ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+
+                // Black hole.
+                const bx = hole.x + ox, by = hole.y + oy, rs = hole.rs;
+                composeHole(t);
+                const glow = ctx.createRadialGradient(bx, by, rs, bx, by, rs * 9);
+                glow.addColorStop(0, 'rgba(255,150,70,.17)');
+                glow.addColorStop(.4, 'rgba(170,64,40,.05)');
+                glow.addColorStop(1, 'rgba(120,40,30,0)');
+                ctx.fillStyle = glow;
+                ctx.beginPath(); ctx.arc(bx, by, rs * 9, 0, TAU); ctx.fill();
+                ctx.fillStyle = '#000';
+                ctx.beginPath(); ctx.arc(bx, by, rs * .99, 0, TAU); ctx.fill();
+                ctx.globalCompositeOperation = 'lighter';
+                ctx.drawImage(bhCanvas, bx - hole.size / 2, by - hole.size / 2, hole.size, hole.size);
+
+                // Flight: the cube is heading for a point up and to the right, so near stars stream out from there.
+                const headX = W * .68, headY = H * .3, focal = Math.max(W, H) * .65;
+                ctx.lineCap = 'round';
+                for (const mote of motes) {
+                    mote.depth -= dt * mote.speed;
+                    if (mote.depth < .06) { mote.depth = 1; mote.x = Math.random() * 2 - 1; mote.y = Math.random() * 2 - 1; }
+                    const near = focal / mote.depth, far = focal / (mote.depth + mote.speed * .32);
+                    const x = headX + mote.x * near, y = headY + mote.y * near;
+                    if (x < -40 || x > W + 40 || y < -40 || y > H + 40) continue;
+                    const closeness = 1 - mote.depth;
+                    const tx = headX + mote.x * far, ty = headY + mote.y * far;
+                    const streak = ctx.createLinearGradient(x, y, tx, ty);
+                    streak.addColorStop(0, `rgba(${mote.color},${.12 + closeness * .6})`);
+                    streak.addColorStop(1, `rgba(${mote.color},0)`);
+                    ctx.strokeStyle = streak;
+                    ctx.lineWidth = .7 + closeness * 1.5;
+                    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(tx, ty); ctx.stroke();
+                }
+
+                // Engine wake: plasma trailing behind the cube, away from where it is heading.
+                const cubeBox = container.getBoundingClientRect();
+                const shipX = cubeBox.left + cubeBox.width / 2, shipY = cubeBox.top + cubeBox.height / 2;
+                const wakeLength = Math.min(cubeRadius * 4.2, W * .6);
+                const flicker = .82 + .1 * Math.sin(t * 7.3) + .08 * Math.sin(t * 17.9);
+                const plume = (x, y, rx, ry, color, alpha) => {
+                    ctx.save();
+                    ctx.translate(x, y); ctx.scale(rx, ry);
+                    const fill = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+                    fill.addColorStop(0, `rgba(${color},${alpha})`);
+                    fill.addColorStop(1, `rgba(${color},0)`);
+                    ctx.fillStyle = fill;
+                    ctx.beginPath(); ctx.arc(0, 0, 1, 0, TAU); ctx.fill();
+                    ctx.restore();
+                };
+                ctx.save();
+                ctx.translate(shipX, shipY);
+                ctx.rotate(Math.atan2(shipY - headY, shipX - headX));
+                plume(wakeLength * .48, 0, wakeLength * .56, cubeRadius * .62, '86,96,255', .2 * flicker);
+                plume(wakeLength * .36, 0, wakeLength * .42, cubeRadius * .36, '90,205,255', .3 * flicker);
+                for (const side of [-1, 1]) {
+                    plume(wakeLength * .3, side * cubeRadius * .2, wakeLength * .36, cubeRadius * .1, '170,235,255', .5 * flicker);
+                    plume(wakeLength * .22, side * cubeRadius * .2, wakeLength * .25, cubeRadius * .04, '240,252,255', .75 * flicker);
+                }
+                for (const spark of sparks) {
+                    spark.along += dt * spark.speed;
+                    if (spark.along > 1) { spark.along = 0; spark.side = Math.random() * 2 - 1; }
+                    const spread = cubeRadius * (.2 + .34 * spark.along);
+                    ctx.fillStyle = `rgba(200,238,255,${.75 * (1 - spark.along) ** 1.6})`;
+                    ctx.beginPath();
+                    ctx.arc(spark.along * wakeLength * .95, spark.side * spread, spark.size, 0, TAU);
+                    ctx.fill();
+                }
+                ctx.restore();
+
+                // A meteor now and then.
+                if (!still && t >= meteor.start) {
+                    if (meteor.x === undefined) {
+                        Object.assign(meteor, { x: W * (.3 + Math.random() * .7), y: H * Math.random() * .45, angle: 2.55 + Math.random() * .5 });
+                    }
+                    const life = (t - meteor.start) / .9;
+                    if (life >= 1) meteor = { start: t + 9 + Math.random() * 18 };
+                    else {
+                        const reach = life * 620, tail = 170 * Math.sin(Math.PI * life);
+                        const cos = Math.cos(meteor.angle), sin = Math.sin(meteor.angle);
+                        const hx = meteor.x + cos * reach, hy = meteor.y + sin * reach;
+                        const streak = ctx.createLinearGradient(hx, hy, hx - cos * tail, hy - sin * tail);
+                        streak.addColorStop(0, `rgba(235,246,255,${.9 * Math.sin(Math.PI * life)})`);
+                        streak.addColorStop(1, 'rgba(150,200,255,0)');
+                        ctx.strokeStyle = streak; ctx.lineWidth = 1.5;
+                        ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(hx - cos * tail, hy - sin * tail); ctx.stroke();
+                    }
+                }
+
+                // Gravitational wave: a ripple leaves the hole, and the cube phases as it washes over.
+                const cx = shipX, cy = shipY;
+                let phase = 0;
+                if (!still && t >= wave.start) {
+                    const radius = (t - wave.start) * 200, limit = Math.hypot(W, H);
+                    if (radius > limit) wave = { start: t + 42 + Math.random() * 30 };
+                    else {
+                        const fade = (1 - radius / limit) ** 1.5 * Math.min(1, radius / 80);
+                        [[0, 1.6, '165,235,255', .34], [-9, 5, '150,125,255', .13], [-30, 22, '110,150,255', .045]]
+                            .forEach(([offset, width, color, alpha]) => {
+                                if (radius + offset <= 0) return;
+                                ctx.strokeStyle = `rgba(${color},${alpha * fade})`;
+                                ctx.lineWidth = width;
+                                ctx.beginPath(); ctx.arc(bx, by, radius + offset, 0, TAU); ctx.stroke();
+                            });
+                        phase = gauss(radius - Math.hypot(cx - bx, cy - by), cubeRadius * 1.05);
+                    }
+                }
+                setPhase(phase);
+
+                // Containment field around the cube: a breathing halo and two slow orbital rings.
+                const R = cubeRadius, breathe = .5 + .5 * Math.sin(t * .55);
+                const field = ctx.createRadialGradient(cx, cy, R * .3, cx, cy, R * 2.3);
+                const strength = .15 + .07 * breathe + .3 * phase;
+                field.addColorStop(0, `rgba(120,205,255,${strength})`);
+                field.addColorStop(.45, `rgba(112,112,255,${strength * .5})`);
+                field.addColorStop(1, 'rgba(90,80,220,0)');
+                ctx.fillStyle = field;
+                ctx.beginPath(); ctx.arc(cx, cy, R * 2.3, 0, TAU); ctx.fill();
+                for (let k = 0; k < 2; k++) {
+                    const orbit = R * (1.5 + .24 * k), spin = k ? -1 : 1;
+                    ctx.save();
+                    ctx.translate(cx, cy);
+                    ctx.rotate((k ? -.5 : .32) + t * .012 * spin);
+                    ctx.scale(1, .3 + .12 * k);
+                    ctx.strokeStyle = `rgba(160,220,255,${.24 + .08 * breathe + .4 * phase})`;
+                    ctx.lineWidth = 1.2;
+                    ctx.setLineDash([2, 11]);
+                    ctx.lineDashOffset = -t * 5 * spin;
+                    ctx.beginPath(); ctx.arc(0, 0, orbit, 0, TAU); ctx.stroke();
+                    ctx.setLineDash([]);
+                    const angle = t * (.3 - .11 * k) * spin + k * 2.4;
+                    const mx = Math.cos(angle) * orbit, my = Math.sin(angle) * orbit;
+                    ctx.fillStyle = 'rgba(200,240,255,.22)';
+                    ctx.beginPath(); ctx.arc(mx, my, 6, 0, TAU); ctx.fill();
+                    ctx.fillStyle = 'rgba(235,250,255,.95)';
+                    ctx.beginPath(); ctx.arc(mx, my, 1.8, 0, TAU); ctx.fill();
+                    ctx.restore();
+                }
+
+                if (!still) frame = requestAnimationFrame(draw);
+            }
+
+            function restart() {
+                cancelAnimationFrame(frame);
+                lastTime = undefined;
+                build();
+                draw(performance.now());
+            }
+
+            addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(restart, 160);
+            });
+            motion.addEventListener('change', restart);
+            restart();
+        }
+
+
+        class Quaternion {
+            constructor(x, y, z, w) { this.x = x; this.y = y; this.z = z; this.w = w; }
+            static fromRotation(axis, angle) {
+                const a = angle * (Math.PI / 180);
+                const s = Math.sin(a / 2);
+                return new this(axis[0] * s, axis[1] * s, axis[2] * s, Math.cos(a / 2));
+            }
+            multiply(q) {
+                return new this.constructor(
+                    this.w*q.x + this.x*q.w + this.y*q.z - this.z*q.y,
+                    this.w*q.y + this.y*q.w + this.z*q.x - this.x*q.z,
+                    this.w*q.z + this.z*q.w + this.x*q.y - this.y*q.x,
+                    this.w*q.w - this.x*q.x - this.y*q.y - this.z*q.z
+                );
+            }
+            toRotation() {
+                const angle = 2 * Math.acos(this.w) * 180 / Math.PI;
+                const s = Math.sqrt(1 - this.w * this.w);
+                if (s < 0.001) return `rotate3d(1,0,0,0deg)`;
+                return `rotate3d(${this.x/s},${this.y/s},${this.z/s},${angle}deg)`;
+            }
+        }
+
+        const PIECES = {
+            w: { k: '♔', q: '♕', r: '♖', b: '♗', n: '♘', p: '♙' },
+            b: { k: '♚', q: '♛', r: '♜', b: '♝', n: '♞', p: '♟' }
+        };
+
+        function pieceMarkup(piece) {
+            if (!piece) return '';
+            const color = piece.color === 'w' ? 'white' : 'black';
+            return `<span class="piece ${color}">${PIECES[piece.color][piece.type]}</span>`;
+        }
+
+        class Face {
+            static SIZE = 44;
+            constructor(cube, type) {
+                this.cube = cube;
+                this.node = document.createElement('div');
+                this.piece = null; 
+                this.node._faceInstance = this; // Link DOM to Instance
+
+                this.node.style.width = `${Face.SIZE}px`;
+                this.node.style.height = `${Face.SIZE}px`;
+                this.setSquare(type);
+            }
+
+            static square(type, [x, y, z]) {
+                return [[y,7-z], [y,z], [7-z,x], [z,x], [y,x], [y,7-x]][type];
+            }
+
+            setSquare(type) {
+                this.type = type;
+                [this.row, this.col] = Face.square(type, this.cube.getPosition());
+                const shade = (this.row + this.col) % 2 ? 'dark' : 'light';
+                this.node.className = `face ${FACE_COLORS[type]} ${shade}`;
+                this.node.style.transform = Face.transform(type, Face.SIZE / 2);
+            }
+
+            setPiece(char, color) { this.piece = { type: char, color: color }; this.renderPiece(); }
+            clearPiece() { this.piece = null; this.renderPiece(); }
+            renderPiece() {
+                this.node.innerHTML = pieceMarkup(this.piece);
+            }
+            static transform(type, s) {
+                return [
+                    `translateX(-${s}px) rotateY(-90deg)`, `translateX(${s}px) rotateY(90deg)`,
+                    `translateY(-${s}px) rotateX(90deg)`, `translateY(${s}px) rotateX(-90deg)`,
+                    `translateZ(${s}px)`, `translateZ(-${s}px) rotateY(180deg)`
+                ][type];
+            }
+            flash() {
+                this.node.classList.remove('flash');
+                void this.node.offsetWidth;
+                this.node.classList.add('flash');
+            }
+        }
+        
+        class Cube {
+            constructor(pos) {
+                this._rotation = null;
+                this._position = pos;
+                this._node = document.createElement("div");
+                this._node.className = "cube";
+                this._node.style.width = this._node.style.height = `${Face.SIZE}px`;
+                this._faces = {};
+                this._update();
+            }
+            getFaces() { return this._faces; }
+            setFace(type) {
+                const f = new Face(this, type);
+                this._node.appendChild(f.node);
+                this._faces[type] = f;
+            }
+            setRotation(axis, degrees, animate = degrees !== 0) {
+                this._node.classList.add('slice-moving');
+                this._rotation = `rotate${'XYZ'[axis]}(${degrees}deg)`;
+                this._update(animate);
+            }
+
+            clearRotation() {
+                this._node.classList.remove('slice-moving');
+                this._rotation = null;
+                this._update();
+            }
+            
+            static rotateVector([x, y, z], axis, dir) {
+                const turns = ((dir % 4) + 4) % 4;
+                if (turns === 0) return [x, y, z];
+                if (turns === 2) return [axis === 0 ? x : -x, axis === 1 ? y : -y, axis === 2 ? z : -z];
+                dir = turns === 1 ? 1 : -1;
+                if (axis === 0) return [x, -z * dir, y * dir];
+                if (axis === 1) return [z * dir, y, -x * dir];
+                return [-y * dir, x * dir, z];
+            }
+
+            static rotatedPosition([x, y, z], axis, dir) {
+                const h = 3.5;
+                const [nx, ny, nz] = Cube.rotateVector([x-h, y-h, h-z], axis, dir);
+                return [nx+h, ny+h, h-nz];
+            }
+
+            static rotatedFace(type, axis, dir) {
+                const [x, y, z] = Cube.rotateVector(FACE_NORMALS[type], axis, dir);
+                return FACE_NORMALS.findIndex(normal => normal[0] === x && normal[1] === y && normal[2] === z);
+            }
+
+            applyPhysics(axis, dir) {
+                this._position = Cube.rotatedPosition(this._position, axis, dir);
+                const newFaces = {};
+                for (const face of Object.values(this._faces)) {
+                    const type = Cube.rotatedFace(face.type, axis, dir);
+                    face.setSquare(type);
+                    newFaces[type] = face;
+                }
+                this._faces = newFaces;
+                this.clearRotation();
+            }
+            
+            _update(animate = false) {
+                const s = Face.SIZE, h = 3.5;
+                const x = this._position[0]-h, y = this._position[1]-h, z = -(this._position[2]-h); 
+                const position = `translate3d(${x*s}px, ${y*s}px, ${z*s}px)`;
+                this._node.style.transition = animate ? `transform ${TWIST_DURATION}ms ease` : '';
+                this._node.style.transform = this._rotation ? `${this._rotation} ${position}` : position;
+            }
+            getPosition() { return this._position; }
+        }
+
+        class Rubik {
+            static SIZE = 8;
+            constructor(container) {
+                this.cubes = [];
+                this.turn = 'w';
+                this.activeDim = 4; // Front
+                this.dimOrder = [4, 1, 5, 0, 2, 3];
+                this.selection = null;
+                this.validMoves = [];
+                this.blackPlayer = document.getElementById('black-player');
+                this.focusButton = document.getElementById('btn-view');
+                this.preview = document.getElementById('twist-preview');
+                this.backButton = document.getElementById('btn-back');
+                this.acceptButton = document.getElementById('btn-accept');
+                this.turnBackButton = document.getElementById('btn-turn-back');
+                this.turnMoreButton = document.getElementById('btn-turn-more');
+                this.previewBoards = document.getElementById('preview-boards');
+                this.previewDescription = document.getElementById('preview-description');
+                this.previewView = document.getElementById('preview-view');
+                this.pendingTwist = null;
+
+                const dock = document.getElementById('board-dock');
+                new ResizeObserver(() => {
+                    document.body.style.setProperty('--dock-space', `${dock.offsetHeight + 10}px`);
+                }).observe(dock);
+                
+                this.rot = Quaternion.fromRotation([1,0,0], -30).multiply(Quaternion.fromRotation([0,1,0], 45));
+                this.node = document.createElement('div');
+                Object.assign(this.node.style, { position:"absolute", width:0, height:0, transformStyle:"preserve-3d" });
+                this.node.style.setProperty('--tile', `${Face.SIZE}px`);
+                container.appendChild(this.node);
+                this.dragProbe = document.createElement('div');
+                Object.assign(this.dragProbe.style, {
+                    position: 'absolute', left: `${Face.SIZE / 2}px`, top: `${Face.SIZE / 2}px`,
+                    width: '0', height: '0', visibility: 'hidden', pointerEvents: 'none'
+                });
+                this.node.appendChild(this.dragProbe);
+                this.surfaces = FACE_SIGNS.map((sign, type) => {
+                    const surface = document.createElement('div');
+                    surface.className = `board-surface ${FACE_COLORS[type]}`;
+                    surface.dataset.zodiac = sign;
+                    surface.setAttribute('aria-hidden', 'true');
+                    surface.style.transform = Face.transform(type, Rubik.SIZE * Face.SIZE / 2 - 1);
+                    this.node.appendChild(surface);
+                    return surface;
+                });
+                
+                this._build();
+                this._initPieces();
+                this._update();
+                this._beginTurn();
+                
+                this.drag = { active: false, start: null, x:0, y:0 };
+                ['mousedown','touchstart'].forEach(e => document.addEventListener(e, this._down.bind(this), {passive:false}));
+                ['mousemove','touchmove'].forEach(e => document.addEventListener(e, this._move.bind(this), {passive:false}));
+                ['mouseup','touchend'].forEach(e => document.addEventListener(e, this._up.bind(this)));
+                document.addEventListener('touchcancel', () => { this.drag.active = false; });
+                
+                this.focusButton.onclick = () => this._focus();
+                this.backButton.onclick = () => this._backTwist();
+                this.acceptButton.onclick = () => this._acceptTwist();
+                this.turnBackButton.onclick = () => this._turnPendingSlice(-this.pendingTwist.initialDirection);
+                this.turnMoreButton.onclick = () => this._turnPendingSlice(this.pendingTwist.initialDirection);
+                this.previewView.onchange = () => this._renderBoards(this.pendingTwist.twist);
+                // Clicking a board in the dock turns the cube to show that face.
+                const showBoard = e => {
+                    const card = e.target.closest('.preview-card');
+                    if (card) this._focus(Number(card.dataset.face), true);
+                };
+                this.previewBoards.addEventListener('click', showBoard);
+                this.previewBoards.addEventListener('keydown', e => {
+                    if (e.key !== 'Enter' && e.key !== ' ') return;
+                    e.preventDefault();
+                    showBoard(e);
+                });
+                document.addEventListener('keydown', e => {
+                    if (e.key === 'Escape' && !this.preview.hidden) this._backTwist();
+                });
+            }
+
+            get isAI() { return this.turn === 'b' && this.blackPlayer.value === 'computer'; }
+
+            get nextDim() {
+                const next = this.dimOrder.indexOf(this.activeDim) + 1;
+                return this.dimOrder[next % this.dimOrder.length];
+            }
+
+            // --- INPUT HANDLING ---
+            _pos(e) { return e.touches ? {x:e.touches[0].clientX, y:e.touches[0].clientY} : {x:e.clientX, y:e.clientY}; }
+            
+            _hit(p) {
+                return document.elementFromPoint(p.x, p.y)?.closest('.face')?._faceInstance;
+            }
+            
+            _down(e) {
+                if (this.isAI || (this.phase !== 'rubik' && this.phase !== 'chess' && this.preview.hidden) ||
+                    e.target.closest('#ui-layer') || (e.touches ? e.touches.length !== 1 : e.button !== 0)) return;
+                const p = this._pos(e);
+                if (e.touches && e.cancelable) e.preventDefault();
+                const start = this._hit(p);
+                const twist = this.phase === 'preview' ? this.pendingTwist.twist : null;
+                const tangent = start && twist && start.cube.getPosition()[twist.axis] === twist.layer
+                    ? this._sliceDragDirection(start, twist) : null;
+                this.drag = { active: true, start, tangent, x: p.x, y: p.y, moved: false };
+            }
+
+            _sliceDragDirection(face, {axis, dir}) {
+                const [x, y, z] = face.cube.getPosition();
+                const [nx, ny, nz] = FACE_NORMALS[face.type];
+                const tile = Face.SIZE;
+                const center = (Rubik.SIZE - 1) / 2;
+                const position = `translate3d(${(x - center + nx / 2) * tile}px, ${(y - center + ny / 2) * tile}px, ${(center - z + nz / 2) * tile}px)`;
+                const rotation = `rotate${'XYZ'[axis]}`;
+                const degrees = 90 * dir;
+
+                // Project the grabbed square just before and after its current angle.
+                this.dragProbe.style.transform = `${rotation}(${degrees - 6}deg) ${position}`;
+                const before = this.dragProbe.getBoundingClientRect();
+                this.dragProbe.style.transform = `${rotation}(${degrees + 6}deg) ${position}`;
+                const after = this.dragProbe.getBoundingClientRect();
+                const dx = after.x - before.x;
+                const dy = after.y - before.y;
+                const length = Math.hypot(dx, dy);
+                return length > .1 ? { x: dx / length, y: dy / length } : { x: 1, y: 0 };
+            }
+            
+            _move(e) {
+                if (!this.drag.active || (e.touches && e.touches.length !== 1)) return;
+                if(e.cancelable) e.preventDefault();
+                const p = this._pos(e);
+                const dx = p.x - this.drag.x;
+                const dy = p.y - this.drag.y;
+                
+                const distance = Math.hypot(dx, dy);
+                if(distance > 10) this.drag.moved = true;
+
+                if (this.drag.tangent) {
+                    const along = dx * this.drag.tangent.x + dy * this.drag.tangent.y;
+                    if (this.phase === 'preview' && Math.abs(along) > Math.max(10, distance * .55)) {
+                        this.drag.active = false;
+                        this._turnPendingSlice(Math.sign(along));
+                    }
+                } else if(this.drag.start && this.phase === 'rubik' && this.drag.moved) {
+                    const hit = this._hit(p);
+                    if (hit?.type === this.drag.start.type && hit !== this.drag.start) {
+                        this.drag.active = false;
+                        this._rotateSlice(this.drag.start, hit);
+                    }
+                } else if (this.drag.moved) {
+                    const speed = 0.4;
+                    this.rot = Quaternion.fromRotation([1,0,0], -dy*speed).multiply(Quaternion.fromRotation([0,1,0], -dx*speed)).multiply(this.rot);
+                    this.drag.x = p.x; this.drag.y = p.y;
+                    this._update();
+                }
+            }
+            
+            _up() {
+                if(!this.drag.active) return;
+                this.drag.active = false;
+                if(!this.drag.moved && this.drag.start && this.phase === 'chess') {
+                    this._click(this.drag.start);
+                }
+            }
+
+            // --- GAME LOGIC ---
+            _click(f) {
+                if (this.phase !== 'chess' || f.type !== this.activeDim) return;
+                f.flash();
+                
+                // Check if moving to a valid square
+                if(this.selection && this.validMoves.includes(f)) {
+                    this._movePiece(this.selection, f);
+                    return;
+                }
+                
+                // Select Piece
+                const p = f.piece;
+                if(p && p.color === this.turn) {
+                    this._deselect();
+                    this.selection = f;
+                    f.node.classList.add('selected');
+                    this.validMoves = this._getValidMoves(this._getBoard(this.activeDim), f.row, f.col);
+                    this.validMoves.forEach(t => t.node.classList.add('valid-move'));
+                } else {
+                    this._deselect();
+                }
+            }
+
+            _deselect() {
+                if(this.selection) this.selection.node.classList.remove('selected');
+                this.validMoves.forEach(f => f.node.classList.remove('valid-move'));
+                this.selection = null;
+                this.validMoves = [];
+            }
+
+            _movePiece(from, to) {
+                to.setPiece(from.piece.type, from.piece.color);
+                from.clearPiece();
+                this._deselect();
+                this.turn = this.turn === 'w' ? 'b' : 'w';
+                this._beginTurn();
+            }
+
+            _getValidMoves(board, r, c) {
+                const moves = [];
+                const p = board[r][c].piece;
+
+                const add = (nr, nc) => {
+                    if(nr>=0 && nr<8 && nc>=0 && nc<8) {
+                        const target = board[nr][nc];
+                        if(!target.piece || target.piece.color !== p.color) moves.push(target);
+                        return (!target.piece);
+                    }
+                    return false;
+                };
+
+                const dirs = [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+                
+                if(p.type === 'p') {
+                    const dir = (p.color === 'w') ? 1 : -1;
+                    const startRank = (p.color === 'w') ? 1 : 6;
+                    
+                    if(board[r+dir] && board[r+dir][c] && !board[r+dir][c].piece) {
+                        moves.push(board[r+dir][c]);
+                        if (r === startRank && board[r+dir*2] && !board[r+dir*2][c].piece) {
+                            moves.push(board[r+dir*2][c]);
+                        }
+                    }
+                    [-1, 1].forEach(dc => {
+                        if(board[r+dir] && board[r+dir][c+dc] && board[r+dir][c+dc].piece && board[r+dir][c+dc].piece.color !== p.color)
+                            moves.push(board[r+dir][c+dc]);
+                    });
+                } 
+                else if (p.type === 'n') {
+                    [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]].forEach(d => add(r+d[0], c+d[1]));
+                }
+                else if (p.type === 'k') {
+                    dirs.forEach(d => add(r+d[0], c+d[1]));
+                }
+                else { 
+                    const idxs = (p.type === 'b') ? [4,8] : ((p.type === 'r') ? [0,4] : [0,8]);
+                    for(let i=idxs[0]; i<idxs[1]; i++) {
+                        let nr = r, nc = c;
+                        while(true) {
+                            nr += dirs[i][0]; nc += dirs[i][1];
+                            if(!add(nr, nc)) break;
+                        }
+                    }
+                }
+                return moves;
+            }
+
+            _getBoard(type, twist) {
+                const grid = Array.from({length: Rubik.SIZE}, () => Array(Rubik.SIZE).fill(null));
+                // The preview looks up the sticker that would land on this face.
+                const source = twist ? Cube.rotatedFace(type, twist.axis, -twist.dir) : type;
+                this.cubes.forEach(c => {
+                    const pos = c.getPosition();
+                    const inSlice = twist && pos[twist.axis] === twist.layer;
+                    const face = c.getFaces()[inSlice ? source : type];
+                    if (!face) return;
+                    const [row, col] = inSlice
+                        ? Face.square(type, Cube.rotatedPosition(pos, twist.axis, twist.dir))
+                        : [face.row, face.col];
+                    grid[row][col] = face;
+                });
+                return grid;
+            }
+
+            _beginTurn() {
+                this.availableTwists = [];
+                const nextDim = this.nextDim;
+                for (let axis = 0; axis < 3; axis++) {
+                    for (let layer = 0; layer < Rubik.SIZE; layer++) {
+                        for (const dir of [-1, 1, 2, 4]) {
+                            const twist = {axis, layer, dir};
+                            if (this._canPlayChess(nextDim, twist)) {
+                                this.availableTwists.push(twist);
+                            }
+                        }
+                    }
+                }
+
+                this.phase = this.availableTwists.length ? 'rubik' : 'over';
+                this._renderBoards();
+                this._ui();
+                if (this.phase === 'rubik' && this.isAI) {
+                    const quarterTurns = this.availableTwists.filter(twist => Math.abs(twist.dir) === 1);
+                    setTimeout(() => this._animateRotate(randomItem(quarterTurns.length ? quarterTurns : this.availableTwists)), 650);
+                }
+            }
+
+            _canPlayChess(type, twist) {
+                const board = this._getBoard(type, twist);
+                return board.some((row, r) => row.some((face, c) =>
+                    face.piece?.color === this.turn && this._getValidMoves(board, r, c).length > 0));
+            }
+
+            _aiChessMove() {
+                const board = this._getBoard(this.activeDim);
+                const moves = [];
+                board.forEach((row, r) => row.forEach((face, c) => {
+                    if (face.piece?.color === this.turn) {
+                        this._getValidMoves(board, r, c).forEach(to => moves.push({from: face, to}));
+                    }
+                }));
+                const captures = moves.filter(({to}) => to.piece);
+                const {from, to} = randomItem(captures.length ? captures : moves);
+                setTimeout(() => {
+                    this._click(from);
+                    setTimeout(() => this._click(to), 450);
+                }, 450);
+            }
+
+            _rotateSlice(f1, f2) {
+                const p1 = f1.cube.getPosition();
+                const p2 = f2.cube.getPosition();
+                const drag = [p2[0] - p1[0], p2[1] - p1[1], p1[2] - p2[2]];
+                const along = drag.reduce((longest, step, i) =>
+                    Math.abs(step) > Math.abs(drag[longest]) ? i : longest, 0);
+                const [dx, dy, dz] = drag.map((step, i) => i === along ? Math.sign(step) : 0);
+                const [nx, ny, nz] = FACE_NORMALS[f1.type];
+                // The face normal crossed with the swipe gives the rotation axis.
+                const vec = [ny*dz - nz*dy, nz*dx - nx*dz, nx*dy - ny*dx];
+                const axis = vec.findIndex(step => step !== 0);
+                if (axis !== -1) this._animateRotate({axis, layer: p1[axis], dir: vec[axis]});
+            }
+
+            _animateRotate(twist) {
+                if (this.phase !== 'rubik') return;
+                const {axis, layer, dir} = twist;
+                const targets = this.cubes.filter(c => c.getPosition()[axis] === layer);
+                this.pendingTwist = {
+                    twist: {axis, layer, dir: 0}, targets, initialDirection: Math.sign(dir),
+                    wasModeLocked: this.blackPlayer.disabled, cameraBefore: this.rot, canAccept: false
+                };
+                this.previewView.value = 'after';
+                this.blackPlayer.disabled = true;
+                targets.forEach(c => c.setRotation(axis, 0));
+                // Commit the starting transform before animating around the cube's center.
+                void this.node.offsetWidth;
+                this._turnPendingSlice(dir);
+            }
+
+            _turnPendingSlice(steps) {
+                if (this.phase !== 'rubik' && this.phase !== 'preview') return;
+                const {twist, targets} = this.pendingTwist;
+                const firstTurn = this.preview.hidden;
+                this.phase = 'rotating';
+                twist.dir += steps;
+                this._ui();
+                targets.forEach(c => c.setRotation(twist.axis, 90 * twist.dir, true));
+
+                setTimeout(() => {
+                    this.phase = 'preview';
+                    this.pendingTwist.canAccept = this._canPlayChess(this.nextDim, twist);
+                    if (this.isAI) {
+                        this._acceptTwist();
+                        return;
+                    }
+                    this._renderBoards(twist);
+                    this.preview.hidden = false;
+                    this._ui();
+                    if (firstTurn) {
+                        this.previewBoards.scrollLeft = 0;
+                        this.backButton.focus({preventScroll: true});
+                    }
+                }, TWIST_DURATION + 50);
+            }
+
+            _renderBoards(twist) {
+                const nextDim = this.nextDim;
+                const showBefore = twist && this.previewView.value === 'before';
+                const cards = this.dimOrder.map(type => {
+                    const before = this._getBoard(type).flat();
+                    const after = twist ? this._getBoard(type, twist).flat() : before;
+                    const sign = FACE_SIGNS[type];
+                    const tiles = (showBefore ? before : after).map((face, i) => {
+                        const row = Math.floor(i / Rubik.SIZE);
+                        const col = i % Rubik.SIZE;
+                        const shade = (row + col) % 2 ? 'dark' : 'light';
+                        const affected = before[i] !== after[i] ? ' affected' : '';
+                        return `<span class="mini-square ${shade}${affected}" style="--row:${row};--col:${col}" data-zodiac="${sign}">${pieceMarkup(face.piece)}</span>`;
+                    }).join('');
+                    const marker = type === this.activeDim ? ' current-board' : (type === nextDim ? ' chess-destination' : '');
+                    return `
+                        <article class="preview-card ${FACE_COLORS[type]}${marker}" data-face="${type}" role="button" tabindex="0"
+                            title="Turn the cube to show the ${FACE_NAMES[type]} board">
+                            <h3>${FACE_NAMES[type]} <span class="zodiac" aria-hidden="true">${sign}</span></h3>
+                            <div class="mini-board">${tiles}</div>
+                        </article>`;
+                });
+                if (twist) {
+                    const angle = ((twist.dir * 90 * this.pendingTwist.initialDirection % 360) + 360) % 360;
+                    this.previewDescription.textContent = this.pendingTwist.canAccept
+                        ? `Slice at ${angle}°. Chess is next on ${FACE_NAMES[nextDim]}.`
+                        : `Slice at ${angle}°. Turn it again to leave a chess move.`;
+                }
+                this.previewBoards.innerHTML = cards.join('');
+            }
+
+            _backTwist() {
+                if (this.phase !== 'preview') return;
+                const {twist, targets, wasModeLocked, cameraBefore} = this.pendingTwist;
+                this.pendingTwist = null;
+                this.phase = 'rotating';
+                this.preview.hidden = true;
+                this._renderBoards();
+                this._ui('1. Returning the cube to its previous position');
+                const nearestFullTurn = Math.round(twist.dir / 4) * 360;
+                targets.forEach(c => c.setRotation(twist.axis, nearestFullTurn, true));
+                setTimeout(() => {
+                    targets.forEach(c => c.clearRotation());
+                    this.rot = cameraBefore;
+                    this._update();
+                    this.blackPlayer.disabled = wasModeLocked;
+                    this.phase = 'rubik';
+                    this._ui();
+                }, TWIST_DURATION + 50);
+            }
+
+            _acceptTwist() {
+                if (this.phase !== 'preview' || !this.pendingTwist.canAccept) return;
+                const {twist, targets} = this.pendingTwist;
+                this.pendingTwist = null;
+                this.preview.hidden = true;
+                targets.forEach(c => c.applyPhysics(twist.axis, twist.dir));
+                this.activeDim = this.nextDim;
+                this.phase = 'chess';
+                this._focus();
+                this._renderBoards();
+                this._ui();
+                if (this.isAI) this._aiChessMove();
+            }
+
+            _focus(type = this.activeDim, glide = false) {
+                const rotMap = { 4: [0,0], 1: [0,-90], 5: [0,180], 0: [0,90], 2: [-90,0], 3: [90,0] };
+                const r = rotMap[type];
+                this.rot = Quaternion.fromRotation([1,0,0], r[0]).multiply(Quaternion.fromRotation([0,1,0], r[1]));
+                clearTimeout(this.glideTimer);
+                this.node.style.transition = glide ? 'transform .6s ease' : '';
+                if (glide) this.glideTimer = setTimeout(() => { this.node.style.transition = ''; }, 650);
+                this._update();
+            }
+
+            _build() {
+                const S = Rubik.SIZE;
+                for(let z=0; z<S; z++) for(let y=0; y<S; y++) for(let x=0; x<S; x++) {
+                    if(x>0 && x<S-1 && y>0 && y<S-1 && z>0 && z<S-1) continue;
+                    const c = new Cube([x,y,z]);
+                    this.cubes.push(c);
+                    this.node.appendChild(c._node);
+                    if(z==0) c.setFace(4);
+                    if(z==S-1) c.setFace(5);
+                    if(x==0) c.setFace(0);
+                    if(x==S-1) c.setFace(1);
+                    if(y==0) c.setFace(2);
+                    if(y==S-1) c.setFace(3);
+                }
+            }
+            
+            _initPieces() {
+                const backRow = ['r','n','b','q','k','b','n','r'];
+                this.dimOrder.forEach(d => {
+                    this._getBoard(d).forEach((row, r) => row.forEach((f, c) => {
+                        if(r===0) f.setPiece(backRow[c], 'w');
+                        if(r===1) f.setPiece('p', 'w');
+                        if(r===6) f.setPiece('p', 'b');
+                        if(r===7) f.setPiece(backRow[c], 'b');
+                    }));
+                });
+            }
+
+            _update() { this.node.style.transform = `translateZ(-600px) scale(var(--cube-scale, 1)) ${this.rot.toRotation()}`; }
+            
+            _ui(message) {
+                const nextDim = this.nextDim;
+                document.getElementById('lbl-dimension').innerText = FACE_NAMES[this.activeDim].toUpperCase();
+                document.getElementById('lbl-next-dim').innerText = FACE_NAMES[nextDim].toUpperCase();
+                const pEl = document.getElementById('lbl-player');
+                pEl.innerText = this.turn === 'w' ? "WHITE" : (this.isAI ? "BLACK (COMPUTER)" : "BLACK");
+                pEl.style.color = this.turn === 'w' ? "#fff" : "#b3aabd";
+                this.focusButton.disabled = this.phase === 'rotating' || this.phase === 'preview';
+                const previewReady = this.phase === 'preview';
+                this.backButton.disabled = !previewReady;
+                this.turnBackButton.disabled = !previewReady;
+                this.turnMoreButton.disabled = !previewReady;
+                this.previewView.disabled = !previewReady;
+                this.acceptButton.disabled = !previewReady || !this.pendingTwist?.canAccept;
+                
+                const prompts = {
+                    rubik: this.isAI ? "1. Computer is choosing a cube slice" : "1. Swipe a cube slice to rotate it",
+                    rotating: "1. Rotating the cube",
+                    preview: "1. Drag the glowing slice to turn it. Drag elsewhere to look around.",
+                    chess: this.isAI ? "2. Computer is choosing a chess move" : "2. Select a piece, then a highlighted square",
+                    over: "Game over. No twist leaves this player a chess move."
+                };
+                document.getElementById('lbl-phase').innerText = message || prompts[this.phase];
+                
+                this.surfaces.forEach((surface, type) => surface.classList.toggle('active-dim', type === this.activeDim));
+                this.cubes.forEach(c => {
+                    for (const face of Object.values(c.getFaces())) {
+                        face.node.classList.toggle('active-dim', face.type === this.activeDim);
+                        face.node.classList.toggle('next-dim', face.type === nextDim);
+                    }
+                });
+            }
+        }
+
+        window.onload = () => {
+            startSpace();
+            return new Rubik(document.querySelector('.cube-container'));
+        };
+    </script>
+</body>
+</html>
