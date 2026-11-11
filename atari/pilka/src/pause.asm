@@ -214,4 +214,7 @@ bits dta 0
 buffer .ds 256
 bitmap ins '../gen/pause-bitmap.bin'
 friendly_bitmap ins '../gen/pause-friendly.bin'
+        ert * > $cd00
+        icl '../gen/sound-config.asm'
+        icl 'sound.asm'
         ert * > $d000

@@ -33,6 +33,7 @@ classic_settings .ds 11 ; original menu settings while a league match runs
 match_escape .ds 1
 match_abort .ds 1
 league_away_strength .ds 1
+sound_goal_pending .ds 1
         org $dd80
 irqvec    .ds 2
 nmivec    .ds 2

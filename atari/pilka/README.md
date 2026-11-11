@@ -4,7 +4,7 @@ Work-in-progress native 6502 conversion of the supplied `arlasoc.d64`.
 Players, goalkeepers and the ball use the original C64 sprites. Pitch geometry
 and match rules come from the C64 game. Grass pixels come from the supplied
 Amiga SWOS 25/26 archive. Pitch advertising is replaced by pixel-art flowers and Atari Fuji symbols.
-**Music and sound playback are disabled.**
+POKEY football effects are enabled; music remains disabled.
 
 ## Build and launch
 
@@ -210,13 +210,13 @@ cells excluded). Latest runs: four input scripts, 3,000-4,000 PAL frames
 each, at `$D600` and `$D700`: about 13,000 pictures, no differing pixel, one
 game-loop iteration per frame, 0.91-1.0 pictures per frame. `tools/test_port.py`
 checks boot, menu navigation, match start, that the formation records the
-game reads equal the C64 data, and silent POKEY, at both register pages.
+game reads equal the C64 data, and two-channel POKEY configuration, at both register pages.
 
 Not validated: this renderer in Altirra or on real hardware (it relies on
 MEMAC-A at `$C000` with the OS ROM off, code executed from VRAM, blitter OR/XOR
 modes and a zero destination step), NTSC timing, complete matches and every
 menu mode. Blitter speed in the model is an estimate, so the real picture
-rate may differ. Sound remains disabled.
+rate may differ. Sound balance and pitch still need listening in Altirra or on hardware.
 
 League menu safety: Fire on the table, squads, fixtures and results returns
 to the club menu. Only Play Next Match starts league play. Selecting a club
@@ -272,3 +272,30 @@ adjacent-roll correlation. Stronger clubs tend to win, but draws and upsets
 remain possible. Results feed the existing points/goal-difference table.
 `tools/test_league_simulation.py` checks rating distributions, score bounds,
 strength effects and upsets across every nonzero random seed.
+
+## Football sound effects
+
+The 50 Hz POKEY engine uses two channels: kicks/referee whistles/menu clicks
+on channel 1 and crowd noise on channel 2. Whistles take priority over kicks.
+Full-time uses a longer pulsed whistle; goals trigger a crowd roar followed by
+a celebration fade. Pausing mutes match sounds; menus have quiet input clicks.
+
+Crowd frequency, volume and ramp settings were extracted from the supplied
+`alter/Atari_Soccer_VBXE_R90.xex` routine at VRAM `$6AEC0`. Provenance and
+its SHA-256 are in `assets/sound/alter-crowd.json`; rerun
+`python3 tools/extract_alter_sound.py` to extract them again. Normal builds use
+that small JSON file and do not require the alternate XEX. The event handling
+is adapted to our engine; the alternate game's music engine is not imported.
+
+The supplied Amiga SWOS source uses separate kick, foul/game-state whistle
+and crowd events. This version follows that approach with synthesized POKEY
+effects, not copied Amiga PCM samples, chants or speech. The original disabled
+SID player stays disabled. Its kick/whistle request bytes are consumed by the
+new engine; the crowd/state byte used by game logic is preserved.
+
+Audio code occupies spare space at `$CD00` in the pause VRAM bank (`$73000`),
+with one resident goal flag and a small bank-switch bridge. It allocates no new
+VRAM bank and preserves both graphics mappings and zero-page pointers.
+`python3 tools/test_sound.py` checks the assembled engine at both VBXE pages,
+including duration, priorities, crowd ramps, menu/pause muting and bank safety.
+These are register-level headless checks, not a listening test.

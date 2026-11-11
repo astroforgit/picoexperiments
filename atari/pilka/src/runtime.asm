@@ -128,6 +128,7 @@ input1  sta joy1
         bne input2
         and #$ef
 input2  sta joy2
+        jsr sound_bridge
         lda league_screen
         bne skip_tick
         ; The C64 raster interrupt: only when the game has enabled it and
@@ -186,6 +187,18 @@ vbrel_14
 pause_forfeit
         jmp league_match_end
 pause_resume
+        rts
+sound_bridge
+vbrel_15
+        lda $d65f
+        pha
+        lda #$f3
+vbrel_16
+        sta $d65f
+        jsr $cd00
+        pla
+vbrel_17
+        sta $d65f
         rts
         icl 'league-bridge.asm'
 
@@ -403,6 +416,7 @@ league_goal
         pha
         cmp #99
         bcs goal_done
+        inc sound_goal_pending
         lda league_match
         cmp #1
         bne goal_done
@@ -431,7 +445,7 @@ goal_done
 ; boot-only part occupied (staged at VRAM $5F000), then start the game.
 finish_boot
         lda #$80|$17
-vbrel_15
+vbrel_18
         sta $d65d
         ldx #0
 fb_copy
@@ -454,7 +468,7 @@ fb_copy
         inx
         bne fb_copy
         lda #0
-vbrel_16
+vbrel_19
         sta $d65d
         lda #<nmi
         sta $fffa
@@ -484,10 +498,10 @@ rt_boot
         ; MEMAC-A: 4K at $C000 = VRAM $7C000, where the loader staged the
         ; game's $C000-$CFFF. It stays mapped for good.
         lda #$c8
-vbrel_17
+vbrel_20
         sta $d65e
         lda #GBANK
-vbrel_18
+vbrel_21
         sta $d65f
         ; Again, now for the bridge code inside that bank.
         jsr relocate
@@ -507,7 +521,7 @@ restore_page
         lsr
         lsr
         ora #$80
-vbrel_19
+vbrel_22
         sta $d65d
         ldy #0
 restore_src
@@ -516,7 +530,7 @@ restore_src
         iny
         bne restore_src
         lda #0
-vbrel_20
+vbrel_23
         sta $d65d
 restore_copy
         lda $dd00,y
@@ -567,7 +581,7 @@ silence_pokey
         sta $ffff
         ; One-off blits through the scratch BCB at VRAM $6F100.
         lda #$9b
-vbrel_21
+vbrel_24
         sta $d65d
         ldy #0
 boot_blits
@@ -589,26 +603,26 @@ boot_bcb
         cpy #5*21
         bne boot_blits
         lda #0
-vbrel_22
+vbrel_25
         sta $d65d
         ; Fixed palette entries (palette 1): character and sprite colours.
         lda #1
-vbrel_23
+vbrel_26
         sta $d645
         ldx #0
 pal_loop
         lda palette,x
         beq pal_done
-vbrel_24
+vbrel_27
         sta $d644
         lda palette+1,x
-vbrel_25
+vbrel_28
         sta $d646
         lda palette+2,x
-vbrel_26
+vbrel_29
         sta $d647
         lda palette+3,x
-vbrel_27
+vbrel_30
         sta $d648
         inx
         inx
@@ -617,16 +631,16 @@ vbrel_27
         bne pal_loop
 pal_done
         lda #0
-vbrel_28
+vbrel_31
         sta $d641
         lda #$f0
-vbrel_29
+vbrel_32
         sta $d642
         lda #6
-vbrel_30
+vbrel_33
         sta $d643
         lda #3
-vbrel_31
+vbrel_34
         sta $d640
         ; C64 reset-state register shadows.
         ldx #63

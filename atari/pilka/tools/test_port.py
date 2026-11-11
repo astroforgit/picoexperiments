@@ -57,7 +57,7 @@ for f in range(args.frames):
                     'sprite_state':list(a.mem.ram[0x9f:0xfc]),
                     'audio_silent':all(not any(v[:9]) for v in a.pokey_log)})
   print(tag,'blits',a.blits,'ticks',a.mem.ram[r['FRAMES']],flush=True)
- assert not any(a.pokey[:9]), 'Unexpected POKEY audio output'
+ assert not any(a.pokey[4:9]), 'Effects must use only independent POKEY channels 1 and 2'
 assert a.blits>1000
 assert a.nmi_count>=args.frames-1
 if args.frames>=900:
@@ -68,4 +68,4 @@ report={'vbxe_page':hex(args.page),'pal':True,'frames':args.frames,
         'xex_sha256':hashlib.sha256((ROOT/'pilka.xex').read_bytes()).hexdigest(),
         'snapshots':snapshots,'limitations':'Headless model only; full match, scoring and real hardware are not covered.'}
 (ROOT/f'analysis/test-{args.page:02x}.json').write_text(json.dumps(report,indent=2)+'\n')
-print(f'PASS: boot, exact banner upload, instruction execution, {records} formation records, VBXE drawing and silent POKEY.')
+print(f'PASS: boot, exact banner upload, instruction execution, {records} formation records, VBXE drawing and two-channel POKEY configuration.')

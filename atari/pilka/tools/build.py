@@ -108,6 +108,8 @@ def main():
  draw.text((12,10),'RETURN TO MAIN MENU',font=ImageFont.load_default(),fill=1)
  (GEN/'pause-friendly.bin').write_bytes(popup.tobytes())
  (GEN/'pause-state.asm').write_text(f"SEASON_TEAM = ${league_labels['SEASON_TEAM']:04x}\nHOME_TEAM = ${league_labels['HOME_TEAM']:04x}\n")
+ crowd=json.loads((ROOT/'assets/sound/alter-crowd.json').read_text())
+ (GEN/'sound-config.asm').write_text(''.join(f'CROWD_{name.upper()}_{key.upper()} = {value}\n' for name,params in crowd['parameters'].items() for key,value in params.items()))
  assemble('pause.asm')
  pause=bytearray(4096)
  for addr,data in segments((GEN/'pause.asm.obx').read_bytes()):

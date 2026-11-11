@@ -1,0 +1,25 @@
+{
+  "source": "alter/Atari_Soccer_VBXE_R90.xex",
+  "sha256": "22fb94e113b1d48386624c2af5b2a343cf96092a867cb2fcac12819a5d870f83",
+  "routine_vram": "0x6aec0",
+  "distortion": 128,
+  "parameters": {
+    "idle": {
+      "volume": 2,
+      "frequency": 54
+    },
+    "attack": {
+      "volume": 5,
+      "frequency": 48
+    },
+    "goal": {
+      "volume": 10,
+      "frequency": 33
+    },
+    "celebration": {
+      "volume": 7,
+      "frequency": 42
+    }
+  },
+  "notes": "R90 ramps volume one step every four ticks, frequency one step per tick."
+}
