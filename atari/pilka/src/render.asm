@@ -1540,50 +1540,51 @@ queue_art
         sta sdstmid
         lda #$11
         sta szoom
+        lda league_title_large
+        beq art_ready
+        lda #0
+        sta szoom
+        lda #<(88*320+216)
+        sta sdstlo
+        lda #>(88*320+216)
+        sta sdstmid
+art_ready
         lda #$ff
         sta source_mask
         jsr front_slot
         jmp write_front
 
 queue_title
-        lda #<(4*320+24)
-        sta sdstlo
-        lda #>(4*320+24)
-        sta sdstmid
         ldx #0
-title_glyph
-        txa
-        pha
+        lda league_screen
+        beq title_size
+        ldx league_title_large
+title_size
         lda title_lo,x
         sta ssrclo
         lda title_mid,x
         sta ssrcmid
-        lda title_bank,x
-        sta source_bank
-        lda #8
-        sta source_stride
         lda #7
+        sta source_bank
+        lda title_width,x
+        sta source_stride
+        sec
+        sbc #1
         sta sw
+        lda title_height,x
+        sec
+        sbc #1
         sta sh
-        lda #$11
+        lda title_dst_lo,x
+        sta sdstlo
+        lda title_dst_hi,x
+        sta sdstmid
+        lda title_zoom,x
         sta szoom
         lda #$ff
         sta source_mask
         jsr front_slot
-        jsr write_front
-        clc
-        lda sdstlo
-        adc #16
-        sta sdstlo
-        bcc title_next
-        inc sdstmid
-title_next
-        pla
-        tax
-        inx
-        cpx #17
-        bne title_glyph
-        rts
+        jmp write_front
         icl '../gen/title-art.asm'
 
         icl '../gen/league-art.asm'

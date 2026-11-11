@@ -26,7 +26,7 @@ def check_text(row, col, text):
 a.run_frames(24)
 check_text(23,3,'GAME BY ASTROFOR')
 check_text(23,31,'V1.0.0')
-check_text(12,3,'CREDITS')
+check_text(16,3,'CREDITS')
 press(stick=14)
 assert state('SELECTION') == 3
 preview=ROOT/'analysis/credits-preview'
@@ -35,10 +35,12 @@ a.screenshot(preview/'main.png',scale=2)
 season=bytes(a.vram[0x7b000:0x7b003])
 press(fire=True)
 assert state('MENU_PAGE') == 11
-check_text(7,5,'CREDITS')
-check_text(12,5,'AMIGA SENSIBLE WORLD OF SOCCER')
-check_text(14,5,'INSPIRED BY THE C64 GAME')
-check_text(15,5,'ARLASOFT SOCCER BY ARLASOFT')
+check_text(6,5,'CREDITS')
+check_text(11,5,'AMIGA SENSIBLE WORLD OF SOCCER')
+check_text(13,5,'INSPIRED BY THE C64 GAME')
+check_text(14,5,'ARLASOFT SOCCER BY ARLASOFT')
+check_text(16,5,'GREETINGS TO MARBED AND HIS')
+check_text(17,5,'ATARI SUPER SOCCER')
 a.screenshot(preview/'credits.png',scale=2)
 for stick in (13,14,7,11):
     press(stick=stick)

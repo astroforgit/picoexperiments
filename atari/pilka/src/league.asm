@@ -100,6 +100,8 @@ show_page
         sta menu_page
         sta selection
 abort_done
+        lda #0
+        sta league_title_large
         lda #$ff
         sta league_art_id
         jsr clear_screen
@@ -174,6 +176,8 @@ pages   dta a(home_page,pick_page,table_page,squad_page,fixtures_page,results_pa
 actions dta a(home_action,pick_action,table_action,squad_action,fixtures_action,results_action,home_return,options_action,hub_action,confirm_action,difficulty_action,credits_action)
 
 home_page
+        lda #1
+        sta league_title_large
         lda #23
         sta row
         ldx #3
@@ -186,7 +190,7 @@ home_page
         jsr print_at
         lda selection
         sta league_art_id
-        lda #6
+        lda #10
         sta row
         lda #0
         sta list_index
@@ -212,7 +216,7 @@ home_next
         lda selection
         cmp #2
         bne home_help
-        lda #16
+        lda #18
         sta row
         ldx #3
         lda #<no_season
@@ -277,6 +281,8 @@ begin_picker
 ; Modal credits panel. Direction input cannot launch or change a game.
 credits_page
         jsr home_page
+        lda #0
+        sta league_title_large
         lda #$ff
         sta league_art_id
         lda #5
@@ -307,7 +313,7 @@ credits_line
         jsr print_at
         ldx list_index
         inx
-        cpx #7
+        cpx #9
         bcc credits_line
         lda #22
         sta row
@@ -330,9 +336,9 @@ credits_close
         sta selection
 credits_done
         rts
-credits_rows dta 7,9,11,12,14,15,18
-credits_lo dta <credits_label,<author_label,<credits_amiga_intro,<credits_amiga,<credits_c64_intro,<credits_c64,<credits_help
-credits_hi dta >credits_label,>author_label,>credits_amiga_intro,>credits_amiga,>credits_c64_intro,>credits_c64,>credits_help
+credits_rows dta 6,8,10,11,13,14,16,17,19
+credits_lo dta <credits_label,<author_label,<credits_amiga_intro,<credits_amiga,<credits_c64_intro,<credits_c64,<greetings_one,<greetings_two,<credits_help
+credits_hi dta >credits_label,>author_label,>credits_amiga_intro,>credits_amiga,>credits_c64_intro,>credits_c64,>greetings_one,>greetings_two,>credits_help
 
 pick_page
         lda #4
@@ -1646,6 +1652,8 @@ credits_amiga dta c'AMIGA SENSIBLE WORLD OF SOCCER',0
 credits_c64_intro dta c'INSPIRED BY THE C64 GAME',0
 credits_c64 dta c'ARLASOFT SOCCER BY ARLASOFT',0
 credits_help dta c'FIRE OR ESC CLOSE',0
+greetings_one dta c'GREETINGS TO MARBED AND HIS',0
+greetings_two dta c'ATARI SUPER SOCCER',0
         ert * > $d000
         ; Immutable menu text shares spare roster-bank space.
         org LEAGUE_TEXT_DATA

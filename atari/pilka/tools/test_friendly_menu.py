@@ -80,7 +80,7 @@ press(stick=7)
 assert ram[0x92b8] != old_pitch and ram[0x92b7] == 0
 atari.run_frames(24)
 renderer=load_labels(ROOT / "gen/render.asm.lab")
-assert ram[renderer["NFRONT"]] == 17, "Only title glyphs belong in the menu sprite list"
+assert ram[renderer["NFRONT"]] == 1, "Only the title bitmap belongs in the menu sprite list"
 assert bytes(atari.vram[0x7c000+160:0x7c000+200]) == bytes([0xfd])*40
 if args.preview:
     args.preview.mkdir(parents=True,exist_ok=True)

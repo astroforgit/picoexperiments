@@ -46,13 +46,23 @@ def check_art(index):
     front = ram[runtime["FRONT"]] << 16
     frame = atari.vram[front:front+64000].reshape(200, 320)
     assert {0xc0, 0xc1, 0xc4}.issubset(set(frame.flat)), "Menu font or theme did not render"
-    title = frame[4:20, 24:296]
-    assert {0xd0, 0xd2, 0xd4, 0xd6}.issubset(set(title.flat)), "Neon title missing"
-    assert not np.any(title == 0xc2), "Old red title strip remains"
+    large = bool(ram[runtime["LEAGUE_TITLE_LARGE"]])
+    y,x,w,h,addr = (12,60,100,28,0x70500) if large else (8,56,208,16,0x77300)
+    expected_title = atari.vram[addr:addr+w*h].reshape(h,w)
+    if large:
+        expected_title=expected_title.repeat(2,0).repeat(2,1)
+        w*=2
+        h*=2
+    assert np.array_equal(frame[y:y+h,x:x+w],expected_title), "Classic title mismatch"
+    assert not np.any((frame[4:y,24:296] >= 0xd0) & (frame[4:y,24:296] <= 0xd3)), "Top padding missing"
+    assert {0xd0,0xd1}.issubset(set(expected_title.flat)), "Classic title colors missing"
     start = ART_PAGES[index]
     expected = atari.vram[start:start+ART_WIDTH*ART_HEIGHT].reshape(ART_HEIGHT, ART_WIDTH)
     assert np.unique(expected).size > 8
-    assert np.array_equal(frame[40:160, 176:304], expected.repeat(2, 0).repeat(2, 1))
+    if large:
+        assert np.array_equal(frame[88:148,216:280], expected)
+    else:
+        assert np.array_equal(frame[40:160,176:304], expected.repeat(2, 0).repeat(2, 1))
 
 
 def preview(name):
@@ -88,7 +98,7 @@ hint = "ESC BACK  LEFT RIGHT CHANGE"
 glyphs = bytes(ord(c)+0x98 if c != " " else 0xfd for c in hint)
 assert bytes(atari.vram[0x7c000+922:0x7c000+922+len(glyphs)]) == glyphs
 frame = atari.vram[front:front+64000].reshape(200, 320)
-assert {0xc0, 0xc1, 0xd0, 0xd4}.issubset(set(frame.flat)), "Classic menu theme missing"
+assert {0xc0, 0xc1, 0xd0, 0xd1}.issubset(set(frame.flat)), "Classic menu theme missing"
 preview("classic")
 press(stick=11, fire=True)
 check_art(1)

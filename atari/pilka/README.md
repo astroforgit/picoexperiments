@@ -256,10 +256,16 @@ breaks in the fixed-width Atari menu grid. The menu font is stored in spare VRAM
 advertising tiles and character layer; it does not reduce season capacity.
 `tools/menu_style.py` generates these tiles and the renderer lookup tables.
 
-The main title is a wide cyan-to-pink retrowave wordmark with italic pixel
-lettering and a purple shadow. `tools/title_art.py` builds its glyphs into
-the unused final 256 bytes of three illustration pages. The renderer scales
-them 2x, replacing the old title strip without reserving another VRAM page.
+The title uses the selected Compact football classic artwork, converted by
+`tools/title_art.py` from `assets/title-classic-source.png` to ivory, green
+and gold. The main menu displays the two-line title at (60,12), 200x56 pixels,
+with options below it and a smaller football illustration beside them.
+Submenus and Friendly settings use a 208x16 one-line header at (56,8).
+The 100x28 main bitmap occupies unused list-bank space at `$70500`; the
+compact header uses `$77300-$77FFF`, beyond the light-pitch tiles accessed
+by the renderer (characters 0-202). The loader stages that header with the
+light tiles so startup preserves it. Credits also greet Marbed and his
+Atari Super Soccer.
 
 `tools/test_friendly_menu.py` checks the four-entry menu, fixed Friendly mode,
 option wrapping, removed previews and league isolation when cancelling.
