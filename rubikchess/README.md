@@ -10,5 +10,6 @@ Open [index.html](index.html) in a browser to play. The game is self-contained a
 2. Drag elsewhere to orbit the cube, or select a board in the bottom panel to face it. The panel shows all six boards throughout play. During preview, compare **Before twist** and **After twist**. Gold marks the squares moved by the twist.
 3. Select **Back** to restore the starting position and choose a different slice. Select **Accept** to commit the twist and go to the next face.
 4. Select one of your pieces and a highlighted destination to complete the chess move.
+5. After the computer plays, use **Previous** and **Next** to review its starting position, cube twist, and chess move. The bottom boards highlight the changes. Select **OK · Your turn** when ready. OK restores the computer’s final position even when you are viewing an earlier review step.
 
 The active face uses a dark checkerboard with white borders. Each face has a slowly pulsing zodiac emblem that stays fixed while the pieces move. The selected slice turns translucent, and the cube’s surfaces briefly become translucent as gravitational waves pass through the scene.

@@ -213,6 +213,11 @@
             #status-bar { padding: 12px; font-size: .875rem; }
             .mini-board { --tile: 12px; }
         }
+
+        #ai-review { border-top: 1px solid #51657e; }
+        #ai-review[hidden] { display: none; }
+        #review-ok { background: #c6dcff; color: #142138; padding: 14px 34px; font-size: 1.1rem; }
+        body:has(#ai-review:not([hidden])) .board-overview { display: none; }
     </style>
 </head> 
 <body>
@@ -265,6 +270,14 @@
                     </select>
                     <button id="btn-back" class="btn" type="button">Back</button>
                     <button id="btn-accept" class="btn" type="button">Accept</button>
+                </div>
+            </div>
+            <div id="ai-review" class="preview-header" hidden>
+                <div><h2>Computer turn</h2><p id="review-step" role="status"></p></div>
+                <div class="preview-actions">
+                    <button id="review-previous" class="btn">Previous</button>
+                    <button id="review-next" class="btn">Next</button>
+                    <button id="review-ok" class="btn">OK · Your turn</button>
                 </div>
             </div>
             <div class="preview-boards" id="preview-boards" tabindex="0" role="region" aria-label="All six boards"></div>
@@ -953,6 +966,21 @@
                 ['mouseup','touchend'].forEach(e => document.addEventListener(e, this._up.bind(this)));
                 document.addEventListener('touchcancel', () => { this.drag.active = false; });
                 
+                this.reviewPanel = document.getElementById('ai-review');
+                this.reviewPrevious = document.getElementById('review-previous');
+                this.reviewNext = document.getElementById('review-next');
+                this.reviewOK = document.getElementById('review-ok');
+                this.reviewPrevious.onclick = () => this._reviewStep(-1);
+                this.reviewNext.onclick = () => this._reviewStep(1);
+                this.reviewOK.onclick = () => {
+                    if (this.phase !== 'review') return;
+                    this._restorePosition(this.aiReview.positions[2]);
+                    this.aiReview = null;
+                    this.reviewPanel.hidden = true;
+                    this.turn = 'w';
+                    this._focus();
+                    this._beginTurn();
+                };
                 this.focusButton.onclick = () => this._focus();
                 this.backButton.onclick = () => this._backTwist();
                 this.acceptButton.onclick = () => this._acceptTwist();
@@ -1091,9 +1119,18 @@
             }
 
             _movePiece(from, to) {
+                const computer = this.isAI;
+                if (computer) this.aiReview.move = {from, to, piece: {...from.piece}};
                 to.setPiece(from.piece.type, from.piece.color);
                 from.clearPiece();
                 this._deselect();
+                if (computer) {
+                    this.aiReview.positions.push(this._savePosition());
+                    this.aiReview.step = 2;
+                    this.reviewPanel.hidden = false;
+                    this._showReview();
+                    return;
+                }
                 this.turn = this.turn === 'w' ? 'b' : 'w';
                 this._beginTurn();
             }
@@ -1226,6 +1263,7 @@
             _animateRotate(twist) {
                 if (this.phase !== 'rubik') return;
                 const {axis, layer, dir} = twist;
+                if (this.isAI) this.aiReview = {twist: {...twist}, positions: [this._savePosition()]};
                 const targets = this.cubes.filter(c => c.getPosition()[axis] === layer);
                 this.pendingTwist = {
                     twist: {axis, layer, dir: 0}, targets, initialDirection: Math.sign(dir),
@@ -1327,7 +1365,114 @@
                 this._focus();
                 this._renderBoards();
                 this._ui();
-                if (this.isAI) this._aiChessMove();
+                if (this.isAI) {
+                    this.aiReview.positions.push(this._savePosition());
+                    this._aiChessMove();
+                }
+            }
+
+
+            _savePosition() {
+                return {
+                    dimension: this.activeDim,
+                    cubes: this.cubes.map(cube => ({
+                        position: [...cube.getPosition()],
+                        faces: Object.values(cube.getFaces()).map(face => ({
+                            face, type: face.type, piece: face.piece ? {...face.piece} : null
+                        }))
+                    })),
+                    boards: this.dimOrder.map(type => this._getBoard(type).flat())
+                };
+            }
+
+            _restorePosition(position) {
+                this._deselect();
+                this.activeDim = position.dimension;
+                position.cubes.forEach((saved, i) => {
+                    const cube = this.cubes[i];
+                    cube._position = [...saved.position];
+                    cube._faces = {};
+                    saved.faces.forEach(({face, type, piece}) => {
+                        face.setSquare(type);
+                        face.piece = piece ? {...piece} : null;
+                        face.renderPiece();
+                        cube._faces[type] = face;
+                    });
+                    cube.clearRotation();
+                });
+            }
+
+            _showReview() {
+                this.phase = 'review';
+                const step = this.aiReview.step;
+                const labels = [
+                    'Before the computer turn',
+                    'Cube twist — highlighted squares changed boards',
+                    'Chess move — highlighted squares show the start and destination'
+                ];
+                this._renderBoards();
+                this._ui(labels[step]);
+                document.getElementById('review-step').textContent = labels[step];
+                this.reviewPrevious.disabled = step === 0;
+                this.reviewNext.disabled = step === 2;
+                this.reviewOK.disabled = false;
+                this.dimOrder.forEach((type, i) => {
+                    const board = this._getBoard(type).flat();
+                    const cells = this.previewBoards.querySelectorAll('.' + FACE_COLORS[type] + ' .mini-square');
+                    board.forEach((face, square) => {
+                        const changed = step === 1
+                            ? face !== this.aiReview.positions[0].boards[i][square]
+                            : step === 2 && (face === this.aiReview.move.from || face === this.aiReview.move.to);
+                        cells[square].classList.toggle('affected', !!changed);
+                        face.node.classList.toggle('valid-move', !!changed);
+                    });
+                });
+            }
+
+            _reviewStep(direction) {
+                if (this.phase !== 'review') return;
+                const review = this.aiReview;
+                const next = review.step + direction;
+                if (next < 0 || next > 2) return;
+                this.phase = 'reviewing';
+                this.reviewPrevious.disabled = this.reviewNext.disabled = this.reviewOK.disabled = true;
+                this.node.querySelectorAll('.valid-move').forEach(node => node.classList.remove('valid-move'));
+                const twisting = Math.max(next, review.step) === 1;
+                if (twisting) {
+                    const {axis, layer, dir} = review.twist;
+                    const targets = this.cubes.filter(cube => cube.getPosition()[axis] === layer);
+                    targets.forEach(cube => cube.setRotation(axis, 0));
+                    void this.node.offsetWidth;
+                    targets.forEach(cube => cube.setRotation(axis, dir * direction * 90, true));
+                } else {
+                    const {from, to, piece} = review.move;
+                    this._focus(review.positions[1].dimension);
+                    const source = direction > 0 ? from : to;
+                    const target = direction > 0 ? to : from;
+                    const a = source.node.getBoundingClientRect();
+                    const b = target.node.getBoundingClientRect();
+                    const ghost = document.createElement('div');
+                    ghost.innerHTML = pieceMarkup(piece);
+                    Object.assign(ghost.style, {
+                        position: 'fixed', pointerEvents: 'none', zIndex: 200,
+                        left: a.left + 'px', top: a.top + 'px', width: a.width + 'px',
+                        height: a.height + 'px', display: 'grid', placeItems: 'center',
+                        fontSize: Math.max(16, a.width * .65) + 'px'
+                    });
+                    document.body.appendChild(ghost);
+                    source.node.querySelector('.piece').style.visibility = 'hidden';
+                    ghost.animate([
+                        {transform: 'translate(0, 0)'},
+                        {transform: 'translate(' + (b.left-a.left) + 'px, ' + (b.top-a.top) + 'px)'}
+                    ], {duration: TWIST_DURATION, fill: 'forwards', easing: 'ease-in-out'});
+                    setTimeout(() => ghost.remove(), TWIST_DURATION + 50);
+                }
+                setTimeout(() => {
+                    this._restorePosition(review.positions[next]);
+                    review.step = next;
+                    this._focus();
+                    this._showReview();
+                }, TWIST_DURATION + 50);
             }
 
             _focus(type = this.activeDim, glide = false) {
