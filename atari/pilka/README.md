@@ -29,7 +29,7 @@ Continue League resumes the current season in memory. Credits is the last
 main-menu item and opens a modal credit panel; Fire or Escape closes it and
 returns to Credits. The main-menu footer reads GAME BY ASTROFOR. The panel
 credits Amiga Sensible World of Soccer as a major inspiration and Arlasoft
-Soccer by Arlasoft as the C64 game this conversion is based on.
+Soccer by Arlasoft as the C64 game that inspired this project.
 
 Choosing or continuing a league opens a club menu. Use up/down and fire for
 Play Next Match, League Table, View Squads, Match Schedule, Last Results,

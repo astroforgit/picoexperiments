@@ -19,7 +19,7 @@ def press(stick=15, fire=False, key=None):
     a.set_input()
     a.run_frames(7)
 def check_text(row, col, text):
-    glyphs = bytes(ord(c)+0x98 if 'A'<=c<='Z' else 0xfd for c in text)
+    glyphs = bytes(ord(c)+0x98 if 'A'<=c<='Z' else ord(c)+0xc3 if '0'<=c<='9' else 0xfd for c in text)
     start=0x7b800+row*40+col
     assert bytes(a.vram[start:start+len(glyphs)]) == glyphs, text
 
@@ -36,6 +36,7 @@ press(fire=True)
 assert state('MENU_PAGE') == 11
 check_text(7,5,'CREDITS')
 check_text(12,5,'AMIGA SENSIBLE WORLD OF SOCCER')
+check_text(14,5,'INSPIRED BY THE C64 GAME')
 check_text(15,5,'ARLASOFT SOCCER BY ARLASOFT')
 a.screenshot(preview/'credits.png',scale=2)
 for stick in (13,14,7,11):

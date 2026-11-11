@@ -1633,7 +1633,7 @@ author_label dta c'GAME BY ASTROFOR',0
 help_credits dta c'ABOUT THE GAME AND ITS INSPIRATIONS',0
 credits_amiga_intro dta c'HEAVILY INSPIRED BY',0
 credits_amiga dta c'AMIGA SENSIBLE WORLD OF SOCCER',0
-credits_c64_intro dta c'BASED ON THE C64 GAME',0
+credits_c64_intro dta c'INSPIRED BY THE C64 GAME',0
 credits_c64 dta c'ARLASOFT SOCCER BY ARLASOFT',0
 credits_help dta c'FIRE OR ESC CLOSE',0
         ert * > $d000
