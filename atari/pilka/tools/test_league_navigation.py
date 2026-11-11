@@ -118,8 +118,9 @@ press(fire=True)
 press(fire=True)
 check_page(9)
 assert state("SEASON_ROUND") == 3 and state("POINTS") == 7
-press(fire=True)  # Cancel is the default.
-check_page(1)
+press(fire=True)  # Cancel resumes the existing league, like Continue.
+check_page(8)
+assert state("SEASON_ROUND") == 3 and state("POINTS") == 7
 escape()
 press(stick=13)
 press(stick=13)

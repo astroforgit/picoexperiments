@@ -214,7 +214,8 @@ rate may differ. Sound remains disabled.
 League menu safety: Fire on the table, squads, fixtures and results returns
 to the club menu. Only Play Next Match starts league play. Selecting a club
 for a new season while a season exists asks before deleting results; Cancel
-is selected initially. Continue retains the current season in VBXE memory.
+is selected initially. Cancel (or Escape from this confirmation) resumes
+the current league menu, just like Continue League. Continue retains the current season in VBXE memory.
 This is session storage, not a disk save, and does not survive rebooting.
 
 During a match, Escape pauses play and opens a confirmation over the pitch.

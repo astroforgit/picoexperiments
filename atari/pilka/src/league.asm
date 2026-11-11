@@ -363,7 +363,7 @@ parent_menu
         cmp #9
         bne parent_normal
 cancel_new
-        lda #1
+        lda #8
         sta menu_page
         rts
 parent_normal
