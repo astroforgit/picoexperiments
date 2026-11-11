@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/atari-sound-pages.yml'
       - 'atari-sound/**'
+      - 'rubikchess/**'
       - 'atari/zorro/editor/**'
       - 'atari/zorro/Zorro (1985)(Datasoft)(US).xex'
   workflow_dispatch:
@@ -30,6 +31,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Assemble static site
         run: python3 atari-sound/web/build_site.py _site
+      - name: Add Qubic Chess
+        run: cp -R rubikchess _site/rubikchess
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload site
