@@ -336,3 +336,21 @@ from the URL in the script; it is not bundled here. Results are recorded in
 `analysis/disk-loader-test.json`. Physical TNFS/SD hardware and OS interrupt
 timing still need a user test; this does not establish compatibility with
 every SD cartridge loader or firmware.
+
+## Joystick state inherited from loaders
+
+Startup explicitly sets all PORTA direction bits to input and selects the
+PORTA data register, preserving unrelated PACTL control bits. Previously the
+game relied on the loader/OS leaving this setup in place. An inherited
+output-low left line can look like a held-left joystick even when released.
+This is a plausible cause of the single-user left-touchline report, not a
+confirmed diagnosis of that user's hardware or camera behavior.
+
+`tools/test_joystick_init.py` boots with inherited output-low and DDR-selected
+states, then checks neutral readings, both joystick directions, fire and
+release through the running VBI. The headless PIA model now covers PORTA's
+direction/data selection. The startup fix does not suppress a real held
+direction or compensate for a faulty joystick/adapter. For a hardware retest,
+use a cold boot with a normal joystick in port 1 and port 2 empty; if drift
+remains, report whether it continues with both controllers unplugged and
+whether the camera follows a player or the entire picture shifts.

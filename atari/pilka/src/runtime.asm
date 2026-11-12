@@ -495,6 +495,17 @@ rt_boot
         ; OS ROM must stay disabled: this code executes underneath it.
         lda #$fe
         sta $d301
+        ; A loader/peripheral may leave joystick lines as outputs, or select
+        ; DDRA instead of PORTA. Re-establish both ports as inputs while
+        ; preserving PACTL's unrelated control bits. OS/NMI are off here.
+        lda $d302
+        and #$fb
+        sta $d302
+        lda #0
+        sta $d300
+        lda $d302
+        ora #4
+        sta $d302
         ; MEMAC-A: 4K at $C000 = VRAM $7C000, where the loader staged the
         ; game's $C000-$CFFF. It stays mapped for good.
         lda #$c8

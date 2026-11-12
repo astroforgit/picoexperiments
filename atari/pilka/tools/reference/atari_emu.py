@@ -82,6 +82,9 @@ class Atari:
         self.frame_cycles = PAL_FRAME if pal else NTSC_FRAME
         self.pokey = bytearray(16)
         self.pokey_log = []
+        self.pactl = 0x3c
+        self.porta_ddr = 0
+        self.porta_output = 0xff
         self.portb = 0xFF
         self.nmien = 0
         self.nmist = 0
@@ -159,7 +162,12 @@ class Atari:
         if addr == 0xD011:
             return self.in_trig1
         if addr == 0xD300:
-            return self.in_stick | (self.in_stick1 << 4)
+            if not self.pactl & 4:
+                return self.porta_ddr
+            pins = self.in_stick | (self.in_stick1 << 4)
+            return (pins & ~self.porta_ddr) | (self.porta_output & self.porta_ddr)
+        if addr == 0xD302:
+            return self.pactl
         if addr == 0xD301:
             return self.portb
         return 0xFF
@@ -193,6 +201,15 @@ class Atari:
             if addr == 0xD20E:
                 self.irqen = value
                 self.irqst |= ~value & 0xFF   # disabled sources read as idle
+            return
+        if addr == 0xD302:
+            self.pactl = value & 0x3f
+            return
+        if addr == 0xD300:
+            if self.pactl & 4:
+                self.porta_output = value
+            else:
+                self.porta_ddr = value
             return
         if addr == 0xD301:
             if value & 1 and self.cpu.pc >= 0xC000:
