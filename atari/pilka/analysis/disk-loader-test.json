@@ -1,0 +1,45 @@
+{
+  "picoboot_source": "https://raw.githubusercontent.com/FujiNetWIFI/fujinet-firmware/dbbb36d7d310f85e83248524471cc1731d6f5209/data/webui/device_specific/BUILD_ATARI/picoboot.bin",
+  "picoboot_sha256": "6850ad99d911556fd640e1aca846ec6847218ffc9baf71aab4457e42bf0a5f99",
+  "xex_sha256": "4d6ace6519a144e815315a2b13102f0e0d0af133a9158c5810edaf94f9e48c45",
+  "results": [
+    {
+      "result": "Duplicate header reproduces BRK within the first two XEX sectors",
+      "pc": "0x1",
+      "sectors": [
+        361,
+        369,
+        370
+      ]
+    },
+    {
+      "page": "0xd6",
+      "sector_size": 256,
+      "reads": 1594,
+      "uploads": 98,
+      "result": "RUN reached; VRAM identical"
+    },
+    {
+      "page": "0xd7",
+      "sector_size": 256,
+      "reads": 1594,
+      "uploads": 98,
+      "result": "RUN reached; VRAM identical"
+    },
+    {
+      "page": "0xd6",
+      "sector_size": 128,
+      "reads": 3225,
+      "uploads": 98,
+      "result": "RUN reached; VRAM identical"
+    },
+    {
+      "page": "0xd7",
+      "sector_size": 128,
+      "reads": 3225,
+      "uploads": 98,
+      "result": "RUN reached; VRAM identical"
+    }
+  ],
+  "limitations": "Mock SIO reads; not a physical FujiNet/SD or OS timing test"
+}

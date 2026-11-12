@@ -314,3 +314,25 @@ VRAM bank and preserves both graphics mappings and zero-page pointers.
 `python3 tools/test_sound.py` checks the assembled engine at both VBXE pages,
 including duration, priorities, crowd ramps, menu/pause muting and bank safety.
 These are register-level headless checks, not a listening test.
+
+## TNFS / SD XEX loading
+
+The XEX is intended for standard segment loaders, including FujiNet PicoBoot,
+with 64 KB Atari RAM and a VBXE FX 1.2x core. It has no direct TNFS or SD access:
+the device/OS loads the file, and each INIT copies a staged block into VBXE.
+
+A packaging bug previously added a second initial `FFFF` marker in front of
+the one already emitted by MADS. PicoBoot skips exactly one initial marker,
+so the duplicate is interpreted as the first load address. The actual
+PicoBoot code reproduces a BRK at `$0001` within the first two XEX sectors.
+The build now emits exactly one marker and asserts this invariant.
+
+`tools/test_disk_loader.py --picoboot /path/to/picoboot.bin` runs the actual
+FujiNet 6502 loader against simulated 128/256-byte SIO sectors at both VBXE
+addresses. It reproduces the old failure, reaches RUN with the corrected
+file, and compares every byte of uploaded VRAM against direct XEX loading.
+The script pins the upstream binary URL and SHA-256. Download that binary
+from the URL in the script; it is not bundled here. Results are recorded in
+`analysis/disk-loader-test.json`. Physical TNFS/SD hardware and OS interrupt
+timing still need a user test; this does not establish compatibility with
+every SD cartridge loader or firmware.

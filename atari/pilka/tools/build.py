@@ -210,7 +210,10 @@ def main():
  for pc,(n,txt) in sorted(ops.items()):listing.append(f'{pc:04X}  {bytes(cpu.memory[pc:pc+n]).hex(" "):8}  {txt}')
  (ROOT/'analysis/arlasoc-disassembly.txt').write_text('\n'.join(listing)+'\n')
  (GEN/'boot-defs.asm').write_text(f"RT_BOOT = ${labels['RT_BOOT']:04x}\n")
- boot=assemble('boot.asm');out=bytearray(b'\xff\xff')+(GEN/'boot.asm.obx').read_bytes()
+ # MADS already emits the initial FFFF marker. A second marker breaks
+ # PicoBoot's first-segment parser, corrupting low RAM before game INIT.
+ boot=assemble('boot.asm');out=bytearray((GEN/'boot.asm.obx').read_bytes())
+ assert out[:2]==b'\xff\xff' and out[2:4]!=b'\xff\xff', 'XEX must start with exactly one marker'
  out+=segment(0x2e2,struct.pack('<H',boot['DETECT']))
  # VRAM $6F000: display lists, compare list and tile slots (see render.asm).
  PREV,COLR,ROWF,SEGF,DIFF,LAYER=0x6e000,0x6e800,0x6f040,0x6f060,0x6f240,0x20000
