@@ -1,0 +1,220 @@
+{
+  "case": "wait-recover",
+  "frames": 1000,
+  "loops": 993,
+  "phases": {
+    "neutral": {
+      "joy1": [
+        15
+      ],
+      "joy2": [
+        15
+      ],
+      "map_x_range": [
+        21,
+        22
+      ],
+      "target_x_range": [
+        0,
+        41
+      ],
+      "loops": 93,
+      "last": {
+        "frame": 99,
+        "phase": "neutral",
+        "port_a": 255,
+        "joy1": 31,
+        "joy2": 31,
+        "engine_joy1": 31,
+        "engine_joy2": 31,
+        "controller0": 1,
+        "controller1": 255,
+        "player": 255,
+        "player_x": -1,
+        "player_y": -1,
+        "player2": 255,
+        "player2_x": -1,
+        "player2_y": -1,
+        "ball_x": 18433,
+        "ball_y": 43265,
+        "map_x": 21,
+        "map_y": 75,
+        "map_hi_x": 7,
+        "map_hi_y": 1,
+        "target_x": 41,
+        "target_y": 309,
+        "camera_dx": 0,
+        "camera_dy": 251,
+        "ring_x": 39,
+        "ring_y": 21,
+        "fine_x": 0,
+        "fine_y": 6,
+        "state": 0,
+        "loops": 93,
+        "front": 0,
+        "xdl": 454656,
+        "pc": 61495
+      }
+    },
+    "left": {
+      "joy1": [
+        11
+      ],
+      "joy2": [
+        15
+      ],
+      "map_x_range": [
+        3,
+        21
+      ],
+      "target_x_range": [
+        6,
+        1830
+      ],
+      "loops": 399,
+      "last": {
+        "frame": 499,
+        "phase": "left",
+        "port_a": 251,
+        "joy1": 27,
+        "joy2": 31,
+        "engine_joy1": 27,
+        "engine_joy2": 31,
+        "controller0": 1,
+        "controller1": 255,
+        "player": 255,
+        "player_x": -1,
+        "player_y": -1,
+        "player2": 255,
+        "player2_x": -1,
+        "player2_y": -1,
+        "ball_x": 15104,
+        "ball_y": 43265,
+        "map_x": 3,
+        "map_y": 42,
+        "map_hi_x": 0,
+        "map_hi_y": 6,
+        "target_x": 519,
+        "target_y": 309,
+        "camera_dx": 0,
+        "camera_dy": 255,
+        "ring_x": 21,
+        "ring_y": 13,
+        "fine_x": 7,
+        "fine_y": 1,
+        "state": 16,
+        "loops": 493,
+        "front": 1,
+        "xdl": 454688,
+        "pc": 61495
+      }
+    },
+    "release": {
+      "joy1": [
+        15
+      ],
+      "joy2": [
+        15
+      ],
+      "map_x_range": [
+        3,
+        3
+      ],
+      "target_x_range": [
+        8,
+        1800
+      ],
+      "loops": 149,
+      "last": {
+        "frame": 649,
+        "phase": "release",
+        "port_a": 255,
+        "joy1": 31,
+        "joy2": 31,
+        "engine_joy1": 31,
+        "engine_joy2": 31,
+        "controller0": 1,
+        "controller1": 255,
+        "player": 255,
+        "player_x": -1,
+        "player_y": -1,
+        "player2": 19,
+        "player2_x": 1544,
+        "player2_y": 309,
+        "ball_x": 18688,
+        "ball_y": 43265,
+        "map_x": 3,
+        "map_y": 43,
+        "map_hi_x": 0,
+        "map_hi_y": 4,
+        "target_x": 265,
+        "target_y": 309,
+        "camera_dx": 0,
+        "camera_dy": 1,
+        "ring_x": 21,
+        "ring_y": 14,
+        "fine_x": 7,
+        "fine_y": 3,
+        "state": 16,
+        "loops": 643,
+        "front": 1,
+        "xdl": 454688,
+        "pc": 61495
+      }
+    },
+    "right": {
+      "joy1": [
+        15
+      ],
+      "joy2": [
+        15
+      ],
+      "map_x_range": [
+        3,
+        23
+      ],
+      "target_x_range": [
+        13,
+        1830
+      ],
+      "loops": 349,
+      "last": {
+        "frame": 999,
+        "phase": "right",
+        "port_a": 255,
+        "joy1": 31,
+        "joy2": 31,
+        "engine_joy1": 31,
+        "engine_joy2": 31,
+        "controller0": 1,
+        "controller1": 255,
+        "player": 2,
+        "player_x": 37,
+        "player_y": 1555,
+        "player2": 19,
+        "player2_x": 1046,
+        "player2_y": 1564,
+        "ball_x": 52992,
+        "ball_y": 38656,
+        "map_x": 6,
+        "map_y": 5,
+        "map_hi_x": 6,
+        "map_hi_y": 0,
+        "target_x": 1817,
+        "target_y": 1810,
+        "camera_dx": 0,
+        "camera_dy": 255,
+        "ring_x": 24,
+        "ring_y": 1,
+        "fine_x": 1,
+        "fine_y": 7,
+        "state": 100,
+        "loops": 993,
+        "front": 0,
+        "xdl": 454656,
+        "pc": 61495
+      }
+    }
+  },
+  "limitations": "Headless PAL/NTSC timing model; not a trace from the reporting user"
+}

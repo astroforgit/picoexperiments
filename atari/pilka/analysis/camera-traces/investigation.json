@@ -1,0 +1,29 @@
+{
+  "xex_sha256": "92988303c29e91f499ee0ddb3f1cad2aa122f9e2b10d7a635bd073b650089c96",
+  "cases": {
+    "ntsc": 989,
+    "fire-recover": 993,
+    "left-release": 993,
+    "port2-left": 993,
+    "neutral": 993,
+    "wait-recover": 993
+  },
+  "frames_per_case": 1000,
+  "unused_port_camera_samples_identical": 1000,
+  "restart": {
+    "entered_frame": 477,
+    "resumed_frame_without_fire": 775,
+    "resumed_frame_with_fire": 775,
+    "duration_pal_seconds": 5.96
+  },
+  "pixel_oracle": {
+    "command": "SCRIPT=left-release python3 tools/test_renderer.py 1500",
+    "frames": 1500,
+    "pictures": 1254,
+    "pixel_failures": 0,
+    "palette_failures": 0,
+    "game_loops_per_frame_after_warmup": 1.0
+  },
+  "conclusion": "No permanent lock reproduced. A left-touchline out-of-play delay resumes automatically after 298 PAL frames in the tested sequence. The previous inherited-PIA-state fix addresses a demonstrated phantom-left condition, but the reporting user has not confirmed the cause.",
+  "limitations": "Emulator traces only, using deterministic model inputs/randomness; no capture from the reporting computer."
+}

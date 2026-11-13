@@ -6,7 +6,7 @@ foreground) of the game state the renderer sampled. Generated advertising
 cells are excluded. Styled menus are covered by test_league_art.py instead
 of the original C64 font oracle. Also reports game-loop and picture rates.
 
-  python3 tools/test_renderer.py [frames]   (SCRIPT=a|up|down|rnd, PAGE=d6|d7,
+  python3 tools/test_renderer.py [frames]   (SCRIPT=a|up|down|rnd|left-release, PAGE=d6|d7,
                                              OUT=dir EVERY=n to save pictures)"""
 import sys,os
 from pathlib import Path
@@ -148,6 +148,7 @@ a.cpu.step=hook
 SCRIPT=os.environ.get('SCRIPT','a')
 def inputs(f):
  if f<600:return dict(trig=100<=f<125)
+ if SCRIPT=='left-release':return dict(trig=f%90<3 and not 1100<=f<1250,stick=11 if f<1100 else 15 if f<1250 else 7)
  if SCRIPT=='a':return dict(trig=(f%160<12),stick=[7,14,11,13,6,10,9,5][(f//140)%8])
  if SCRIPT=='up':return dict(trig=(f%200<8),stick=14 if (f//300)%3<2 else 10)
  if SCRIPT=='down':return dict(trig=(f%200<8),stick=13 if (f//300)%3<2 else 5)

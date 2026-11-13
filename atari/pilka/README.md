@@ -354,3 +354,36 @@ direction or compensate for a faulty joystick/adapter. For a hardware retest,
 use a cold boot with a normal joystick in port 1 and port 2 empty; if drift
 remains, report whether it continues with both controllers unplugged and
 whether the camera follows a player or the entire picture shifts.
+
+## Camera/input trace investigation
+
+`python3 tools/trace_camera.py --case left-release` captures 1,000 frames
+of joystick PORTA, Atari joystick shadows, the C64 engine's input bytes,
+selected players, camera target/map coordinates, scrolling-ring position,
+match state, game-loop count and published XDL address. CSV, JSON and
+screenshots go to `analysis/camera-traces/`. Coordinate pairs are raw engine
+values, not screen-pixel units. Cases are `neutral`, `left-release`,
+`port2-left`, `ntsc`, `fire-recover` and `wait-recover`.
+
+The scenario starts a league match, uses neutral direction for 100 frames,
+LEFT for 400 frames, release for 150 frames, then RIGHT for 350 frames.
+`neutral` leaves directions neutral throughout; `port2-left` applies LEFT
+only to the unused second controller. Fire pulses advance play except in
+the release phase. In the final phase `fire-recover` uses only Fire and
+`wait-recover` supplies neither movement nor Fire after frame 500. NTSC is
+a timing comparison, not a certification of NTSC hardware support.
+
+`SCRIPT=left-release python3 tools/test_renderer.py 1500` additionally checks
+published match pictures against the independent C64 pixel reference while
+driving left, releasing and moving right. These traces come from the
+headless model, not from the user who reported the issue.
+
+Trace findings on the joystick-initialization build: all six 1,000-frame
+cases completed without a permanent lock. Camera/game/publication samples
+were identical in the neutral-direction and unused-port-LEFT cases. The
+left-touchline out-of-play state began at frame 477 and ended at frame 775
+in both the Fire and no-Fire recovery runs: a 5.96-second PAL restart delay,
+with the game loop still advancing. The 1,500-frame pixel-oracle run checked
+1,254 published pictures with zero pixel/palette mismatches. Full results
+and limitations are in `analysis/camera-traces/investigation.json`. This
+does not identify the absent tester's exact cause or establish NTSC support.
