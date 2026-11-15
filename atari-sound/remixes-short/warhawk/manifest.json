@@ -1,0 +1,14 @@
+{
+  "id": "warhawk",
+  "title": "Warhawk",
+  "remix": "Afterburner",
+  "author": "Rob Hubbard",
+  "directory": "remixes/warhawk",
+  "source": "asma/asma/Composers/Hubbard_Rob/Warhawk.sap",
+  "duration_seconds": 22.54278362984628,
+  "frames": 1124,
+  "lead_channel": 3,
+  "changed_lead_frames": 1106,
+  "original_subsong": 0,
+  "preservation": "All volume, distortion, bass, percussion and AUDCTL frames retained; lead AUDF rewritten."
+}

@@ -38,6 +38,9 @@ fi
 
 echo "Converting title, story, ending, and level-06 artwork for VBXE..."
 python3 "$atari_dir/generate_screens.py"
+python3 "$atari_dir/generate_ruins.py"
+python3 "$atari_dir/generate_platforms.py"
+python3 "$atari_dir/generate_galaxy.py"
 
 echo "Building Sójka VBXE..."
 (

@@ -15,7 +15,7 @@ export function skySettings(value={}){if(!value||typeof value!=='object'||Array.
 // Mirrors tools/sounds.py.
 export const WIND_FIELDS=[['volume','Volume',15],['pitch','Pitch (AUDF)',255],['gust','Gust strength',15],['speed','Gust speed',15],['flutter','Flutter',15]];
 const windDefaults={volume:2,pitch:40,gust:3,speed:1,flutter:0};
-export const RATES=[[19,'3.2 kHz'],[15,'4.0 kHz'],[13,'4.5 kHz'],[10,'5.8 kHz']];
+export const RATES=[[19,'3.2 kHz'],[15,'4.0 kHz'],[13,'4.5 kHz'],[10,'5.8 kHz'],[9,'6.3 kHz']];
 export const MAX_CLIPS=16;
 export const MAX_LENGTH=10;
 export const sampleDefaults={"rate": 15, "wind": {"mode": "off", "file": "A_short,_sharp,_reso_#4-1793835340752.wav", "start": 0, "length": 2, "gain": 85}, "clips": [{"name": "Resonance", "file": "A_short,_sharp,_reso_#4-1793835340752.wav", "start": 0, "length": 2, "gain": 85, "perTenMinutes": 6}, {"name": "Distant echo", "file": "Distant,_echoing_int_#1-1793835554153.mp3", "start": 0, "length": 1.45, "gain": 85, "perTenMinutes": 6}, {"name": "Distant train", "file": "ElevenLabs_A_loud_realistic_train_horn_blasting_in_the_distance,_deep_powerful_tone,_outdoor_railway_environmen.mp3", "start": 0, "length": 1.85, "gain": 85, "perTenMinutes": 6}, {"name": "Water shimmer", "file": "The_Water_Surface_A__#4-1793835996554.mp3", "start": 0, "length": 0.9, "gain": 85, "perTenMinutes": 6}], "delayMin": 5, "delayMax": 15};

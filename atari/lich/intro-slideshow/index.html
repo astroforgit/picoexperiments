@@ -1,0 +1,21 @@
+<!doctype html><html lang="pl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dusiołek — ilustrowany prolog</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,sans-serif;background:#0d111e;color:#ffeac3}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px}main{width:min(100%,920px)}header{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:18px}h1{font:500 clamp(25px,4vw,38px) Georgia,serif;margin:0}header span,.hint{color:#a99e8c;font-size:13px}canvas{width:100%;max-height:76vh;object-fit:contain;image-rendering:pixelated;display:block;background:#0d111e;border:1px solid #655035;box-shadow:0 15px 60px #0009}nav{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:18px}button{font:inherit;font-size:14px;color:#ffeac3;background:#202332;border:1px solid #655035;padding:10px 16px;border-radius:5px;cursor:pointer}button:hover{background:#343344}button:focus-visible{outline:2px solid #ffd37a;outline-offset:3px}#position{margin-left:auto;font-size:14px;color:#b8ab94}a{color:#e3bd78}.hint{line-height:1.7}p{margin-bottom:0}@media(max-width:520px){body{padding:12px}header{display:block}header span{display:block;margin-top:8px}#position{margin-left:0}}
+</style>
+<main><header><h1>Dusiołek</h1><span>Ilustrowany prolog · Atari VBXE</span></header><canvas id="screen" width="256" height="208" aria-label="Ilustrowany prolog z przewijanym tekstem"></canvas><nav><button id="pause">Pauza</button><button id="next">Następny obraz →</button><button id="restart">Od początku</button><span id="position" aria-live="polite">1 / 5</span></nav><p class="hint">Enter / →: następny obraz · Spacja: pauza · R: od początku<br><a href="dusiolek-intro.xex" download>Pobierz osobny program Atari (.xex)</a> · Obrazy i tekst odpowiadają wersji VBXE. Po piątej scenie pokaz zaczyna się od nowa.</p></main>
+<script src="preview-data.js"></script><script>
+'use strict';
+const screen=document.getElementById('screen'),ctx=screen.getContext('2d'),position=document.getElementById('position'),pauseButton=document.getElementById('pause');ctx.imageSmoothingEnabled=false;
+const viewer={scene:0,scroll:0,paused:false,last:0,ready:false};
+const bitmap=s=>new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=reject;im.src=s});
+let pictures=[],texts=[];
+function update(){position.textContent=`${viewer.scene+1} / 5`;pauseButton.textContent=viewer.paused?'Wznów':'Pauza';}
+function next(){viewer.scene=(viewer.scene+1)%5;viewer.scroll=0;update();draw();}
+function pause(){viewer.paused=!viewer.paused;update();}
+function restart(){viewer.scene=viewer.scroll=0;viewer.paused=false;update();draw();}
+function draw(){if(!viewer.ready)return;ctx.drawImage(pictures[viewer.scene],0,0);ctx.drawImage(texts[viewer.scene],0,Math.floor(viewer.scroll),256,48,0,160,256,48);}
+function frame(now){const dt=Math.min((now-viewer.last)/1000,.1);viewer.last=now;if(viewer.ready&&!viewer.paused&&!document.hidden){viewer.scroll+=dt*(50/6);if(viewer.scroll>=INTRO_DATA.scenes[viewer.scene].scroll_end)next();}draw();requestAnimationFrame(frame);}
+document.getElementById('next').onclick=next;pauseButton.onclick=pause;document.getElementById('restart').onclick=restart;
+addEventListener('keydown',e=>{if(e.repeat)return;if(e.key==='Enter'||e.key==='ArrowRight'){e.preventDefault();next();}else if(e.code==='Space'){e.preventDefault();pause();}else if(e.key.toLowerCase()==='r')restart();});
+(async()=>{pictures=await Promise.all(INTRO_DATA.scenes.map(s=>bitmap(s.image)));texts=await Promise.all(INTRO_DATA.scenes.map(s=>bitmap(s.text)));viewer.ready=true;requestAnimationFrame(frame);})().catch(()=>{position.textContent='Nie udało się wczytać obrazów.'});
+</script></html>

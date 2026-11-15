@@ -1,0 +1,24 @@
+--- a/src/cpu.c
++++ b/src/cpu.c
+@@ -60,6 +60,11 @@
+ #include <stdlib.h>	/* exit() */
+ 
+ #include "cpu.h"
++
++unsigned char atari_reconstruction_seen[65536];
++unsigned short atari_reconstruction_ring[256];
++unsigned int atari_reconstruction_cursor;
++unsigned char atari_reconstruction_bytes[65536][3];
+ #ifdef ASAP /* external project, see http://asap.sf.net */
+ #include "asap_internal.h"
+ #else
+@@ -695,6 +700,9 @@
+ 		MEMORY_mem[0x10000] = MEMORY_mem[0];
+ #endif
+ 
++		atari_reconstruction_seen[GET_PC()] = 1;
++        for (int trace_k=0;trace_k<3;trace_k++) atari_reconstruction_bytes[GET_PC()][trace_k] = MEMORY_mem[(GET_PC()+trace_k)&65535];
++        atari_reconstruction_ring[atari_reconstruction_cursor++ & 255] = GET_PC();
+ 		insn = GET_CODE_BYTE();
+ 
+ #ifdef MONITOR_BREAKPOINTS

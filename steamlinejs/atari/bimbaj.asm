@@ -78,6 +78,9 @@ tile_src  = $D6                ; 2, source glyph pointer
         ora #2
         sta PORTB
         cld
+        lda #0
+        sta AUDCTL             ; 64 kHz clock, no joined channels
+        sta AUDC1
         jsr setup_title
         jsr wait_title_start
         jsr setup_antic
@@ -142,8 +145,75 @@ tile_src  = $D6                ; 2, source glyph pointer
         lda RTCLOK+2
 ?wait   cmp RTCLOK+2
         beq ?wait
+        jmp update_sound
+.endp
+
+;==============================================================================
+; Sound effects: POKEY channel 1 steps through [AUDF, AUDC, frames] entries
+; once per frame (from wait_frame); frames = 0 ends an effect.
+;==============================================================================
+AUDF1    = $D200
+AUDC1    = $D201
+AUDCTL   = $D208
+SFX_MOVE   = 0
+SFX_BUMP   = 1
+SFX_UNDO   = 2
+SFX_RESET  = 3
+SFX_SWITCH = 4
+SFX_TRAP   = 5
+SFX_RING   = 6
+SFX_WIN    = 7
+SFX_START  = 8
+
+; A = SFX_* effect; it starts on the next frame and replaces any other.
+.proc play_sound
+        tax
+        lda snd_offsets,x
+        sta sfx_pos
+        lda #0
+        sta sfx_timer
         rts
 .endp
+
+.proc update_sound
+        lda sfx_timer
+        beq ?next
+        dec sfx_timer
+        bne ?done
+?next   ldx sfx_pos
+        lda snd_data+2,x
+        beq ?stop
+        sta sfx_timer
+        lda snd_data,x
+        sta AUDF1
+        lda snd_data+1,x
+        sta AUDC1
+        inx
+        inx
+        inx
+        stx sfx_pos
+?done   rts
+?stop   sta AUDC1              ; A = 0: silence
+        rts
+.endp
+
+sfx_pos   dta 0                ; points at the silent end marker until a sound plays
+sfx_timer dta 0
+snd_offsets dta snd_move-snd_data,snd_bump-snd_data,snd_undo-snd_data,snd_reset-snd_data
+        dta snd_switch-snd_data,snd_trap-snd_data,snd_ring-snd_data,snd_win-snd_data
+        dta snd_begin-snd_data
+; AUDC $Ax is a pure tone, $8x noise, $Cx a buzz; the low nibble is volume.
+; Pure-tone notes: C5 = 60, E5 = 47, G5 = 40, C6 = 29.
+snd_data   dta 0,0,0
+snd_move   dta $40,$A5,1, $30,$A4,1, $28,$A2,1, 0,0,0
+snd_bump   dta $FF,$C6,2, $FF,$C3,2, 0,0,0
+snd_undo   dta $28,$A4,1, $38,$A4,1, $48,$A3,1, $58,$A2,1, 0,0,0
+snd_reset  dta $20,$A5,2, $40,$A4,2, $60,$A3,2, $80,$A2,2, 0,0,0
+snd_switch dta $30,$A6,2, $30,$A0,1, $24,$A6,2, 0,0,0
+snd_trap   dta $60,$86,3, $80,$84,3, $A0,$82,4, 0,0,0
+snd_ring   dta $28,$A6,3, $1D,$A6,4, $1D,$A3,4, 0,0,0
+snd_win    dta 60,$A8,5, 47,$A8,5, 40,$A8,5, 29,$A8,8, 29,$A5,6, 29,$A2,6, 0,0,0
+snd_begin  dta $20,$A6,2, $18,$A4,2, 0,0,0
 
 ; The ANTIC F picture lives in the row-font RAM, which gameplay will reuse.
 .proc setup_title
@@ -189,7 +259,8 @@ tile_src  = $D6                ; 2, source glyph pointer
         bne ?loop
 ?start  lda #$FF
         sta CH
-        rts
+        lda #SFX_START
+        jmp play_sound
 .endp
 
 ;==============================================================================
@@ -245,12 +316,16 @@ tile_src  = $D6                ; 2, source glyph pointer
         bne ?select
         jsr undo_move
         bcc ?done
+        lda #SFX_UNDO
+        jsr play_sound
         jsr draw_everything
         rts
 ?select lda old_console
         and #2                  ; SELECT
         bne ?done
         jsr init_level
+        lda #SFX_RESET
+        jsr play_sound
         jsr draw_everything
 ?done   rts
 .endp
@@ -258,11 +333,26 @@ tile_src  = $D6                ; 2, source glyph pointer
 .proc read_keyboard
         lda CH
         cmp #$FF
-        beq ?done
-        and #$3F
+        bne ?key
+        rts
+?key    and #$3F
         sta key_temp
         lda #$FF
         sta CH
+        lda key_temp
+        cmp #$1B               ; 6: typing 6 6 6 jumps to the closing text
+        bne ?other
+        inc secret_count
+        lda secret_count
+        cmp #3
+        bcc ?done
+        lda #0
+        sta secret_count
+        lda #LEVEL_COUNT-1     ; as if the last level were just won
+        sta level_number
+        jmp next_level
+?other  lda #0
+        sta secret_count
         lda key_temp
         cmp #$2E               ; W
         bne ?a
@@ -287,10 +377,14 @@ tile_src  = $D6                ; 2, source glyph pointer
 ?do_undo
         jsr undo_move
         bcc ?done
+        lda #SFX_UNDO
+        jsr play_sound
         jmp draw_everything
 ?reset  cmp #$28               ; R
         bne ?switch
         jsr init_level
+        lda #SFX_RESET
+        jsr play_sound
         jmp draw_everything
 ?switch cmp #$21               ; Space
         bne ?done
@@ -305,19 +399,53 @@ tile_src  = $D6                ; 2, source glyph pointer
         bcc ?move
         jsr undo_move
         bcc ?done
+        lda #SFX_UNDO
+        jsr play_sound
         jsr draw_everything
         rts
 ?move   jsr player_move
         bcs ?moved
+        lda #SFX_BUMP
+        jsr play_sound
         jsr draw_status
         rts
 ?moved
         jsr check_win
+        jsr move_sound
         jsr draw_everything
 ?done   rts
 .endp
 
+; After a move: a won level, a trunk on its ring or on a cross, or a slide.
+.proc move_sound
+        lda game_won
+        beq ?tip
+        lda #SFX_WIN
+        jmp play_sound
+?tip    lda active_player      ; the mover may have handed over control
+        pha
+        ldx history_count
+        lda history_player-1,x
+        sta active_player
+        jsr get_head
+        jsr cell_type_at
+        tay
+        pla
+        sta active_player
+        tya
+        ldx #SFX_RING
+        cmp #CT_END
+        beq ?play
+        ldx #SFX_TRAP
+        cmp #CT_TRAP
+        beq ?play
+        ldx #SFX_MOVE
+?play   txa
+        jmp play_sound
+.endp
+
 key_temp dta 0
+secret_count dta 0             ; 6 keys typed in a row
 old_stick dta 15
 old_fire dta 0
 old_console dta 7
@@ -720,7 +848,8 @@ story_line_len dta 0
         bne ?press
 ?done   lda #$FF
         sta CH
-        rts
+        lda #SFX_START
+        jmp play_sound
 .endp
 
 .proc switch_player
@@ -730,6 +859,8 @@ story_line_len dta 0
         lda active_player
         eor #1
         sta active_player
+        lda #SFX_SWITCH
+        jmp play_sound
 ?done   rts
 .endp
 
@@ -1637,8 +1768,8 @@ neighbour dta 0
         lda level_width
         cmp #10
         bcs ?size
-        lda level_height
-        cmp #10
+        lda level_height       ; 10 rows of 2x2 tiles fill all 20, frameless
+        cmp #11
         bcs ?size
         inc zoom
         lda #2
@@ -1742,14 +1873,23 @@ neighbour dta 0
         ldy #0
         sta (text_ptr),y
         lda frame_row
-        beq ?top
+        beq ?top_edge
         cmp #19
-        beq ?bottom
-        lda frame_col
+        beq ?bottom_edge
+?sides  lda frame_col
         beq ?left
         cmp #39
         beq ?right
         jmp ?advance
+; A board that fills all 20 rows (board_y 0) keeps only the side frame.
+?top_edge
+        lda board_y
+        beq ?sides
+        bne ?top
+?bottom_edge
+        lda board_y
+        beq ?sides
+        bne ?bottom
 ?top    lda #$FF
         sta (work_ptr),y
         iny

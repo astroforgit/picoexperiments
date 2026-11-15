@@ -329,7 +329,25 @@ for i, it in enumerate(items):
     emit(f'itn_{i + 1}', it['name'])
 for label, text in game['texts'].items():
     emit(label, text)
+# Intro pages live in unused VRAM $34000, leaving main RAM for the game.
+intro = game['windows']['ml_intro']
+if len(intro) > 72:
+    fail('ml_intro: at most 72 lines (8 pages)')
+intro_pages = [intro[i:i+9] for i in range(0, len(intro), 9)] or [[]]
+intro_bin = bytearray([255] * 4096)
+for page, lines in enumerate(intro_pages):
+    rows = lines + [''] * (9-len(lines)) + [f'{page+1}/{len(intro_pages)}  >']
+    for row, line in enumerate(rows):
+        glyphs = enc(line, 'ml_intro')
+        if len(glyphs)>31 or sum(GLYPHS[n][2] for n in glyphs)>100:
+            fail('ml_intro line exceeds 100 pixels; wrap it in the Texts editor')
+        start = page*512+row*32
+        intro_bin[start:start+len(glyphs)] = bytes(glyphs)
+(HERE / 'data/intro.bin').write_bytes(intro_bin)
+(HERE / 'gen/intro.asm').write_text(f'INTRO_PAGES = {len(intro_pages)}\n')
 for label, lines in game['windows'].items():
+    if label == 'ml_intro':
+        continue
     if len(lines) > 12:
         fail(f'window {label}: at most 12 lines')
     for i, t in enumerate(lines):

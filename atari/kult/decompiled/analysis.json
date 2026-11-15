@@ -1,0 +1,2237 @@
+{
+  "originals": {
+    "Kult (v1).xex": "ed2184b5c94871646a306c58702c5128a228776d71a5f5a36adae65522fb72cd",
+    "CETAS (WIP).ATR": "fab7a4f434071c9f3aca6edb7bfd2c43f295e253200159c8194cf6a24481d896"
+  },
+  "kult": {
+    "bytes": 39554,
+    "decoded_instruction_bytes": 7674,
+    "instructions": 3568,
+    "seeds": [
+      32750,
+      49152,
+      49793,
+      49777,
+      49859,
+      50015,
+      50561,
+      60019
+    ],
+    "unresolved_control_flow": [
+      {
+        "address": 49799,
+        "reason": "indirect jump; runtime target not inferred"
+      },
+      {
+        "address": 49854,
+        "reason": "indirect jump; runtime target not inferred"
+      }
+    ],
+    "spans": [
+      [
+        768,
+        6017
+      ],
+      [
+        9216,
+        19536
+      ],
+      [
+        20085,
+        30113
+      ],
+      [
+        32750,
+        32768
+      ],
+      [
+        49152,
+        51178
+      ],
+      [
+        51200,
+        53248
+      ],
+      [
+        55296,
+        55948
+      ],
+      [
+        56000,
+        58458
+      ],
+      [
+        58500,
+        59290
+      ],
+      [
+        59300,
+        61785
+      ],
+      [
+        61800,
+        63182
+      ],
+      [
+        63200,
+        65298
+      ]
+    ],
+    "decoder_instructions": 1085492,
+    "sha256": "fbacae3e4849bef5c3600239c88abd75be293215056e8f132adb3447094924c1",
+    "blocks": [
+      {
+        "start": 768,
+        "size": 384,
+        "sha256": "0ca6a112779093f9e7acb6ba5cd502042a8c2aa89e29112310a98929326762c7"
+      },
+      {
+        "start": 1152,
+        "size": 4865,
+        "sha256": "9505ceb3b4d7e59ca97b7595210a1d914b69937360b4e8a7c316d01b43dd5a8a"
+      },
+      {
+        "start": 9216,
+        "size": 8192,
+        "sha256": "06bf5340e9c64896b42f5bbc3636055ed32f7ea05eec3901387cb2a156e6565c"
+      },
+      {
+        "start": 17408,
+        "size": 2128,
+        "sha256": "85cdcab5b0163a071db5cfdb6cef31ee3d97d04df19bb2a7952681fb2239490e"
+      },
+      {
+        "start": 20085,
+        "size": 10028,
+        "sha256": "f0215ed82d24eb144cda3200b4e629310e5462f97d98335478e2d8cc4cdf427b"
+      },
+      {
+        "start": 47872,
+        "size": 2,
+        "sha256": "085edad400785fca7e7e90b1fac4beb776fc2beee5aa24352d5f39b5d57efcad"
+      },
+      {
+        "start": 54017,
+        "size": 1,
+        "sha256": "aa687b58b0e73e2e383f8c500d75b591e188efe0168b3ffbcd3771caaa6dd4c7"
+      },
+      {
+        "start": 51200,
+        "size": 2048,
+        "sha256": "717949071c3ab7c9fe6d7e2001af9319ebca06ce1ec4783808d0bcb04a59edde"
+      },
+      {
+        "start": 54017,
+        "size": 1,
+        "sha256": "aa687b58b0e73e2e383f8c500d75b591e188efe0168b3ffbcd3771caaa6dd4c7"
+      },
+      {
+        "start": 55296,
+        "size": 652,
+        "sha256": "35f1289550dce1264b95820ffe2f0f758b721e862becca9f5b4a51ec9c036271"
+      },
+      {
+        "start": 54017,
+        "size": 1,
+        "sha256": "a8100ae6aa1940d0b663bb31cd466142ebbdbd5187131b92d93818987832eb89"
+      },
+      {
+        "start": 54017,
+        "size": 1,
+        "sha256": "aa687b58b0e73e2e383f8c500d75b591e188efe0168b3ffbcd3771caaa6dd4c7"
+      },
+      {
+        "start": 56000,
+        "size": 1088,
+        "sha256": "02bdeddb5f7ab3a7a4dce19fea37613abadc3127cf307cb161e0d7309a101588"
+      },
+      {
+        "start": 54017,
+        "size": 1,
+        "sha256": "a8100ae6aa1940d0b663bb31cd466142ebbdbd5187131b92d93818987832eb89"
+      },
+      {
+        "start": 54017,
+        "size": 1,
+        "sha256": "aa687b58b0e73e2e383f8c500d75b591e188efe0168b3ffbcd3771caaa6dd4c7"
+      },
+      {
+        "start": 57088,
+        "size": 1370,
+        "sha256": "e0c5039f6f1aabb40dda4893d8304f86d8ce5be015a293dadd4e3a56c4634691"
+      },
+      {
+        "start": 58500,
+        "size": 790,
+        "sha256": "63a37742b002c7098f0076ec78aaff23ad8a1528a15a9d9bc4acc401f77cc705"
+      },
+      {
+        "start": 54017,
+        "size": 1,
+        "sha256": "aa687b58b0e73e2e383f8c500d75b591e188efe0168b3ffbcd3771caaa6dd4c7"
+      },
+      {
+        "start": 59300,
+        "size": 2485,
+        "sha256": "435174abb8cf77b8e28974037d9e95307c8778a2bc0acc4ce305151f1160da42"
+      },
+      {
+        "start": 54017,
+        "size": 1,
+        "sha256": "aa687b58b0e73e2e383f8c500d75b591e188efe0168b3ffbcd3771caaa6dd4c7"
+      },
+      {
+        "start": 61800,
+        "size": 1382,
+        "sha256": "87874829fbabdc6026b6499d236380628e8e332eb7b8794a55851869977eaf44"
+      },
+      {
+        "start": 54017,
+        "size": 1,
+        "sha256": "aa687b58b0e73e2e383f8c500d75b591e188efe0168b3ffbcd3771caaa6dd4c7"
+      },
+      {
+        "start": 63200,
+        "size": 2098,
+        "sha256": "4f73f667cda7f8fb780abe3dd3a957f73dea631b65f93cd12eb2dd8a0e861d85"
+      },
+      {
+        "start": 54017,
+        "size": 1,
+        "sha256": "aa687b58b0e73e2e383f8c500d75b591e188efe0168b3ffbcd3771caaa6dd4c7"
+      },
+      {
+        "start": 49152,
+        "size": 2026,
+        "sha256": "7266748ae6f242850ff4af6aa1cec44f7ceade3d48f61881c62e87f5b9de4642"
+      }
+    ]
+  },
+  "cetas": {
+    "files": [
+      {
+        "name": "A",
+        "size": 2081,
+        "sha256": "c1ec011a2bc4a829ada70b7f051f163849c2901843ef5131ef9f7cc7ae148b8a",
+        "chain": [
+          {
+            "sector": 4,
+            "offset": 400,
+            "used": 125
+          },
+          {
+            "sector": 5,
+            "offset": 528,
+            "used": 125
+          },
+          {
+            "sector": 6,
+            "offset": 656,
+            "used": 125
+          },
+          {
+            "sector": 7,
+            "offset": 784,
+            "used": 125
+          },
+          {
+            "sector": 8,
+            "offset": 912,
+            "used": 125
+          },
+          {
+            "sector": 9,
+            "offset": 1040,
+            "used": 125
+          },
+          {
+            "sector": 10,
+            "offset": 1168,
+            "used": 125
+          },
+          {
+            "sector": 11,
+            "offset": 1296,
+            "used": 125
+          },
+          {
+            "sector": 12,
+            "offset": 1424,
+            "used": 125
+          },
+          {
+            "sector": 13,
+            "offset": 1552,
+            "used": 125
+          },
+          {
+            "sector": 14,
+            "offset": 1680,
+            "used": 125
+          },
+          {
+            "sector": 15,
+            "offset": 1808,
+            "used": 125
+          },
+          {
+            "sector": 16,
+            "offset": 1936,
+            "used": 125
+          },
+          {
+            "sector": 17,
+            "offset": 2064,
+            "used": 125
+          },
+          {
+            "sector": 18,
+            "offset": 2192,
+            "used": 125
+          },
+          {
+            "sector": 19,
+            "offset": 2320,
+            "used": 125
+          },
+          {
+            "sector": 20,
+            "offset": 2448,
+            "used": 81
+          }
+        ]
+      },
+      {
+        "name": "AUTO",
+        "size": 2122,
+        "sha256": "7803b1339a805d6753b455e8be1241c769bd64165b674a01f6224d380d89fe09",
+        "chain": [
+          {
+            "sector": 21,
+            "offset": 2576,
+            "used": 125
+          },
+          {
+            "sector": 22,
+            "offset": 2704,
+            "used": 125
+          },
+          {
+            "sector": 23,
+            "offset": 2832,
+            "used": 125
+          },
+          {
+            "sector": 24,
+            "offset": 2960,
+            "used": 125
+          },
+          {
+            "sector": 25,
+            "offset": 3088,
+            "used": 125
+          },
+          {
+            "sector": 26,
+            "offset": 3216,
+            "used": 125
+          },
+          {
+            "sector": 27,
+            "offset": 3344,
+            "used": 125
+          },
+          {
+            "sector": 28,
+            "offset": 3472,
+            "used": 125
+          },
+          {
+            "sector": 29,
+            "offset": 3600,
+            "used": 125
+          },
+          {
+            "sector": 30,
+            "offset": 3728,
+            "used": 125
+          },
+          {
+            "sector": 31,
+            "offset": 3856,
+            "used": 125
+          },
+          {
+            "sector": 32,
+            "offset": 3984,
+            "used": 125
+          },
+          {
+            "sector": 33,
+            "offset": 4112,
+            "used": 125
+          },
+          {
+            "sector": 34,
+            "offset": 4240,
+            "used": 125
+          },
+          {
+            "sector": 35,
+            "offset": 4368,
+            "used": 125
+          },
+          {
+            "sector": 36,
+            "offset": 4496,
+            "used": 125
+          },
+          {
+            "sector": 37,
+            "offset": 4624,
+            "used": 122
+          }
+        ]
+      },
+      {
+        "name": "B",
+        "size": 653,
+        "sha256": "71fb584a05f4588757d8a3ad9a4a90cc11e13b9a2817901d9b90f918c9fa57df",
+        "chain": [
+          {
+            "sector": 38,
+            "offset": 4752,
+            "used": 125
+          },
+          {
+            "sector": 39,
+            "offset": 4880,
+            "used": 125
+          },
+          {
+            "sector": 40,
+            "offset": 5008,
+            "used": 125
+          },
+          {
+            "sector": 41,
+            "offset": 5136,
+            "used": 125
+          },
+          {
+            "sector": 42,
+            "offset": 5264,
+            "used": 125
+          },
+          {
+            "sector": 43,
+            "offset": 5392,
+            "used": 28
+          }
+        ]
+      },
+      {
+        "name": "C",
+        "size": 2198,
+        "sha256": "a1914f34934e81c16af614354858b4c3306d21c0e1f8cd3ee55be32199748f54",
+        "chain": [
+          {
+            "sector": 44,
+            "offset": 5520,
+            "used": 125
+          },
+          {
+            "sector": 45,
+            "offset": 5648,
+            "used": 125
+          },
+          {
+            "sector": 46,
+            "offset": 5776,
+            "used": 125
+          },
+          {
+            "sector": 47,
+            "offset": 5904,
+            "used": 125
+          },
+          {
+            "sector": 48,
+            "offset": 6032,
+            "used": 125
+          },
+          {
+            "sector": 49,
+            "offset": 6160,
+            "used": 125
+          },
+          {
+            "sector": 50,
+            "offset": 6288,
+            "used": 125
+          },
+          {
+            "sector": 51,
+            "offset": 6416,
+            "used": 125
+          },
+          {
+            "sector": 52,
+            "offset": 6544,
+            "used": 125
+          },
+          {
+            "sector": 53,
+            "offset": 6672,
+            "used": 125
+          },
+          {
+            "sector": 54,
+            "offset": 6800,
+            "used": 125
+          },
+          {
+            "sector": 55,
+            "offset": 6928,
+            "used": 125
+          },
+          {
+            "sector": 56,
+            "offset": 7056,
+            "used": 125
+          },
+          {
+            "sector": 57,
+            "offset": 7184,
+            "used": 125
+          },
+          {
+            "sector": 58,
+            "offset": 7312,
+            "used": 125
+          },
+          {
+            "sector": 59,
+            "offset": 7440,
+            "used": 125
+          },
+          {
+            "sector": 60,
+            "offset": 7568,
+            "used": 125
+          },
+          {
+            "sector": 61,
+            "offset": 7696,
+            "used": 73
+          }
+        ]
+      },
+      {
+        "name": "D",
+        "size": 5846,
+        "sha256": "363f19caf9a746c63585cd1aa47d783e7e564c5737fcd8f56a683344aa2a8896",
+        "chain": [
+          {
+            "sector": 62,
+            "offset": 7824,
+            "used": 125
+          },
+          {
+            "sector": 63,
+            "offset": 7952,
+            "used": 125
+          },
+          {
+            "sector": 64,
+            "offset": 8080,
+            "used": 125
+          },
+          {
+            "sector": 65,
+            "offset": 8208,
+            "used": 125
+          },
+          {
+            "sector": 66,
+            "offset": 8336,
+            "used": 125
+          },
+          {
+            "sector": 67,
+            "offset": 8464,
+            "used": 125
+          },
+          {
+            "sector": 68,
+            "offset": 8592,
+            "used": 125
+          },
+          {
+            "sector": 69,
+            "offset": 8720,
+            "used": 125
+          },
+          {
+            "sector": 70,
+            "offset": 8848,
+            "used": 125
+          },
+          {
+            "sector": 71,
+            "offset": 8976,
+            "used": 125
+          },
+          {
+            "sector": 72,
+            "offset": 9104,
+            "used": 125
+          },
+          {
+            "sector": 73,
+            "offset": 9232,
+            "used": 125
+          },
+          {
+            "sector": 74,
+            "offset": 9360,
+            "used": 125
+          },
+          {
+            "sector": 75,
+            "offset": 9488,
+            "used": 125
+          },
+          {
+            "sector": 76,
+            "offset": 9616,
+            "used": 125
+          },
+          {
+            "sector": 77,
+            "offset": 9744,
+            "used": 125
+          },
+          {
+            "sector": 78,
+            "offset": 9872,
+            "used": 125
+          },
+          {
+            "sector": 79,
+            "offset": 10000,
+            "used": 125
+          },
+          {
+            "sector": 80,
+            "offset": 10128,
+            "used": 125
+          },
+          {
+            "sector": 81,
+            "offset": 10256,
+            "used": 125
+          },
+          {
+            "sector": 82,
+            "offset": 10384,
+            "used": 125
+          },
+          {
+            "sector": 83,
+            "offset": 10512,
+            "used": 125
+          },
+          {
+            "sector": 84,
+            "offset": 10640,
+            "used": 125
+          },
+          {
+            "sector": 85,
+            "offset": 10768,
+            "used": 125
+          },
+          {
+            "sector": 86,
+            "offset": 10896,
+            "used": 125
+          },
+          {
+            "sector": 87,
+            "offset": 11024,
+            "used": 125
+          },
+          {
+            "sector": 88,
+            "offset": 11152,
+            "used": 125
+          },
+          {
+            "sector": 89,
+            "offset": 11280,
+            "used": 125
+          },
+          {
+            "sector": 90,
+            "offset": 11408,
+            "used": 125
+          },
+          {
+            "sector": 91,
+            "offset": 11536,
+            "used": 125
+          },
+          {
+            "sector": 92,
+            "offset": 11664,
+            "used": 125
+          },
+          {
+            "sector": 93,
+            "offset": 11792,
+            "used": 125
+          },
+          {
+            "sector": 94,
+            "offset": 11920,
+            "used": 125
+          },
+          {
+            "sector": 95,
+            "offset": 12048,
+            "used": 125
+          },
+          {
+            "sector": 96,
+            "offset": 12176,
+            "used": 125
+          },
+          {
+            "sector": 97,
+            "offset": 12304,
+            "used": 125
+          },
+          {
+            "sector": 98,
+            "offset": 12432,
+            "used": 125
+          },
+          {
+            "sector": 99,
+            "offset": 12560,
+            "used": 125
+          },
+          {
+            "sector": 100,
+            "offset": 12688,
+            "used": 125
+          },
+          {
+            "sector": 101,
+            "offset": 12816,
+            "used": 125
+          },
+          {
+            "sector": 102,
+            "offset": 12944,
+            "used": 125
+          },
+          {
+            "sector": 103,
+            "offset": 13072,
+            "used": 125
+          },
+          {
+            "sector": 104,
+            "offset": 13200,
+            "used": 125
+          },
+          {
+            "sector": 105,
+            "offset": 13328,
+            "used": 125
+          },
+          {
+            "sector": 106,
+            "offset": 13456,
+            "used": 125
+          },
+          {
+            "sector": 107,
+            "offset": 13584,
+            "used": 125
+          },
+          {
+            "sector": 108,
+            "offset": 13712,
+            "used": 96
+          }
+        ]
+      },
+      {
+        "name": "E",
+        "size": 18515,
+        "sha256": "26245d4dbc6fca2ed83cd1641b1c045ca094561849dcdcdfd6c85129e2e1329d",
+        "chain": [
+          {
+            "sector": 109,
+            "offset": 13840,
+            "used": 125
+          },
+          {
+            "sector": 110,
+            "offset": 13968,
+            "used": 125
+          },
+          {
+            "sector": 111,
+            "offset": 14096,
+            "used": 125
+          },
+          {
+            "sector": 112,
+            "offset": 14224,
+            "used": 125
+          },
+          {
+            "sector": 113,
+            "offset": 14352,
+            "used": 125
+          },
+          {
+            "sector": 114,
+            "offset": 14480,
+            "used": 125
+          },
+          {
+            "sector": 115,
+            "offset": 14608,
+            "used": 125
+          },
+          {
+            "sector": 116,
+            "offset": 14736,
+            "used": 125
+          },
+          {
+            "sector": 117,
+            "offset": 14864,
+            "used": 125
+          },
+          {
+            "sector": 118,
+            "offset": 14992,
+            "used": 125
+          },
+          {
+            "sector": 119,
+            "offset": 15120,
+            "used": 125
+          },
+          {
+            "sector": 120,
+            "offset": 15248,
+            "used": 125
+          },
+          {
+            "sector": 121,
+            "offset": 15376,
+            "used": 125
+          },
+          {
+            "sector": 122,
+            "offset": 15504,
+            "used": 125
+          },
+          {
+            "sector": 123,
+            "offset": 15632,
+            "used": 125
+          },
+          {
+            "sector": 124,
+            "offset": 15760,
+            "used": 125
+          },
+          {
+            "sector": 125,
+            "offset": 15888,
+            "used": 125
+          },
+          {
+            "sector": 126,
+            "offset": 16016,
+            "used": 125
+          },
+          {
+            "sector": 127,
+            "offset": 16144,
+            "used": 125
+          },
+          {
+            "sector": 128,
+            "offset": 16272,
+            "used": 125
+          },
+          {
+            "sector": 129,
+            "offset": 16400,
+            "used": 125
+          },
+          {
+            "sector": 130,
+            "offset": 16528,
+            "used": 125
+          },
+          {
+            "sector": 131,
+            "offset": 16656,
+            "used": 125
+          },
+          {
+            "sector": 132,
+            "offset": 16784,
+            "used": 125
+          },
+          {
+            "sector": 133,
+            "offset": 16912,
+            "used": 125
+          },
+          {
+            "sector": 134,
+            "offset": 17040,
+            "used": 125
+          },
+          {
+            "sector": 135,
+            "offset": 17168,
+            "used": 125
+          },
+          {
+            "sector": 136,
+            "offset": 17296,
+            "used": 125
+          },
+          {
+            "sector": 137,
+            "offset": 17424,
+            "used": 125
+          },
+          {
+            "sector": 138,
+            "offset": 17552,
+            "used": 125
+          },
+          {
+            "sector": 139,
+            "offset": 17680,
+            "used": 125
+          },
+          {
+            "sector": 140,
+            "offset": 17808,
+            "used": 125
+          },
+          {
+            "sector": 141,
+            "offset": 17936,
+            "used": 125
+          },
+          {
+            "sector": 142,
+            "offset": 18064,
+            "used": 125
+          },
+          {
+            "sector": 143,
+            "offset": 18192,
+            "used": 125
+          },
+          {
+            "sector": 144,
+            "offset": 18320,
+            "used": 125
+          },
+          {
+            "sector": 145,
+            "offset": 18448,
+            "used": 125
+          },
+          {
+            "sector": 146,
+            "offset": 18576,
+            "used": 125
+          },
+          {
+            "sector": 147,
+            "offset": 18704,
+            "used": 125
+          },
+          {
+            "sector": 148,
+            "offset": 18832,
+            "used": 125
+          },
+          {
+            "sector": 149,
+            "offset": 18960,
+            "used": 125
+          },
+          {
+            "sector": 150,
+            "offset": 19088,
+            "used": 125
+          },
+          {
+            "sector": 151,
+            "offset": 19216,
+            "used": 125
+          },
+          {
+            "sector": 152,
+            "offset": 19344,
+            "used": 125
+          },
+          {
+            "sector": 153,
+            "offset": 19472,
+            "used": 125
+          },
+          {
+            "sector": 154,
+            "offset": 19600,
+            "used": 125
+          },
+          {
+            "sector": 155,
+            "offset": 19728,
+            "used": 125
+          },
+          {
+            "sector": 156,
+            "offset": 19856,
+            "used": 125
+          },
+          {
+            "sector": 157,
+            "offset": 19984,
+            "used": 125
+          },
+          {
+            "sector": 158,
+            "offset": 20112,
+            "used": 125
+          },
+          {
+            "sector": 159,
+            "offset": 20240,
+            "used": 125
+          },
+          {
+            "sector": 160,
+            "offset": 20368,
+            "used": 125
+          },
+          {
+            "sector": 161,
+            "offset": 20496,
+            "used": 125
+          },
+          {
+            "sector": 162,
+            "offset": 20624,
+            "used": 125
+          },
+          {
+            "sector": 163,
+            "offset": 20752,
+            "used": 125
+          },
+          {
+            "sector": 164,
+            "offset": 20880,
+            "used": 125
+          },
+          {
+            "sector": 165,
+            "offset": 21008,
+            "used": 125
+          },
+          {
+            "sector": 166,
+            "offset": 21136,
+            "used": 125
+          },
+          {
+            "sector": 167,
+            "offset": 21264,
+            "used": 125
+          },
+          {
+            "sector": 168,
+            "offset": 21392,
+            "used": 125
+          },
+          {
+            "sector": 169,
+            "offset": 21520,
+            "used": 125
+          },
+          {
+            "sector": 170,
+            "offset": 21648,
+            "used": 125
+          },
+          {
+            "sector": 171,
+            "offset": 21776,
+            "used": 125
+          },
+          {
+            "sector": 172,
+            "offset": 21904,
+            "used": 125
+          },
+          {
+            "sector": 173,
+            "offset": 22032,
+            "used": 125
+          },
+          {
+            "sector": 174,
+            "offset": 22160,
+            "used": 125
+          },
+          {
+            "sector": 175,
+            "offset": 22288,
+            "used": 125
+          },
+          {
+            "sector": 176,
+            "offset": 22416,
+            "used": 125
+          },
+          {
+            "sector": 177,
+            "offset": 22544,
+            "used": 125
+          },
+          {
+            "sector": 178,
+            "offset": 22672,
+            "used": 125
+          },
+          {
+            "sector": 179,
+            "offset": 22800,
+            "used": 125
+          },
+          {
+            "sector": 180,
+            "offset": 22928,
+            "used": 125
+          },
+          {
+            "sector": 181,
+            "offset": 23056,
+            "used": 125
+          },
+          {
+            "sector": 182,
+            "offset": 23184,
+            "used": 125
+          },
+          {
+            "sector": 183,
+            "offset": 23312,
+            "used": 125
+          },
+          {
+            "sector": 184,
+            "offset": 23440,
+            "used": 125
+          },
+          {
+            "sector": 185,
+            "offset": 23568,
+            "used": 125
+          },
+          {
+            "sector": 186,
+            "offset": 23696,
+            "used": 125
+          },
+          {
+            "sector": 187,
+            "offset": 23824,
+            "used": 125
+          },
+          {
+            "sector": 188,
+            "offset": 23952,
+            "used": 125
+          },
+          {
+            "sector": 189,
+            "offset": 24080,
+            "used": 125
+          },
+          {
+            "sector": 190,
+            "offset": 24208,
+            "used": 125
+          },
+          {
+            "sector": 191,
+            "offset": 24336,
+            "used": 125
+          },
+          {
+            "sector": 192,
+            "offset": 24464,
+            "used": 125
+          },
+          {
+            "sector": 193,
+            "offset": 24592,
+            "used": 125
+          },
+          {
+            "sector": 194,
+            "offset": 24720,
+            "used": 125
+          },
+          {
+            "sector": 195,
+            "offset": 24848,
+            "used": 125
+          },
+          {
+            "sector": 196,
+            "offset": 24976,
+            "used": 125
+          },
+          {
+            "sector": 197,
+            "offset": 25104,
+            "used": 125
+          },
+          {
+            "sector": 198,
+            "offset": 25232,
+            "used": 125
+          },
+          {
+            "sector": 199,
+            "offset": 25360,
+            "used": 125
+          },
+          {
+            "sector": 200,
+            "offset": 25488,
+            "used": 125
+          },
+          {
+            "sector": 201,
+            "offset": 25616,
+            "used": 125
+          },
+          {
+            "sector": 202,
+            "offset": 25744,
+            "used": 125
+          },
+          {
+            "sector": 203,
+            "offset": 25872,
+            "used": 125
+          },
+          {
+            "sector": 204,
+            "offset": 26000,
+            "used": 125
+          },
+          {
+            "sector": 205,
+            "offset": 26128,
+            "used": 125
+          },
+          {
+            "sector": 206,
+            "offset": 26256,
+            "used": 125
+          },
+          {
+            "sector": 207,
+            "offset": 26384,
+            "used": 125
+          },
+          {
+            "sector": 208,
+            "offset": 26512,
+            "used": 125
+          },
+          {
+            "sector": 209,
+            "offset": 26640,
+            "used": 125
+          },
+          {
+            "sector": 210,
+            "offset": 26768,
+            "used": 125
+          },
+          {
+            "sector": 211,
+            "offset": 26896,
+            "used": 125
+          },
+          {
+            "sector": 212,
+            "offset": 27024,
+            "used": 125
+          },
+          {
+            "sector": 213,
+            "offset": 27152,
+            "used": 125
+          },
+          {
+            "sector": 214,
+            "offset": 27280,
+            "used": 125
+          },
+          {
+            "sector": 215,
+            "offset": 27408,
+            "used": 125
+          },
+          {
+            "sector": 216,
+            "offset": 27536,
+            "used": 125
+          },
+          {
+            "sector": 217,
+            "offset": 27664,
+            "used": 125
+          },
+          {
+            "sector": 218,
+            "offset": 27792,
+            "used": 125
+          },
+          {
+            "sector": 219,
+            "offset": 27920,
+            "used": 125
+          },
+          {
+            "sector": 220,
+            "offset": 28048,
+            "used": 125
+          },
+          {
+            "sector": 221,
+            "offset": 28176,
+            "used": 125
+          },
+          {
+            "sector": 222,
+            "offset": 28304,
+            "used": 125
+          },
+          {
+            "sector": 223,
+            "offset": 28432,
+            "used": 125
+          },
+          {
+            "sector": 224,
+            "offset": 28560,
+            "used": 125
+          },
+          {
+            "sector": 225,
+            "offset": 28688,
+            "used": 125
+          },
+          {
+            "sector": 226,
+            "offset": 28816,
+            "used": 125
+          },
+          {
+            "sector": 227,
+            "offset": 28944,
+            "used": 125
+          },
+          {
+            "sector": 228,
+            "offset": 29072,
+            "used": 125
+          },
+          {
+            "sector": 229,
+            "offset": 29200,
+            "used": 125
+          },
+          {
+            "sector": 230,
+            "offset": 29328,
+            "used": 125
+          },
+          {
+            "sector": 231,
+            "offset": 29456,
+            "used": 125
+          },
+          {
+            "sector": 232,
+            "offset": 29584,
+            "used": 125
+          },
+          {
+            "sector": 233,
+            "offset": 29712,
+            "used": 125
+          },
+          {
+            "sector": 234,
+            "offset": 29840,
+            "used": 125
+          },
+          {
+            "sector": 235,
+            "offset": 29968,
+            "used": 125
+          },
+          {
+            "sector": 236,
+            "offset": 30096,
+            "used": 125
+          },
+          {
+            "sector": 237,
+            "offset": 30224,
+            "used": 125
+          },
+          {
+            "sector": 238,
+            "offset": 30352,
+            "used": 125
+          },
+          {
+            "sector": 239,
+            "offset": 30480,
+            "used": 125
+          },
+          {
+            "sector": 240,
+            "offset": 30608,
+            "used": 125
+          },
+          {
+            "sector": 241,
+            "offset": 30736,
+            "used": 125
+          },
+          {
+            "sector": 242,
+            "offset": 30864,
+            "used": 125
+          },
+          {
+            "sector": 243,
+            "offset": 30992,
+            "used": 125
+          },
+          {
+            "sector": 244,
+            "offset": 31120,
+            "used": 125
+          },
+          {
+            "sector": 245,
+            "offset": 31248,
+            "used": 125
+          },
+          {
+            "sector": 246,
+            "offset": 31376,
+            "used": 125
+          },
+          {
+            "sector": 247,
+            "offset": 31504,
+            "used": 125
+          },
+          {
+            "sector": 248,
+            "offset": 31632,
+            "used": 125
+          },
+          {
+            "sector": 249,
+            "offset": 31760,
+            "used": 125
+          },
+          {
+            "sector": 250,
+            "offset": 31888,
+            "used": 125
+          },
+          {
+            "sector": 251,
+            "offset": 32016,
+            "used": 125
+          },
+          {
+            "sector": 252,
+            "offset": 32144,
+            "used": 125
+          },
+          {
+            "sector": 253,
+            "offset": 32272,
+            "used": 125
+          },
+          {
+            "sector": 254,
+            "offset": 32400,
+            "used": 125
+          },
+          {
+            "sector": 255,
+            "offset": 32528,
+            "used": 125
+          },
+          {
+            "sector": 256,
+            "offset": 32656,
+            "used": 125
+          },
+          {
+            "sector": 257,
+            "offset": 32784,
+            "used": 15
+          }
+        ]
+      },
+      {
+        "name": "F",
+        "size": 2728,
+        "sha256": "735c3e40ddcc16d926012e8e12909d53c85d8d09b7303bfe91fd443e0a673079",
+        "chain": [
+          {
+            "sector": 258,
+            "offset": 32912,
+            "used": 125
+          },
+          {
+            "sector": 259,
+            "offset": 33040,
+            "used": 125
+          },
+          {
+            "sector": 260,
+            "offset": 33168,
+            "used": 125
+          },
+          {
+            "sector": 261,
+            "offset": 33296,
+            "used": 125
+          },
+          {
+            "sector": 262,
+            "offset": 33424,
+            "used": 125
+          },
+          {
+            "sector": 263,
+            "offset": 33552,
+            "used": 125
+          },
+          {
+            "sector": 264,
+            "offset": 33680,
+            "used": 125
+          },
+          {
+            "sector": 265,
+            "offset": 33808,
+            "used": 125
+          },
+          {
+            "sector": 266,
+            "offset": 33936,
+            "used": 125
+          },
+          {
+            "sector": 267,
+            "offset": 34064,
+            "used": 125
+          },
+          {
+            "sector": 268,
+            "offset": 34192,
+            "used": 125
+          },
+          {
+            "sector": 269,
+            "offset": 34320,
+            "used": 125
+          },
+          {
+            "sector": 270,
+            "offset": 34448,
+            "used": 125
+          },
+          {
+            "sector": 271,
+            "offset": 34576,
+            "used": 125
+          },
+          {
+            "sector": 272,
+            "offset": 34704,
+            "used": 125
+          },
+          {
+            "sector": 273,
+            "offset": 34832,
+            "used": 125
+          },
+          {
+            "sector": 274,
+            "offset": 34960,
+            "used": 125
+          },
+          {
+            "sector": 275,
+            "offset": 35088,
+            "used": 125
+          },
+          {
+            "sector": 276,
+            "offset": 35216,
+            "used": 125
+          },
+          {
+            "sector": 277,
+            "offset": 35344,
+            "used": 125
+          },
+          {
+            "sector": 278,
+            "offset": 35472,
+            "used": 125
+          },
+          {
+            "sector": 279,
+            "offset": 35600,
+            "used": 103
+          }
+        ]
+      },
+      {
+        "name": "XAUTORUN",
+        "size": 7428,
+        "sha256": "5fc885c7871454bd6ff5b6dac0f80de18ae882dbec707f041b20917cfb7a5c1d",
+        "chain": [
+          {
+            "sector": 280,
+            "offset": 35728,
+            "used": 125
+          },
+          {
+            "sector": 281,
+            "offset": 35856,
+            "used": 125
+          },
+          {
+            "sector": 282,
+            "offset": 35984,
+            "used": 125
+          },
+          {
+            "sector": 283,
+            "offset": 36112,
+            "used": 125
+          },
+          {
+            "sector": 284,
+            "offset": 36240,
+            "used": 125
+          },
+          {
+            "sector": 285,
+            "offset": 36368,
+            "used": 125
+          },
+          {
+            "sector": 286,
+            "offset": 36496,
+            "used": 125
+          },
+          {
+            "sector": 287,
+            "offset": 36624,
+            "used": 125
+          },
+          {
+            "sector": 288,
+            "offset": 36752,
+            "used": 125
+          },
+          {
+            "sector": 289,
+            "offset": 36880,
+            "used": 125
+          },
+          {
+            "sector": 290,
+            "offset": 37008,
+            "used": 125
+          },
+          {
+            "sector": 291,
+            "offset": 37136,
+            "used": 125
+          },
+          {
+            "sector": 292,
+            "offset": 37264,
+            "used": 125
+          },
+          {
+            "sector": 293,
+            "offset": 37392,
+            "used": 125
+          },
+          {
+            "sector": 294,
+            "offset": 37520,
+            "used": 125
+          },
+          {
+            "sector": 295,
+            "offset": 37648,
+            "used": 125
+          },
+          {
+            "sector": 296,
+            "offset": 37776,
+            "used": 125
+          },
+          {
+            "sector": 297,
+            "offset": 37904,
+            "used": 125
+          },
+          {
+            "sector": 298,
+            "offset": 38032,
+            "used": 125
+          },
+          {
+            "sector": 299,
+            "offset": 38160,
+            "used": 125
+          },
+          {
+            "sector": 300,
+            "offset": 38288,
+            "used": 125
+          },
+          {
+            "sector": 301,
+            "offset": 38416,
+            "used": 125
+          },
+          {
+            "sector": 302,
+            "offset": 38544,
+            "used": 125
+          },
+          {
+            "sector": 303,
+            "offset": 38672,
+            "used": 125
+          },
+          {
+            "sector": 304,
+            "offset": 38800,
+            "used": 125
+          },
+          {
+            "sector": 305,
+            "offset": 38928,
+            "used": 125
+          },
+          {
+            "sector": 306,
+            "offset": 39056,
+            "used": 125
+          },
+          {
+            "sector": 307,
+            "offset": 39184,
+            "used": 125
+          },
+          {
+            "sector": 308,
+            "offset": 39312,
+            "used": 125
+          },
+          {
+            "sector": 309,
+            "offset": 39440,
+            "used": 125
+          },
+          {
+            "sector": 310,
+            "offset": 39568,
+            "used": 125
+          },
+          {
+            "sector": 311,
+            "offset": 39696,
+            "used": 125
+          },
+          {
+            "sector": 312,
+            "offset": 39824,
+            "used": 125
+          },
+          {
+            "sector": 313,
+            "offset": 39952,
+            "used": 125
+          },
+          {
+            "sector": 314,
+            "offset": 40080,
+            "used": 125
+          },
+          {
+            "sector": 315,
+            "offset": 40208,
+            "used": 125
+          },
+          {
+            "sector": 316,
+            "offset": 40336,
+            "used": 125
+          },
+          {
+            "sector": 317,
+            "offset": 40464,
+            "used": 125
+          },
+          {
+            "sector": 318,
+            "offset": 40592,
+            "used": 125
+          },
+          {
+            "sector": 319,
+            "offset": 40720,
+            "used": 125
+          },
+          {
+            "sector": 320,
+            "offset": 40848,
+            "used": 125
+          },
+          {
+            "sector": 321,
+            "offset": 40976,
+            "used": 125
+          },
+          {
+            "sector": 322,
+            "offset": 41104,
+            "used": 125
+          },
+          {
+            "sector": 323,
+            "offset": 41232,
+            "used": 125
+          },
+          {
+            "sector": 324,
+            "offset": 41360,
+            "used": 125
+          },
+          {
+            "sector": 325,
+            "offset": 41488,
+            "used": 125
+          },
+          {
+            "sector": 326,
+            "offset": 41616,
+            "used": 125
+          },
+          {
+            "sector": 327,
+            "offset": 41744,
+            "used": 125
+          },
+          {
+            "sector": 328,
+            "offset": 41872,
+            "used": 125
+          },
+          {
+            "sector": 329,
+            "offset": 42000,
+            "used": 125
+          },
+          {
+            "sector": 330,
+            "offset": 42128,
+            "used": 125
+          },
+          {
+            "sector": 331,
+            "offset": 42256,
+            "used": 125
+          },
+          {
+            "sector": 332,
+            "offset": 42384,
+            "used": 125
+          },
+          {
+            "sector": 333,
+            "offset": 42512,
+            "used": 125
+          },
+          {
+            "sector": 334,
+            "offset": 42640,
+            "used": 125
+          },
+          {
+            "sector": 335,
+            "offset": 42768,
+            "used": 125
+          },
+          {
+            "sector": 336,
+            "offset": 42896,
+            "used": 125
+          },
+          {
+            "sector": 337,
+            "offset": 43024,
+            "used": 125
+          },
+          {
+            "sector": 338,
+            "offset": 43152,
+            "used": 125
+          },
+          {
+            "sector": 339,
+            "offset": 43280,
+            "used": 53
+          }
+        ]
+      }
+    ],
+    "cetas": {
+      "bytes": 18483,
+      "decoded_instruction_bytes": 3955,
+      "instructions": 1794,
+      "seeds": [
+        8876,
+        8192,
+        5120,
+        5123,
+        5129,
+        5135,
+        9467,
+        11043,
+        9333,
+        9160,
+        11901,
+        12153,
+        9562,
+        10708,
+        10252,
+        10568,
+        10348,
+        10156,
+        9935,
+        9832,
+        9600,
+        9970,
+        10096
+      ],
+      "unresolved_control_flow": [
+        {
+          "address": 44133,
+          "reason": "self-modified call placeholder; targets require separate evidence"
+        },
+        {
+          "address": 9143,
+          "reason": "self-modified call placeholder; targets require separate evidence"
+        }
+      ],
+      "spans": [
+        [
+          4482,
+          6064
+        ],
+        [
+          45056,
+          48411
+        ],
+        [
+          3072,
+          3707
+        ],
+        [
+          8192,
+          12172
+        ],
+        [
+          31744,
+          32139
+        ],
+        [
+          43008,
+          44260
+        ],
+        [
+          20480,
+          27762
+        ],
+        [
+          736,
+          738
+        ]
+      ],
+      "sha256": "77873c2047a3172a4fa4b604456386e99a171618080b962a0d05003f550e141a",
+      "file": "E",
+      "parts": [
+        {
+          "kind": "segment",
+          "offset": 0,
+          "address": 4482,
+          "size": 1582,
+          "literal": null
+        },
+        {
+          "kind": "segment",
+          "offset": 1586,
+          "address": 45056,
+          "size": 3355,
+          "literal": null
+        },
+        {
+          "kind": "segment",
+          "offset": 4945,
+          "address": 3072,
+          "size": 635,
+          "literal": null
+        },
+        {
+          "kind": "segment",
+          "offset": 5584,
+          "address": 8192,
+          "size": 3980,
+          "literal": null
+        },
+        {
+          "kind": "segment",
+          "offset": 9568,
+          "address": 31744,
+          "size": 395,
+          "literal": null
+        },
+        {
+          "kind": "segment",
+          "offset": 9967,
+          "address": 43008,
+          "size": 1252,
+          "literal": null
+        },
+        {
+          "kind": "segment",
+          "offset": 11223,
+          "address": 20480,
+          "size": 7282,
+          "literal": null
+        },
+        {
+          "kind": "segment",
+          "offset": 18509,
+          "address": 736,
+          "size": 2,
+          "literal": null
+        }
+      ]
+    },
+    "intro": {
+      "bytes": 7406,
+      "decoded_instruction_bytes": 1425,
+      "instructions": 645,
+      "seeds": [
+        3360,
+        3391,
+        3419,
+        3447,
+        3475,
+        3715,
+        3282,
+        5120,
+        5123,
+        5129
+      ],
+      "unresolved_control_flow": [],
+      "spans": [
+        [
+          54017,
+          54018
+        ],
+        [
+          4482,
+          6136
+        ],
+        [
+          43008,
+          47983
+        ],
+        [
+          3072,
+          3846
+        ],
+        [
+          736,
+          738
+        ]
+      ],
+      "sha256": "ee9ec30beb9a1720a2b629f7704452ed4244a4c65032eb6551e690262200d6a7",
+      "file": "XAUTORUN",
+      "parts": [
+        {
+          "kind": "marker",
+          "offset": 0,
+          "address": null,
+          "size": 2,
+          "literal": "ffff"
+        },
+        {
+          "kind": "segment",
+          "offset": 2,
+          "address": 54017,
+          "size": 1,
+          "literal": null
+        },
+        {
+          "kind": "segment",
+          "offset": 7,
+          "address": 4482,
+          "size": 1654,
+          "literal": null
+        },
+        {
+          "kind": "segment",
+          "offset": 1665,
+          "address": 43008,
+          "size": 4975,
+          "literal": null
+        },
+        {
+          "kind": "segment",
+          "offset": 6644,
+          "address": 3072,
+          "size": 774,
+          "literal": null
+        },
+        {
+          "kind": "segment",
+          "offset": 7422,
+          "address": 736,
+          "size": 2,
+          "literal": null
+        }
+      ]
+    },
+    "resources": [
+      {
+        "name": "A",
+        "start": 32784,
+        "size": 7680,
+        "sha256": "93a5f5dd34ead9884d4ea37ed4e1828ed939f83c52fcb79555d566d75c181bc0",
+        "decoder_instructions": 156161
+      },
+      {
+        "name": "B",
+        "start": 8208,
+        "size": 7680,
+        "sha256": "7860770ac7e6b9fda948a31d76596cbf096a02303e2d635b06dcecff31d5c9df",
+        "decoder_instructions": 120154
+      },
+      {
+        "name": "C",
+        "start": 16400,
+        "size": 7680,
+        "sha256": "d9ba395f35d3143079b5272bee75c363b5173c1cfc675e9e4c11f98ad1726702",
+        "decoder_instructions": 154847
+      },
+      {
+        "name": "D",
+        "start": 24592,
+        "size": 7680,
+        "sha256": "9a403741ce6a6b7f0b5fa18c8440db262f3dba7b324903238efcd8a323c98009",
+        "decoder_instructions": 211021
+      },
+      {
+        "name": "F",
+        "start": 40976,
+        "size": 6480,
+        "sha256": "a76c18fc0f4261936baee6965dad0dbe8fdeb413610e839a12dbc3eb806905b9",
+        "decoder_instructions": 143100
+      }
+    ],
+    "boot": {
+      "bytes": 384,
+      "decoded_instruction_bytes": 351,
+      "instructions": 169,
+      "seeds": [
+        1994,
+        2146
+      ],
+      "unresolved_control_flow": [
+        {
+          "address": 2116,
+          "reason": "indirect jump; runtime target not inferred"
+        },
+        {
+          "address": 2324,
+          "reason": "undocumented opcode"
+        },
+        {
+          "address": 2119,
+          "reason": "indirect jump; runtime target not inferred"
+        }
+      ],
+      "spans": [
+        [
+          1988,
+          2372
+        ]
+      ],
+      "sha256": "375bb87a05abb023795aeb412cda401b8ad2e718381baf64d7229a428e00f00e"
+    }
+  }
+}

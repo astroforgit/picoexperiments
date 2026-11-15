@@ -45,7 +45,10 @@ def main():
         shutil.copy2(source, target)
     zorro = output / 'atari' / 'zorro'
     (zorro / 'editor').mkdir(parents=True)
-    shutil.copy2(ROOT / 'atari' / 'zorro' / 'editor' / 'index.html', zorro / 'editor' / 'index.html')
+    editor = ROOT / 'atari' / 'zorro' / 'editor'
+    for name in ('index.html', 'mch.js', 'g2f.js'):
+        shutil.copy2(editor / name, zorro / 'editor' / name)
+    shutil.copytree(editor / 'vendor', zorro / 'editor' / 'vendor')
     shutil.copy2(ROOT / 'atari' / 'zorro' / 'Zorro (1985)(Datasoft)(US).xex', zorro)
     (output / 'index.html').write_text('<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=atari-sound/web/"><title>Atari Sound</title><a href="atari-sound/web/">Open Atari Sound</a>\n')
     (output / '.nojekyll').touch()

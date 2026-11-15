@@ -352,7 +352,7 @@ next    ldx line
         jsr draw_text
         inc line
         lda line
-        cmp #6
+        cmp #7
         bcc next
         rts
 .endp
@@ -376,17 +376,17 @@ next    ldx line
         jsr battle.hero_sprite
         inc line
         lda line
-        cmp #6
+        cmp #7
         bcc next
         mva #0 battle.animation_active
         jmp wait_blit
 .endp
-info_x dta 20,20,20,160,160,160
-info_y dta 72,108,144,72,108,144
-info_a_lo dta <i0a,<i1a,<i2a,<i3a,<i4a,<i5a
-info_a_hi dta >i0a,>i1a,>i2a,>i3a,>i4a,>i5a
-info_b_lo dta <i0b,<i1b,<i2b,<i3b,<i4b,<i5b
-info_b_hi dta >i0b,>i1b,>i2b,>i3b,>i4b,>i5b
+info_x dta 20,20,20,20,164,164,164
+info_y dta 70,98,126,154,70,98,126
+info_a_lo dta <i0a,<i1a,<i2a,<i3a,<i4a,<i5a,<i6a
+info_a_hi dta >i0a,>i1a,>i2a,>i3a,>i4a,>i5a,>i6a
+info_b_lo dta <i0b,<i1b,<i2b,<i3b,<i4b,<i5b,<i6b
+info_b_hi dta >i0b,>i1b,>i2b,>i3b,>i4b,>i5b,>i6b
 i0a dta c'IMMUNE TO ARROWS',0
 i0b dta c'USE MAGIC/BLADES',0
 i1a dta c'ITS VICTIMS RISE',0
@@ -399,6 +399,8 @@ i4a dta c'HOPS AWAY AFTER',0
 i4b dta c'EACH ATTACK',0
 i5a dta c'SUMMONS SKELETONS',0
 i5b dta c'SLAY HIM TO WIN',0
+i6a dta c'CHARMS ONE UNIT',0
+i6b dta c'KILL HER TO FREE',0
 ; Bottom bar, like the city HUD: dark band with a gold rule and the credit.
 .proc band
         rect 0,186,320,14,1

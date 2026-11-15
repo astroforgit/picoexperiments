@@ -38,7 +38,7 @@ straights turned into S-bends.
 ```
 
 `./run.sh` starts the game in Altirra, building it first if needed.
-`./run.sh auto` runs the self-driving build; `./run.sh rebuild` rebuilds, then plays.
+`./run.sh auto` shows the title screen for 10 seconds, then starts the self-driving race; `./run.sh rebuild` rebuilds, then plays.
 
 Run `race.xex` in Altirra or on a real XL/XE with BASIC off (the file
 switches BASIC off while loading, as the tables live at `$A000`).
@@ -100,3 +100,9 @@ width, and `WIGGLE_A` and `WIGGLE_L` set how wide and how long the S-bends
 are.
 The map may be at most 256 bytes wide, and the compressed track must fit
 below `$BC00`: `race.asm` stops with an error if it doesn't.
+
+## Standard Atari emulator profile
+
+`run.sh` now uses [the shared standard runner](../RUNNING.md), including
+`auto` and `rebuild` modes. It uses PAL, 64 KB, one POKEY, no VBXE and the
+separate buffered-audio configuration; your VBXE profile is untouched.

@@ -3,7 +3,7 @@
 
 from pathlib import Path
 
-from PIL import Image, ImageOps
+from PIL import Image, ImageEnhance, ImageFilter, ImageOps
 
 
 ROOT = Path(__file__).resolve().parent
@@ -17,8 +17,15 @@ FIRST_BLOCK_LINES = 96
 def main():
     source = Image.open(ROOT / "elephant.png").convert("L")
     source = ImageOps.autocontrast(source, cutoff=1)
+    # Sharpen before shrinking so the hatching and wrinkles survive.
+    source = source.filter(ImageFilter.UnsharpMask(radius=4, percent=160, threshold=2))
     poster = source.resize((POSTER_WIDTH, HEIGHT), Image.Resampling.LANCZOS)
-    poster = poster.point(lambda value: 255 if value >= 126 else 0, mode="1")
+    poster = poster.point(lambda value: int(255 * (value / 255) ** 1.25))
+    poster = ImageEnhance.Contrast(poster).enhance(1.4)
+    # Solid blacks and whites stay clean (background, logo); only the
+    # mid-tones are dithered, which keeps the drawing's shading.
+    poster = poster.point(lambda value: 0 if value < 45 else 255 if value > 215 else value)
+    poster = poster.convert("1", dither=Image.Dither.FLOYDSTEINBERG)
 
     screen = Image.new("1", (WIDTH, HEIGHT), 0)
     screen.paste(poster, ((WIDTH - POSTER_WIDTH) // 2, 0))

@@ -10,6 +10,12 @@ actual_damage dta 0
         clc
         adc attack_bonus
         sta attack_damage
+        lda type_ability,y
+        cmp #7
+        bne ?ordinary
+        mva #0 attack_damage
+        rts
+?ordinary
         ; Only Archery Range fighters (types 3..5) fire physical arrows.
         tya
         cmp #3
@@ -27,6 +33,13 @@ actual_damage dta 0
 .endp
 
 .proc attack_units
+        ldx attacker_unit
+        ldy unit_type,x
+        lda type_ability,y
+        cmp #7
+        bne ?ordinary
+        jmp charm_hero
+?ordinary
         jsr compute_damage
         mva #0 attack_bonus
         ldx defender_unit
@@ -44,6 +57,7 @@ actual_damage dta 0
         lda #0
 ?store  sta unit_hp,x
         bne ?effects
+        jsr release_charms
         jsr lose_soldier
         ldy unit_type,x
         lda type_summon,y
@@ -172,8 +186,10 @@ hop_distance dta 0
         cpx hero_count
         bcs ?done
         lda unit_team,x
-        bne ?done
-        ldy hero_army_slot,x
+        beq ?owned
+        lda unit_charmed,x
+        beq ?done
+?owned  ldy hero_army_slot,x
         cpy #5
         bcs ?done
         lda army_units,y
@@ -189,3 +205,64 @@ hop_distance dta 0
 .endp
 
 vampire_max_hp dta 0
+
+; Store owner slot + 1 so zero means not enchanted. Ownership is per Nymph.
+.proc charm_hero
+        lda attacker_unit
+        clc
+        adc #1
+        sta charm_match
+        ldx #0
+?scan   cpx unit_count
+        bcs ?free
+        lda unit_charmed,x
+        cmp charm_match
+        bne ?next
+        lda unit_hp,x
+        bne ?done
+?next   inx
+        bne ?scan
+?free   ldx defender_unit
+        lda unit_team,x
+        bne ?done
+        lda attacker_unit
+        clc
+        adc #1
+        sta unit_charmed,x
+        mva #1 unit_team,x
+        sta unit_acted,x
+        mva #0 unit_move_left,x
+        mva turn_number unit_spawned,x
+        ldx attacker_unit
+        mva #0 unit_mark,x
+        mva #7 ability_event
+?done   rts
+.endp
+
+; X dead unit; release only this owner's fighters, preserving X.
+.proc release_charms
+        stx charm_owner
+        txa
+        clc
+        adc #1
+        sta charm_match
+        ldx #0
+?loop   cpx unit_count
+        bcs ?done
+        lda unit_charmed,x
+        cmp charm_match
+        bne ?next
+        mva #0 unit_charmed,x
+        lda unit_hp,x
+        beq ?next
+        mva #0 unit_team,x
+        sta unit_move_left,x
+        mva #1 unit_acted,x
+        mva #8 ability_event
+?next   inx
+        bne ?loop
+?done   ldx charm_owner
+        rts
+.endp
+charm_owner dta 0
+charm_match dta 0

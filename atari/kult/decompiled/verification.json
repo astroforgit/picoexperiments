@@ -1,0 +1,16 @@
+{
+  "status": "passed",
+  "checks": [
+    "MADS source assembly",
+    "original-file SHA-256 equality",
+    "Kult CPU depacker replay",
+    "CETAS CPU depacker replay with bounded input and backreferences",
+    "all eight DOS files",
+    "complete ATR including unused bytes"
+  ],
+  "emulator_gameplay_tested": false,
+  "originals": {
+    "Kult (v1).xex": "ed2184b5c94871646a306c58702c5128a228776d71a5f5a36adae65522fb72cd",
+    "CETAS (WIP).ATR": "fab7a4f434071c9f3aca6edb7bfd2c43f295e253200159c8194cf6a24481d896"
+  }
+}

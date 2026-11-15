@@ -25,7 +25,7 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || "playwright");
   const anims = await page.locator(".asset-anim").count();
   assert.equal(anims, 12, "twelve animations across the catalogue");
   assert.match(await page.locator("#assetsStatus").innerText(),
-    /7 characters · 12 animations/);
+    /Classic hero · two-colour sheet/);
 
   // The hero's six states, named as src/player.ts names them.
   const heroStates = await page.evaluate(() =>
@@ -51,7 +51,7 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || "playwright");
   });
   assert.deepEqual(used.player, [0, 17, 18, 20], "hair, suit and boots");
   for (const key of ["mover", "cannon", "cannonball", "thwomp"]) {
-    assert.ok(used[key].every(v => [0, 21, 22].includes(v)), `${key}: ${used[key]}`);
+    assert.ok(used[key].every(v => [0, 19, 21, 22].includes(v)), `${key}: ${used[key]}`);
   }
   for (const key of ["spikes", "checkpoint"]) {
     assert.ok(used[key].every(v => [0, 21].includes(v)), `${key}: ${used[key]}`);

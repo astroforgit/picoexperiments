@@ -486,12 +486,13 @@ release_ticks dta 0
 action_mask dta 0
 key_temp dta 0
 type_base dta 0,3,6,9,12
-direction_offsets dta 0,11,22,33
+; Plots 0-4 buildings, 5 gate, 6-10 army slots, 11 dock (save/load).
+direction_offsets dta 0,12,24,36
 neighbours
-        dta 5,5,5,0,2,5,3,3,3,4,4 ; up
-        dta 3,3,4,7,9,1,6,7,8,9,10 ; down into army
-        dta 0,0,1,3,3,0,6,6,7,8,9 ; left
-        dta 1,2,2,4,4,2,7,8,9,10,10 ; right
+        dta 5,5,5,0,2,5,3,3,3,4,4,2 ; up
+        dta 3,3,4,7,9,1,6,7,8,9,10,10 ; down into army
+        dta 0,0,1,3,3,0,6,6,7,8,9,4 ; left
+        dta 1,2,11,4,11,2,7,8,9,10,10,11 ; right
 
 .proc draw_city
         lda screen_mode

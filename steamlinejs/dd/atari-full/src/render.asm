@@ -148,7 +148,6 @@ mb_10   sta VBX+VB_MEMB
 vbi_work
         inc vframe
         jsr read_input
-        jsr sound_vbi
 vw_busy lda VBX+VB_BLIT
         bne vw_drop             ; the blitter has not finished the last frame
         lda pending
@@ -516,6 +515,10 @@ co_2    lda cu_flag
         sta (ZP),y              ; the tiles continue into the background slots
 co_2b   jsr emit_bg
         jsr emit_sprites
+        lda es_missing
+        beq co_ready
+        jmp catch_up            ; finish dirty tiles, keep the complete old frame
+co_ready
         ; start the list at the first used tile slot
         ldx tslot
         lda slot_lo,x
@@ -1093,6 +1096,8 @@ eb_ptr  lda eb_n                 ; X kept
 ; bit 5 = hidden) and only the changed BCB fields are written. A hidden
 ; slot has AND mask 0: in blitter mode 1 it writes nothing.
 emit_sprites
+        lda #0
+        sta es_missing
         ldy #0
         ldx back
         beq es_0
@@ -1132,7 +1137,9 @@ es_vis  lda $0201,x
         and #$D0                ; flips changed, or the source must be rewritten
         beq es_px
 es_s    jsr es_wsrc
-        bcs es_hide             ; tile not expanded yet
+        bcc es_px
+        inc es_missing          ; never display a frame with missing sprite tiles
+        jmp es_hide
 es_px   lda $0203,x             ; x
         cmp SC_X,y
         beq es_py
@@ -1638,8 +1645,7 @@ ti_clear
 ; keyboard, as in the Celeste port: the keyboard IRQ queues every press.
 ; W/A/S/D stay held until the keyboard is idle or the opposite direction
 ; is pressed; punch (O Z C N), kick (P X V SPACE) and Start (RETURN)
-; give a short press. SHIFT, held, is kick (read above). M turns the
-; music on and off.
+; give a short press. SHIFT, held, is kick (read above).
 ; ------------------------------------------------------------------
 irq     pha
         lda IRQST
@@ -1677,12 +1683,6 @@ kr_ev   ldy kb_tail
         sta kb_tail
         lda kb_ring-1,y
         and #$3F
-        cmp #KEY_M
-        bne kr_k
-        lda music_on
-        eor #1
-        sta music_on
-        jmp kr_ev
 kr_k    ldx #key_bits-key_codes-1
 kr_f    cmp key_codes,x
         beq kr_found
@@ -1720,7 +1720,6 @@ kr_np   sta kpulse
 ; W S A D, then punch O Z C N, kick P X V SPACE, Start RETURN
 key_codes dta $2E,$3E,$3F,$3A, $08,$17,$12,$23, $0A,$16,$10,$21, $0C
 key_bits  dta $08,$04,$02,$01, $40,$40,$40,$40, $80,$80,$80,$80, $10
-KEY_M   = $25
 key_clear dta $FF^$04,$FF^$08,$FF^$01,$FF^$02
 
 ; C = 0: source X pressed (raw). Returns C = 1 when pressed and the source
@@ -1759,6 +1758,3 @@ pt_k    cmp pot_rest,x
 ; PORTA nibble (0 = pressed: up, down, left, right) -> NES U=8 D=4 L=2 R=1
 stick_tab
         dta $0f,$07,$0b,$03,$0d,$05,$09,$01,$0e,$06,$0a,$02,$0c,$04,$08,$00
-
-sound_vbi
-        rts

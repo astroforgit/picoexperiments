@@ -118,9 +118,16 @@ digits=['111101101101111','010110010010111','111001111100111','111001111001111',
 lines.append('digit_data\n        dta '+','.join(str(int(s[y:y+3],2)) for s in digits for y in range(0,15,3)))
 lines+=sound_tables(scene['sound'],ROOT/'gen/samples.asm')
 # Start menu text at absolute screen positions inside the panel (x 80-239, y 54-137).
-def text_offsets(text,x,y):
- mask=Image.new('1',(320,150));ImageDraw.Draw(mask).text((x,y),text,font=font,fill=1)
- return [yy*320+xx for yy in range(150) for xx in range(320) if mask.getpixel((xx,yy))]
+def text_offsets(text,x,y,text_font=font):
+ mask=Image.new('1',(320,160));ImageDraw.Draw(mask).text((x,y),text,font=text_font,fill=1)
+ return [yy*320+xx for yy in range(mask.height) for xx in range(mask.width) if mask.getpixel((xx,yy))]
+
+for name,text,y,text_font in [
+ ('menu_title','The Galactic Catch',35,ImageFont.load_default(size=15)),
+ ('menu_credit','Game made by astrofor',141,font),
+]:
+ x=round((320-text_font.getlength(text))/2)
+ lines.append(name+'\n        dta '+','.join(f'a({o})' for o in text_offsets(text,x,y,text_font))+',a($ffff)')
 for name,text,x,y in [('result_title','GAME OVER',133,76),('result_hint','ANY KEY',140,119)]:
  lines.append(name+'\n        dta '+','.join(f'a({o})' for o in text_offsets(text,x,y))+',a($ffff)')
 menu=[('PLAY',100,84)]+[(f'CLOUDS:  {v}',100,95) for v in ['NONE','MEDIUM','HEAVY']]

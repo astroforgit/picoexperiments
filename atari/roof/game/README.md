@@ -201,9 +201,11 @@ It chooses equally between four excerpts from the new recordings: resonance
 After each sound finishes, it waits a random 5–15 seconds before choosing
 another. Clips never overlap. The initial pause uses the same limits.
 
-The current project plays all 14 recordings in `assets/audio` (47.0 s at
-3.96 kHz). The three 10 s "Crackle of the Cosmos" recordings are trimmed to
-6.45 s each so that everything fits.
+The current project plays at 6.3 kHz (up from 3.96 kHz) for a brighter sound.
+It lists all 14 recordings in `assets/audio`; 11 fit (27.7 s). The three
+"Crackle of the Cosmos" excerpts (6.45 s each) are skipped because they are
+longer than the 5.62 s playback buffer at this rate. Shorten them below 5.6 s
+to include one, subject to the remaining VBXE space shown in the editor.
 
 In the editor's Sounds tab, set **Minimum silence** and **Maximum silence**
 (1–120 seconds), and choose how much of each recording plays with **Start** and
@@ -211,9 +213,15 @@ In the editor's Sounds tab, set **Minimum silence** and **Maximum silence**
 **Add all recordings** adds every unused recording at full length. Each card
 shows how long it plays, the recording's full length and its memory size. Two
 meters show the VBXE storage and the longest sound against the playback buffer.
-A sound that is too long, or a set that is too large, is flagged in red, and
-the build refuses it. **Night mix** previews 30 seconds of the same
+Sounds that do not fit are skipped in list order and marked in red with the
+reason; the build includes the rest. **Night mix** previews 30 seconds of the same
 sound/pause behavior. Build Atari applies your changes to the XEX.
+
+Select a clip to compare its original mono excerpt, the previous Atari
+conversion, and the conversion with gentle compression. The new conversion
+reduces peaks before quantization so quieter details use more volume levels.
+The Atari preview uses the same levels and rate as a new build. The browser
+approximates the output, so hardware mixing and timing can sound different.
 
 Random mode uses three POKEY volume registers for 46 summed digital levels,
 at 3.96 kHz by default. Channel 1 supplies the silent sample timer. During
@@ -221,11 +229,11 @@ pauses all audio channels and sample IRQs are off. Background loop and synth
 modes remain available for custom projects; their occasional effects use the
 legacy per-ten-minute chance controls instead of the silence settings.
 
-Random-mode sounds are stored in VBXE memory, in the 46 whole 4 KB banks that
-no graphics use: $13, $33–$3F, $53–$5F and $6B–$7D (184 KB, 47.6 s at
+Random-mode sounds are stored in VBXE memory, in the 44 whole 4 KB banks that
+no graphics use: $13, $33–$3F, $53–$5F and $6D–$7D (176 KiB, 45.5 s at
 3.96 kHz). Audited occupied ranges: background $00000–$12BFF, cloud sprite
 $14000–$158FF, bobber popup $16000–$1F9BF, framebuffers $20000–$32BFF and
-$40000–$52BFF, cached menu panel $60000–$6AD6F, XDLs at $7E000 and the blitter
+$40000–$52BFF, cached menu panel $60000–$6C16F, XDLs at $7E000 and the blitter
 command at $7F000 (`VRAM_USED` in `tools/samples.py`). Each 4 KB bank is staged
 at $A000 while loading and uploaded by `upload_bank`.
 
@@ -235,8 +243,14 @@ into a CPU RAM playback buffer. It never starts a page within about 40 lines of
 the vertical blank, so frames are never delayed, and the sample IRQ never
 switches MEMAC. The buffer holds 139 pages (34.8 KB): $0400–$1FFF,
 $7800–$8FFF, $A000–$CFFF and $D800–$FEFF. That is the limit for one sound:
-8.99 s at 3.96 kHz, 11.2 s at 3.2 kHz, 7.9 s at 4.5 kHz and 6.2 s at 5.8 kHz.
-The IRQ steps through the four segments. Copying takes about 3–4 pages per
+11.2 s at 3.2 kHz, 8.99 s at 3.96 kHz, 7.9 s at 4.5 kHz, 6.2 s at 5.8 kHz
+and 5.6 s at 6.3 kHz. The IRQ steps through the four segments. Sounds are
+padded to whole pages with level 0, so the IRQ checks for an end only when it
+crosses a page. It saves registers in self-modified immediates and takes about
+70 cycles. At 6.3 kHz, gameplay updates slow by about 5% while a sound plays.
+6.3 kHz is the highest rate offered: the vertical-blank handler delays a sample
+IRQ by up to about 530 cycles, and at 7 kHz (252-cycle period) POKEY would
+drop samples. Copying takes about 3–4 pages per
 frame, so a full buffer loads in under 1 s, the shortest allowed pause. If it
 does not finish, the next sound simply starts a little later.
 

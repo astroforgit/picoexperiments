@@ -575,22 +575,32 @@ TitleScreen
 	ldx #<(MUSIC_TITLE)
 	ldy #>(MUSIC_TITLE)
 	jsr RMT_INIT
+	.if AUTOPILOT
+	; Show the title for 100 tenths (10 seconds), on PAL and NTSC.
+	; RaceGame resets frame and tdiv before using them for the race.
+	lda #100
+	sta frame
+	lda tenthFrames
+	sta tdiv
+	.else
 	lda #30			; ignore keys and fire for half a second
 	jsr Wait
+	.endif
 	lda #$FF
 	sta CH
 ts_lp
 	.if AUTOPILOT
-	lda #$21
+	lda frame
+	bne ts_wait
 	.else
 	jsr GetInput
-	.endif
 	cmp #$1C
-	beq @+
+	beq ts_wait
 	cmp #$FF
-	beq @+
+	beq ts_wait
+	.endif
 	jmp StopAll
-@	jsr RMT_PLAY
+ts_wait	jsr RMT_PLAY
 	lda #1
 	jsr Wait
 	jsr RMT_PLAY
@@ -598,6 +608,13 @@ ts_lp
 @	sta WSYNC
 	dex
 	bpl @-
+	.if AUTOPILOT
+	dec tdiv
+	bne ts_lp
+	lda tenthFrames
+	sta tdiv
+	dec frame
+	.endif
 	jmp ts_lp
 
 WinScreen
@@ -1732,7 +1749,8 @@ dliColBK  = $03EB
 ; ---- title screen: SpeedMaza's layout with smaller gaps and three credit
 ; lines under the MSX line (TITLE lines 0-28 logo, 29-60 GAME/CODE/GFX/MSX,
 ; 61-68 HI SCORE, 69-76 PRESS BUTTON, 77-84 HUSAK)
-	.align $400
+; Keep padding small enough for the autopilot build and its credit picture.
+	.align $80
 dlTitle
 	dta $10,$50,$70,$70
 	dta $CE,a(TITLE)
@@ -1754,8 +1772,14 @@ dlTitle
 	dta $70,$10
 	:8 dta $0E
 	dta $41,a(dlTitle)
+	.if (dlTitle & $FC00) <> ((* - 1) & $FC00)
+	.error "title display list crosses a 1K boundary"
+	.endif
 creditPic			; "TINY" "MODIFICATIONS:" "ASTROFOR", 3x8 mode E lines
 	ins 'data/credit_pic.bin'
+	.if (creditPic & $F000) <> ((* - 1) & $F000)
+	.error "credit picture crosses a 4K boundary"
+	.endif
 CodeEnd
 	.if CodeEnd > $48DF
 	.error "code overlaps the RMT player"

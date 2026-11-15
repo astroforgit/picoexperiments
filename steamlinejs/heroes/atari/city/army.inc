@@ -9,6 +9,7 @@
         dex
         bpl ?next
         mva #0 army_count
+        sta dismiss_cycle
         rts
 .endp
 
@@ -51,7 +52,7 @@
 ?next_building
         lda current_level
         cmp #3
-        bcs ?preview
+        jcs ?preview
         clc
         adc type_base,x
         sta next_unit
@@ -71,12 +72,24 @@
         beq ?preview
         sta current_unit
         tay
+        ; Refund the investment, less the recruitment-value fee every third dismissal.
         lda army_paid_hi,x
-        lsr
         sta secondary_cost+1
         lda army_paid_lo,x
-        ror
         sta secondary_cost
+        lda dismiss_cycle
+        cmp #2
+        bne ?refund_ready
+        sec
+        lda secondary_cost
+        sbc dismiss_fee_lo,y
+        sta secondary_cost
+        lda secondary_cost+1
+        sbc dismiss_fee_hi,y
+        sta secondary_cost+1
+        bcs ?refund_ready
+        mwa #0 secondary_cost
+?refund_ready
         mva #1 secondary_available
         lda unit_family,y
         sta family_index
@@ -84,7 +97,7 @@
         lda unit_tier,y
         sta current_level
         cmp building_levels,x
-        bcs ?preview
+        jcs ?preview
         iny
         sty next_unit
         sec
@@ -130,6 +143,10 @@
         beq ?city
         jmp map_confirm
 ?city   lda selected_plot
+        cmp #11
+        bne ?not_dock
+        jmp savegame.menu
+?not_dock
         cmp #5
         bne ?inspect
         jmp show_map
@@ -291,7 +308,12 @@ action_unavailable
         sta gold+1
         bcc ?remove
         mwa #65535 gold
-?remove ldx army_slot
+?remove inc dismiss_cycle
+        lda dismiss_cycle
+        cmp #3
+        bcc ?slot
+        mva #0 dismiss_cycle
+?slot   ldx army_slot
         mva #255 army_units,x
         dec army_count
         jmp action_done
@@ -337,3 +359,5 @@ free_slot dta 255
 army_capacity dta 3
 army_paid_lo :5 dta 0
 army_paid_hi :5 dta 0
+
+dismiss_cycle dta 0

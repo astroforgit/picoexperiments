@@ -971,13 +971,13 @@ VIEWS.pieces = () => {
 VIEWS.texts = () => {
   const box = h('div');
   box.append(h('p', { class: 'note' }, 'All texts use the cart\'s font: lowercase letters, digits and punctuation; ' +
-    '"^a" is a capital A, "^^" a caret. At most 46 characters per line, 12 lines per window. Red = not drawable.'));
+    '"^a" is a capital A, "^^" a caret. At most 46 characters per line, 12 lines per window; ml_intro supports 72 lines with automatic pages. Red = not drawable.'));
   const t = h('table');
   for (const k of Object.keys(G.texts)) t.append(h('tr', {}, h('td', { class: 'note' }, k), h('td', {}, textInput(G.texts, k, { glyphs: true }))));
   box.append(h('h2', {}, 'Messages'), t);
   for (const k of Object.keys(G.windows)) {
-    const ta = h('textarea', { rows: G.windows[k].length + 1 }, G.windows[k].join('\n'));
-    const check = () => ta.classList.toggle('bad', ta.value.split('\n').some(l => !textOk(l)) || ta.value.split('\n').length > 12);
+    const ta = h('textarea', { rows: Math.min(16,G.windows[k].length + 1) }, G.windows[k].join('\n'));
+    const check = () => ta.classList.toggle('bad', ta.value.split('\n').some(l => !textOk(l)) || ta.value.split('\n').length > (k==='ml_intro'?72:12));
     ta.addEventListener('input', check);
     ta.addEventListener('change', () => { G.windows[k] = ta.value.split('\n'); changed(); });
     check();
@@ -1002,7 +1002,7 @@ function validate() {
   G.items.forEach((it, i) => { if (!textOk(it.name)) errs.push(`item ${i + 1}: name cannot be drawn`); });
   for (const k of Object.keys(G.texts)) if (!textOk(G.texts[k])) errs.push(`text ${k} cannot be drawn`);
   for (const k of Object.keys(G.windows)) {
-    if (G.windows[k].length > 12) errs.push(`window ${k}: more than 12 lines`);
+    if (G.windows[k].length > (k==='ml_intro'?72:12)) errs.push(`window ${k}: too many lines`);
     G.windows[k].forEach(l => { if (!textOk(l)) errs.push(`window ${k}: "${l}" cannot be drawn`); });
   }
   const bytes = G.floors.reduce((a, f) => a + floorRLE(f), 0);

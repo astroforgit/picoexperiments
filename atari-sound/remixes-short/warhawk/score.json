@@ -1,0 +1,471 @@
+{
+  "track": {
+    "id": "warhawk",
+    "title": "Warhawk",
+    "remix": "Afterburner",
+    "source": "Composers/Hubbard_Rob/Warhawk.sap",
+    "frames": 1124,
+    "lead": 2,
+    "step": 17.5625,
+    "motifs": [
+      [
+        12,
+        15,
+        19,
+        22,
+        19,
+        17,
+        15,
+        12,
+        10,
+        12,
+        17,
+        15,
+        19,
+        15,
+        10,
+        7
+      ],
+      [
+        19,
+        17,
+        15,
+        10,
+        12,
+        15,
+        19,
+        24,
+        22,
+        19,
+        17,
+        15,
+        12,
+        10,
+        7,
+        10
+      ],
+      [
+        12,
+        7,
+        10,
+        15,
+        17,
+        19,
+        15,
+        12,
+        10,
+        15,
+        12,
+        7,
+        3,
+        7,
+        10,
+        12
+      ],
+      [
+        24,
+        22,
+        19,
+        15,
+        22,
+        19,
+        17,
+        12,
+        19,
+        15,
+        12,
+        10,
+        7,
+        10,
+        3,
+        0
+      ]
+    ]
+  },
+  "notes": [
+    {
+      "frame": 0,
+      "midi": 79,
+      "phrase": 0,
+      "step": 0
+    },
+    {
+      "frame": 18,
+      "midi": 82,
+      "phrase": 0,
+      "step": 1
+    },
+    {
+      "frame": 36,
+      "midi": 86,
+      "phrase": 0,
+      "step": 2
+    },
+    {
+      "frame": 53,
+      "midi": 77,
+      "phrase": 0,
+      "step": 3
+    },
+    {
+      "frame": 71,
+      "midi": 86,
+      "phrase": 0,
+      "step": 4
+    },
+    {
+      "frame": 88,
+      "midi": 84,
+      "phrase": 0,
+      "step": 5
+    },
+    {
+      "frame": 106,
+      "midi": 82,
+      "phrase": 0,
+      "step": 6
+    },
+    {
+      "frame": 123,
+      "midi": 79,
+      "phrase": 0,
+      "step": 7
+    },
+    {
+      "frame": 141,
+      "midi": 77,
+      "phrase": 0,
+      "step": 8
+    },
+    {
+      "frame": 159,
+      "midi": 79,
+      "phrase": 0,
+      "step": 9
+    },
+    {
+      "frame": 176,
+      "midi": 84,
+      "phrase": 0,
+      "step": 10
+    },
+    {
+      "frame": 194,
+      "midi": 82,
+      "phrase": 0,
+      "step": 11
+    },
+    {
+      "frame": 211,
+      "midi": 86,
+      "phrase": 0,
+      "step": 12
+    },
+    {
+      "frame": 229,
+      "midi": 82,
+      "phrase": 0,
+      "step": 13
+    },
+    {
+      "frame": 246,
+      "midi": 77,
+      "phrase": 0,
+      "step": 14
+    },
+    {
+      "frame": 264,
+      "midi": 74,
+      "phrase": 0,
+      "step": 15
+    },
+    {
+      "frame": 281,
+      "midi": 86,
+      "phrase": 1,
+      "step": 0
+    },
+    {
+      "frame": 299,
+      "midi": 84,
+      "phrase": 1,
+      "step": 1
+    },
+    {
+      "frame": 317,
+      "midi": 82,
+      "phrase": 1,
+      "step": 2
+    },
+    {
+      "frame": 334,
+      "midi": 77,
+      "phrase": 1,
+      "step": 3
+    },
+    {
+      "frame": 352,
+      "midi": 79,
+      "phrase": 1,
+      "step": 4
+    },
+    {
+      "frame": 369,
+      "midi": 82,
+      "phrase": 1,
+      "step": 5
+    },
+    {
+      "frame": 387,
+      "midi": 86,
+      "phrase": 1,
+      "step": 6
+    },
+    {
+      "frame": 404,
+      "midi": 79,
+      "phrase": 1,
+      "step": 7
+    },
+    {
+      "frame": 422,
+      "midi": 77,
+      "phrase": 1,
+      "step": 8
+    },
+    {
+      "frame": 440,
+      "midi": 86,
+      "phrase": 1,
+      "step": 9
+    },
+    {
+      "frame": 457,
+      "midi": 84,
+      "phrase": 1,
+      "step": 10
+    },
+    {
+      "frame": 475,
+      "midi": 82,
+      "phrase": 1,
+      "step": 11
+    },
+    {
+      "frame": 492,
+      "midi": 79,
+      "phrase": 1,
+      "step": 12
+    },
+    {
+      "frame": 510,
+      "midi": 77,
+      "phrase": 1,
+      "step": 13
+    },
+    {
+      "frame": 527,
+      "midi": 74,
+      "phrase": 1,
+      "step": 14
+    },
+    {
+      "frame": 545,
+      "midi": 77,
+      "phrase": 1,
+      "step": 15
+    },
+    {
+      "frame": 562,
+      "midi": 79,
+      "phrase": 2,
+      "step": 0
+    },
+    {
+      "frame": 580,
+      "midi": 74,
+      "phrase": 2,
+      "step": 1
+    },
+    {
+      "frame": 598,
+      "midi": 77,
+      "phrase": 2,
+      "step": 2
+    },
+    {
+      "frame": 615,
+      "midi": 82,
+      "phrase": 2,
+      "step": 3
+    },
+    {
+      "frame": 633,
+      "midi": 84,
+      "phrase": 2,
+      "step": 4
+    },
+    {
+      "frame": 650,
+      "midi": 86,
+      "phrase": 2,
+      "step": 5
+    },
+    {
+      "frame": 668,
+      "midi": 82,
+      "phrase": 2,
+      "step": 6
+    },
+    {
+      "frame": 685,
+      "midi": 79,
+      "phrase": 2,
+      "step": 7
+    },
+    {
+      "frame": 703,
+      "midi": 77,
+      "phrase": 2,
+      "step": 8
+    },
+    {
+      "frame": 721,
+      "midi": 82,
+      "phrase": 2,
+      "step": 9
+    },
+    {
+      "frame": 738,
+      "midi": 79,
+      "phrase": 2,
+      "step": 10
+    },
+    {
+      "frame": 756,
+      "midi": 74,
+      "phrase": 2,
+      "step": 11
+    },
+    {
+      "frame": 773,
+      "midi": 70,
+      "phrase": 2,
+      "step": 12
+    },
+    {
+      "frame": 791,
+      "midi": 74,
+      "phrase": 2,
+      "step": 13
+    },
+    {
+      "frame": 808,
+      "midi": 77,
+      "phrase": 2,
+      "step": 14
+    },
+    {
+      "frame": 826,
+      "midi": 79,
+      "phrase": 2,
+      "step": 15
+    },
+    {
+      "frame": 843,
+      "midi": 79,
+      "phrase": 3,
+      "step": 0
+    },
+    {
+      "frame": 861,
+      "midi": 77,
+      "phrase": 3,
+      "step": 1
+    },
+    {
+      "frame": 879,
+      "midi": 86,
+      "phrase": 3,
+      "step": 2
+    },
+    {
+      "frame": 896,
+      "midi": 82,
+      "phrase": 3,
+      "step": 3
+    },
+    {
+      "frame": 914,
+      "midi": 77,
+      "phrase": 3,
+      "step": 4
+    },
+    {
+      "frame": 931,
+      "midi": 86,
+      "phrase": 3,
+      "step": 5
+    },
+    {
+      "frame": 949,
+      "midi": 84,
+      "phrase": 3,
+      "step": 6
+    },
+    {
+      "frame": 966,
+      "midi": 79,
+      "phrase": 3,
+      "step": 7
+    },
+    {
+      "frame": 984,
+      "midi": 86,
+      "phrase": 3,
+      "step": 8
+    },
+    {
+      "frame": 1002,
+      "midi": 82,
+      "phrase": 3,
+      "step": 9
+    },
+    {
+      "frame": 1019,
+      "midi": 79,
+      "phrase": 3,
+      "step": 10
+    },
+    {
+      "frame": 1037,
+      "midi": 77,
+      "phrase": 3,
+      "step": 11
+    },
+    {
+      "frame": 1054,
+      "midi": 74,
+      "phrase": 3,
+      "step": 12
+    },
+    {
+      "frame": 1072,
+      "midi": 77,
+      "phrase": 3,
+      "step": 13
+    },
+    {
+      "frame": 1089,
+      "midi": 70,
+      "phrase": 3,
+      "step": 14
+    },
+    {
+      "frame": 1107,
+      "midi": 67,
+      "phrase": 3,
+      "step": 15
+    }
+  ]
+}

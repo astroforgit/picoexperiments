@@ -1,0 +1,1 @@
+INTRO_PAGES = 6

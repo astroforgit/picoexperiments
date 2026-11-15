@@ -1,0 +1,9 @@
+# Preserve game images and generated hardware data byte-for-byte.
+*.bin binary
+*.raw binary
+*.xex binary
+*.atr binary
+*.d64 binary
+*.rom binary
+*.rmt binary
+*.sap binary

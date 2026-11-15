@@ -155,7 +155,9 @@ summary { cursor: pointer; }
 
 .assets-view { display: grid; grid-template-columns: minmax(420px, 1fr) 330px; height: calc(100% - 68px); min-height: 0; overflow: hidden; }
 .assets-shell { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
-.assets-toolbar { display: flex; align-items: center; gap: 14px; padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--panel-2); }
+.assets-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--panel-2); }
+.assets-toolbar label { display: flex; align-items: center; gap: 6px; }
+.assets-toolbar select { max-width: 240px; }
 .assets-toolbar h2 { margin: 0; font-size: 13px; }
 .assets-toolbar .spacer { flex: 1; }
 #assetsStatus { color: var(--muted); font-size: 11px; }

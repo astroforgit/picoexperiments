@@ -1,0 +1,73 @@
+{
+  "name": "Babajaga",
+  "format": "Atari SD ATR",
+  "sha256": "e8048fb94a8eaa783642883ff4498b4e23e2908e628455c10b35fa8700ed9414",
+  "player": [
+    {
+      "address": 21544,
+      "width": 36,
+      "height": 23,
+      "role": "flight 1, alignment 0"
+    },
+    {
+      "address": 21758,
+      "width": 36,
+      "height": 28,
+      "role": "flight 2, alignment 0"
+    },
+    {
+      "address": 22017,
+      "width": 36,
+      "height": 23,
+      "role": "flight 3, alignment 0"
+    },
+    {
+      "address": 22231,
+      "width": 36,
+      "height": 28,
+      "role": "flight 4, alignment 0"
+    },
+    {
+      "address": 22490,
+      "width": 36,
+      "height": 23,
+      "role": "flight 1, alignment 2"
+    },
+    {
+      "address": 22704,
+      "width": 36,
+      "height": 28,
+      "role": "flight 2, alignment 2"
+    },
+    {
+      "address": 22963,
+      "width": 36,
+      "height": 23,
+      "role": "flight 3, alignment 2"
+    },
+    {
+      "address": 23177,
+      "width": 36,
+      "height": 28,
+      "role": "flight 4, alignment 2"
+    },
+    {
+      "address": 23436,
+      "width": 36,
+      "height": 23,
+      "role": "hit/death pose"
+    },
+    {
+      "address": 23650,
+      "width": 40,
+      "height": 32,
+      "role": "hit/death pose"
+    }
+  ],
+  "changedFiles": [
+    "D",
+    "E",
+    "F"
+  ],
+  "originalSha256": "fab7a4f434071c9f3aca6edb7bfd2c43f295e253200159c8194cf6a24481d896"
+}

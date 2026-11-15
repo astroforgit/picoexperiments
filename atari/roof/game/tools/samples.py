@@ -11,7 +11,7 @@ import numpy as np
 ROOT=Path(__file__).resolve().parents[1]
 SOURCES=Path(__import__('os').environ.get('STAR_FISHER_SOUNDS',str(ROOT.parent/'sounds')))
 CLOCK=63337
-RATES={19:'3.2 kHz',15:'4.0 kHz',13:'4.5 kHz',10:'5.8 kHz'}
+RATES={19:'3.2 kHz',15:'4.0 kHz',13:'4.5 kHz',10:'5.8 kHz',9:'6.3 kHz'}
 MAX_CLIPS=16
 # Seconds per excerpt; the playback buffer may set a lower limit at higher rates.
 MAX_LENGTH=10
@@ -69,7 +69,7 @@ def sample_settings(value):
 
 def hz(rate):return CLOCK/(rate+1)
 
-def levels(clip,rate,loop=False,max_level=15):
+def levels(clip,rate,loop=False,max_level=15,*,compress=True):
  """Quantise to a single DAC or the summed range of three DACs."""
  r=hz(rate);extra=.3 if loop else 0
  cmd=['ffmpeg','-v','error','-ss',str(clip['start']),'-t',str(clip['length']+extra),'-i',str(source_path(clip['file'])),'-ac','1',
@@ -86,6 +86,17 @@ def levels(clip,rate,loop=False,max_level=15):
    w=np.linspace(0,1,n);x[:n]=x[:n]*w+tail[:n]*(1-w)
  peak=np.max(np.abs(x))
  if peak<1e-7 or clip['gain']==0:return [0]*(len(x)+(len(x)%2))
+ if compress and max_level==45 and not loop:
+  # Tame peaks before rounding so quiet detail uses more of the POKEY range.
+  # Work at a fixed peak reference so the source file's gain does not change
+  # the amount of compression. Keep the user's gain for the final conversion.
+  cmd=['ffmpeg','-v','error','-f','f32le','-ar',str(round(r)),'-ac','1','-i','-',
+       '-af','acompressor=threshold=0.125:ratio=2.5:attack=2:release=80:knee=2:detection=peak',
+       '-f','f32le','-']
+  raw=subprocess.run(cmd,input=(x/peak).astype('<f4').tobytes(),capture_output=True,check=True).stdout
+  x=np.frombuffer(raw,'<f4').astype(float)
+  x-=x.mean()
+  peak=np.max(np.abs(x))
  midpoint=max_level/2
  y=midpoint+midpoint*np.clip(x/peak*clip['gain']/100,-1,1)
  if not loop:
@@ -129,10 +140,10 @@ def capacity():return sum(b-a for a,b,_ in REGIONS)
 # and the XDL/blitter setup in star-fisher.asm, sky.asm and bobber-menu.asm:
 VRAM_USED=[(0x00000,0x12c00,'background 320x240'),(0x14000,0x15900,'cloud sprite 160x40'),
            (0x16000,0x1f9c0,'bobber popup 240x164'),(0x20000,0x32c00,'framebuffer A'),
-           (0x40000,0x52c00,'framebuffer B'),(0x60000,0x6ad70,'cached menu panel, rows 53-138'),
+           (0x40000,0x52c00,'framebuffer B'),(0x60000,0x6c170,'cached menu panel, rows 32-154'),
            (0x7e000,0x7e020,'two XDLs'),(0x7f000,0x7f015,'blitter command')]
 # Whole 4 KiB MEMAC banks that nothing above touches.
-AUDIO_BANKS=[0x13,*range(0x33,0x40),*range(0x53,0x60),*range(0x6b,0x7e)]
+AUDIO_BANKS=[0x13,*range(0x33,0x40),*range(0x53,0x60),*range(0x6d,0x7e)]
 VRAM_CAPACITY=len(AUDIO_BANKS)*4096
 # Playback buffer: CPU RAM pages free once the game runs (OS, DOS and BASIC
 # are off; code ends below $7800, MEMAC is $9000-$9FFF, I/O $D000-$D7FF and
@@ -144,22 +155,31 @@ assert all(not (a<(b+1)*4096 and b*4096<e) for b in AUDIO_BANKS for a,e,_ in VRA
 
 def pages(data):return (len(data)+255)//256
 
-def vram_layout(clips,rate,names=None):
- """Pack clips page-aligned into AUDIO_BANKS. clips: [bytes] -> first logical page of each."""
+def vram_plan(clips,rate,names=None):
+ """Choose clips in list order: skip any longer than the playback buffer or
+ too large for the VBXE memory still free. -> ({index: first page}, {index: reason})."""
  names=names or [f'Sound {i+1}' for i in range(len(clips))]
- first=[];used=0
- for name,data in zip(names,clips):
+ first={};skipped={};used=0;r=hz(rate)
+ for i,(name,data) in enumerate(zip(names,clips)):
   if pages(data)>len(BUFFER_PAGES):
-   raise ValueError(f'{name} needs {len(data)} bytes ({len(data)/hz(rate):.2f} s). The playback buffer holds {BUFFER_CAPACITY} bytes ({BUFFER_CAPACITY/hz(rate):.2f} s at {round(hz(rate))} Hz). Shorten it or lower the sample rate.')
-  first.append(used);used+=pages(data)
- if used*256>VRAM_CAPACITY:
-  raise ValueError(f'Recorded sounds need {used*256} bytes; free VBXE memory holds {VRAM_CAPACITY} bytes ({VRAM_CAPACITY/hz(rate):.1f} s at {round(hz(rate))} Hz). Shorten or remove a sound, or lower the sample rate.')
- return first
+   skipped[i]=f'{len(data)/r:.2f} s is longer than the {BUFFER_CAPACITY/r:.2f} s playback buffer'
+  elif (used+pages(data))*256>VRAM_CAPACITY:
+   skipped[i]=f'only {(VRAM_CAPACITY-used*256)/r:.2f} s of VBXE memory left'
+  else:first[i]=used;used+=pages(data)
+ return first,skipped
+
+def vram_layout(clips,rate,names=None):
+ """Strict variant: every clip must fit. clips: [bytes] -> first logical page of each."""
+ names=names or [f'Sound {i+1}' for i in range(len(clips))]
+ first,skipped=vram_plan(clips,rate,names)
+ if skipped:
+  i=min(skipped);raise ValueError(f'{names[i]}: {skipped[i]}. Shorten it or lower the sample rate.')
+ return [first[i] for i in range(len(clips))]
 
 def buffer_end(length):
- """CPU address just after the last sample, and its buffer segment."""
- page=BUFFER_PAGES[(length-1)>>8]
+ """High byte of the CPU page just after the clip's last (padded) page, and its buffer segment."""
+ page=BUFFER_PAGES[pages(bytes(length))-1]
  seg=next(i for i,(a,b) in enumerate(BUFFER_SEGMENTS) if a<=page<b)
- return (page<<8|((length-1)&255))+1,seg
+ return page+1,seg
 
 def region_of(address):return next(kind for a,b,kind in REGIONS if a<=address<b)

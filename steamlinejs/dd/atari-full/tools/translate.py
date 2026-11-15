@@ -37,6 +37,7 @@ SERVICES = [
     'check_for_initial_obj_loads', 'store_vmaddh_to_proper_range',
     # Atari additions
     'prg_bank', 'hud_scroll', 'latch_scroll', 'wait_vblank', 'idle_spin', 'stack_reset',
+    'effect_apu_write',
 ]
 
 # Variables the banks reference by name. SNES hardware registers map to plain
@@ -287,6 +288,23 @@ def build():
                            capture_output=True, text=True)
         if r.returncode:
             sys.exit(r.stdout + r.stderr)
+        if bank == 5:
+            # Music headers start with $FF; reject them before track setup.
+            # Keep reset ($00), stop-effects ($FF) and all effect commands.
+            path = GEN / 'bank5.bin'
+            data = bytearray(path.read_bytes())
+            for address, before, after in (
+                # Record timer-high writes, including zero (a valid trigger).
+                (0x873C, bytes.fromhex('4c b9 07'),
+                 bytes([0x4C]) + vector('effect_apu_write').to_bytes(2, 'little')),
+                (0x8096, bytes.fromhex('f0 22'), bytes.fromhex('f0 72')),
+                # The tempo accumulator is used only by music tracks 0-3.
+                (0x8139, bytes.fromhex('20 04 87'), bytes.fromhex('ea ea ea')),
+            ):
+                offset = address - 0x8000
+                assert data[offset:offset + len(before)] == before, hex(address)
+                data[offset:offset + len(before)] = after
+            path.write_bytes(data)
         size = (GEN / f'bank{bank}.bin').stat().st_size
         if size != 0x4000:
             sys.exit(f'bank {bank}: {size} bytes')

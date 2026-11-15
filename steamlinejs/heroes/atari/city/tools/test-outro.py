@@ -16,14 +16,14 @@ def expected(page):
 frames=[]
 for register_page in (0xd600,0xd700):
  m=r.Machine(register_page)
- for state,contract,committed in [(0,11,1),(2,11,1),(3,11,1),(1,10,1),(1,11,0)]:
+ for state,contract,committed in [(0,12,1),(2,12,1),(3,12,1),(1,11,1),(1,12,0)]:
   m.put('screen_mode',2);m.put('battle.game_state',state);m.put('battle.contract',contract);m.put('battle.reward_committed',committed)
   m.call('outro.check');assert m.get('screen_mode')==2
  # Enter the final encounter and kill the real Warlock through native attack code.
  m.call('new_city')
  for i in range(3):m.mem.ram[r.LABELS['region_wins']+i]=3
- m.mem.ram[r.LABELS['region_wins']+3]=2
- m.put('selected_location',4);m.call('battle.start');assert m.get('battle.contract')==11
+ m.mem.ram[r.LABELS['region_wins']+3]=3
+ m.put('selected_location',4);m.call('battle.start');assert m.get('battle.contract')==12
  count=m.get('battle.unit_count');types=list(m.mem.ram[r.LABELS['battle.unit_type']:r.LABELS['battle.unit_type']+count]);boss=types.index(22)
  m.mem.ram[r.LABELS['battle.unit_hp']+boss]=1
  m.put('battle.attacker_unit',0);m.put('battle.defender_unit',boss);m.put('battle.attack_bonus',0);m.call('battle.attack_units')

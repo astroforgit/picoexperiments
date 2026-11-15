@@ -379,6 +379,12 @@ uw_close
         lda #35
         jsr sfx
         ldx modal_top
+        lda intro_active
+        beq uw_normal
+        jsr intro_advance
+        bcs uw_end
+        ldx modal_top
+uw_normal
         lda wn_close,x
         beq uw_cl
         jsr on_close

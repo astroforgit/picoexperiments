@@ -1,0 +1,7 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),rules=require('../editor-balance.js'),d=require('../greenhaven-unit-balance.json');
+assert.equal(d.encounterConfig.regions[1].stages.length,3);assert.equal(d.encounterConfig.regions[1].stages[2].reward,130);
+for(let level=0;level<3;level++)for(let seed=0;seed<256;seed++)assert.deepEqual(rules.generate(d,1,2,seed,false,level).enemies.map(u=>u.id),Array(5).fill('skeleton'));
+const bad=structuredClone(d);bad.encounterConfig.regions[1].stages[2].variants[0].hardEnemies[0]='zombie';assert(rules.validate(bad).length);
+assert.deepEqual(require('../atari/city/content.json').encounterConfig,d.encounterConfig);
+const content=fs.readFileSync(__dirname+'/../atari/city/generated/battle-content.inc','utf8'),groups=fs.readFileSync(__dirname+'/../atari/city/generated/battle-groups.inc','utf8');const picks=content.match(/^seed_5 dta (.+)$/m)[1].split(',').map(Number);assert.equal(new Set(picks).size,1);const offsets=groups.match(/^difficulty_group_base dta (.+)$/m)[1].split(',').map(Number),type=15+d.enemies.findIndex(u=>u.id==='skeleton');for(const offset of offsets){let label='enemies_'+(picks[0]+offset),alias;while(alias=groups.match(new RegExp('^'+label+' equ (enemies_\\d+)$','m')))label=alias[1];const roster=groups.match(new RegExp('^'+label+' dta (.+)$','m'))[1].split(',').map(Number);assert.deepEqual(roster,[type,6,type,13,type,20,type,27,type,34,255]);}
+console.log('PASS: five Skeletons for all 768 seeds/difficulties, locked roster, unchanged stage count/reward, and compiled Atari groups.');

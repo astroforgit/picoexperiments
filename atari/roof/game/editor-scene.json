@@ -3353,7 +3353,7 @@
   "sound": {
     "enabled": true,
     "samples": {
-      "rate": 15,
+      "rate": 9,
       "wind": {
         "mode": "off",
         "file": "A_short,_sharp,_reso_#4-1793835340752.wav",

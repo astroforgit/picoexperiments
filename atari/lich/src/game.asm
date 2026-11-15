@@ -298,15 +298,7 @@ li_sd
         lda pl_depth
         cmp #1
         bne li_r
-        lda #10
-        ldx #10
-        jsr win_new
-        mwa #ml_intro sp
-        jsr win_lines
-        lda #108
-        jsr win_finish
-        lda #0
-        jsr add_modal
+        jsr intro_start
 li_r    rts
 
 ; fog = 2 everywhere

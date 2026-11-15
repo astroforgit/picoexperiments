@@ -57,7 +57,7 @@
       "costs": [
         45,
         75,
-        160
+        140
       ],
       "units": [
         "HUNTER",
@@ -67,7 +67,7 @@
       "hp": [
         3,
         4,
-        5
+        4
       ],
       "damage": [
         1,
@@ -82,12 +82,12 @@
       "recruitCosts": [
         25,
         50,
-        100
+        75
       ],
       "move": [
         1,
         1,
-        2
+        1
       ],
       "shootRange": [
         4,
@@ -224,12 +224,12 @@
       "range": [
         2,
         3,
-        4
+        3
       ],
       "recruitCosts": [
         25,
         50,
-        85
+        80
       ],
       "move": [
         1,
@@ -239,7 +239,7 @@
       "shootRange": [
         2,
         3,
-        4
+        3
       ]
     }
   ],
@@ -315,7 +315,7 @@
       "range": 4,
       "shootRange": 4,
       "basis": "Balance v1 - playtest candidate",
-      "notes": "Individual fighter; fixed damage, no armor or special abilities."
+      "notes": "Skeleton unit: immune to arrows; melee and magic deal normal damage. Appears only in Necromancer Ruins."
     },
     {
       "id": "ogre",
@@ -343,7 +343,7 @@
       "id": "imp",
       "name": "Imp",
       "hp": 4,
-      "damage": 2,
+      "damage": 3,
       "move": 4,
       "range": 1,
       "shootRange": 0,
@@ -375,9 +375,9 @@
     {
       "id": "demon",
       "name": "Demon",
-      "hp": 3,
+      "hp": 5,
       "damage": 4,
-      "move": 2,
+      "move": 3,
       "range": 1,
       "shootRange": 0,
       "basis": "Balance v1 - playtest candidate",
@@ -393,6 +393,28 @@
       "shootRange": 5,
       "basis": "Balance v1 - playtest candidate",
       "notes": "Individual fighter; fixed damage, no armor or special abilities."
+    },
+    {
+      "id": "evil-nymph",
+      "name": "Evil Nymph",
+      "hp": 3,
+      "damage": 0,
+      "move": 5,
+      "range": 1,
+      "shootRange": 0,
+      "basis": "Fast melee enchanter",
+      "notes": "Approaches halfway first, then moves into range and enchants on the next turn. Can enchant only one living fighter at a time, instead of dealing damage. The fighter fights for the enemy from the next round until this Nymph dies. Freed fighters act next round."
+    },
+    {
+      "id": "ogre-mage",
+      "name": "Ogre Mage",
+      "hp": 6,
+      "damage": 2,
+      "move": 2,
+      "range": 3,
+      "shootRange": 3,
+      "basis": "Ranged magic enemy",
+      "notes": "Magic attacks like a player Mage. No Ogre heavy-strike windup."
     }
   ],
   "encounters": [
@@ -444,10 +466,11 @@
       "name": "REGION GUARD",
       "reward": 130,
       "enemies": [
-        "dark",
-        "dark",
         "skeleton",
-        "zombie"
+        "skeleton",
+        "skeleton",
+        "skeleton",
+        "skeleton"
       ]
     },
     {
@@ -464,7 +487,7 @@
       "name": "STRONGHOLD",
       "reward": 150,
       "enemies": [
-        "ogre",
+        "ogre-mage",
         "ogre",
         "beast",
         "bat"
@@ -495,9 +518,20 @@
       "name": "INNER RUINS",
       "reward": 220,
       "enemies": [
-        "dark",
+        "evil-nymph",
         "demon",
         "demon",
+        "sniper",
+        "sniper"
+      ]
+    },
+    {
+      "name": "SNIPER AMBUSH",
+      "reward": 250,
+      "enemies": [
+        "sniper",
+        "sniper",
+        "sniper",
         "sniper",
         "sniper"
       ]
@@ -535,23 +569,23 @@
                 "weight": 1,
                 "enemies": [
                   "minibeast",
-                  "minibeast"
+                  "evil-nymph"
                 ],
                 "mediumEnemies": [
                   "wolf",
                   "minibeast",
-                  "minibeast"
+                  "evil-nymph"
                 ],
                 "hardEnemies": [
                   "wolf",
                   "wolf",
                   "minibeast",
-                  "minibeast"
+                  "evil-nymph"
                 ]
               },
               {
                 "name": "Dark Forest 1 - 2",
-                "weight": 1,
+                "weight": 9,
                 "enemies": [
                   "minibeast",
                   "bat"
@@ -570,7 +604,7 @@
               },
               {
                 "name": "Dark Forest 1 - 3",
-                "weight": 1,
+                "weight": 9,
                 "enemies": [
                   "bat",
                   "bat"
@@ -586,6 +620,26 @@
                   "bat",
                   "bat"
                 ]
+              },
+              {
+                "name": "Dark Forest 1 - Nymphs - Optional",
+                "weight": 1,
+                "enemies": [
+                  "evil-nymph",
+                  "evil-nymph"
+                ],
+                "mediumEnemies": [
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph"
+                ],
+                "hardEnemies": [
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph"
+                ],
+                "optionalAfterWins": 3
               }
             ]
           },
@@ -599,25 +653,25 @@
                 "enemies": [
                   "wolf",
                   "minibeast",
-                  "minibeast"
+                  "evil-nymph"
                 ],
                 "mediumEnemies": [
                   "wolf",
                   "wolf",
                   "minibeast",
-                  "minibeast"
+                  "evil-nymph"
                 ],
                 "hardEnemies": [
                   "wolf",
                   "wolf",
                   "wolf",
                   "minibeast",
-                  "minibeast"
+                  "evil-nymph"
                 ]
               },
               {
                 "name": "Dark Forest 2 - 2",
-                "weight": 1,
+                "weight": 3,
                 "enemies": [
                   "beast",
                   "minibeast",
@@ -639,7 +693,7 @@
               },
               {
                 "name": "Dark Forest 2 - 3",
-                "weight": 1,
+                "weight": 3,
                 "enemies": [
                   "wolf",
                   "wolf",
@@ -658,6 +712,26 @@
                   "minibeast",
                   "bat"
                 ]
+              },
+              {
+                "name": "Dark Forest 2 - Nymphs - Optional",
+                "weight": 1,
+                "enemies": [
+                  "evil-nymph",
+                  "evil-nymph"
+                ],
+                "mediumEnemies": [
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph"
+                ],
+                "hardEnemies": [
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph"
+                ],
+                "optionalAfterWins": 3
               }
             ]
           },
@@ -671,25 +745,25 @@
                 "enemies": [
                   "beast",
                   "wolf",
-                  "minibeast"
+                  "evil-nymph"
                 ],
                 "mediumEnemies": [
                   "beast",
                   "wolf",
                   "wolf",
-                  "minibeast"
+                  "evil-nymph"
                 ],
                 "hardEnemies": [
                   "beast",
                   "wolf",
                   "wolf",
                   "wolf",
-                  "minibeast"
+                  "evil-nymph"
                 ]
               },
               {
                 "name": "Dark Forest 3 - 2",
-                "weight": 1,
+                "weight": 3,
                 "enemies": [
                   "beast",
                   "beast",
@@ -713,7 +787,7 @@
               },
               {
                 "name": "Dark Forest 3 - 3",
-                "weight": 1,
+                "weight": 3,
                 "enemies": [
                   "wolf",
                   "wolf",
@@ -734,6 +808,26 @@
                   "wolf",
                   "wolf"
                 ]
+              },
+              {
+                "name": "Dark Forest 3 - Nymphs - Optional",
+                "weight": 1,
+                "enemies": [
+                  "evil-nymph",
+                  "evil-nymph"
+                ],
+                "mediumEnemies": [
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph"
+                ],
+                "hardEnemies": [
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph"
+                ],
+                "optionalAfterWins": 3
               }
             ]
           }
@@ -754,25 +848,25 @@
                 "enemies": [
                   "zombie",
                   "skeleton",
-                  "zombie"
+                  "evil-nymph"
                 ],
                 "mediumEnemies": [
                   "zombie",
-                  "bone-archer",
+                  "skeleton",
                   "zombie",
-                  "skeleton"
+                  "evil-nymph"
                 ],
                 "hardEnemies": [
                   "zombie",
-                  "bone-archer",
+                  "skeleton",
                   "zombie",
-                  "bone-archer",
-                  "skeleton"
+                  "skeleton",
+                  "evil-nymph"
                 ]
               },
               {
                 "name": "Catacombs 1 - 2",
-                "weight": 1,
+                "weight": 9,
                 "enemies": [
                   "zombie",
                   "zombie",
@@ -794,7 +888,7 @@
               },
               {
                 "name": "Catacombs 1 - 3",
-                "weight": 1,
+                "weight": 9,
                 "enemies": [
                   "dark",
                   "skeleton",
@@ -802,16 +896,35 @@
                 ],
                 "mediumEnemies": [
                   "dark",
-                  "bone-archer",
+                  "skeleton",
                   "zombie",
                   "skeleton"
                 ],
                 "hardEnemies": [
                   "dark",
-                  "bone-archer",
+                  "skeleton",
                   "zombie",
-                  "bone-archer",
+                  "skeleton",
                   "skeleton"
+                ]
+              },
+              {
+                "name": "Catacombs 1 - Nymphs",
+                "weight": 1,
+                "enemies": [
+                  "evil-nymph",
+                  "evil-nymph"
+                ],
+                "mediumEnemies": [
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph"
+                ],
+                "hardEnemies": [
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph"
                 ]
               }
             ]
@@ -826,25 +939,25 @@
                 "enemies": [
                   "dark",
                   "zombie",
-                  "skeleton"
+                  "evil-nymph"
                 ],
                 "mediumEnemies": [
                   "dark",
                   "zombie",
-                  "bone-archer",
-                  "skeleton"
+                  "skeleton",
+                  "evil-nymph"
                 ],
                 "hardEnemies": [
                   "dark",
                   "zombie",
-                  "bone-archer",
-                  "bone-archer",
-                  "skeleton"
+                  "skeleton",
+                  "skeleton",
+                  "evil-nymph"
                 ]
               },
               {
                 "name": "Catacombs 2 - 2",
-                "weight": 1,
+                "weight": 3,
                 "enemies": [
                   "zombie",
                   "zombie",
@@ -854,21 +967,21 @@
                 "mediumEnemies": [
                   "zombie",
                   "zombie",
-                  "bone-archer",
+                  "skeleton",
                   "skeleton",
                   "skeleton"
                 ],
                 "hardEnemies": [
                   "zombie",
                   "zombie",
-                  "bone-archer",
-                  "bone-archer",
-                  "bone-archer"
+                  "skeleton",
+                  "skeleton",
+                  "skeleton"
                 ]
               },
               {
                 "name": "Catacombs 2 - 3",
-                "weight": 1,
+                "weight": 3,
                 "enemies": [
                   "dark",
                   "dark",
@@ -886,6 +999,25 @@
                   "dark",
                   "zombie",
                   "zombie"
+                ]
+              },
+              {
+                "name": "Catacombs 2 - Nymphs",
+                "weight": 1,
+                "enemies": [
+                  "evil-nymph",
+                  "evil-nymph"
+                ],
+                "mediumEnemies": [
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph"
+                ],
+                "hardEnemies": [
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph"
                 ]
               }
             ]
@@ -895,78 +1027,32 @@
             "reward": 130,
             "variants": [
               {
-                "name": "Catacombs 3 - 1",
+                "name": "Skeleton Guard",
                 "weight": 1,
                 "enemies": [
-                  "dark",
-                  "dark",
                   "skeleton",
-                  "zombie"
-                ],
-                "mediumEnemies": [
-                  "dark",
-                  "dark",
-                  "bone-archer",
-                  "zombie",
-                  "skeleton"
-                ],
-                "hardEnemies": [
-                  "dark",
-                  "dark",
-                  "bone-archer",
-                  "dark",
-                  "bone-archer"
-                ]
-              },
-              {
-                "name": "Catacombs 3 - 2",
-                "weight": 1,
-                "enemies": [
-                  "dark",
-                  "bone-archer",
-                  "zombie",
+                  "skeleton",
+                  "skeleton",
+                  "skeleton",
                   "skeleton"
                 ],
                 "mediumEnemies": [
-                  "dark",
-                  "bone-archer",
-                  "zombie",
-                  "bone-archer",
+                  "skeleton",
+                  "skeleton",
+                  "skeleton",
+                  "skeleton",
                   "skeleton"
                 ],
                 "hardEnemies": [
-                  "dark",
-                  "bone-archer",
-                  "dark",
-                  "bone-archer",
-                  "bone-archer"
-                ]
-              },
-              {
-                "name": "Catacombs 3 - 3",
-                "weight": 1,
-                "enemies": [
-                  "dark",
-                  "zombie",
-                  "zombie",
+                  "skeleton",
+                  "skeleton",
+                  "skeleton",
+                  "skeleton",
                   "skeleton"
-                ],
-                "mediumEnemies": [
-                  "dark",
-                  "zombie",
-                  "zombie",
-                  "bone-archer",
-                  "skeleton"
-                ],
-                "hardEnemies": [
-                  "dark",
-                  "dark",
-                  "zombie",
-                  "bone-archer",
-                  "bone-archer"
                 ]
               }
-            ]
+            ],
+            "kind": "skeleton-guard"
           }
         ]
       },
@@ -983,44 +1069,44 @@
                 "name": "Monster Caves 1 - 1",
                 "weight": 1,
                 "enemies": [
-                  "ogre",
+                  "ogre-mage",
                   "beast",
                   "beast",
-                  "bat"
+                  "evil-nymph"
                 ],
                 "mediumEnemies": [
-                  "ogre",
+                  "ogre-mage",
                   "beast",
                   "beast",
                   "beast",
-                  "bat"
+                  "evil-nymph"
                 ],
                 "hardEnemies": [
-                  "ogre",
+                  "ogre-mage",
                   "ogre",
                   "beast",
                   "beast",
-                  "ogre"
+                  "evil-nymph"
                 ]
               },
               {
                 "name": "Monster Caves 1 - 2",
-                "weight": 1,
+                "weight": 9,
                 "enemies": [
-                  "beast",
+                  "ogre-mage",
                   "beast",
                   "beast",
                   "beast"
                 ],
                 "mediumEnemies": [
-                  "ogre",
+                  "ogre-mage",
                   "beast",
                   "beast",
                   "beast",
                   "beast"
                 ],
                 "hardEnemies": [
-                  "ogre",
+                  "ogre-mage",
                   "ogre",
                   "ogre",
                   "beast",
@@ -1029,26 +1115,45 @@
               },
               {
                 "name": "Monster Caves 1 - 3",
-                "weight": 1,
+                "weight": 9,
                 "enemies": [
-                  "ogre",
+                  "ogre-mage",
                   "beast",
                   "beast",
                   "beast"
                 ],
                 "mediumEnemies": [
-                  "ogre",
+                  "ogre-mage",
                   "ogre",
                   "beast",
                   "beast",
                   "beast"
                 ],
                 "hardEnemies": [
-                  "ogre",
+                  "ogre-mage",
                   "ogre",
                   "ogre",
                   "beast",
                   "beast"
+                ]
+              },
+              {
+                "name": "Monster Caves 1 - Nymphs",
+                "weight": 1,
+                "enemies": [
+                  "evil-nymph",
+                  "evil-nymph"
+                ],
+                "mediumEnemies": [
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph"
+                ],
+                "hardEnemies": [
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph"
                 ]
               }
             ]
@@ -1061,44 +1166,44 @@
                 "name": "Monster Caves 2 - 1",
                 "weight": 1,
                 "enemies": [
-                  "ogre",
+                  "ogre-mage",
                   "ogre",
                   "beast",
-                  "bat"
+                  "evil-nymph"
                 ],
                 "mediumEnemies": [
-                  "ogre",
+                  "ogre-mage",
                   "ogre",
                   "beast",
                   "beast",
-                  "bat"
+                  "evil-nymph"
                 ],
                 "hardEnemies": [
-                  "ogre",
+                  "ogre-mage",
                   "ogre",
                   "ogre",
                   "beast",
-                  "beast"
+                  "evil-nymph"
                 ]
               },
               {
                 "name": "Monster Caves 2 - 2",
-                "weight": 1,
+                "weight": 3,
                 "enemies": [
-                  "ogre",
+                  "ogre-mage",
                   "beast",
                   "beast",
                   "beast"
                 ],
                 "mediumEnemies": [
-                  "ogre",
+                  "ogre-mage",
                   "ogre",
                   "beast",
                   "beast",
                   "beast"
                 ],
                 "hardEnemies": [
-                  "ogre",
+                  "ogre-mage",
                   "ogre",
                   "ogre",
                   "beast",
@@ -1107,27 +1212,46 @@
               },
               {
                 "name": "Monster Caves 2 - 3",
-                "weight": 1,
+                "weight": 3,
                 "enemies": [
-                  "beast",
+                  "ogre-mage",
                   "beast",
                   "beast",
                   "beast",
                   "bat"
                 ],
                 "mediumEnemies": [
-                  "ogre",
+                  "ogre-mage",
                   "beast",
                   "beast",
                   "beast",
                   "ogre"
                 ],
                 "hardEnemies": [
-                  "ogre",
+                  "ogre-mage",
                   "ogre",
                   "beast",
                   "beast",
                   "ogre"
+                ]
+              },
+              {
+                "name": "Monster Caves 2 - Nymphs",
+                "weight": 1,
+                "enemies": [
+                  "evil-nymph",
+                  "evil-nymph"
+                ],
+                "mediumEnemies": [
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph"
+                ],
+                "hardEnemies": [
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph"
                 ]
               }
             ]
@@ -1140,44 +1264,44 @@
                 "name": "Monster Caves 3 - 1",
                 "weight": 1,
                 "enemies": [
-                  "ogre",
+                  "ogre-mage",
                   "ogre",
                   "beast",
-                  "beast"
+                  "evil-nymph"
                 ],
                 "mediumEnemies": [
-                  "ogre",
+                  "ogre-mage",
                   "ogre",
                   "ogre",
                   "beast",
-                  "beast"
+                  "evil-nymph"
                 ],
                 "hardEnemies": [
-                  "ogre",
+                  "ogre-mage",
                   "ogre",
                   "ogre",
                   "beast",
-                  "beast"
+                  "evil-nymph"
                 ]
               },
               {
                 "name": "Monster Caves 3 - 2",
-                "weight": 1,
+                "weight": 3,
                 "enemies": [
-                  "ogre",
+                  "ogre-mage",
                   "ogre",
                   "beast",
                   "bat"
                 ],
                 "mediumEnemies": [
-                  "ogre",
+                  "ogre-mage",
                   "ogre",
                   "beast",
                   "beast",
                   "bat"
                 ],
                 "hardEnemies": [
-                  "ogre",
+                  "ogre-mage",
                   "ogre",
                   "ogre",
                   "beast",
@@ -1186,27 +1310,46 @@
               },
               {
                 "name": "Monster Caves 3 - 3",
-                "weight": 1,
+                "weight": 3,
                 "enemies": [
-                  "ogre",
+                  "ogre-mage",
                   "beast",
                   "beast",
                   "beast",
                   "bat"
                 ],
                 "mediumEnemies": [
-                  "ogre",
+                  "ogre-mage",
                   "ogre",
                   "beast",
                   "beast",
                   "ogre"
                 ],
                 "hardEnemies": [
-                  "ogre",
+                  "ogre-mage",
                   "ogre",
                   "beast",
                   "beast",
                   "ogre"
+                ]
+              },
+              {
+                "name": "Monster Caves 3 - Nymphs",
+                "weight": 1,
+                "enemies": [
+                  "evil-nymph",
+                  "evil-nymph"
+                ],
+                "mediumEnemies": [
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph"
+                ],
+                "hardEnemies": [
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph"
                 ]
               }
             ]
@@ -1230,26 +1373,26 @@
                   "demon",
                   "bone-archer",
                   "bone-archer",
-                  "imp"
+                  "evil-nymph"
                 ],
                 "mediumEnemies": [
                   "dark",
                   "demon",
                   "sniper",
                   "sniper",
-                  "imp"
+                  "evil-nymph"
                 ],
                 "hardEnemies": [
                   "demon",
                   "demon",
                   "sniper",
                   "sniper",
-                  "demon"
+                  "evil-nymph"
                 ]
               },
               {
                 "name": "Necromancer Ruins 1 - 2",
-                "weight": 1,
+                "weight": 9,
                 "enemies": [
                   "dark",
                   "dark",
@@ -1274,7 +1417,7 @@
               },
               {
                 "name": "Necromancer Ruins 1 - 3",
-                "weight": 1,
+                "weight": 9,
                 "enemies": [
                   "demon",
                   "sniper",
@@ -1296,6 +1439,25 @@
                   "demon",
                   "demon"
                 ]
+              },
+              {
+                "name": "Necromancer Ruins 1 - Nymphs",
+                "weight": 1,
+                "enemies": [
+                  "evil-nymph",
+                  "evil-nymph"
+                ],
+                "mediumEnemies": [
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph"
+                ],
+                "hardEnemies": [
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph"
+                ]
               }
             ]
           },
@@ -1307,21 +1469,21 @@
                 "name": "Necromancer Ruins 2 - 1",
                 "weight": 1,
                 "enemies": [
-                  "dark",
+                  "evil-nymph",
                   "demon",
                   "demon",
                   "sniper",
                   "sniper"
                 ],
                 "mediumEnemies": [
-                  "demon",
+                  "evil-nymph",
                   "demon",
                   "demon",
                   "sniper",
                   "sniper"
                 ],
                 "hardEnemies": [
-                  "demon",
+                  "evil-nymph",
                   "demon",
                   "demon",
                   "sniper",
@@ -1330,7 +1492,7 @@
               },
               {
                 "name": "Necromancer Ruins 2 - 2",
-                "weight": 1,
+                "weight": 3,
                 "enemies": [
                   "dark",
                   "dark",
@@ -1355,7 +1517,7 @@
               },
               {
                 "name": "Necromancer Ruins 2 - 3",
-                "weight": 1,
+                "weight": 3,
                 "enemies": [
                   "demon",
                   "demon",
@@ -1377,6 +1539,57 @@
                   "sniper",
                   "demon"
                 ]
+              },
+              {
+                "name": "Necromancer Ruins 2 - Nymphs",
+                "weight": 1,
+                "enemies": [
+                  "evil-nymph",
+                  "evil-nymph"
+                ],
+                "mediumEnemies": [
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph"
+                ],
+                "hardEnemies": [
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph",
+                  "evil-nymph"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Sniper Ambush",
+            "kind": "sniper-ambush",
+            "reward": 250,
+            "variants": [
+              {
+                "name": "Sniper Ambush",
+                "weight": 1,
+                "enemies": [
+                  "sniper",
+                  "sniper",
+                  "sniper",
+                  "sniper",
+                  "sniper"
+                ],
+                "mediumEnemies": [
+                  "sniper",
+                  "sniper",
+                  "sniper",
+                  "sniper",
+                  "sniper"
+                ],
+                "hardEnemies": [
+                  "sniper",
+                  "sniper",
+                  "sniper",
+                  "sniper",
+                  "sniper"
+                ]
               }
             ]
           },
@@ -1392,21 +1605,21 @@
                   "warlock",
                   "demon",
                   "sniper",
-                  "demon"
+                  "evil-nymph"
                 ],
                 "mediumEnemies": [
                   "demon",
                   "warlock",
                   "demon",
                   "sniper",
-                  "demon"
+                  "evil-nymph"
                 ],
                 "hardEnemies": [
                   "demon",
                   "warlock",
                   "demon",
                   "sniper",
-                  "demon"
+                  "evil-nymph"
                 ]
               }
             ]
@@ -1420,7 +1633,7 @@
         3,
         3,
         3,
-        3
+        4
       ]
     }
   },

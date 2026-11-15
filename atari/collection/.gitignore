@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+games/*/decompiled/*.lst
+games/*/decompiled/game.xex

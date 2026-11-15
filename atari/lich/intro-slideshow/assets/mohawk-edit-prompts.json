@@ -1,0 +1,38 @@
+[
+  {
+    "referenced_image_paths": [
+      "/home/marcin/tmp/pico/atari/lich/intro-slideshow/assets/scene-1.png"
+    ],
+    "transparent_background": false,
+    "prompt": "Edit this existing illustration. Change ONLY Dusiolek the olive-green goblin's hairstyle: add a conspicuous cobalt-blue punk mohawk, a single spiky central crest from forehead to back of scalp with cyan highlights and deep blue shadows, shaved green sides. It must be clearly visible when reduced to Atari game resolution, but fit his head naturally. Preserve his face, expression, skin, clothing, pose, other characters, all scenery, lighting, framing, landscape dimensions, and existing dark fantasy pixel-art style. Do not add text, borders or other changes."
+  },
+  {
+    "referenced_image_paths": [
+      "/home/marcin/tmp/pico/atari/lich/intro-slideshow/assets/scene-2.png",
+      "/mnt/c/Users/grzeg/AppData/Local/Temp/codex-clipboard-48fcf3e3-9e26-4d0e-b157-c9fcd141778e.png"
+    ],
+    "transparent_background": false,
+    "prompt": "Edit target image 1, using image 2 only as a reference for forest composition and folk clothing. Retain image 1's dark-fairytale pixel-art rendering and landscape aspect ratio. Replace the broad distant vista with a close, enclosed mossy forest, gnarled roots, dappled light, and a narrow stream. Show an unmistakably adult woman about thirty, with braided brown hair, wearing an opaque white long-sleeved blouse and red embroidered folk skirt extending below the knees, with a red woven belt. Place Dusiolek, the existing small olive-green toad-like goblin in ragged tunic, nearby on the other side of the stream, clearly separated with no touching. Give him a prominent vivid cobalt-blue spiky mohawk crest running from forehead to back of scalp, cyan highlights, shaved green sides. Preserve his recognizable face and curled tail. Neutral wary encounter, no attack, no sexual contact, no nudity. No text, no logos, no borders. Return one full illustration."
+  },
+  {
+    "referenced_image_paths": [
+      "/home/marcin/tmp/pico/atari/lich/intro-slideshow/assets/scene-3.png"
+    ],
+    "transparent_background": false,
+    "prompt": "Edit this existing illustration. Change ONLY Dusiolek the olive-green goblin's hairstyle: add a conspicuous cobalt-blue punk mohawk, a single spiky central crest from forehead to back of scalp with cyan highlights and deep blue shadows, shaved green sides. It must be clearly visible when reduced to Atari game resolution, but fit his head naturally. Preserve his face, expression, skin, clothing, pose, other characters, all scenery, lighting, framing, landscape dimensions, and existing dark fantasy pixel-art style. Do not add text, borders or other changes."
+  },
+  {
+    "referenced_image_paths": [
+      "/home/marcin/tmp/pico/atari/lich/intro-slideshow/assets/scene-4.png"
+    ],
+    "transparent_background": false,
+    "prompt": "Edit this existing illustration. Change ONLY Dusiolek the olive-green goblin's hairstyle: add a conspicuous cobalt-blue punk mohawk, a single spiky central crest from forehead to back of scalp with cyan highlights and deep blue shadows, shaved green sides. It must be clearly visible when reduced to Atari game resolution, but fit his head naturally. Preserve his face, expression, skin, clothing, pose, other characters, all scenery, lighting, framing, landscape dimensions, and existing dark fantasy pixel-art style. Do not add text, borders or other changes."
+  },
+  {
+    "referenced_image_paths": [
+      "/home/marcin/tmp/pico/atari/lich/intro-slideshow/assets/scene-5.png"
+    ],
+    "transparent_background": false,
+    "prompt": "Edit this existing illustration. Change ONLY Dusiolek the olive-green goblin's hairstyle: add a conspicuous cobalt-blue punk mohawk, a single spiky central crest from forehead to back of scalp with cyan highlights and deep blue shadows, shaved green sides. It must be clearly visible when reduced to Atari game resolution, but fit his head naturally. Preserve his face, expression, skin, clothing, pose, other characters, all scenery, lighting, framing, landscape dimensions, and existing dark fantasy pixel-art style. Do not add text, borders or other changes."
+  }
+]

@@ -50,7 +50,7 @@ function playStart() {
   try {
     const game=new LichPlay.Game(G,{seed:play.seed,depth:play.depth});
     if(play.level>1){const h=game.hero;h.level=play.level;h.xp=game.g.xp_req[h.level]||0;h.atk+=(h.level-1)*game.p.lvl_atk;h.maxHp+=(h.level-1)*game.p.lvl_hp;h.hp=h.maxHp;}
-    if(play.depth===1&&play.level===1)game.modal=game.g.windows.ml_intro;
+    if(play.depth===1&&play.level===1){game.introPages=[];const lines=game.g.windows.ml_intro;for(let i=0;i<lines.length;i+=9)game.introPages.push(lines.slice(i,i+9));game.introPage=0;game.modal=game.introPages[0];}
     play.game=game;play.sprites=playSprites(game.g);play.inventory=play.menu=false;play.paused=false;play.camera={x:game.hero.x,y:game.hero.y};play.started=performance.now();play.moveAt=0;
     playSound(53);render();play.canvas?.focus();status('Artwork stays in sync with the editor. Apply edits & restart to reload rules and level settings.');
   } catch(e){status(`Cannot start: ${e.message}`,true);}
@@ -67,7 +67,7 @@ function playCommand(cmd) {
   if(!g){if(cmd==='select'||cmd==='inventory')playStart();return;}
   if(play.paused){if(cmd==='pause')play.paused=false;playRefresh();return;}
   if(cmd==='pause'){play.paused=true;playRefresh();return;}
-  if(g.modal){if(['select','close','inventory'].includes(cmd)){g.modal=null;playRefresh();}return;}
+  if(g.modal){if(['select','close','inventory'].includes(cmd)){if(g.introPages&&g.introPage+1<g.introPages.length){g.modal=g.introPages[++g.introPage];}else{g.modal=null;g.introPages=null;}playRefresh();}return;}
   if(g.state!=='playing'){if(cmd==='select')playStart();return;}
   if(play.inventory){
     if(cmd==='close'||cmd==='left'){if(play.menu)play.menu=false;else play.inventory=false;}
@@ -142,7 +142,7 @@ function playDraw(now) {
     playWindow(ctx,lines,16,12,96,play.cursor);
     if(play.menu){const it=g.inventory[play.cursor];const command=it?.type===1?(h.weapon===it?'s_unequip':'s_equip'):'s_use';playWindow(ctx,[g.text(command),g.text('s_discard')],35,25+play.cursor*6,70,play.action);}
   }
-  if(g.modal)playWindow(ctx,g.modal,5,12,118);
+  if(g.modal){const lines=g.introPages?[...g.modal,...Array(9-g.modal.length).fill(''),`${g.introPage+1}/${g.introPages.length}  >`]:g.modal;playWindow(ctx,lines,5,12,118);}
   if(play.paused)playWindow(ctx,g.g.language==='pl'?['^pauza','','^p: wróć do gry']:['^paused','','^press ^p to resume'],18,46,92);
   if(g.state==='dead')playWindow(ctx,g.g.language==='pl'?['^śmierć','',...wrapPlayText(`^zabójca: ${g.killer}`,25),`piętro ${g.depth}.`,'','^x / ^enter: ponów']:['^you died','',...wrapPlayText(`Killed by ${g.killer}`,25),`on floor ${g.depth}.`,'','^x / ^enter: retry'],14,30,100);
   if(g.state==='won')playWindow(ctx,[...g.g.windows.ml_win,'',g.g.language==='pl'?'^x / ^enter: nowa gra':'^x / ^enter: new run'],4,15,120);
@@ -153,8 +153,8 @@ function playRefresh() {
   const {summary,bag,log,message}=play.panels,g=play.game;
   if(!g){summary.textContent='A JavaScript port using the current game data.';bag.replaceChildren();log.replaceChildren();message.textContent='Press Enter or click Embark.';return;}
   const h=g.hero;summary.replaceChildren(...[['Floor',g.depth],['HP',`${h.hp} / ${h.maxHp}`],['Attack',g.damage(h)],['Level',h.level],['XP',`${h.xp} / ${g.g.xp_req[h.level+1]??'max'}`],['Turns',g.turn]].map(([k,v])=>hElementStat(g.g.language==='pl'?({Floor:'Piętro',Attack:'Atak',Level:'Poziom',Turns:'Tury'}[k]||k):k,v)));
-  message.textContent=play.paused?'Paused.':g.modal?'Read the message on the game screen; press Enter to close.':play.inventory?'Backpack: ↑↓ select, Enter use/equip, C close.':g.state==='dead'?'You died. Press Enter to retry this seed.':g.state==='won'?'Victory! Press Enter for a new run.':'Arrow keys / WASD move and interact. X opens backpack.';
-  if(g.g.language==='pl')message.textContent=play.paused?'Pauza.':g.modal?'Naciśnij Enter, aby zamknąć wiadomość.':play.inventory?'Plecak: ↑↓ wybór, Enter użyj/załóż, C zamknij.':g.state==='dead'?'Śmierć. Enter: spróbuj ponownie.':g.state==='won'?'Zwycięstwo! Enter: nowa gra.':'Strzałki / WASD: ruch i interakcja. X: plecak.';
+  message.textContent=play.paused?'Paused.':g.modal?'Press Enter to continue reading.':play.inventory?'Backpack: ↑↓ select, Enter use/equip, C close.':g.state==='dead'?'You died. Press Enter to retry this seed.':g.state==='won'?'Victory! Press Enter for a new run.':'Arrow keys / WASD move and interact. X opens backpack.';
+  if(g.g.language==='pl')message.textContent=play.paused?'Pauza.':g.modal?'Naciśnij Enter, aby czytać dalej.':play.inventory?'Plecak: ↑↓ wybór, Enter użyj/załóż, C zamknij.':g.state==='dead'?'Śmierć. Enter: spróbuj ponownie.':g.state==='won'?'Zwycięstwo! Enter: nowa gra.':'Strzałki / WASD: ruch i interakcja. X: plecak.';
   bag.replaceChildren(...g.inventory.map((it,i)=>{
     const row=hElementRow(it,i,g);return row;
   }));

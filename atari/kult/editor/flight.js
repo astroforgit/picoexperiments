@@ -1,0 +1,54 @@
+'use strict';
+const $=id=>document.getElementById(id),clone=v=>JSON.parse(JSON.stringify(v));
+let payload,project,encounter,paused=false,last=0,acc=0,images=new Map(),busy=false;
+const keys=new Set(),storageKey='kult-diabolic-flight-aggressive-v1';
+function status(message,error=false){$('status').textContent=message;$('status').classList.toggle('error',error);}
+function persist(){try{localStorage.setItem(storageKey,JSON.stringify(project));status('Draft saved in this browser. Apply to local game when ready.');}catch{status('Browser storage unavailable; save a project file.',true);}}
+function options(select,items,value){select.replaceChildren(...items.map(([id,name])=>new Option(name,id)));select.value=String(value);}
+function sprite(asset,frame){const key=asset.id+':'+frame;if(images.has(key))return images.get(key);const c=document.createElement('canvas');c.width=asset.width;c.height=asset.height;const g=c.getContext('2d');g.fillStyle='#e6e6e6';asset.frames[frame].forEach((p,i)=>{if(p)g.fillRect(i%asset.width,Math.floor(i/asset.width),1,1);});images.set(key,c);return c;}
+function asset(kind,id){return payload.catalog[kind].find(v=>v.id===id);}
+function record(){return project.waves[Number($('sector').value)][Number($('wave').value)];}
+function restart(){encounter=new FlightWorkshop.Encounter(project,payload.sine,Number($('sector').value),Number($('wave').value));$('previewTitle').textContent=`Sector ${Number($('sector').value)+1} · Wave ${Number($('wave').value)+1}`;}
+function showWave(){const w=record();options($('slot'),project.slots.map((id,i)=>[i,`${i+1} · ${asset('enemies',id).name}`]),w[0]);$('motion').value=w[1];$('drop').value=w[2];$('hp').value=w[3];$('design').value=project.slots[w[0]];showPath();restart();}
+function showPath(){project.motions[record()[1]].forEach((n,i)=>$('param'+i).value=n);}
+function changed(reset=true){persist();if(reset)restart();}
+function drawAsset(id,thing,frame){const c=$(id),g=c.getContext('2d');g.clearRect(0,0,c.width,c.height);g.imageSmoothingEnabled=false;const scale=thing.width===40?4:5;g.drawImage(sprite(thing,frame),(c.width-thing.width*scale)/2,(c.height-thing.height*scale)/2,thing.width*scale,thing.height*scale);}
+function drawFrames(id,thing){const c=$(id),g=c.getContext('2d');g.clearRect(0,0,c.width,c.height);g.imageSmoothingEnabled=false;for(let f=0;f<4;f++)g.drawImage(sprite(thing,f),f*100+(100-thing.width*2)/2,8,thing.width*2,thing.height*2);}
+const stars=Array.from({length:56},(_,i)=>({x:(i*137.51)%512,y:(i*79.43)%256,z:i<8?2:i<24?1:0}));
+function render(){if(!encounter)return;const frame=Math.floor(encounter.tick/3)%4,ship=asset('ships',project.ship),enemy=asset('enemies',project.slots[record()[0]]);
+ drawAsset('shipPreview',ship,frame);drawAsset('enemyPreview',enemy,frame);drawFrames('shipFrames',ship);drawFrames('enemyFrames',enemy);
+ const g=$('flight').getContext('2d');g.imageSmoothingEnabled=false;g.fillStyle='#000';g.fillRect(0,0,512,256);
+ for(const s of stars){const light=[50,105,190][s.z]+Math.sin(encounter.tick*.07+s.x)*15;g.fillStyle=`rgb(${light},${light},${light})`;const x=((s.x-encounter.tick*[1,3,7][s.z])%512+512)%512;g.beginPath();g.arc(x,s.y,1.4,0,Math.PI*2);g.fill();}
+ if($('trails').checked){g.strokeStyle='#555';g.lineWidth=1;for(const e of encounter.enemies){g.beginPath();e.trail.forEach(([x,y],i)=>i?g.lineTo(x*4+16,y*2+16):g.moveTo(x*4+16,y*2+16));g.stroke();}}
+ for(const e of encounter.enemies)if(e.hp>0)g.drawImage(sprite(enemy,frame),Math.round(e.x*4),Math.round(e.y*2),32,32);
+ if(encounter.invulnerable<1||encounter.tick%4<2)g.drawImage(sprite(ship,frame),encounter.player.x*4,encounter.player.y*2,80,32);
+ g.fillStyle='#fff';for(const b of encounter.hostile)g.fillRect(Math.round(b.x*4),Math.round(b.y*2),16,8);for(const b of encounter.shots)g.fillRect(b.x*4,b.y*2,8,2);
+ $('hits').textContent=`Hits to ship: ${encounter.hits} · Enemy shots: ${encounter.hostile.length}/4`;
+ if($('gallery').open)for(const c of $('galleryGrid').querySelectorAll('canvas')){const a=asset('enemies',c.dataset.id),ctx=c.getContext('2d');ctx.clearRect(0,0,64,64);ctx.imageSmoothingEnabled=false;ctx.drawImage(sprite(a,frame),0,0,64,64);}
+}
+function loop(time){if(!last)last=time;acc+=Math.min(.15,(time-last)/1000);last=time;while(acc>=.06){if(encounter&&!paused)encounter.update({left:keys.has('ArrowLeft'),right:keys.has('ArrowRight'),up:keys.has('ArrowUp'),down:keys.has('ArrowDown'),fire:keys.has('Space')});acc-=.06;}render();requestAnimationFrame(loop);}
+function download(blob,name){const a=document.createElement('a'),url=URL.createObjectURL(blob);a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+async function submit(apply){if(busy)return;busy=true;$('apply').disabled=$('export').disabled=true;status('Building and checking the Atari executable…');try{FlightWorkshop.validate(project,payload.catalog);const r=await fetch('/api/diabolic/'+(apply?'apply':'export'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(project)});if(!r.ok)throw Error(await r.text());if(apply){await r.json();status('Applied. Restart diabolic/run-emulator.sh to play your selections.');}else{download(await r.blob(),'kult-diabolic-custom.xex');status('Verified Atari executable downloaded.');}}catch(e){status(e.message,true);}finally{busy=false;$('apply').disabled=$('export').disabled=false;}}
+function mount(){
+ options($('sector'),Array.from({length:8},(_,i)=>[i,`Sector ${i+1}`]),0);options($('wave'),Array.from({length:48},(_,i)=>[i,`Wave ${i+1}`]),0);options($('motion'),Array.from({length:32},(_,i)=>[i,`Path ${String(i+1).padStart(2,'0')}`]),0);options($('drop'),Array.from({length:32},(_,i)=>[i,`Pattern ${i+1}`]),0);
+ options($('ship'),payload.catalog.ships.map(v=>[v.id,v.name]),project.ship);options($('design'),payload.catalog.enemies.map(v=>[v.id,v.name]),project.slots[0]);
+ const labels=['Y phase A','Y phase B','X phase A','X phase B','Y spacing A','Y spacing B','X spacing A','X spacing B'];
+ labels.forEach((name,i)=>{const label=document.createElement('label'),input=document.createElement('input');label.textContent=name;input.type='number';input.min=-128;input.max=127;input.id='param'+i;input.addEventListener('change',()=>{if(!input.checkValidity())return input.reportValidity();project.motions[record()[1]][i]=Number(input.value);changed();});label.append(input);$('parameters').append(label);});
+ for(const id of ['sector','wave'])$(id).onchange=showWave;
+ $('ship').onchange=()=>{project.ship=$('ship').value;changed(false);};
+ $('slot').onchange=()=>{record()[0]=Number($('slot').value);showWave();changed();};
+ $('design').onchange=()=>{project.slots[record()[0]]=$('design').value;showWave();changed();};
+ $('motion').onchange=()=>{record()[1]=Number($('motion').value);showPath();changed();};
+ $('drop').onchange=()=>{record()[2]=Number($('drop').value);changed();};
+ $('hp').onchange=()=>{if(!$('hp').checkValidity())return $('hp').reportValidity();record()[3]=Number($('hp').value);changed();};
+ $('resetPath').onclick=()=>{project.motions[record()[1]]=clone(payload.defaults.motions[record()[1]]);showPath();changed();};
+ for(const [id,key] of [['fireMode','mode'],['fireInterval','interval'],['fireSpeed','speed']]){$(id).value=project.firing[key];$(id).onchange=()=>{if(!$(id).checkValidity())return $(id).reportValidity();project.firing[key]=Number($(id).value);changed();};}
+ $('pause').onclick=()=>{paused=!paused;$('pause').textContent=paused?'Resume':'Pause';};$('restart').onclick=restart;
+ $('save').onclick=()=>download(new Blob([JSON.stringify(project,null,2)],{type:'application/json'}),'kult-diabolic-project.json');$('open').onclick=()=>$('projectFile').click();
+ $('projectFile').onchange=async()=>{try{const file=$('projectFile').files[0];if(!file)return;const next=FlightWorkshop.validate(JSON.parse(await file.text()),payload.catalog);project=next;$('ship').value=project.ship;for(const [id,key] of [['fireMode','mode'],['fireInterval','interval'],['fireSpeed','speed']])$(id).value=project.firing[key];showWave();persist();status('Project loaded. Apply to local game to rebuild the Atari version.');}catch(e){status(e.message,true);}finally{$('projectFile').value='';}};
+ $('apply').onclick=()=>submit(true);$('export').onclick=()=>submit(false);
+ for(const a of payload.catalog.enemies){const b=document.createElement('button'),c=document.createElement('canvas'),label=document.createElement('span');c.width=c.height=64;c.dataset.id=a.id;label.textContent=a.name;b.append(c,label);b.onclick=()=>{$('design').value=a.id;$('design').dispatchEvent(new Event('change'));};$('galleryGrid').append(b);}
+ $('flight').addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Space'].includes(e.code)){e.preventDefault();keys.add(e.code);}});$('flight').addEventListener('keyup',e=>keys.delete(e.code));$('flight').addEventListener('blur',()=>keys.clear());window.addEventListener('blur',()=>keys.clear());
+ $('workspace').hidden=false;showWave();status('Ready. Choose a ship or enemy, then apply your changes to the Atari game.');requestAnimationFrame(loop);
+}
+fetch('/api/diabolic').then(r=>{if(!r.ok)throw Error('Start the local editor server and reload.');return r.json();}).then(data=>{payload=data;project=clone(data.project);try{const draft=localStorage.getItem(storageKey);if(draft)project=FlightWorkshop.validate(JSON.parse(draft),data.catalog);}catch{}mount();}).catch(e=>status(e.message,true));

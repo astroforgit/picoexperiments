@@ -7,9 +7,9 @@ set -eu
 cd "$(dirname "$0")"
 XEX=race.xex
 case "${1:-}" in
-    auto)    [ -f race_auto.xex ] || ./build.sh auto; XEX=race_auto.xex ;;
-    rebuild) ./build.sh ;;
-    "")      [ -f race.xex ] || ./build.sh ;;
-    *)       echo "usage: $0 [auto|rebuild]" >&2; exit 2 ;;
+    auto)    [ -f race_auto.xex ] || ./build.sh auto; XEX=race_auto.xex; shift ;;
+    rebuild) ./build.sh; shift ;;
+    ""|-*)   [ -f race.xex ] || ./build.sh ;;
+    *)       echo "usage: $0 [auto|rebuild] [launcher options]" >&2; exit 2 ;;
 esac
-exec ../../../atari-vbxe-toolkit/scripts/run-xex.sh "$XEX"
+exec ../run-standard.sh "$XEX" "$@"

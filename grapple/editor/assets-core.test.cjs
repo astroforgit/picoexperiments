@@ -87,10 +87,15 @@ function decodeRgba(file) {
   return {width, height, data: rgba};
 }
 
+const selectedCharacter = assets.CHARACTERS.find(entry => process.env.PLAYER_SHEET &&
+  path.resolve(__dirname, entry.src) === path.resolve(process.env.PLAYER_SHEET));
+const selectedTheme = process.env.ASSET_THEME || (selectedCharacter && selectedCharacter.theme) || "classic";
+assert.ok(assets.THEMES[selectedTheme], "known asset theme");
+
 function sheetFor(key) {
   const file = key === "player" && process.env.PLAYER_SHEET ?
     path.resolve(process.env.PLAYER_SHEET) :
-    path.join(ART, path.basename(assets.SHEETS[key].src));
+    path.resolve(__dirname, assets.THEMES[selectedTheme].dir, key + ".png");
   const {width, height, data} = decodeRgba(file);
   return assets.classifySheet(key, data, width, height);
 }

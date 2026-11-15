@@ -842,7 +842,7 @@ point_loop
 points_done
         rts
 
-; Menu panel: dark fill with rails, title, three rows, cursor and help.
+; Menu and result panels share a cache, with extra space for menu branding.
 ; It is drawn into spare VRAM at $60000 (same 320 stride) only after a
 ; change, then one blit copies it into every frame.
 draw_menu
@@ -870,14 +870,27 @@ menu_copy
         lda buffer
         sta blit_bank
         mwa #menu_blit points
+        lda state
+        cmp #STATE_MENU
+        bne copy_panel
+        mwa #branded_menu_blit points
+copy_panel
         jmp run_blit
 compose_menu
-        mwa #panel_blit points
+        mwa #branded_panel_blit points
         jsr run_blit
         mwa #rail_top points
         jsr run_blit
         mwa #rail_bottom points
         jsr run_blit
+        mwa #menu_title points
+        lda #250
+        sta color
+        jsr draw_points
+        mwa #menu_credit points
+        lda #251
+        sta color
+        jsr draw_points
         jsr draw_menu_inventory
         lda #0
         jsr row_color
@@ -956,6 +969,11 @@ PANEL_X = 80
 PANEL_Y = 54
 PANEL_W = 160
 PANEL_H = 84
+BRANDED_Y = 32
+BRANDED_H = 123
+BRANDED_START = BRANDED_Y*320+PANEL_X
+branded_panel_blit dta 0,0,0,a(0),0,<BRANDED_START,>BRANDED_START,0,a(320),1,a(PANEL_W-1),BRANDED_H-1,0,249,0,0,0,0
+branded_menu_blit dta <BRANDED_START,>BRANDED_START,6,a(320),1,<BRANDED_START,>BRANDED_START,0,a(320),1,a(PANEL_W-1),BRANDED_H-1,$ff,0,0,0,0,0
 panel_blit dta 0,0,0,a(0),0,<(PANEL_Y*320+PANEL_X),>(PANEL_Y*320+PANEL_X),0,a(320),1,a(PANEL_W-1),PANEL_H-1,0,249,0,0,0,0
 rail_top dta 0,0,0,a(0),0,<((PANEL_Y-1)*320+PANEL_X),>((PANEL_Y-1)*320+PANEL_X),0,a(320),1,a(PANEL_W-1),0,0,251,0,0,0,0
 menu_blit dta <((PANEL_Y-1)*320+PANEL_X),>((PANEL_Y-1)*320+PANEL_X),6,a(320),1,<((PANEL_Y-1)*320+PANEL_X),>((PANEL_Y-1)*320+PANEL_X),0,a(320),1,a(PANEL_W-1),PANEL_H+1,$ff,0,0,0,0,0

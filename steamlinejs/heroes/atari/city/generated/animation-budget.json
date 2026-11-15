@@ -1,5 +1,5 @@
 {
-  "bytes": 30044,
+  "bytes": 32494,
   "available": 47758,
   "perSet": [
     {
@@ -73,6 +73,14 @@
     {
       "name": "sniper",
       "bytes": 1581
+    },
+    {
+      "name": "evil-nymph",
+      "bytes": 991
+    },
+    {
+      "name": "ogre-mage",
+      "bytes": 1459
     },
     {
       "name": "mounted-scout",

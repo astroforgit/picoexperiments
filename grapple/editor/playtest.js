@@ -45,7 +45,13 @@ window.GrapplePlaytest = (() => {
       setPaused(true);
     }
   }
-  function open(position) {
+  async function open(position) {
+    try {
+      Object.assign(images, await window.GrappleAssets.playtestCanvases());
+    } catch (error) {
+      setStatus(`Could not load selected assets: ${error.message}`);
+      return;
+    }
     finishStroke();
     picking = false;
     document.querySelector("#playHere").textContent = "▶ Play from here";
@@ -114,9 +120,11 @@ window.GrapplePlaytest = (() => {
     context.save(); context.translate(Math.floor(x),Math.floor(y)-game.camera);
     context.rotate(rotation*Math.PI/2); context.scale(flip ? -1 : 1,1);
     const image = images[name];
-    if (image.complete && image.naturalWidth) {
-      const columns = Math.max(1,Math.floor(image.naturalWidth/16));
-      const size = Math.min(16,image.naturalWidth,image.naturalHeight);
+    const width = image.naturalWidth || image.width;
+    const height = image.naturalHeight || image.height;
+    if (width && (image instanceof HTMLCanvasElement || image.complete)) {
+      const columns = Math.max(1,Math.floor(width/16));
+      const size = Math.min(16,width,height);
       context.drawImage(image,(frame%columns)*16,Math.floor(frame/columns)*16,size,size,
         -size/2,bottom ? -size : -size/2,size,size);
     } else {
@@ -179,7 +187,9 @@ window.GrapplePlaytest = (() => {
   document.querySelector("#restartPlay").addEventListener("click",()=>{game.restart(); draw(); updateStats();});
   document.querySelector("#editAtPlayer").addEventListener("click",()=>{
     const row = Math.floor((game.player.y+16)/16);
-    dialog.close(); jumpToRow(Math.max(0,row-3)); setStatus(`Editing near playtest row ${row}`);
+    dialog.close();
+    if (window.GrappleAssets.isOpen) window.GrappleAssets.close();
+    jumpToRow(Math.max(0,row-3)); setStatus(`Editing near playtest row ${row}`);
   });
   startSelect.addEventListener("change",()=>launchStart(Number(startSelect.value)));
   dialog.addEventListener("close",()=>{release();cancelAnimationFrame(request);document.querySelector("#playMap").focus();});

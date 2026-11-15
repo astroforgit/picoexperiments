@@ -128,8 +128,10 @@
       <div class="assets-toolbar">
         <h2>Character animations</h2>
         <label>Hero <select id="assetCharacter"></select></label>
+        <label>Asset theme <select id="assetTheme"></select></label>
         <label class="check"><input id="assetVbxeColours" type="checkbox" checked> Atari VBXE colours</label>
         <span class="spacer"></span>
+        <button id="assetPlaytest">▶ Play with selected hero</button>
         <span id="assetsStatus" role="status">Loading sprite sheets…</span>
       </div>
       <div id="assetGallery" class="assets-gallery"></div>
@@ -196,6 +198,8 @@
   <script src="atari-physics.js"></script>
   <script src="editor.js"></script>
   <script src="playtest.js"></script>
+  <script src="../design/asset-themes.js"></script>
+  <script src="../design/characters.js"></script>
   <script src="assets.js"></script>
 </body>
 </html>

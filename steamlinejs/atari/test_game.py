@@ -9,14 +9,40 @@ from py65.devices.mpu6502 import MPU
 
 ROOT = pathlib.Path(__file__).resolve().parent
 symbols = {}
-for line in (ROOT / 'streamline-atari.lab').read_text().splitlines():
+for line in (ROOT / 'bimbaj.lab').read_text().splitlines():
     parts = line.split()
     if len(parts) == 3 and parts[0] == '00':
         symbols[parts[2].lower()] = int(parts[1], 16)
 
-def machine():
+# The campaign as compiled from bimbaj.json by the shared format module.
+campaign = json.loads(subprocess.check_output(['node', '-e',
+    'const f=require("./bimbaj-format");'
+    'console.log(JSON.stringify(f.compile(require("./bimbaj.json"))))'], cwd=ROOT))
+assert not campaign['errors'], campaign['errors']
+LEVELS = campaign['levels']
+BREAKS = campaign['breaks']
+PAGES = [page for pause in BREAKS for page in pause['pages']]
+
+class BankedMemory(list):
+    """PORTB bit 0 set: $C000-$CFFF and $D800-$FFFF read as OS ROM ($A5)
+    and ignore writes, so bank data is only reachable with the ROM off."""
+    def _rom(self, addr):
+        return (0xc000 <= addr < 0xd000 or addr >= 0xd800) and list.__getitem__(self, 0xd301) & 1
+    def __getitem__(self, addr):
+        if type(addr) is int and self._rom(addr):
+            return 0xa5
+        return list.__getitem__(self, addr)
+    def __setitem__(self, addr, value):
+        if type(addr) is int and self._rom(addr):
+            return
+        list.__setitem__(self, addr, value)
+
+def machine(banked=False):
     cpu = MPU()
-    data = (ROOT / 'streamline-atari.xex').read_bytes()
+    if banked:
+        cpu.memory = BankedMemory(cpu.memory)
+        cpu.memory[0xd301] = 0xff
+    data = (ROOT / 'bimbaj.xex').read_bytes()
     pos = 0
     while pos < len(data):
         start = int.from_bytes(data[pos:pos+2], 'little'); pos += 2
@@ -25,7 +51,27 @@ def machine():
         end = int.from_bytes(data[pos:pos+2], 'little'); pos += 2
         cpu.memory[start:end+1] = data[pos:pos+end-start+1]
         pos += end-start+1
+        if start <= 0x2e2 <= end:
+            # The real INIT routine copies the staged chunk under the ROM.
+            call(cpu, 'bank_loader')
+            assert cpu.memory[0xd40e] == 0x40 and not cpu.p & 4
     return cpu
+
+def pointer(cpu, table, index):
+    return cpu.memory[symbols[table+'_lo']+index] | (cpu.memory[symbols[table+'_hi']+index] << 8)
+
+def show_page(cpu, index):
+    page = pointer(cpu, 'story_page', index)
+    cpu.memory[symbols['text_src']] = page & 255
+    cpu.memory[symbols['text_src']+1] = page >> 8
+    call(cpu, 'render_story_page')
+
+def expected_page_index(completed):
+    index = 0
+    for pause in BREAKS:
+        if pause['after'] <= completed:
+            index = sum(len(b['pages']) for b in BREAKS if b['after'] <= pause['after'])
+    return index
 
 def call(cpu, name, a=0):
     cpu.a = a
@@ -85,74 +131,70 @@ assert bytes(story.memory[symbols['story_font']:symbols['story_font']+1024]) == 
 call(story, 'setup_story')
 assert story.memory[0x2c5] == 0x0e and story.memory[0x2c6] == 0
 assert story.memory[0xd017] == 0x0e and story.memory[0xd018] == 0
-page = symbols['story_page_0']
-story.memory[symbols['text_src']] = page & 255
-story.memory[symbols['text_src']+1] = page >> 8
-call(story, 'render_story_page')
-assert story.memory[0x7000+2] == 0  # no story heading
-assert story.memory[0x7000+2*40+2] == ord('M') - 32
-assert not any(code & 0x80 for code in story.memory[0x7000:0x73c0])
-assert any(story.memory[0x7000:0x73c0])
+# Every page, read from under the ROM, matches the editor's layout exactly.
+for index, page in enumerate(PAGES):
+    story = machine(banked=True)
+    show_page(story, index)
+    screen = [[0] * 40 for _ in range(24)]
+    for row, col, line in page['layout']:
+        for offset, char in enumerate(line):
+            code = ord(char) - 32 if ' ' <= char <= '~' else 96 + 'ĄĆĘŁŃÓŚŹŻąćęłńóśźż–'.index(char)
+            screen[row][col+offset] = code
+    assert list(story.memory[0x7000:0x7000+960]) == sum(screen, []), f'story page {index+1}'
+    assert story.memory[0xd40e] == 0x40 and story.memory[0x22f] == 0x22 and not story.p & 4
 
-story = machine()
-call(story, 'setup_antic')
-setv(story, 'level_number', 2)
-call(story, 'init_level')
-setv(story, 'cached_width', 8)
+# Walk the whole campaign: pauses appear after the right levels and every
+# board is fetched from under the ROM into level_buffer.
+story = machine(banked=True)
+assert story.memory[0xc000] == 0xa5 and story.memory[0xd301] == 0xff
 story.memory[symbols['wait_story_continue']] = 0x60
 story.memory[0xd010] = 1
 story.memory[0xd01f] = 7
-call(story, 'next_level')
-assert get(story, 'level_number') == 3 and get(story, 'story_page_index') == 1
-assert get(story, 'cached_width') == get(story, 'level_width')
-assert story.memory[0x230] | (story.memory[0x231] << 8) == symbols['display_list']
-assert story.memory[0x2f4] == 0xe0
-call(story, 'next_level')
-assert get(story, 'level_number') == 4 and get(story, 'story_page_index') == 1
-call(story, 'next_level')
-assert get(story, 'level_number') == 5 and get(story, 'story_page_index') == 1
-call(story, 'next_level')
-assert get(story, 'level_number') == 6 and get(story, 'story_page_index') == 2
-assert story.memory[0x230] | (story.memory[0x231] << 8) == symbols['display_list']
-
-page = symbols['story_page_1']
-story.memory[symbols['text_src']] = page & 255
-story.memory[symbols['text_src']+1] = page >> 8
-call(story, 'render_story_page')
-assert story.memory[0x7000+2*40+2] == ord('N') - 32
-assert not any(code & 0x80 for code in story.memory[0x7000:0x73c0])
-
-for level in (7, 8):
+call(story, 'setup_antic')
+setv(story, 'level_number', 0)
+call(story, 'maybe_story_pause')  # as main does before the first level
+assert get(story, 'story_page_index') == expected_page_index(0)
+call(story, 'init_level')
+for completed in range(1, len(LEVELS) + 1):
+    setv(story, 'cached_width', 99)
     call(story, 'next_level')
-    assert get(story, 'level_number') == level and get(story, 'story_page_index') == 2
-call(story, 'next_level')
-assert get(story, 'level_number') == 9 and get(story, 'story_page_index') == 3
-assert story.memory[0x230] | (story.memory[0x231] << 8) == symbols['display_list']
-for level in (10, 11):
-    call(story, 'next_level')
-    assert get(story, 'level_number') == level and get(story, 'story_page_index') == 3
-call(story, 'next_level')
-assert get(story, 'level_number') == 12 and get(story, 'story_page_index') == 4
-assert (get(story, 'level_width'), get(story, 'level_height')) == (9, 9)
-bonus_ptr = story.memory[symbols['level_ptr_lo']+12] | (story.memory[symbols['level_ptr_hi']+12] << 8)
-bonus_rows = ['........E', '....#....', '....#....', '....#....',
-              '....#....', '....#....', '..#####..', '....#....', '@........']
-bonus_data = [9, 9] + ['.@E#PRX%^>v<LK'.index(char) for char in ''.join(bonus_rows)]
-assert list(story.memory[bonus_ptr:bonus_ptr+len(bonus_data)]) == bonus_data
-call(story, 'do_direction', 1)  # right along the bottom edge
-call(story, 'do_direction', 0)  # up to the exit at top right
-assert get(story, 'game_won') == 1
-call(story, 'next_level')
-assert get(story, 'level_number') == 13  # original authored level 13 follows
+    assert get(story, 'level_number') == completed
+    assert get(story, 'story_page_index') == expected_page_index(completed), f'after level {completed}'
+    assert story.memory[0x230] | (story.memory[0x231] << 8) == symbols['display_list']
+    assert story.memory[0x2f4] == 0xe0 and story.memory[0xd40e] == 0xc0
+    if completed < len(LEVELS):
+        level = LEVELS[completed]['bytes']
+        assert list(story.memory[symbols['level_buffer']:symbols['level_buffer']+len(level)]) == level
+        assert story.memory[symbols['level_ptr']] | (story.memory[symbols['level_ptr']+1] << 8) == symbols['level_buffer']
+        assert get(story, 'cached_width') == get(story, 'level_width')
+assert get(story, 'game_complete') == 1
 
-for page_number, first_letter in [(2, 'S'), (3, 'C')]:
-    page_cpu = machine()
-    page = symbols[f'story_page_{page_number}']
-    page_cpu.memory[symbols['text_src']] = page & 255
-    page_cpu.memory[symbols['text_src']+1] = page >> 8
-    call(page_cpu, 'render_story_page')
-    assert page_cpu.memory[0x7000+2*40+2] == ord(first_letter) - 32
-    assert not any(code & 0x80 for code in page_cpu.memory[0x7000:0x73c0])
+# Texts at the very start and end of the list: the campaign start and the
+# last completed level both look up breaks like any other.
+story = machine()
+story.memory[symbols['wait_story_continue']] = 0x60
+call(story, 'setup_antic')
+story.memory[symbols['story_break_level']] = 0
+setv(story, 'level_number', 0)
+call(story, 'maybe_story_pause')
+assert get(story, 'story_page_index') == len(BREAKS[0]['pages'])
+story.memory[symbols['story_break_level']] = len(LEVELS)
+setv(story, 'level_number', len(LEVELS) - 1)
+setv(story, 'story_page_index', 0)
+call(story, 'init_level')
+call(story, 'next_level')
+assert get(story, 'story_page_index') == len(BREAKS[0]['pages']) and get(story, 'game_complete') == 1
+
+# The elephant's bonus board, if it is in the campaign, is solvable as built.
+bonus = [i for i, level in enumerate(LEVELS) if level['name'].startswith('Elephant bonus')]
+if bonus:
+    story = machine()
+    setv(story, 'level_number', bonus[0])
+    call(story, 'init_level')
+    assert (get(story, 'level_width'), get(story, 'level_height')) == (9, 9)
+    call(story, 'do_direction', 1)  # right along the bottom edge
+    call(story, 'do_direction', 0)  # up to the exit at top right
+    assert get(story, 'game_won') == 1
 
 story = machine()
 story.memory[symbols['wait_frame']] = 0x60
@@ -202,7 +244,7 @@ for _ in range(1000):
     if story.pc == 0x600:
         break
 assert story.pc == 0x600 and frames >= 6, 'story dismissed on held/repeating Space'
-print('PASS: four story pages, bonus cross board and original campaign order.')
+print(f'PASS: {len(PAGES)} story pages, {len(BREAKS)} breaks and {len(LEVELS)} levels in bimbaj.json order.')
 
 cases = json.loads(subprocess.check_output(['node', str(ROOT / 'reference_trace.js')]))
 cpu = machine()
@@ -228,13 +270,8 @@ for case_index, case in enumerate(cases):
 print(f'PASS: {checks} actions match original JavaScript across {len(cases)} campaign/feature cases.')
 
 # Execute the actual display setup and renderer for every authored level.
-for original_level in range(56):
-    level = original_level + (original_level >= 12)
+for level in range(len(LEVELS)):
     cpu = machine()
-    ptr = cpu.memory[symbols['level_ptr_lo']+level] | (cpu.memory[symbols['level_ptr_hi']+level]<<8)
-    rows = cases[original_level]['text'].split('\n')
-    packed = [len(rows[0]),len(rows)] + ['.@E#PRX%^>v<LK'.index(c) for c in ''.join(rows)]
-    assert list(cpu.memory[ptr:ptr+len(packed)]) == packed, f'Level {level} differs from original'
     call(cpu, 'setup_antic')
     setv(cpu,'level_number',level)
     call(cpu,'init_level')
@@ -249,7 +286,9 @@ for original_level in range(56):
     assert cpu.memory[0x2f4] == 0xe0
     assert cpu.memory[symbols['display_list']:symbols['display_list']+3] == [0x70]*3
     w,h = get(cpu,'level_width'),get(cpu,'level_height')
-    assert 1<=get(cpu,'board_y') and get(cpu,'board_y')+h*get(cpu,'tile_rows')<=19
+    # A 20-row board (10 rows of 2x2 tiles) replaces the top and bottom frame.
+    if h*get(cpu,'tile_rows')==20: assert get(cpu,'board_y')==0
+    else: assert 1<=get(cpu,'board_y') and get(cpu,'board_y')+h*get(cpu,'tile_rows')<=19
     assert 1<=get(cpu,'board_x') and get(cpu,'board_x')+w*get(cpu,'tile_cols')<=39
     if w<=6 and h<=6:
         assert get(cpu,'tile_cols') == 3 and get(cpu,'tile_rows') == 3
@@ -260,7 +299,7 @@ for original_level in range(56):
             row=get(cpu,'board_y')+y*get(cpu,'tile_rows')
             page=cpu.memory[symbols['font_pages']+row]<<8
             assert any(cpu.memory[page+col*8:page+(col+get(cpu,'tile_cols'))*8])
-print('PASS: all 56 boards use bounded row fonts, adaptive zoom and preserved player state.')
+print(f'PASS: all {len(LEVELS)} boards use bounded row fonts, adaptive zoom and preserved player state.')
 
 # Exercise all 21 DLI entries, including footer restoration and frame wrap.
 cpu=machine();call(cpu,'setup_antic');call(cpu,'init_level');call(cpu,'draw_everything')
@@ -288,11 +327,12 @@ print('PASS: DLI font/palette changes, register preservation and footer/frame re
 
 # Input paths, restart and transitions operate on the assembled executable.
 cpu=machine();call(cpu,'setup_antic');call(cpu,'init_level')
+cpu.memory[symbols['wait_story_continue']] = 0x60
 load(cpu,dict(text='@..E'))
 setv(cpu,'ch',0x3a); call(cpu,'read_keyboard')
 assert get(cpu,'game_won') == 1
 call(cpu,'next_level'); assert get(cpu,'level_number') == 1
-setv(cpu,'level_number',56); call(cpu,'next_level')
+setv(cpu,'level_number',len(LEVELS)-1); call(cpu,'next_level')
 assert get(cpu,'game_complete') == 1
 # A full path must roll the whole attempted move back, keeping undo consistent.
 load(cpu,dict(text='@R..E'))
@@ -387,7 +427,9 @@ def is_visible(addr):
 def frame(cpu):
     return bytes(cpu.memory[0x4000:0x73c0]+cpu.memory[0x8000:0xa000])
 
-cpu=machine();call(cpu,'setup_antic');call(cpu,'init_level');call(cpu,'draw_everything')
+# A fixed board, so editing the campaign's first level cannot break the test.
+cpu=machine();call(cpu,'setup_antic');load(cpu,dict(text='....E\n...#.\n.....\n.#...\n..#..\n@....'))
+call(cpu,'draw_everything')
 original_frame=frame(cpu)
 cpu.memory=RecordingMemory(cpu.memory)
 call(cpu,'draw_everything')

@@ -1,0 +1,14 @@
+{
+  "id": "commando",
+  "title": "Commando",
+  "remix": "Night Patrol",
+  "author": "<?>",
+  "directory": "remixes/commando",
+  "source": "asma/asma/Games/Commando.sap",
+  "duration_seconds": 34.65652145229037,
+  "frames": 1728,
+  "lead_channel": 4,
+  "changed_lead_frames": 940,
+  "original_subsong": 0,
+  "preservation": "All volume, distortion, bass, percussion and AUDCTL frames retained; lead AUDF rewritten."
+}

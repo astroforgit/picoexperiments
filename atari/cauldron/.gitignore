@@ -1,0 +1,4 @@
+# build products and test state (remade by ./build.sh and the tools)
+gen/*
+!gen/codemap.json
+tools/__pycache__/

@@ -3,6 +3,8 @@
         beq ?city
         jmp location_name_pointer
 ?city   ldx selected_plot
+        cpx #11
+        beq ?dock
         cpx #5
         beq ?gate
         bcs ?slot
@@ -12,6 +14,8 @@
         sta text_src+1
         rts
 ?gate   mwa #s_gate text_src
+        rts
+?dock   mwa #savegame.s_dock text_src
         rts
 ?slot   txa
         sec
@@ -179,7 +183,7 @@
         mwa #s_upgrade text_src
         lda selected_plot
         cmp #6
-        bcs ?text
+        jcs ?text
         mwa #s_upgrade_building text_src
         lda current_level
         bne ?text
@@ -205,6 +209,11 @@
         jmp ?text
 ?dismiss
         mwa #s_dismiss text_src
+        lda dismiss_cycle
+        cmp #2
+        bne ?dismiss_label
+        mwa #s_dismiss_fee text_src
+?dismiss_label
         lda secondary_available
         bne ?text
         mwa #s_empty_slot text_src
@@ -269,6 +278,7 @@ s_empty_help dta c'RECRUIT AT A CITY BUILDING',0
 s_building_level dta c'BUILDING',0
 s_upgrade_building dta c'UPGRADE BUILDING',0
 s_dismiss dta c'DISMISS / REFUND',0
+s_dismiss_fee dta c'REFUND - 20% FEE',0
 s_build_first dta c'RECRUIT - BUILD FIRST',0
 s_no_upgrade dta c'UPGRADE UNAVAILABLE',0
 s_duplicate dta c'UNIT FAMILY ALREADY IN ARMY',0

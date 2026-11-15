@@ -266,7 +266,8 @@ def check(page, capture=False):
             m.call('recruit');expected-=building['recruitCosts'][tier]
             assert m.array('army_units')[0]==family*3+tier
             m.put('selected_plot',6);m.call('dismiss_unit')
-            expected+=building['recruitCosts'][tier]//2
+            expected+=building['recruitCosts'][tier]
+            if tier==2:expected-=(building['recruitCosts'][tier]+4)//5
             assert m.array('army_units')==[255]*5 and m.get('army_count')==0
             assert m.get('gold',2)==expected
     m.call('new_city');m.put('gold',content['buildings'][0]['costs'][1],2);m.put('selected_plot',0);m.call('purchase')

@@ -6,10 +6,15 @@ sys.path.insert(0,str(ROOT/'tools'))
 from pcm_emu import PcmAtari
 from emu import load_labels, FRAME_CYCLES
 from samples import levels,hz
+from sounds import sound_settings,vram_selection
 L=load_labels(ROOT/'star-fisher.lab')
 s=json.loads((ROOT/'editor-scene.json').read_text())['sound']['samples']
 assert L['CLIP_HQ']==1 and L['WIND_PCM']==L['WIND_SYNTH']==0
-expected=[levels(c,s['rate'],False,45) for c in s['clips']]
+keep,skipped=vram_selection(sound_settings(json.loads((ROOT/'editor-scene.json').read_text())['sound']))
+assert L['CLIP_COUNT']==len(keep)
+# The build includes the clips that fit, in order; each plays whole pages (level-0 padding).
+pad=lambda v:v+[0]*(-len(v)%256)
+expected=[pad(levels(s['clips'][i],s['rate'],False,45)) for i in keep]
 a=PcmAtari(ROOT/'star-fisher.xex');a.boot();r=a.mem.ram
 get=lambda k:r[L[k]]
 assert s['delayMin']<=get('SILENCE_LEFT')<=s['delayMax']
@@ -30,11 +35,15 @@ for trial in range(5):
  assert not get('CLIP_ON') and a.irqen==0
  channels=[[v for _,v in a.pcm[addr][start:]] for addr in (0xd203,0xd205,0xd207)]
  assert [sum(v) for v in zip(*channels)]==expected[i],i
+ # The VBI may delay a sample, but never by a whole period (POKEY would drop one).
+ times=[c for c,_ in a.pcm[0xd203][start:]]
+ assert max(b-x for x,b in zip(times,times[1:]))<2*a.period(),'A sample IRQ was lost'
  assert s['delayMin']-1<=get('SILENCE_LEFT')<=s['delayMax']
  count=a.irqs;a.run_frames(50)
  assert a.irqs==count and all(a.pokey[i]==0 for i in (1,3,5,7))
 print('PASS random selection, initial silence, exact 46-level clips and silent gaps',seen,flush=True)
 assert len(seen)>1
+print(f'{len(keep)} of {len(s["clips"])} sounds included; skipped:',[s['clips'][i]['name'] for i in skipped])
 # Menu off during a sample freezes playback; On resumes the same clip.
 r[L['SILENCE_LEFT']]=1;r[L['CLIP_CLOCK']]=1;a.run_frames(5)
 assert get('CLIP_ON')

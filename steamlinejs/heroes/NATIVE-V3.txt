@@ -20,8 +20,9 @@ and gives no region progress or paintings; losses and casualties follow the
 usual rules. It is always available.
 
 Save/load (single-file boot ATR only): the boot loader sets savegame.boot_disk.
-Escape/SELECT in the city opens GAME MENU (SAVE GAME, LOAD GAME, BACK); the
-title menu gains LOAD GAME. One slot in the disk sector between the pictures
+The city dock (plot 11, the pier right of the Mage Tower) or Escape/SELECT
+opens GAME MENU (SAVE GAME, LOAD GAME, BACK); the title menu gains LOAD GAME.
+In the XEX version the dock menu only says saves need the ATR version. One slot in the disk sector between the pictures
 and the game: 'NYS1', length, 42 campaign bytes, checksum. The XEX version
 never shows these options.
 

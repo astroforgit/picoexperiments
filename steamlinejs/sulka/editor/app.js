@@ -29,6 +29,27 @@
   const level06Missile = new Image();
   level06Missile.addEventListener("load", () => { if (current === 5) renderCanvas(); });
   level06Missile.src = "sojka-level06-missile-vbxe.png";
+  const ruinsImages = [1, 2].map(number => {
+    const image = new Image();
+    image.addEventListener("load", () => renderCanvas());
+    image.src = `../assets/ukr${number}-line-background-vbxe.png`;
+    return image;
+  });
+  const sketchPlatforms = [0, 1].map(number => {
+    const image = new Image();
+    image.addEventListener("load", () => renderCanvas());
+    image.src = `../assets/platform-outline-${number}.png`;
+    return image;
+  });
+  const galaxyImage = new Image();
+  galaxyImage.addEventListener("load", () => renderCanvas());
+  galaxyImage.src = "../assets/galaxy-painted-vbxe.png";
+  const neonPlatforms = [0, 1].map(number => {
+    const image = new Image();
+    image.addEventListener("load", () => renderCanvas());
+    image.src = `../assets/platform-neon-${number}.png`;
+    return image;
+  });
   const ui = Object.fromEntries([
     "level-list", "level-kicker", "level-title", "level-note", "palette",
     "selected-tool-name", "selected-tool-char", "cursor-position", "fly-editor",
@@ -170,6 +191,13 @@
     const pad = 4;
     if (char === ".") return;
     if (char === "#") {
+      {
+        const image = (current < 6 ? sketchPlatforms : neonPlatforms)[(x ^ y) & 1];
+        if (image.complete && image.naturalWidth) {
+          ctx.drawImage(image, left - 9, top, 48, 21);
+          return;
+        }
+      }
       ctx.fillStyle = "#697586"; ctx.fillRect(left + 1, top + 1, CELL - 2, CELL - 2);
       ctx.fillStyle = "#929cab"; ctx.fillRect(left + 3, top + 3, CELL - 6, 4);
       ctx.fillStyle = "#4c5665"; ctx.fillRect(left + 3, top + CELL - 7, CELL - 6, 4);
@@ -224,7 +252,18 @@
   function renderCanvas() {
     const level = levels[current];
     ctx.imageSmoothingEnabled = false;
-    ctx.fillStyle = "#151b25"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#000000"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Surreal sketch backdrop and object clearance match the Atari cache.
+    {
+      const image = current < 6 ? ruinsImages[current % 2] : galaxyImage;
+      if (image.complete && image.naturalWidth) {
+        ctx.drawImage(image, 8 * 3, 0, 224 * 3, 140 * 3);
+        ctx.fillStyle = "#000000";
+        level.rows.forEach((row, y) => [...row].forEach((tile, x) => {
+          if (![".", "P", "F"].includes(tile)) ctx.fillRect((x * 10 - 4) * 3, (y * 10 - 8) * 3, 18 * 3, 20 * 3);
+        }));
+      }
+    }
     if (current === 5 && level06Missile.complete && level06Missile.naturalWidth) {
       // Starting position of the larger visual-only Atari animation.
       ctx.drawImage(level06Missile, 10 * 3, 92 * 3, 168 * 3, 39 * 3);

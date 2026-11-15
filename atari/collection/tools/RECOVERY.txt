@@ -1,0 +1,97 @@
+Collection recovery and verification tools
+
+The original extraction/static-listing workflow remains in extract.py,
+disasm.py and verify_all.py. It preserves every original executable byte.
+
+New recovery workflow:
+  python3 tools/recover_common.py --jobs 4
+  python3 tools/audit_recovered.py --jobs 8
+  python3 tools/trace_recovered.py --runner /path/to/emulator-code-trace --jobs 4
+  python3 tools/test_all.py --runner /path/to/emulator-smoke --jobs 8
+  python3 tools/progress.py
+
+recover_common executes recognized Homesoft depackers in py65. It records
+separate load stages, explicit source/data, literal-token mappings and hashes.
+The decoder requires backreferences to bytes already emitted by that stream, rejects unloaded or overwritten compressed input, and reports unsupported loader context instead of guessing RAM contents. audit_recovered applies this stricter rule to older generated projects and moves unverified candidates to needs-loader-context/, outside normal builds and source counts. It preserves individually
+curated projects marked decompiled/reconstruction.json. Re-running recovery
+regenerates automatic stage sources; rerun trace_recovered afterwards to restore
+runtime-assisted decoding. Do not put hand annotations in generated stage files.
+
+rebuild_stages verifies assembled hashes and replays original compression tokens.
+It deliberately rejects changed images; it is not a general compressor.
+
+trace_recovered accepts instruction addresses only when the three captured bytes
+match the source image. It assembles the updated source and checks every byte.
+This improves indirect-code discovery but does not recover original names or
+prove complete semantic understanding. Unvisited code remains explicit DTA.
+
+Atari800 test core:
+  upstream Atari800 7.2.1 release
+  ./configure --target=libatari800 --disable-sound --without-readline --without-libpng
+  make -j4 CFLAGS='-O2 -Wno-error'
+  cc -O2 -I/path/to/atari800/src/libatari800 tools/emulator_smoke.c     /path/to/atari800/src/libatari800.a -lm -lz -pthread -o emulator-smoke
+
+For runtime instruction evidence, apply tools/atari800-trace.patch to that source
+with patch -p1, rebuild, and compile tools/emulator_trace.c in the same way.
+The patch records instruction addresses and three memory bytes before execution.
+It also retains a small recent-PC ring for debugging. Normal emulator comparisons
+do not require the patch. The tests use the bundled Altirra XL operating system,
+BASIC disabled, a fixed initial POKEY RNG phase and deterministic scripted input.
+ATARI800_TEST_MACHINE=-xe selects 130 XE memory; the all-game script selects this
+automatically for 130-XE/128K-labelled titles; 256/320-XE labels select -320xe. VBXE, other expansions and disk I/O
+requirements need individual configuration; do not treat baseline errors as proof
+that a reconstructed source is broken.
+
+Generic tests compare 1,200 PAL frames and a final screenshot against the original.
+They distinguish matching activity, little activity, emulator errors and mismatches.
+A match is a regression check, not a complete gameplay test. Individual projects
+have longer, game-specific PAL/NTSC checks. Sound is disabled in this core.
+
+Tested assembler: MADS 2.1.7 (2024/02/20).
+
+Dependencies: MADS, Python 3, py65 and Pillow. Original disk images are retained
+in collection/disks; games that require disk sectors may need those ATRs mounted.
+
+Additional recognized variants: reversed immediate X/Y argument order, relocated zero-page decode state, and the 103-byte input-clearing reader. All use the same guarded independent-stream checks; unsupported implementations are rejected. Input-clearing sources are replayed with their original stream pointer and separate clearing pointer initialized together.
+
+Recognition now validates the complete 90- or 103-byte routine, including branch offsets, relocated zero-page operands and absolute self-references. Raw-file recognition infers the assembled base; execution additionally requires the actual RAM address to match it. Run python3 tools/test_depacker_recognition.py for mutation, relocation and zero-page-wrap regression checks.
+
+Additional call discovery collects fixed-pointer, fixed-argument, adjacent X/Y, indexed-table and tail-call sites rather than returning after the first pattern. Bounded INIT/RUN constant propagation can infer non-adjacent register constants, while unknown reads/calls discard values. These remain candidates until strict independent-stream replay, image assembly and literal reconstruction pass.
+
+python3 tools/extend_stages.py --jobs 6 appends only new unique span/image hashes and preserves existing stage sources. It can take several minutes over the full collection. Run game-specific/runtime audits before publishing results. tools/test_loader_candidates.py covers non-adjacent initialization, tail calls and unknown-register rejection on the Rescue loader.
+
+Backward-family recovery is separate from the common forward decoder:
+  python3 tools/recover_backward.py --audit /absolute/path/to/games/GAME
+  python3 tools/recover_backward_tables.py --audit games/GAME
+The first handles backward-zaxxon-v1; the second handles backward-fiji-v1.
+Each validates the full decoder, original input provenance, independent CPU
+replay and packed reconstruction. Their reports record unresolved caller contexts
+and other limitations. The common recovery/audit tools preserve these foreign
+families rather than treating them as forward streams. Normal local builds check
+assembled images and packed bytes; family audits additionally replay the decoder.
+
+Indexed-table discovery also handles complete indexed load/call loops whose
+pointer tables follow the decoder. Table bounds, loaded table bytes, loop target,
+stride and termination are checked; tests are in test_tail_table_candidates.py.
+
+trace_archive.py emits a separate runtime-archive.asm only when observed CPU bytes
+map uniquely to an original file segment. This is original-file code discovery,
+not decompression. Normal noncurated builds check both archive views. The progress
+index keeps these counts separate from recovered-stage images.
+
+Downloaded source bundles omit original archive/disk inputs. To rebuild every
+project without rerunning disk extraction checks:
+  python3 tools/verify_all.py --jobs 4 --sources-only
+This writes verification-sources-only.json and preserves verification.json's
+original extraction evidence. Without this option, archive/disk checks remain
+required. All original XEX files needed for byte comparisons are in the bundle.
+
+RAM-under-ROM relocation recovery:
+  python3 tools/recover_relocated_rom.py --game GAME --publish
+  python3 tools/recover_relocated_rom.py --audit /absolute/path/to/games/GAME
+Only the complete supported table/copy helper is accepted; unsupported INIT calls
+invalidate state and old byte ownership. Two fresh CPU replays with different
+unused RAM/registers must exactly match the file-backed copy. Unexpected reads,
+writes, hardware sequences, or output overlapping I/O/helper code are rejected.
+These relocated-runtime/ sources recover shared runtime images, not compressed
+gameplay. Progress keeps their image/byte/code counts separate from unpacked games.

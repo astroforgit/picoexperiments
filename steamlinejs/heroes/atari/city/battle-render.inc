@@ -390,8 +390,8 @@ obstacle_hi dta >$F300,>$F680,>$FA00
 lunge dta 0,2,4,6,6,4,2,0
         icl 'battle-heroes.inc'
 
-ability_lo dta <s_hint,<s_lifesteal,<s_raised,<s_prepare,<s_hint,<s_hop,<s_summoned
-ability_hi dta >s_hint,>s_lifesteal,>s_raised,>s_prepare,>s_hint,>s_hop,>s_summoned
+ability_lo dta <s_hint,<s_lifesteal,<s_raised,<s_prepare,<s_hint,<s_hop,<s_summoned,<s_charmed,<s_freed
+ability_hi dta >s_hint,>s_lifesteal,>s_raised,>s_prepare,>s_hint,>s_hop,>s_summoned,>s_charmed,>s_freed
 s_lifesteal dta c'VAMPIRE HEALS 1 HP ON HIT',0
 s_raised dta c'RAISED! ZOMBIE ACTS NEXT ROUND',0
 s_prepare dta c'OGRE PREPARES +2 STRIKE: MOVE AWAY',0
@@ -468,3 +468,6 @@ recoil_offset dta 0
 ?done   rts
 .endp
 impact_radius dta 0
+
+s_charmed dta c'FIGHTER ENCHANTED',0
+s_freed dta c'ENCHANTMENT BROKEN',0

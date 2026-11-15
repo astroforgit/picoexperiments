@@ -49,7 +49,8 @@ VB_BANK = $5f
 ; $00000 / $04000 / $30000  framebuffers 128x128 (stride 128)
 ; $08000 title background 128x128
 ; $0c000 font masks (glyph g at +g*4, stride 512)   $0d000/$0d400/$0d800 XDLs
-; $0f000 blitter list
+; $0e000 / $0f000 alternating blitter lists
+; $34000 intro pages (4K)
 ; $10000 sprite sheet, $14000 lit (14->1), $18000 dark (dpal), $1c000 flash (lpal)
 ; $20000 text cache, 32 slots of 256x8
 ; $40000 level map baked with fog, 1024x256
@@ -738,6 +739,17 @@ nv_len  = *-nv_text
         icl 'src/windows.asm'
         icl 'src/game.asm'
         icl 'src/sound.asm'
+        icl 'gen/intro.asm'
+stage_intro
+        jsr detect_vbxe
+        bcc si_done
+        jsr memac_on
+        mwa #$a000 ptr
+        lda #$34
+        ldx #16
+        jsr upload_pages
+        jsr memac_off
+si_done rts
         icl 'gen/tables.asm'
 strings_begin
         icl 'gen/strings.asm'
@@ -766,8 +778,12 @@ code_end
         org $a000
         ins 'data/sfx.bin'
         ini stage_sfx
+        org $a000
+        ins 'data/intro.bin'
+        ini stage_intro
         org $bdc0
         icl 'src/scenery.asm'
+        icl 'src/intro.asm'
         .if * > $c000
         .error "scenery code overlaps windows"
         .endif

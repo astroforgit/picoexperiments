@@ -1,0 +1,9 @@
+{
+    "exitCode":  0,
+    "elapsedSeconds":  23.82,
+    "cycles":  40000000,
+    "expectedEmulatedSeconds":  22.55,
+    "steadyIntervalSeconds":  11.29,
+    "expectedSteadyIntervalSeconds":  11.28,
+    "configuration":  "\\\\wsl.localhost\\Ubuntu-20.04\\home\\marcin\\tmp\\pico\\atari\\babajaga\\altirra-standard.ini"
+}

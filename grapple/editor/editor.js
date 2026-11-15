@@ -253,15 +253,16 @@ function drawDirectionArrow(target, x, y, size, rotation) {
 }
 
 function drawTilesetArt(target, cell, x, y, size) {
-  if (!tileset.complete || !tileset.naturalWidth) return;
-  const sourceX = (cell.tile % 8) * TILE_SIZE;
-  const sourceY = Math.floor(cell.tile / 8) * TILE_SIZE;
+  const themed = window.GrappleAssets?.tilePreview(cell.tile);
+  if (!themed && (!tileset.complete || !tileset.naturalWidth)) return;
+  const sourceX = themed ? 0 : (cell.tile % 8) * TILE_SIZE;
+  const sourceY = themed ? 0 : Math.floor(cell.tile / 8) * TILE_SIZE;
   target.save();
   target.translate(x + size / 2, y + size / 2);
   target.rotate(cell.rot * Math.PI / 2);
   target.scale(cell.flipX ? -1 : 1, 1);
   target.imageSmoothingEnabled = false;
-  target.drawImage(tileset, sourceX, sourceY, TILE_SIZE, TILE_SIZE,
+  target.drawImage(themed || tileset, sourceX, sourceY, TILE_SIZE, TILE_SIZE,
     -size / 2, -size / 2, size, size);
   target.restore();
 }

@@ -106,3 +106,45 @@ mounted89.5% with enemy pathfinding (remaining losses in Cave stage3).
 These are fixed-bot frequencies, not human win rates. The candidate is separate
 and the active unit/economy/encounter preset and native content were preserved.
 Previous editor preserved in backups/before-simulation-2026-10-17/.
+
+Playable combat test:
+Each of the twelve stage headings now has a Combat test button. Pick one to five
+player fighters from all tiers; duplicate units are allowed without economy locks.
+Choose Easy/Medium/Hard, a native seed (0-255), or a specific authored group.
+Click a ready fighter to select it, blue hexes to move, red hexes to attack.
+Arrow keys move the cursor; Enter acts and Space skips. Enemy turns are automatic.
+Retry keeps the same encounter; Edit army returns to the picker. These isolated
+tests do not change the saved balance, campaign progress, or Atari binaries.
+
+The interactive and automated modes share simulation/campaign-sim.js for enemy
+AI, damage and abilities. The interactive mode follows native one/two-hex moves,
+movement budgets, selectable unacted soldiers and attack-ending turns. Graphics
+are extracted from the compiled VBXE palette and VRAM: four maps, 126 fighter
+frames, obstacles, hex masks, and bitmap font at 320x200. Browser animation timing
+is independent of Atari hardware timing. After rebuilding Atari graphics, run
+node simulation/export-combat-art.cjs to update the standalone editor art.
+Run node tests/combat-test.test.cjs for interactive combat regression checks.
+
+Necromancer Ruins now has four stages: Outer Ruins, Inner Ruins, Sniper Ambush,
+then the final Warlock battle. Sniper Ambush always contains five Snipers on
+Easy, Medium and Hard, rewards 250 gold, and has its own combat-test button.
+Ruins requires four victories. Existing three-stage browser drafts/imports gain
+the new stage before their final battle. The ending triggers only after Warlock.
+
+Catacombs final stage (Region guard) now always contains five Skeletons on
+all three difficulties. Reward stays 130 gold; Catacombs still has three stages.
+Existing browser drafts/imports receive this fixed roster when loaded.
+
+Evil Nymph and Ogre Mage:
+Evil Nymph: HP4, movement5, melee range, zero damage. A successful attack charms
+the target instead of damaging it; it retains its stats and acts for the enemy
+starting next round. Each fighter remembers its own Nymph owner. Killing that
+Nymph releases its surviving fighters, who act on the following player turn.
+Dead fighters are not revived. Losing all controllable fighters loses the battle;
+surviving enchanted soldiers remain in the campaign army after leaving combat.
+Ogre Mage: HP6, damage2, movement2, magic range3; ordinary ranged AI without
+the Ogre heavy-strike delay. One Caves stage2 group includes an Ogre Mage; one
+Ruins stage2 group includes an Evil Nymph on each difficulty. Both have their
+own six-pose sprites and entries on the native enemy-info page. Fixed Skeleton
+and Sniper encounters are preserved. Regression tests: tests/nymph-mage.test.cjs
+and atari/city/tools/test-nymph-mage.py (assembled 6502, both VBXE mappings).

@@ -1,3 +1,9 @@
+## Version 1.4
+
+Dismissals repeat a three-unit cycle across the whole army: two full investment refunds, then a refund reduced by 20% of the unit's current recruitment value (rounded up to whole gold). Recruitment discounts and paid upgrades remain reflected in the investment refund. The third dismissal shows `REFUND - 20% FEE` and the net gold returned. Empty slots and previews do not advance the counter; new games reset it. Saves preserve the cycle. Version 1.3 saves remain loadable and start at the first free dismissal.
+
+The Enemy Info menu includes Evil Nymph: one enchanted creature per Nymph, released when she dies.
+
 # Prince and the Nymph — Atari VBXE
 
 Author: **astrofor**.
@@ -125,7 +131,7 @@ occupied army slot offers:
 
 - **Upgrade:** advance one unit tier when its building has unlocked that tier.
   The price is the difference between the next and current unit prices.
-- **Dismiss / Refund:** remove that fighter and return half the gold actually paid for it (including upgrades), rounded down. Remaining units keep their positions; the next recruit
+- **Dismiss / Refund:** remove that fighter and return all the gold actually paid for it (including upgrades). Remaining units keep their positions; the next recruit
   fills the earliest hole. Gold is capped at 65,535 to prevent overflow.
 - **Back:** close without changing anything.
 
@@ -255,7 +261,7 @@ python3 -m venv /tmp/greenhaven-tests
 
 The tests execute the XEX loader and 6502 routines. They check both VBXE register
 pages, missing-hardware fallback, all building levels, duplicate recruitment into the first free slot,
-independent unit upgrades, half-price refunds, slot navigation and focus names,
+independent unit upgrades, full-price refunds, slot navigation and focus names,
 16-bit gold subtraction, exact-price and insufficient-funds purchases, maximum
 levels, modal cancellation, held Fire, keyboard repeat, simultaneous joystick
 and keyboard activation, delayed buffered keys, Back remaining closed, joystick

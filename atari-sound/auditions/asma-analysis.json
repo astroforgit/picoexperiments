@@ -1,0 +1,162 @@
+[
+  {
+    "file": "Games/Hans_Kloss.sap",
+    "audctl": {
+      "40": 1000
+    },
+    "voices": [
+      {
+        "channel": 1,
+        "peak": 9,
+        "distortions": {
+          "160": 1000
+        },
+        "envelope_changes": 410
+      },
+      {
+        "channel": 2,
+        "peak": 15,
+        "distortions": {
+          "128": 144,
+          "0": 89,
+          "160": 359
+        },
+        "envelope_changes": 394
+      },
+      {
+        "channel": 3,
+        "peak": 0,
+        "distortions": {},
+        "envelope_changes": 0
+      },
+      {
+        "channel": 4,
+        "peak": 15,
+        "distortions": {
+          "192": 1000
+        },
+        "envelope_changes": 566
+      }
+    ]
+  },
+  {
+    "file": "Composers/Pelc_Janusz/Fred.sap",
+    "audctl": {
+      "0": 1000
+    },
+    "voices": [
+      {
+        "channel": 1,
+        "peak": 12,
+        "distortions": {
+          "160": 1000
+        },
+        "envelope_changes": 86
+      },
+      {
+        "channel": 2,
+        "peak": 12,
+        "distortions": {
+          "160": 230
+        },
+        "envelope_changes": 64
+      },
+      {
+        "channel": 3,
+        "peak": 12,
+        "distortions": {
+          "160": 832
+        },
+        "envelope_changes": 147
+      },
+      {
+        "channel": 4,
+        "peak": 0,
+        "distortions": {},
+        "envelope_changes": 0
+      }
+    ]
+  },
+  {
+    "file": "Composers/Pelc_Janusz/Misja.sap",
+    "audctl": {
+      "0": 641,
+      "40": 359
+    },
+    "voices": [
+      {
+        "channel": 1,
+        "peak": 15,
+        "distortions": {
+          "192": 777,
+          "128": 223
+        },
+        "envelope_changes": 747
+      },
+      {
+        "channel": 2,
+        "peak": 15,
+        "distortions": {
+          "192": 359
+        },
+        "envelope_changes": 358
+      },
+      {
+        "channel": 3,
+        "peak": 15,
+        "distortions": {
+          "192": 441,
+          "128": 200
+        },
+        "envelope_changes": 640
+      },
+      {
+        "channel": 4,
+        "peak": 15,
+        "distortions": {
+          "192": 359
+        },
+        "envelope_changes": 358
+      }
+    ]
+  },
+  {
+    "file": "Composers/Gilmore_Adam/Draconus.sap",
+    "audctl": {
+      "80": 1000
+    },
+    "voices": [
+      {
+        "channel": 1,
+        "peak": 0,
+        "distortions": {},
+        "envelope_changes": 0
+      },
+      {
+        "channel": 2,
+        "peak": 10,
+        "distortions": {
+          "192": 760,
+          "128": 240
+        },
+        "envelope_changes": 426
+      },
+      {
+        "channel": 3,
+        "peak": 10,
+        "distortions": {
+          "160": 1000
+        },
+        "envelope_changes": 498
+      },
+      {
+        "channel": 4,
+        "peak": 8,
+        "distortions": {
+          "160": 1000
+        },
+        "envelope_changes": 87
+      }
+    ]
+  }
+]

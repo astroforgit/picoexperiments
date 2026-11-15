@@ -34,7 +34,8 @@ Joystick, WASD or arrow keys navigate. Fire, Enter or Space chooses an action.
 Release between presses. Escape or SELECT goes back or opens the battle menu.
 The RETREAT button ends a battle at once but costs a third of its victory gold.
 At the palace, inspect buildings to build/upgrade or recruit. Select soldiers
-in the lower army row to upgrade or dismiss them. The wall gate opens the map.
+in the lower army row to upgrade or dismiss them (dismissing refunds
+everything that soldier cost). The wall gate opens the map.
 In battle, select a soldier, then a highlighted destination or valid enemy.
 Attacking ends that soldier's turn. Double-press Fire on the selected soldier,
 or choose Skip, to finish its turn. After all soldiers finish, enemies act.
@@ -55,7 +56,8 @@ Losing every soldier without enough gold for any available recruit is game over.
 Fire starts a fresh campaign after defeat or after the final ending page.
 DUEL: the Dark Forest scout report also offers a duel against one random enemy
 (rarely a Vampire, which pays more) for a small purse and no lair progress.
-SAVE/LOAD (single-file ATR only): in the city press Escape or SELECT for the
+SAVE/LOAD (single-file ATR only): in the city select the DOCK on the river
+(right of the Mage Tower) and press Fire, or press Escape/SELECT, for the
 GAME MENU (Save Game, Load Game, Back); the title menu also has Load Game.
 There is one save slot on the disk, so the disk must be writable. Altirra keeps
 writes only in memory by default: set File > Disk drives > write mode to

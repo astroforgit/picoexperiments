@@ -3,8 +3,8 @@
 This port runs the **original NES game code** on the Atari's 6502. The VBXE
 reproduces the NES picture. The game logic is not rewritten: every mission,
 enemy, move, weapon, the bosses, Mode B (the one-on-one fighting mode), the
-experience levels, the title and menus, and the music and sound effects come from
-the game's own program.
+experience levels, the title and menus, and the sound effects come from
+the game's own program. Music playback is disabled permanently.
 
 The code is taken from the SNES port in `../double-dragon-snes-main`, whose
 eight PRG banks are the NES program with its PPU, APU and mapper accesses
@@ -33,10 +33,8 @@ keyboard.
 | A+B | jump | fire + second button | punch key + kick key |
 | Start | start, pause | START | RETURN |
 | Select | choose the mode | SELECT | |
-| | music on/off | | M |
 
-The music starts muted; press M at any time to turn it on or off. The
-sound effects always play.
+Only sound effects play. There is no music toggle; M has no assigned action.
 
 On the title screen fire (or START/RETURN) opens the mode menu. On the
 menu, joystick up/down (or SELECT) moves the heart and fire (or
@@ -104,7 +102,10 @@ changed tiles dirty. Every vertical blank the runtime builds a blitter list:
 
 The finished frame is shown by switching the XDL. Tiles are expanded from
 2-bit CHR into 8-bit VRAM on demand. Most of that happens while the game
-code is waiting for the next frame. The NES "show the left 8 pixels" setting
+code is waiting for the next frame. Sprite sources start invalid, including
+tile zero. If visible sprite tiles still need expansion, the renderer completes
+any dirty background tiles and keeps the previous full frame visible until
+the sprite data is ready. The NES "show the left 8 pixels" setting
 is done with player 0 in front of the overlay.
 
 **HUD.** The game draws the HUD below a split made with sprite 0. Frames in
@@ -115,14 +116,24 @@ HUD does not flicker.
 every vertical blank. On PAL, display list interrupts add one tick so that
 there are 6 ticks in 5 frames (60 per second).
 
-**Sound.** The NES sound driver runs unchanged. Its APU registers become
+**Sound.** Music commands are rejected before track setup, and the music
+tempo update is skipped. The original 31 effect commands drive POKEY; all
+12 music commands remain silent. Timer-high writes are tracked separately
+from their values, so zero-valued note triggers work too. Inactive effect
+channels are silenced and skip conversion. Active APU registers become
 POKEY values each frame: pulses on channels 1-2, triangle on 3 (moved up
 octaves where POKEY's 8-bit divider cannot reach), and noise on 4. Envelopes,
-length counters and the triangle's linear counter are modelled.
+length counters and the triangle's linear counter are modelled. An idle
+conversion takes 360 CPU cycles instead of 2668 in the previous build
+(measured in the headless emulator); this is an audio-path improvement,
+not a claim of a corresponding overall frame-rate increase.
 
 ## Verification
 
 ```sh
+python3 tools/test_sound.py                           # all effects/music/stop commands
+python3 tools/test_sound.py --ntsc
+python3 tools/test_edges.py                           # startup + 756 edge/cache cases
 python3 tools/verify_render.py 2500 --every 50          # PAL, Mode A
 python3 tools/verify_render.py 2500 --every 50 --ntsc
 python3 tools/verify_render.py 2000 --every 40 --modeb

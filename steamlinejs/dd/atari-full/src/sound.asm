@@ -1,11 +1,12 @@
 ; ------------------------------------------------------------------
 ; NES APU -> POKEY. The game's sound driver writes the APU registers
 ; into a RAM copy at $0A00 (register $40xx at $0Axx) and calls
-; convert_audio once per game frame. A non-zero $4003/$4007/$400B/$400F
-; means a new note (the converter clears them, as the SNES port's did).
+; convert_audio once per game frame. Timer-high writes are recorded
+; separately from their values: writing zero also starts a new note.
 ; Pulse 1/2 -> POKEY 1/2, triangle -> 3, noise -> 4; 8-bit, 64 kHz clock.
 ; Length counters, envelopes and the linear counter are stepped per call.
-; The music is muted until M is pressed (see mute).
+; Music commands are rejected by the translated driver. Only active
+; effect channels are converted; inactive channels are silenced immediately.
 ; ------------------------------------------------------------------
 APU     = $0A00
 
@@ -18,11 +19,19 @@ convert_audio
         pha
         cld
         ldx #0                  ; pulse 1
-        jsr pulse
+        jsr effect_pulse
         ldx #1                  ; pulse 2
-        jsr pulse
+        jsr effect_pulse
+        ldx #2
+        jsr effect_active
+        bcc ca_noise
         jsr triangle
+ca_noise
+        ldx #3
+        jsr effect_active
+        bcc ca_done
         jsr noise
+ca_done
         pla
         tay
         pla
@@ -51,8 +60,9 @@ pulse   txa
         asl
         sta pu_y
         tay                     ; register offset
-        lda APU+3,y
+        lda s_trigger,x
         beq pu_1
+        lda APU+3,y
         ; new note: length, timer high, envelope restart
         pha
         and #7
@@ -69,7 +79,7 @@ pulse   txa
         lda #1
         sta s_start,x
         lda #0
-        sta APU+3,y
+        sta s_trigger,x
 pu_1    lda APU+$15
         and bit_tab,x
         bne pu_2
@@ -93,7 +103,6 @@ pu_3    lda #0
         sta s_oct               ; pulse: f = CPU / (16 (t+1))
         jsr timer_audf
         lda s_vol
-        jsr mute
         sta s_vol
         txa
         asl
@@ -162,8 +171,9 @@ ev_rts  rts
 
 triangle
         ldx #2
-        lda APU+$0B
+        lda s_trigger+2
         beq tr_1
+        lda APU+$0B
         pha
         and #7
         sta s_hi+2
@@ -177,7 +187,7 @@ triangle
         lda #1
         sta s_start+2           ; linear counter reload
         lda #0
-        sta APU+$0B
+        sta s_trigger+2
 tr_1    lda APU+$15
         and #4
         bne tr_2
@@ -226,15 +236,15 @@ tr_4    lda APU+$0A
         lda s_audf
         sta AUDF1+4
         lda s_vol
-        jsr mute
         ora #$A0
         sta AUDC1+4
         rts
 TRI_VOL = 9
 
 noise   ldx #3
-        lda APU+$0F
+        lda s_trigger+3
         beq no_1
+        lda APU+$0F
         lsr
         lsr
         lsr
@@ -244,14 +254,13 @@ noise   ldx #3
         lda #1
         sta s_start+3
         lda #0
-        sta APU+$0F
+        sta s_trigger+3
 no_1    lda APU+$15
         and #8
         bne no_2
         sta s_len+3
 no_2    lda APU+$0C
         jsr envelope
-        jsr mute
         ora #$80                ; noise
         sta AUDC1+6
         lda APU+$0E
@@ -261,17 +270,37 @@ no_2    lda APU+$0C
         sta AUDF1+6
         rts
 
-; A = volume of channel X -> A, 0 while the music is off and no sound
-; effect owns the channel. The driver's tracks 0-3 are the music, 4-7 the
-; sound effects; an active effect track (SFX_TRACK+X <> 0) takes the
-; channel over from the music.
+; C = 1 when effect track 4+X owns this channel. Otherwise clear both
+; POKEY output and converter state, so a finished effect cannot ring on.
 SFX_TRACK = $0711
-mute    ldy music_on
-        bne mu_x
-        ldy SFX_TRACK,x
-        bne mu_x
+effect_pulse
+        jsr effect_active
+        bcc ep_done
+        jmp pulse
+ep_done rts
+
+effect_active
+        lda SFX_TRACK,x
+        bne ea_yes
+        sta s_len,x
+        sta s_start,x
+        sta s_hi,x
+        sta s_trigger,x
+        txa
+        asl
+        tay
         lda #0
-mu_x    rts
+        sta AUDC1,y
+        txa
+        asl
+        asl
+        tay
+        lda #0
+        sta APU+3,y
+        clc
+        rts
+ea_yes  sec
+        rts
 
 ; s_t = 11-bit timer, s_oct = 0 pulse / 1 triangle -> s_audf for POKEY's
 ; 64 kHz clock: AUDF+1 = (t+1) * pitch_k / 512 (* 2 for the triangle),
@@ -337,3 +366,31 @@ len_tab dta 10,254,20,2,40,4,80,6,160,8,60,10,14,12,26,14
 ; NES noise periods mapped to POKEY 64 kHz dividers
 noise_tab dta 0,0,0,0,1,2,3,4,6,8,13,17,26,35,72,144
 bit_tab dta 1,2,4,8
+
+; Replacement for the driver's self-modifying STA $0Axx at $07B9.
+; Preserve A/X/Y and flags just like STA, and capture zero-valued strobes.
+effect_apu_write
+        php
+        pha
+        sty apu_saved_y
+        ldy $07BA
+        sta APU,y
+        tya
+        and #3
+        cmp #3
+        bne aw_done
+        txa
+        pha
+        tya
+        lsr
+        lsr
+        tax
+        lda #1
+        sta s_trigger,x
+        pla
+        tax
+aw_done ldy apu_saved_y
+        pla
+        plp
+        rts
+apu_saved_y dta 0

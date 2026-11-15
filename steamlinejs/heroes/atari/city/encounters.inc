@@ -137,12 +137,21 @@ map_neighbours
 .proc draw_city_gate
         ; Select the existing dark gateway in the top-center city wall.
         lda selected_plot
+        cmp #11
+        beq ?dock
         cmp #5
         bne ?done
         mwa #143 calc_x
         mva #31 calc_y
         mwa #34 fr_w
         mva #26 fr_h
+        mva #2 fr_col
+        jmp outline
+        ; The pier on the river, right of the Mage Tower: save/load.
+?dock   mwa #284 calc_x
+        mva #124 calc_y
+        mwa #30 fr_w
+        mva #21 fr_h
         mva #2 fr_col
         jmp outline
 ?done   rts

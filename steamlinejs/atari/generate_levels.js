@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 'use strict';
 
-// Converts the level data extracted from orggame.js into a compact MADS include.
+// Converts the level data extracted from orggame.js into a compact MADS include
+// for the VBXE build. The standard build's campaign lives in bimbaj.json.
 const fs = require('fs');
 const path = require('path');
 
@@ -66,25 +67,3 @@ function writeInclude(file, entries, description) {
 }
 
 writeInclude(outputPath, levels, 'orggame/extracted/all_levels.json');
-
-// The standard XL/XE story presents the elephant's own upside-down-cross board
-// after the twelfth original level. The VBXE include above stays at 56 levels.
-const bonusRows = [
-    '........E',
-    '....#....',
-    '....#....',
-    '....#....',
-    '....#....',
-    '....#....',
-    '..#####..',
-    '....#....',
-    '@........',
-];
-const bonus = {
-    group: 'Basics', label: 'Elephant bonus: upside-down cross',
-    width: bonusRows[0].length, height: bonusRows.length,
-    cells: bonusRows.join('').split('').map(char => tiles[char]),
-};
-const standardLevels = [...levels.slice(0, 12), bonus, ...levels.slice(12)];
-writeInclude(path.join(__dirname, 'levels-standard.inc'), standardLevels,
-    'orggame/extracted/all_levels.json plus the Atari elephant bonus');

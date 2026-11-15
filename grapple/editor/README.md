@@ -206,3 +206,86 @@ node grapple/atari/build_world.js steamlinejs/world.json steamlinejs/world-build
 Each output folder includes `entity-index.json`, mapping persistent IDs to the
 native per-type actor slots. The `?world=/path/to/world.json` editor option loads
 another map and gives it a separate browser autosave.
+
+
+## Additional heroes
+
+The Assets Hero selector includes **Orbit Ranger · sci-fi** (helmet, luminous
+visor, oxygen pack and grapple gauntlet) and **Dream Eye · surreal** (a blinking
+floating eye, ribbon body and animated tendrils). Both have distinct artwork
+for idle, run, jump, fall, death and horizontal grapple in the same 80×64
+four-region format as PixelCharacterV1. The original sheets remain available.
+
+**Play with selected hero** opens the current level with the selected character
+and workshop edits. Map-tab Playtest uses that selection too. Source-colour
+mode only changes the Assets preview; playtesting uses the display palette.
+
+Regenerate the new sheets and animation previews:
+
+```sh
+python3 grapple/design/make_characters.py
+```
+
+Build each native variant separately:
+
+```sh
+grapple/atari/run-character.sh grapple/design/SciFi/player-scifi.png --build-only
+grapple/atari/run-character.sh grapple/design/Surreal/player-surreal.png --build-only
+```
+
+`grapple/design/characters.js` shares the display palettes between the editor
+and Atari generator. For a workshop export, download both **Export player.png**
+and **Export palette JSON**, keeping `player.palette.json` beside `player.png`.
+The native generator checks that sidecar before the registry or default palette.
+
+Character integration smoke test (Playwright; optionally BROWSER_CHANNEL=chrome):
+
+```sh
+node grapple/editor/characters.test.cjs
+```
+
+
+## Complete companion themes
+
+The **Asset theme** selector offers Original, Sci-fi, Surreal and Goth punk.
+Every additional theme includes a new mover, spikes, cannon, cannonball,
+three-state thwomp and two-state checkpoint. Selecting a hero picks its matching
+theme; changing Asset theme afterwards lets you mix them. Both the Assets
+gallery and Playtest use that selection. Each card can download its source PNG.
+
+**Nightshade · goth punk** is a fully clothed adult woman with long magenta hair,
+a dark coat and boots, paired with skull ornaments, ironwork and lanterns.
+All three new heroes have the six existing gameplay animation states.
+
+Regenerate the companion art with `python3 grapple/design/make_asset_themes.py`.
+The normal character runner automatically includes that hero's companion theme:
+
+```sh
+grapple/atari/run-character.sh grapple/design/GothPunk/player-goth.png --build-only
+```
+
+Override a native theme with `ASSET_THEME=classic`, `scifi`, `surreal` or `goth`.
+For a workshop-exported hero, supply the desired `ASSET_THEME` when building.
+No map, collision box, sprite dimensions or actor timings change.
+Deep links accept `&theme=scifi` (and the other theme IDs).
+
+The map canvas and entity palette also preview the selected companion theme.
+
+
+## Elephant Frontman and black metal
+
+**Elephant Frontman · black metal** adapts the elephant illustration at
+`steamlinejs/atari/elephant.png` to the existing sixteen-frame hero contract,
+with broad ears, a curling trunk, ivory tusks and spiked stage clothing.
+Selecting it picks the separate **Black metal · thorns and ritual iron** theme.
+Its six companions include thorn sigils, a horned cannon, spiked skull
+projectiles, corpse-paint thwomps and unlit/lit ritual candles.
+
+```sh
+python3 grapple/design/make_elephant.py
+python3 grapple/design/make_asset_themes.py
+grapple/atari/run-character.sh grapple/design/BlackMetal/player-elephant.png --build-only
+```
+
+Use `ASSET_THEME=blackmetal` for this environment with another native hero.
+The source illustration is only a visual reference and remains untouched.

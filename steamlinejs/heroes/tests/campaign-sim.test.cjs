@@ -28,6 +28,8 @@ for(const strategy of Object.keys(sim.strategies))for(let seed=1;seed<=12;seed++
    if(e.action==='move'){assert(sim.neighbours[e.from].includes(e.to));assert.equal(positions.get(e.actor),e.from);assert(![...positions].some(([id,c])=>id!==e.actor&&hp.get(id)>0&&c===e.to));positions.set(e.actor,e.to);}
    if(e.action==='attack'){hp.set(e.target,e.hpAfter);if(teams.get(e.actor)===0){const k=e.round+':'+e.actor;assert(!actions.has(k));actions.set(k,true);const moves=b.trace.filter(m=>m.action==='move'&&m.round===e.round&&m.actor===e.actor).length;assert(moves<data.players.find(u=>u.id===b.initialUnits[e.actor].id).move);}}
    if(e.action==='raise'){hp.set(e.target,2);teams.set(e.target,1);}
+   if(e.action==='charm')teams.set(e.target,1);
+   if(e.action==='release')teams.set(e.target,0);
    if(e.action==='heal')hp.set(e.actor,e.hpAfter);
    if(e.action==='summon'){teams.set(e.summoned,1);positions.set(e.summoned,e.to);hp.set(e.summoned,data.enemies.find(u=>u.id==='skeleton').hp);}
   }

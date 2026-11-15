@@ -9,7 +9,7 @@
         cmp #1
         bne done
         lda battle.contract
-        cmp #11
+        cmp #battle.FINAL_CONTRACT
         bne done
         lda battle.reward_committed
         beq done

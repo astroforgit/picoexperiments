@@ -1,0 +1,56 @@
+{
+  "original_sha256": "ed2184b5c94871646a306c58702c5128a228776d71a5f5a36adae65522fb72cd",
+  "output_sha256": "21272eaab04e83d4ee54338fbf5fccce399b582c9f9eee7a0ad36b74d848389a",
+  "runtime_changed_bytes": 7865,
+  "patches": {
+    "EBB1": {
+      "before": "d003",
+      "after": "eaea"
+    },
+    "FC1B": {
+      "before": "80",
+      "after": "60"
+    },
+    "F764": {
+      "before": "73",
+      "after": "0c"
+    },
+    "F769": {
+      "before": "ea",
+      "after": "40"
+    },
+    "C126": {
+      "before": "2062c3",
+      "after": "4c55c1"
+    },
+    "C23B": {
+      "before": "20",
+      "after": "60"
+    },
+    "F746": {
+      "before": "20d6e9",
+      "after": "200040"
+    },
+    "F834": {
+      "before": "2008f9",
+      "after": "200340"
+    },
+    "C41B": {
+      "before": "adf1c3",
+      "after": "200640"
+    },
+    "E843": {
+      "before": "2005e9",
+      "after": "200940"
+    },
+    "F75F": {
+      "before": "21",
+      "after": "3d"
+    },
+    "F975": {
+      "before": "c900",
+      "after": "29aa"
+    }
+  },
+  "cpu_depacker_verified": true
+}

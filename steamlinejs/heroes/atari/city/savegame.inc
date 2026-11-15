@@ -1,26 +1,28 @@
-; One save slot in story.SAVE_SECTOR, offered only when the single-file boot ATR
-; started the game (its loader sets boot_disk). Sector: 'NYS1', data length,
+; One save slot in story.SAVE_SECTOR, usable only when the single-file boot ATR
+; started the game (its loader sets boot_disk). The city dock and Escape open it. Sector: 'NYS1', data length,
 ; the campaign fields below, then a checksum. Staging uses the $8400 story page.
 .local savegame
 boot_disk dta 0                 ; 1 after the boot ATR's loader started the game
 BUFFER = $8400
 HEADER = 5
-FIELDS = 15
-SAVE_BYTES = 42
+FIELDS = 16
+SAVE_BYTES = 43
 field_lo dta <gold,<difficulty,<building_levels,<army_units,<army_count
          dta <army_paid_lo,<army_paid_hi,<region_wins,<battle.encounter_seed
          dta <gallery.notes_found,<gallery.notes_pending,<gallery.painting_pending
-         dta <gallery.collected,<gallery.wins,<gallery.order
+         dta <gallery.collected,<gallery.wins,<gallery.order,<dismiss_cycle
 field_hi dta >gold,>difficulty,>building_levels,>army_units,>army_count
          dta >army_paid_lo,>army_paid_hi,>region_wins,>battle.encounter_seed
          dta >gallery.notes_found,>gallery.notes_pending,>gallery.painting_pending
-         dta >gallery.collected,>gallery.wins,>gallery.order
-field_len dta 2,1,5,5,1,5,5,4,1,1,1,1,1,1,8
+         dta >gallery.collected,>gallery.wins,>gallery.order,>dismiss_cycle
+field_len dta 2,1,5,5,1,5,5,4,1,1,1,1,1,1,8,1
+field_limit dta FIELDS
 magic   dta c'NYS1'
 
 ; Campaign -> BUFFER, with header and checksum; then write the sector.
 ; C set when the disk accepted it.
 .proc save
+        mva #FIELDS field_limit
         jsr sfx.finish
         ldx #3
 ?magic  mva magic,x BUFFER,x
@@ -55,11 +57,18 @@ magic   dta c'NYS1'
         bne ?none
         dex
         bpl ?magic
+        mva #FIELDS field_limit
         lda BUFFER+4
-        cmp #SAVE_BYTES
+        cmp #42                ; V1.3 saves start a fresh dismissal cycle
+        bne ?current
+        dec field_limit
+        jmp ?checksum
+?current cmp #SAVE_BYTES
         bne ?none
+?checksum
         jsr checksum
-        cmp BUFFER+HEADER+SAVE_BYTES
+        ldx BUFFER+4
+        cmp BUFFER+HEADER,x
         bne ?none
         jsr new_city
         mwa #BUFFER+HEADER data_ptr
@@ -96,12 +105,13 @@ magic   dta c'NYS1'
         bcc ?next
         inc data_ptr+1
 ?next   inx
-        cpx #FIELDS
+        cpx field_limit
         rts
 .endp
 .proc checksum
         lda #$A5
-        ldx #SAVE_BYTES-1
+        ldx BUFFER+4
+        dex
 ?sum    clc
         adc BUFFER+HEADER,x
         dex
@@ -127,16 +137,21 @@ magic   dta c'NYS1'
         rts
 .endp
 
-; City GAME MENU (Escape/SELECT): SAVE GAME, LOAD GAME, BACK.
+; City GAME MENU (dock or Escape/SELECT): SAVE GAME, LOAD GAME, BACK.
+; Without the boot ATR it only explains that saves need the disk version.
 .proc menu
         mva #0 choice
+        lda boot_disk
+        eor #1
+        tax
+        lda no_disk_status,x
         sta status
         mva #1 latch
         mva #0 neutral
 redraw  jsr draw
 loop    jsr wait_frame
         jsr release_ui.input
-        beq released
+        jeq released
         sta action
         mva #0 neutral
         lda latch
@@ -145,7 +160,7 @@ loop    jsr wait_frame
         jsr release_ui.action_sound
         lda action
         cmp #4
-        beq done
+        jeq done
         cmp #3
         beq pick
         cmp #1
@@ -164,6 +179,12 @@ previous
 pick    lda choice
         cmp #2
         beq done
+        lda boot_disk
+        bne ?disk
+        lda #SFX_DENIED
+        jsr sfx.play
+        jmp redraw
+?disk   lda choice
         cmp #1
         beq restore
         mva #1 status            ; saving...
@@ -246,6 +267,7 @@ done    mva #1 dirty
 .endp
 choice  dta 0
 status  dta 0
+no_disk_status dta 0,6
 latch   dta 0
 neutral dta 0
 action  dta 0
@@ -253,8 +275,8 @@ line    dta 0
 row_y   dta 78,94,110
 row_lo  dta <s_save,<s_load,<s_back
 row_hi  dta >s_save,>s_load,>s_back
-status_lo dta 0,<s_saving,<s_saved,<s_save_failed,<s_loading,<s_no_save
-status_hi dta 0,>s_saving,>s_saved,>s_save_failed,>s_loading,>s_no_save
+status_lo dta 0,<s_saving,<s_saved,<s_save_failed,<s_loading,<s_no_save,<s_need_disk
+status_hi dta 0,>s_saving,>s_saved,>s_save_failed,>s_loading,>s_no_save,>s_need_disk
 s_title dta c'GAME MENU',0
 s_save  dta c'SAVE GAME',0
 s_load  dta c'LOAD GAME',0
@@ -264,4 +286,6 @@ s_saved dta c'GAME SAVED.',0
 s_save_failed dta c'SAVE FAILED: DISK LOCKED?',0
 s_loading dta c'LOADING...',0
 s_no_save dta c'NO SAVED GAME.',0
+s_need_disk dta c'SAVES NEED THE ATR VERSION.',0
+s_dock dta c'DOCK: SAVE / LOAD',0
 .endl

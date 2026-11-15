@@ -1,0 +1,24 @@
+:root { color-scheme: dark; font-family: ui-sans-serif, system-ui, sans-serif; background: #141521; color: #ded8d3; }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: radial-gradient(ellipse at 50% 30%, #262435 0, #141521 65%); }
+main { max-width: 1120px; margin: auto; padding: 46px 48px 24px; }
+header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+.wordmark { color: #e7ddcf; text-decoration: none; letter-spacing: .24em; font-size: 15px; font-weight: 600; }
+.wordmark span { display: block; color: #8e889d; font-size: 9px; letter-spacing: .22em; font-weight: 400; margin-top: 7px; }
+.edition, .colophon { color: #8e889d; font-size: 10px; letter-spacing: .13em; }
+.scene { position: relative; background: #201f33; overflow: hidden; border: 1px solid #454052; box-shadow: 0 25px 80px #08091170; }
+canvas { display: block; width: 100%; aspect-ratio: 16/9; image-rendering: pixelated; image-rendering: crisp-edges; }
+.scene-caption { position: absolute; bottom: 18px; left: 22px; display: flex; align-items: center; gap: 8px; color: #ddd3c3; font-size: 10px; letter-spacing: .1em; text-shadow: 0 1px 4px #000; }
+.live-dot { width: 5px; height: 5px; background: #e9bc83; border-radius: 50%; box-shadow: 0 0 8px #e9bc8380; }
+footer { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 26px 0 30px; border-bottom: 1px solid #35313f; }
+h1 { font-family: Georgia, serif; font-weight: 400; font-size: 27px; margin: 0 0 8px; color: #e7ddcf; }
+p { font-size: 12px; color: #9992a4; margin: 0; }
+.controls { display: flex; gap: 8px; }
+button { font: inherit; font-size: 11px; letter-spacing: .04em; color: #c7bfce; border: 1px solid #454052; background: #22212e; padding: 11px 17px; cursor: pointer; border-radius: 3px; }
+button:hover { background: #353040; border-color: #8e7891; }
+button:focus-visible, a:focus-visible { outline: 2px solid #f3cd94; outline-offset: 5px; }
+.colophon { display: flex; justify-content: space-between; margin-top: 20px; font-size: 9px; }
+#status { padding-top: 12px; }
+.scene:fullscreen { display: flex; align-items: center; justify-content: center; background: #10101a; border: 0; }
+.scene:fullscreen canvas { width: min(100vw, 177.7778vh); height: auto; }
+@media (max-width: 600px) { main { padding: 28px 16px; } header { margin-bottom: 24px; } .edition { font-size: 8px; } footer { align-items: flex-start; flex-direction: column; gap: 18px; } h1 { font-size: 24px; } .scene-caption { font-size: 8px; bottom: 10px; left: 12px; } .colophon { font-size: 7px; letter-spacing: .04em; } }

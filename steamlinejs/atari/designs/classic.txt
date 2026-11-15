@@ -1,0 +1,144 @@
+# Bimbaj board design, read by generate_tiles.js. The classic design lists no
+# tiles: generate_tiles.js draws its slate floor, boulders and items itself.
+# See paper.txt for the format.
+name Classic
+about Slate floor, blue goals and copper stones
+background $00
+floor $04 $04 $04
+light $0C
+blue $9C $9A $98
+copper $1A $18 $16
+status $02
+elephant 0 1 2 3
+
+# 4x8 tiles for the smallest zoom (boards 10 or more cells across or 11 down),
+# in this design's colours. Other designs reuse them through their elephant
+# colour mapping unless they list their own "small" blocks (in their own colours).
+# Down and left arrows mirror up and right; the up face mirrors the down face,
+# the right face the left one. Trunk pieces are drawn by generate_tiles.js.
+small floor
+1111
+1111
+1111
+1111
+1111
+1111
+1111
+1110
+small ring
+....
+.33.
+3..3
+3..3
+3..3
+3..3
+.33.
+....
+small boulder
+....
+.33.
+3233
+3333
+3333
+3330
+.00.
+....
+small pause
+....
+3.3.
+3.3.
+3.3.
+3.3.
+3.3.
+3.3.
+....
+small spiral
+....
+.333
+3...
+3.33
+3..3
+3..3
+.33.
+....
+small trap
+....
+3..3
+3..3
+.33.
+.33.
+3..3
+3..3
+....
+small portal
+....
+.33.
+3003
+3223
+3223
+3003
+.33.
+....
+small arrow_up
+....
+.33.
+3333
+.33.
+.33.
+.33.
+.33.
+....
+small arrow_right
+....
+....
+..3.
+3333
+3333
+..3.
+....
+....
+small lock
+....
+.00.
+0..0
+3333
+3033
+3033
+3333
+....
+small lock_open
+.00.
+0..0
+0...
+3333
+3033
+3033
+3333
+....
+small key
+....
+333.
+3.3.
+333.
+.3..
+.33.
+.3..
+.33.
+small face_down
+.33.
+3333
+3003
+3333
+.33.
+.33.
+.33.
+.33.
+small face_left
+..3.
+.333
+3303
+3333
+3333
+3303
+.333
+..3.

@@ -10,7 +10,7 @@ recorded sounds from their exact 4-bit levels.
 """
 import math, random
 from samples import sample_settings, levels, pack, layout, region_of, hz, capacity
-from samples import AUDIO_BANKS, BUFFER_PAGES, BUFFER_SEGMENTS, BUFFER_CAPACITY, VRAM_CAPACITY, vram_layout, buffer_end, pages
+from samples import AUDIO_BANKS, BUFFER_PAGES, BUFFER_SEGMENTS, BUFFER_CAPACITY, VRAM_CAPACITY, vram_layout, vram_plan, buffer_end, pages
 
 WIND_DEFAULTS=dict(volume=2,pitch=40,gust=3,speed=1,flutter=0)
 WIND_LIMITS=dict(volume=15,pitch=255,gust=15,speed=15,flutter=15)
@@ -79,21 +79,25 @@ def vram_clips(settings):
 def ram_blobs(sound,blobs):
  return {k:v for k,v in blobs.items() if not (vram_clips(sound['samples']) and isinstance(k,int))}
 
-def usage(sound,strict=True):
- """Memory budget. strict=False (the editor meter) reports overruns instead of raising."""
+def vram_selection(sound,blobs=None):
+ """Clips the build includes (in order) and the skipped ones with reasons."""
+ s=sound['samples'];blobs=blobs or sample_blobs(sound)
+ first,skipped=vram_plan([blobs[i] for i in range(len(s['clips']))],s['rate'],[c['name'] for c in s['clips']])
+ return sorted(first),skipped
+
+def usage(sound,strict=False):
+ """Memory budget. Sounds that do not fit are skipped and reported."""
  s=sound['samples'];blobs=sample_blobs(sound);rate=hz(s['rate'])
  if vram_clips(s):
   clips=[blobs[i] for i in range(len(s['clips']))]
-  error=None
-  try:vram_layout(clips,s['rate'],[c['name'] for c in s['clips']])
-  except ValueError as e:
-   if strict:raise
-   error=str(e)
-  longest=max(map(len,clips))
-  return dict(storage='vbxe',bytes=sum(pages(c) for c in clips)*256,capacity=VRAM_CAPACITY,rate=round(rate),
-              clips=len(clips),seconds=round(sum(map(len,clips))/rate,2),capacitySeconds=round(VRAM_CAPACITY/rate,2),
+  keep,skipped=vram_selection(sound,blobs)
+  kept=[clips[i] for i in keep]
+  longest=max(map(len,kept),default=0)
+  return dict(storage='vbxe',bytes=sum(pages(c) for c in kept)*256,capacity=VRAM_CAPACITY,rate=round(rate),
+              clips=len(kept),total=len(clips),seconds=round(sum(map(len,kept))/rate,2),capacitySeconds=round(VRAM_CAPACITY/rate,2),
               longest=longest,buffer=BUFFER_CAPACITY,longestSeconds=round(longest/rate,2),bufferSeconds=round(BUFFER_CAPACITY/rate,2),
-              perClip=[dict(bytes=pages(c)*256,seconds=round(len(c)/rate,2),fits=pages(c)*256<=BUFFER_CAPACITY) for c in clips],error=error)
+              perClip=[dict(bytes=pages(c)*256,seconds=round(len(c)/rate,2),fits=i not in skipped,skipped=skipped.get(i)) for i,c in enumerate(clips)],
+              error=None if keep else 'No sound fits: shorten them or lower the sample rate.')
  layout(blobs)
  return dict(storage='ram',bytes=sum(map(len,blobs.values())),capacity=capacity(),rate=round(rate))
 
@@ -106,7 +110,7 @@ def vram_tables(clips,rate):
        ('seg_start_hi',[a for a,b in BUFFER_SEGMENTS]),('seg_end_hi',[b for a,b in BUFFER_SEGMENTS]),
        ('clip_bank_index',[f>>4 for f in first]),('clip_bank_page',[0x90|f&15 for f in first]),
        ('clip_pages',[pages(c) for c in clips]),('clip_last_seg',[s for e,s in ends]),
-       ('clip_end_lo',[e&255 for e,s in ends]),('clip_end_hi',[e>>8 for e,s in ends])]
+       ('clip_end_hi',[e for e,s in ends])]
  return [f'CLIP_MASK = {mask}']+[label+'\n        dta '+','.join(map(str,values)) for label,values in rows]
 
 def vram_segments(clips,gen,n):
@@ -126,8 +130,11 @@ def asm_tables(sound,gen):
  blobs=ram_blobs(sound,all_blobs)
  place=layout(blobs)
  pcm_wind=on and s['wind']['mode']=='recorded';clips=s['clips'] if on else []
+ if hq:
+  keep,_=vram_selection(sound,all_blobs);clips=[s['clips'][i] for i in keep];hq_data=[all_blobs[i] for i in keep]
+  hq=bool(clips)
  chunks=ambient_chunk_keys(blobs)
- lines=[f"CLIP_HQ = {int(on and s['wind']['mode']=='off' and bool(clips))}",f"SILENCE_MIN = {s['delayMin']}",f"SILENCE_RANGE = {s['delayMax']-s['delayMin']+1}",f'AMBIENT_HQ = {int(bool(chunks))}',f'SOUND_ENABLED = {int(on)}',f"WIND_SYNTH = {int(on and s['wind']['mode']=='synth')}",f'WIND_PCM = {int(pcm_wind)}',
+ lines=[f"CLIP_HQ = {int(hq)}",f"SILENCE_MIN = {s['delayMin']}",f"SILENCE_RANGE = {s['delayMax']-s['delayMin']+1}",f'AMBIENT_HQ = {int(bool(chunks))}',f'SOUND_ENABLED = {int(on)}',f"WIND_SYNTH = {int(on and s['wind']['mode']=='synth')}",f'WIND_PCM = {int(pcm_wind)}',
         f'CLIP_COUNT = {len(clips)}',f"PCM_AUDF = {s['rate']}",
         f"WIND_SPEED = {sound['wind']['speed']*16}",f"WIND_FLUTTER = {sound['wind']['flutter']}"]
  lines+=[f"WIND_START = {place['wind']}",f"WIND_END = {place['wind']+len(blobs['wind'])}"] if pcm_wind and not chunks else ['WIND_START = 0','WIND_END = 0']
@@ -145,7 +152,7 @@ def asm_tables(sound,gen):
  lines.append('wind_vol\n        dta '+','.join(str(0x80|v if v else 0) for v in vol))
  lines.append('wind_freq\n        dta '+','.join(map(str,freq)))
  if hq:
-  lines+=vram_tables([all_blobs[i] for i in range(len(clips))],s["rate"])
+  lines+=vram_tables(hq_data,s["rate"])
  else:
   starts=[place[i] for i in range(len(clips))];ends=[place[i]+len(blobs[i]) for i in range(len(clips))]
   for label,values in [('clip_lo',[a&255 for a in starts]),('clip_hi',[a>>8 for a in starts]),('clip_end_lo',[a&255 for a in ends]),
@@ -165,6 +172,6 @@ def asm_tables(sound,gen):
  for address,data in sorted(direct,key=lambda d:(d[0]>=0xa000,d[0])):
   name=f'sample_{n}.bin';(gen.parent/name).write_bytes(data);n+=1
   seg.append(f"        org {address}\n        ins 'gen/{name}'")
- if hq:seg+=vram_segments([all_blobs[i] for i in range(len(clips))],gen,n)
+ if hq:seg+=vram_segments(hq_data,gen,n)
  gen.write_text('\n'.join(seg)+'\n')
  return lines

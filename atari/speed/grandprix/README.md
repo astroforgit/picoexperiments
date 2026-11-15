@@ -155,3 +155,9 @@ In `tools/make_data.py`: `SCALE`, `ROAD_R`, `WIGGLE_*` (track shape), `GRID`
 For testing, `mads grandprix.asm -d:AUTOPILOT=1 -d:TESTOPT=1` builds a
 self-driving 1-lap race; with `-d:AUTOPILOT=2` car 1 does not steer and
 drives into the walls (to check wall hits).
+
+## Standard Atari emulator profile
+
+`run.sh` now uses [the shared standard runner](../RUNNING.md), including
+`auto` and `rebuild` modes. It uses PAL, 64 KB, one POKEY, no VBXE and the
+separate buffered-audio configuration; your VBXE profile is untouched.

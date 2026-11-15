@@ -81,12 +81,27 @@ const battleMaps=mapNames.map(n=>rgba(`assets/${n}.png`,320,128));
 const enemySprites=enemyNames.map(n=>rgba(`assets/${n}.png`,32,28));
 const heroSets=['militia','spearman','swordsman','archer','wizard',...content.enemies.map(e=>e.id),'mounted-scout','mounted-ranger','mounted-cavalry'];
 const heroFrames=heroSets.map(name=>Array.from({length:6},(_,f)=>rgba(`assets/medieval/${name}-${f}.png`,32,28)));
-const heroMapping=[0,1,2,3,3,3,18,19,20,4,4,4,4,4,4,...content.enemies.map((_,i)=>5+i)];
+const heroMapping=[0,1,2,3,3,3,...['mounted-scout','mounted-ranger','mounted-cavalry'].map(n=>heroSets.indexOf(n)),4,4,4,4,4,4,...content.enemies.map((_,i)=>5+i)];
 portraits=heroMapping.slice(0,15).map(i=>heroFrames[i][0]);
 // Each troop has a local 15-color palette plus transparent, allowing 4bpp
 // compressed storage in otherwise unused VRAM gaps.
-const heroPalettes=heroFrames.map(frames=>{
+const heroPalettes=heroFrames.map((frames,set)=>{
  const h=new Map();for(const raw of frames)for(let i=0;i<raw.length;i+=4)if(raw[i+3]>=128){const k=(raw[i]<<16)|(raw[i+1]<<8)|raw[i+2];h.set(k,(h.get(k)||0)+1);}
+ // Detailed Ogre Mage sources have many unique highlights. Frequency-only
+ // selection collapses them into near-black shadows; preserve the color range.
+ if(heroSets[set]==='ogre-mage'){
+  let bins=[box([...h].map(([k,n])=>[(k>>16)&255,(k>>8)&255,k&255,n]))];
+  while(bins.length<15){
+   bins.sort((a,b)=>b.score-a.score);const b=bins.shift();
+   if(b.p.length<2){bins.unshift(b);break;}
+   b.p.sort((a,c)=>a[b.axis]-c[b.axis]);
+   const half=b.p.reduce((n,x)=>n+x[3],0)/2;let n=0,k=0;
+   while(k<b.p.length-1&&n<half)n+=b.p[k++][3];
+   bins.push(box(b.p.slice(0,k)),box(b.p.slice(k)));
+  }
+  const colors=bins.map(b=>{const n=b.p.reduce((sum,p)=>sum+p[3],0);return [0,1,2].map(c=>Math.round(b.p.reduce((sum,p)=>sum+p[c]*p[3],0)/n));});
+  while(colors.length<15)colors.push(colors[0]);return [[0,0,0],...colors];
+ }
  const entries=[...h].sort((a,b)=>b[1]-a[1]).slice(0,15).map(([k])=>[(k>>16)&255,(k>>8)&255,k&255]);
  while(entries.length<15)entries.push(entries[0]);return [[0,0,0],...entries];
 });
@@ -234,7 +249,7 @@ const paletteMap=heroPalettes.flatMap(p=>p.map((rgb,i)=>i?indexed(Buffer.from([.
 heroDefs+=hbytes('hero_palette',paletteMap);
 fs.writeFileSync('generated/hero-animation.inc',heroDefs);
 fs.writeFileSync('generated/hero-animation-layout.json',JSON.stringify({idleCaches,addresses,lengths:frames.map(f=>f.length),cache:[0x7e000,896]},null,2));
-console.log(`Packed 126 full-body fighter frames into ${frames.reduce((n,f)=>n+f.length,0)} VRAM bytes.`);
+console.log(`Packed ${frames.length} full-body fighter frames into ${frames.reduce((n,f)=>n+f.length,0)} VRAM bytes.`);
 fs.writeFileSync("generated/palette.bin",Buffer.from(palette.flat()));
 require('./build-story-assets')({convert,indexed,palette,font:glyphs});
 fs.writeFileSync("generated/vram.bin",vram);
@@ -249,6 +264,7 @@ content.buildings.forEach((b,i)=>{
 const defs=[`START_GOLD = ${content.startingGold}`,`SPRITE_W = ${W}`,`SPRITE_H = ${H}`,`FONT_OFFSET = ${15*size}`,
 bytes("initial_army",content.startingArmy),bytes("initial_levels",content.buildings.map(b=>b.startLevel)),bytes("plot_x",content.buildings.map(b=>b.x)),bytes("plot_y",content.buildings.map(b=>b.y)),
 ptr("building_name",names),ptr("unit_name",units),
+bytes("dismiss_fee_lo",content.buildings.flatMap(b=>b.recruitCosts.map(c=>Math.ceil(c/5)&255))),bytes("dismiss_fee_hi",content.buildings.flatMap(b=>b.recruitCosts.map(c=>Math.ceil(c/5)>>8))),
 bytes("unit_price_lo",content.buildings.flatMap(b=>b.recruitCosts.map(c=>c&255))),bytes("unit_price_hi",content.buildings.flatMap(b=>b.recruitCosts.map(c=>c>>8))),
 bytes("unit_family",content.buildings.flatMap((b,i)=>[i,i,i])),bytes("unit_tier",content.buildings.flatMap(b=>[1,2,3])),
 bytes("cost_lo",content.buildings.flatMap(b=>b.costs.map(c=>c&255))),bytes("cost_hi",content.buildings.flatMap(b=>b.costs.map(c=>c>>8))),

@@ -27,15 +27,26 @@ export function play(samples,rate=44100,loop=false){
  const buffer=context.createBuffer(1,samples.length,rate);buffer.copyToChannel(samples,0);
  source=context.createBufferSource();source.buffer=buffer;source.loop=loop;source.connect(context.destination);source.start();return samples.length/rate;
 }
-// 4-bit volume-only levels (0-15) at the POKEY timer rate, sample-and-hold to 44.1 kHz.
-export function pcm(levels,rate,repeat=1,out=44100,maximum=15){
- const n=Math.floor(levels.length*repeat*out/rate),y=new Float32Array(n);
- for(let i=0;i<n;i++)y[i]=(levels[Math.floor(i*rate/out)%levels.length]/maximum-.5);
+// Hold the exact digital levels at the POKEY timer rate, with an approximate
+// AC-coupled output. Level zero is silence before a one-shot starts.
+export function pcm(levels,rate,repeat=1,out=44100,maximum=15,loop=false){
+ const n=Math.floor(levels.length*repeat*out/rate);
+ // After a one-shot, the DAC returns to zero and the coupling settles.
+ const y=new Float32Array(n+(loop?0:Math.ceil(out*.06)));
+ const leak=1-Math.exp(-2*Math.PI*20/out);
+ let dc=loop?levels[0]/maximum:0;
+ for(let i=0;i<y.length;i++){
+  const level=i<n?levels[Math.floor(i*rate/out)%levels.length]/maximum:0;
+  dc+=(level-dc)*leak;
+  y[i]=level-dc;
+ }
  return y;
 }
-export async function playEncoded(bytes){
+export async function playEncoded(bytes,isCurrent=()=>true){
  stop();context??=new AudioContext({sampleRate:44100});context.resume();
- const buffer=await context.decodeAudioData(bytes);source=context.createBufferSource();source.buffer=buffer;source.connect(context.destination);source.start();return buffer.duration;
+ const buffer=await context.decodeAudioData(bytes);
+ if(!isCurrent())return;
+ source=context.createBufferSource();source.buffer=buffer;source.connect(context.destination);source.start();return buffer.duration;
 }
 export function stop(){try{source?.stop();}catch{}source=null;}
 // Match sound.asm's single LFSR, VBI ordering, pitch variation and effect delay.

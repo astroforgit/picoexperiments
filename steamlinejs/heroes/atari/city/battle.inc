@@ -28,6 +28,7 @@ unit_mark :12 dta 0
 unit_raised :12 dta 0
 unit_summoned :12 dta 0
 unit_spawned :12 dta 0
+unit_charmed :12 dta 0
 conversions dta 0
 ability_event dta 0
 encounter_seed dta 1
@@ -118,6 +119,13 @@ terrain :42 dta 0
         sta data_ptr
         lda seed_ptr_hi,x
         sta data_ptr+1
+        cpx #2
+        bne ?seed_ready
+        lda region_wins
+        cmp #3
+        bcc ?seed_ready
+        mwa #forest_optional_seed data_ptr
+?seed_ready
         ldy encounter_seed
         lda (data_ptr),y
         ldx difficulty
@@ -191,9 +199,11 @@ add_cell dta 0
         sta unit_acted,x
         sta unit_moved,x
         sta unit_charge,x
+        sta unit_mark,x
         sta unit_raised,x
         sta unit_summoned,x
         sta unit_spawned,x
+        sta unit_charmed,x
         lda add_reused
         bne ?added
         inc unit_count
@@ -624,6 +634,7 @@ animation_step dta 0
         mva #0 enemy_attacked
         ldy unit_type,x
         mva type_move,y enemy_actions
+        jsr nymph_actions
 ?act    ldx enemy_id
         mva enemy_actions unit_move_left,x
         jsr enemy_act
@@ -675,6 +686,41 @@ enemy_id       dta 0
 enemy_target   dta 0
 enemy_best     dta 0
 enemy_best_dist dta 0
+
+.proc nymph_actions
+        mva #0 nymph_approach
+        lda type_ability,y
+        cmp #7
+        bne ?done
+        lda unit_mark,x
+        beq ?approach
+        inc enemy_actions       ; reserve an attack after the final movement step
+        rts
+?approach
+        mva #1 unit_mark,x
+        sta nymph_approach
+        lda unit_cell,x
+        jsr target_from
+        bcs ?adjacent
+        jsr path_step
+        cmp #$FF
+        beq ?fallback
+        lda path_length
+        jmp ?half
+?fallback
+        lda enemy_actions
+?half   clc
+        adc #1
+        lsr
+        cmp enemy_actions
+        bcc ?store
+        rts
+?adjacent
+        lda #1
+?store  sta enemy_actions
+?done   rts
+.endp
+nymph_approach dta 0
 
 .proc enemy_act
         ldx enemy_id
@@ -733,6 +779,11 @@ enemy_best_dist dta 0
         bne ?move
         rts
 ?has_target
+        lda nymph_approach
+        beq ?attack_ready
+        mva #1 enemy_attacked
+        rts
+?attack_ready
         lda enemy_id
         sta attacker_unit
         lda enemy_target

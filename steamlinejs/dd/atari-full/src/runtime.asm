@@ -86,7 +86,7 @@ ex_i    .ds 1
 ex_o    .ds 1
 ri_b    .ds 1
 c_memb  .ds 1
-es_on   .ds 1
+es_missing .ds 1        ; visible sprite tile still waiting for expansion
 es_ci   .ds 1
 es_cy   .ds 1
 es_f    .ds 1
@@ -149,7 +149,7 @@ ticks_owed .ds 1
 nmi_depth .ds 1
 memb_save .ds 8
 vbxe_hi .ds 1
-music_on .ds 1         ; M toggles; 0 = music muted (default)
+s_trigger .ds 4         ; APU timer-high write strobes (zero is a valid write)
         .print 'variables end: ', *
         ert * > $0C00
 nt_page   = $0B00        ; 64: shadow page for each PPU address high byte
@@ -172,7 +172,6 @@ start   sei
         txs
         sta vbxe_hi
         lda #0
-        sta music_on
         sta NMIEN
         sta DMACTL
         sta IRQEN
@@ -423,7 +422,7 @@ gi_sc   lda #0
         sta SC_Y,x
         sta SC_T,x
         sta SC_X,x
-        lda #$20
+        lda #$30               ; hidden AND source invalid until expanded
         sta SC_A,x
         dex
         bpl gi_sc

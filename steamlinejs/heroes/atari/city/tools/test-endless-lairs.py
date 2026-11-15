@@ -10,7 +10,7 @@ for page in [0xd600,0xd700]:
   m.call('new_city');m.mem.ram[r.LABELS['region_wins']:r.LABELS['region_wins']+4]=bytes([3]*4);m.put('selected_location',location)
   for wins in [0,1,2,3,4,5,9,10,30,90,254,255]:
    m.mem.ram[r.LABELS['region_wins']+region]=wins;m.put('battle.encounter_seed',1);m.call('battle.start')
-   assert m.get('battle.contract')==region*3+min(wins,2)
+   assert m.get('battle.contract')==region*3+min(wins,3 if region==3 else 2)
    for i in range(m.get('battle.unit_count')):
     typ=unit(m,'unit_type',i);base=m.mem.ram[r.LABELS['battle.type_hp']+typ]
     assert unit(m,'unit_hp',i)==base

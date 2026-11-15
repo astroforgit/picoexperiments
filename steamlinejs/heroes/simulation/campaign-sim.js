@@ -1,4 +1,4 @@
-/* Stats-only model of the editor preset; no native game or emulator is executed. */
+/* Shared interactive and automated combat model of the native Atari rules. */
 (function(root){
 'use strict';
 const rules=typeof module!=='undefined'&&module.exports?require('../editor-balance.js'):root.GreenhavenBalance;
@@ -15,9 +15,9 @@ const defaultTrees=new Set([10,31]);
 const SHOT=Array.from({length:42},(_,i)=>Array.from({length:42},(_,j)=>clear(i,j,defaultTrees)));
 function flood(start,blocked){const dist=Array(42).fill(999),prev=Array(42).fill(-1),q=[start];dist[start]=0;for(let k=0;k<q.length;k++)for(const n of neighbours[q[k]])if(!blocked.has(n)&&dist[n]===999){dist[n]=dist[q[k]]+1;prev[n]=q[k];q.push(n);}return {dist,prev};}
 function pathTo(from,to,prev){const p=[];for(let c=to;c!==from;c=prev[c]){if(c<0)throw Error('Invalid movement path');p.push(c);}return p.reverse();}
-function simulateBattle(data,army,encounter,options={}){
+function* battleSteps(data,army,encounter,options={}){
  const abilities=data.monsterAbilitiesVersion===1;
- const limit=options.maxRounds||60,trace=options.trace?[]:null,units=[];
+ const limit=options.maxRounds||(options.manual?Infinity:60),trace=options.trace?[]:null,units=[];
  const trees=new Set(encounter.terrain||[10,31]);
  const normalTerrain=trees.size===2&&trees.has(10)&&trees.has(31);
  const visible=(a,b)=>normalTerrain?SHOT[a][b]:clear(a,b,trees);
@@ -25,16 +25,22 @@ function simulateBattle(data,army,encounter,options={}){
  army.forEach((id,i)=>{if(!id)return;const u=data.players.find(x=>x.id===id);if(!u)throw Error('Unknown player '+id);units.push({...copy(u),team:0,armySlot:i,cell:(encounter.playerCells||[0,7,14,21,28])[i],slot:units.length});});
  for(const enemy of encounter.enemies)units.push({...copy(enemy),team:1,slot:units.length});
  if(units.length>12||army.length>5||new Set(units.map(u=>u.cell)).size!==units.length||units.some(u=>trees.has(u.cell)))throw Error('Illegal deployment');
- for(const u of units){u.maxHp=u.hp;u.spawned=0;u.raised=false;u.summoned=false;u.charge=null;}
+ for(const u of units){u.maxHp=u.hp;u.spawned=0;u.raised=false;u.summoned=false;u.charge=null;u.charmedBy=null;u.nymphApproached=false;}
  const initialUnits=options.trace?copy(units):null;
  const blocked=(self)=>new Set([...trees,...units.filter(u=>u.hp>0&&u!==self).map(u=>u.cell)]);
  const canHit=(u,c,t)=>DIST[c][t.cell]<=Math.max(1,u.shootRange)&&visible(c,t.cell);
  let round=0,winner=null,moves=0,attacks=0,summons=0,healing=0,conversions=0,preparations=0,hops=0,deadWarlock=false;
  const check=()=>{if(deadWarlock||!units.some(u=>u.team===1&&u.hp>0))winner='victory';else if(!units.some(u=>u.team===0&&u.hp>0))winner='defeat';return winner;};
+ function releaseCharms(owner){
+  for(const t of units)if(t.charmedBy===owner){t.charmedBy=null;if(t.hp>0){t.team=0;t.spawned=round;emit({action:'release',actor:owner,target:t.slot,unit:t.name});}}
+ }
  function hit(u,t,bonus=0){
-  const before=t.hp;let damage=u.damage+bonus;
-  if(abilities&&u.family==='archery'&&t.id==='skeleton')damage=0;
+  if(abilities&&u.id==='evil-nymph'&&t.team===0&&!units.some(v=>v.hp>0&&v.charmedBy===u.slot)){u.nymphApproached=false;t.team=1;t.charmedBy=u.slot;t.spawned=round;attacks++;emit({action:'charm',actor:u.slot,unit:u.name,target:t.slot,targetName:t.name,from:u.cell,to:t.cell});check();return;}
+
+  const before=t.hp;let damage=abilities&&u.id==='evil-nymph'?0:u.damage+bonus;
+  if(abilities&&u.family==='archery'&&(t.id==='skeleton'||t.id==='bone-archer'))damage=0;
   t.hp=Math.max(0,t.hp-damage);attacks++;emit({action:'attack',actor:u.slot,unit:u.name,target:t.slot,targetName:t.name,damage:Math.min(before,damage),hpBefore:before,hpAfter:t.hp,from:u.cell,to:t.cell});
+  if(t.hp===0&&t.id==='evil-nymph')releaseCharms(t.slot);
   if(t.hp===0&&t.id==='warlock')deadWarlock=true;
   if(abilities&&t.hp===0&&t.team===0&&u.id==='zombie'&&!u.raised&&conversions<2){
    const slot=t.slot,cell=t.cell;Object.assign(t,copy(data.enemies.find(e=>e.id==='zombie')),{damage:Math.min(9,data.enemies.find(e=>e.id==='zombie').damage+(encounter.escalation?.damageBonus||0)),team:1,slot,cell,hp:2,maxHp:2,raised:true,spawned:round,summoned:false,charge:null});conversions++;emit({action:'raise',actor:u.slot,target:slot,to:cell,hp:2});
@@ -78,11 +84,21 @@ function simulateBattle(data,army,encounter,options={}){
    if(units.length>=12&&!reused){emit({action:'summon-blocked',reason:'12 allocated slots; dead slots are not reused',actor:u.slot});return;}
    const walls=blocked(null);for(let c=0;c<42;c++)if(!walls.has(c)&&DIST[u.cell][c]<=3){const demon=data.enemies.find(x=>x.id===(abilities?'skeleton':'demon')),slot=reused?reused.slot:units.length;const summonHP=abilities?Math.min(99,demon.hp+(encounter.escalation?.hpBonus||0)):demon.hp;
     const summonDamage=abilities?Math.min(9,demon.damage+(encounter.escalation?.damageBonus||0)):demon.damage;
-    const summoned={...copy(demon),hp:summonHP,damage:summonDamage,maxHp:summonHP,team:1,cell:c,slot,spawned:abilities?round:0,summoned:true,raised:false,charge:null};if(reused)Object.assign(reused,summoned);else units.push(summoned);summons++;emit({action:'summon',actor:u.slot,unit:u.name,summoned:slot,to:c});return;}
+    const summoned={...copy(demon),hp:summonHP,damage:summonDamage,maxHp:summonHP,team:1,cell:c,slot,spawned:abilities?round:0,summoned:true,raised:false,charge:null,charmedBy:null};if(reused)Object.assign(reused,summoned);else units.push(summoned);summons++;emit({action:'summon',actor:u.slot,unit:u.name,summoned:slot,to:c});return;}
    return;
   }
   if(abilities&&u.id==='ogre'&&u.charge!==null){const marked=u.charge;u.charge=null;const t=units.find(v=>v.team===0&&v.hp>0&&v.cell===marked);if(t&&DIST[u.cell][marked]<=1)hit(u,t,2);return;}
-  for(let ap=u.move;ap>0;ap--){
+  let actionBudget=u.move;
+  const nymph=abilities&&u.id==='evil-nymph';
+  if(nymph&&!u.nymphApproached){
+   const route=flood(u.cell,blocked(u)),foes=units.filter(v=>v.team===0&&v.hp>0);
+   const lengths=route.dist.filter((n,c)=>n<999&&foes.some(t=>canHit(u,c,t)));
+   actionBudget=lengths.length?Math.min(u.move,Math.ceil(Math.min(...lengths)/2)):Math.ceil(u.move/2);
+   u.nymphApproached=true;
+   // Approach only: even an adjacent target gets a turn to react.
+   if(actionBudget===0)return;
+  }else if(nymph)actionBudget++;
+  for(let ap=actionBudget;ap>0;ap--){
    const heroes=units.filter(v=>v.team===0&&v.hp>0);if(!heroes.length)return;
    let target=heroes[0];for(const t of heroes)if(DIST[u.cell][t.cell]<DIST[u.cell][target.cell])target=t;
    if(!options.enemyPolicy||options.enemyPolicy==='search'){
@@ -114,13 +130,47 @@ function simulateBattle(data,army,encounter,options={}){
   }
  }
  for(round=1;round<=limit;round++){
-  for(const u of units.filter(u=>u.team===0))if(u.hp>0){heroAct(u);if(check())break;}
+  if(options.manual){
+   const remaining=new Map(units.filter(u=>u.team===0&&u.hp>0).map(u=>[u.slot,u.move]));
+   let active=remaining.keys().next().value;
+   while(remaining.size&&!winner){
+    const u=units[active],ap=remaining.get(active),walls=blocked(u),route=flood(u.cell,walls),legal=[];
+    for(let c=0;c<42;c++){
+     const target=units.find(t=>t.hp>0&&t.cell===c);
+     if(target){if(target.team===1&&canHit(u,u.cell,target))legal.push({cell:c,kind:'attack'});}
+     else if(route.dist[c]>0&&route.dist[c]<=Math.min(2,ap)&&route.dist[c]===DIST[u.cell][c])legal.push({cell:c,kind:'move',cost:route.dist[c]});
+    }
+    const command=yield {phase:'player',round,units:copy(units),active,remaining:Object.fromEntries(remaining),legal,trace:copy(trace||[])};
+    if(command?.kind==='retreat'){winner='retreat';break;}
+    if(command?.kind==='select'&&remaining.has(command.slot)){active=command.slot;continue;}
+    if(command?.kind==='skip'){emit({action:'skip',actor:active,unit:u.name});remaining.delete(active);}
+    else{
+     const action=legal.find(a=>a.cell===command?.cell&&a.kind===command?.kind);
+     if(!action)continue;
+     if(action.kind==='attack'){hit(u,units.find(t=>t.hp>0&&t.cell===action.cell));remaining.delete(active);}
+     else {for(const c of pathTo(u.cell,action.cell,route.prev))move(u,c);remaining.set(active,ap-action.cost);if(ap===action.cost)remaining.delete(active);}
+    }
+    if(!remaining.has(active))active=remaining.keys().next().value;
+    check();
+   }
+  }else{
+   for(const u of units.filter(u=>u.team===0))if(u.hp>0&&u.team===0){heroAct(u);if(check())break;}
+  }
   if(winner)break;
   // Dynamic slots include converted soldiers; new undead wait until the next round.
-  for(let i=0;i<units.length;i++)if(units[i].team===1&&units[i].hp>0&&(!abilities||units[i].spawned!==round)){enemyAct(units[i]);if(check())break;}
+  for(let i=0;i<units.length;i++)if(units[i].team===1&&units[i].hp>0&&(!abilities||units[i].spawned!==round)){enemyAct(units[i]);if(options.manual)yield {phase:'enemy',round,active:i,units:copy(units),remaining:{},legal:[],trace:copy(trace||[])};if(check())break;}
   if(winner)break;
  }
- return {initialUnits:options.trace?initialUnits:undefined,finalUnits:options.trace?copy(units):undefined,outcome:winner||'draw',rounds:Math.min(round,limit),moves,attacks,summons,healing,conversions,preparations,hops,survivors:units.filter(u=>u.team===0&&u.hp>0).map(u=>({id:u.id,hp:u.hp,slot:u.armySlot})),enemiesRemaining:units.filter(u=>u.team===1&&u.hp>0).length,trace};
+ return {initialUnits:options.trace?initialUnits:undefined,finalUnits:options.trace?copy(units):undefined,outcome:winner||'draw',rounds:Math.min(round,limit),moves,attacks,summons,healing,conversions,preparations,hops,survivors:units.filter(u=>(u.team===0||u.charmedBy!=null)&&u.hp>0).map(u=>({id:u.id,hp:u.hp,slot:u.armySlot})),enemiesRemaining:units.filter(u=>u.team===1&&u.hp>0).length,trace};
+}
+// Automated and interactive battles share damage, enemy AI and special abilities.
+function simulateBattle(data,army,encounter,options={}){
+ const iterator=battleSteps(data,army,encounter,{...options,manual:false});
+ return iterator.next().value;
+}
+function createBattle(data,army,encounter){
+ if(!Array.isArray(army)||army.length<1||army.length>5||army.some(id=>!data.players.some(u=>u.id===id)))throw Error('Choose one to five available fighters.');
+ return battleSteps(copy(data),army,copy(encounter),{manual:true,trace:true});
 }
 const STRATEGIES={
  infantry:{name:'Infantry',families:['barracks','barracks','barracks']},
@@ -240,6 +290,6 @@ function summarize(runs){
  const mean=k=>group.reduce((s,r)=>s+r[k],0)/n;
  return {strategy,name:STRATEGIES[strategy].name,runs:n,completed:group.filter(r=>r.completed).length,completionRate:group.filter(r=>r.completed).length/n,meanFights:mean('fights'),meanReplays:mean('replays'),meanDefeats:mean('defeats'),meanDraws:mean('draws'),meanRounds:mean('rounds'),meanGold:mean('gold'),meanSpent:mean('spent'),reached:group.reduce((out,r)=>out.map((v,i)=>v+(r.wins[i]>0?1:0)),[0,0,0,0]),failures:group.filter(r=>!r.completed).reduce((out,r)=>{out[r.blockedReason]=(out[r.blockedReason]||0)+1;return out;},{})};}).filter(Boolean);
 }
-const api={start:START,simulateBattle,simulateCampaign,summarize,purchase,canAffordRecruit,shoppingPlan,strategies:STRATEGIES,distance,clear,neighbours};
+const api={createBattle,start:START,simulateBattle,simulateCampaign,summarize,purchase,canAffordRecruit,shoppingPlan,strategies:STRATEGIES,distance,clear,neighbours};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.GreenhavenSimulation=api;
 })(typeof window!=='undefined'?window:globalThis);

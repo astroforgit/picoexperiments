@@ -8,7 +8,7 @@ SECTOR=layout['saveSector'];OFFSET=16+384+(SECTOR-4)*256
 boot=(r.ROOT/'city-vbxe.atr').read_bytes()
 fields=[('gold',2),('difficulty',1),('building_levels',5),('army_units',5),('army_count',1),('army_paid_lo',5),('army_paid_hi',5),
         ('region_wins',4),('battle.encounter_seed',1),('gallery.notes_found',1),('gallery.notes_pending',1),('gallery.painting_pending',1),
-        ('gallery.collected',1),('gallery.wins',1),('gallery.order',8)]
+        ('gallery.collected',1),('gallery.wins',1),('gallery.order',8),('dismiss_cycle',1)]
 def state(m):return {n:bytes(m.mem.ram[r.LABELS[n]:r.LABELS[n]+k]) for n,k in fields}
 def screenshot(m,name):
  if '--screens' not in sys.argv:return
@@ -24,10 +24,10 @@ for page in (0xd600,0xd700):
  values={'gold':(1234).to_bytes(2,'little'),'difficulty':b'\x02','building_levels':bytes([2,1,0,3,1]),'army_units':bytes([1,0,3,255,9]),
   'army_count':b'\x04','army_paid_lo':bytes([25,15,50,0,25]),'army_paid_hi':bytes(5),'region_wins':bytes([5,3,1,0]),'battle.encounter_seed':b'\x2a',
   'gallery.notes_found':b'\x01','gallery.notes_pending':b'\x00','gallery.painting_pending':b'\x00','gallery.collected':bytes([0b00100101]),
-  'gallery.wins':b'\x09','gallery.order':bytes([3,1,4,0,6,2,7,5])}
+  'gallery.wins':b'\x09','gallery.order':bytes([3,1,4,0,6,2,7,5]),'dismiss_cycle':b'\x02'}
  for n,v in values.items():m.mem.ram[r.LABELS[n]:r.LABELS[n]+len(v)]=v
  m.call('savegame.save');assert m.cpu.p&1 and m.mem.story_writes==[(SECTOR,256)]
- slot=m.mem.story_disk[OFFSET:OFFSET+256];assert slot[:5]==b'NYS1'+bytes([42])
+ slot=m.mem.story_disk[OFFSET:OFFSET+256];assert slot[:5]==b'NYS1'+bytes([43])
  assert m.mem.story_disk[:OFFSET]==boot[:OFFSET] and m.mem.story_disk[OFFSET+256:]==boot[OFFSET+256:],'Only the save sector changes'
  # Start over, then load: every field returns and capacity follows the Chapel.
  m.call('new_city');assert state(m)!=values
@@ -37,6 +37,12 @@ for page in (0xd600,0xd700):
  # A damaged slot is refused without touching the campaign.
  disk=bytearray(m.mem.story_disk);disk[OFFSET+20]^=0xff;m.mem.story_disk=bytes(disk)
  m.call('new_city');before=state(m);m.call('savegame.load');assert not m.cpu.p&1 and state(m)==before
+ # Legacy V1.3 saves load all old fields and reset the dismissal counter.
+ legacy=bytearray(boot);legacy_slot=bytearray(slot);legacy_slot[4]=42
+ legacy_slot[47]=(0xa5+sum(legacy_slot[5:47]))&255
+ legacy[OFFSET:OFFSET+256]=legacy_slot;m.mem.story_disk=bytes(legacy)
+ m.put('dismiss_cycle',2);m.call('savegame.load');assert m.cpu.p&1
+ expected=dict(values);expected['dismiss_cycle']=b'\x00';assert state(m)==expected
  # A write-protected disk reports failure.
  m.mem.disk_locked=True;m.call('savegame.save');assert not m.cpu.p&1;m.mem.disk_locked=False
  # City menu: drawn over the city with its three rows and a status line.
@@ -44,7 +50,23 @@ for page in (0xd600,0xd700):
  if page==0xd600:screenshot(m,'game-menu.png')
  # Without the boot ATR, Escape in the city opens nothing.
  m=r.Machine(page);m.call('close_popup');assert m.get('popup_open')==0 and m.get('savegame.boot_disk')==0
- print(f'PASS ${page:04X}: empty slot ignored, 42-byte save in sector {SECTOR} only, exact load, capacity rebuilt, damaged slot refused, locked disk reported, XEX version has no menu.')
+ print(f'PASS ${page:04X}: empty slot ignored, 43-byte save in sector {SECTOR} only, exact load, capacity rebuilt, damaged slot refused, locked disk reported, XEX version has no menu.')
+# The dock (plot 11) beside the Mage Tower: reachable, highlighted, and Fire opens the menu.
+for boot_disk in (1,0):
+ m=r.Machine(0xd600);m.put('savegame.boot_disk',boot_disk)
+ m.put('selected_plot',2);m.cpu.a=3;m.call('navigate');assert m.get('selected_plot')==11
+ m.put('selected_plot',4);m.cpu.a=3;m.call('navigate');assert m.get('selected_plot')==11
+ for direction,target in ((0,2),(1,10),(2,4),(3,11)):
+  m.put('selected_plot',11);m.cpu.a=direction;m.call('navigate');assert m.get('selected_plot')==target,(direction,target)
+ m.put('selected_plot',11);m.put('render_bank',m.get('back_bank'));m.call('draw_city');f=m.get('front_bank')*65536
+ assert m.mem.vram[f+124*320+284]==2 and m.mem.vram[f+124*320+313]==2,'Gold outline around the pier'
+ m.call('selection_name_pointer');assert m.get('text_src',2)==r.LABELS['savegame.s_dock']
+ if boot_disk:screenshot(m,'city-dock.png')
+ m.put('selected_plot',11);m.cpu.sp=255;m.cpu.stPushWord(0x05ff);m.cpu.pc=r.LABELS['confirm_action'];m.run_until(r.LABELS['savegame.menu'])
+ m.run_until(r.LABELS['savegame.menu.loop']);assert m.get('savegame.status')==(0 if boot_disk else 6)
+ if not boot_disk:
+  m.put('render_bank',m.get('back_bank'));m.call('savegame.draw');screenshot(m,'dock-menu-xex.png')
+print('PASS: dock reachable from Lodge/Tower, outlined, named, Fire opens the game menu; the XEX version explains saves need the ATR.')
 # Title menu on the boot ATR: six rows, LOAD GAME last; a missing save is reported.
 m=r.Machine(0xd600,menu=True);m.mem.story_disk=boot;m.put('savegame.boot_disk',1)
 vctl=0xd600+0x40;on=m.mem.ram[vctl];m.mem.ram[vctl]=0  # prepare paints both banks before the display starts

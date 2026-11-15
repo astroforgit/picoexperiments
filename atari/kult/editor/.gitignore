@@ -1,0 +1,6 @@
+__pycache__/
+*-edited.xex
+*-edited.atr
+*-project.json
+
+.runtime/

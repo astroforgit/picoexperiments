@@ -1,0 +1,101 @@
+{
+  "width": 256,
+  "image_height": 160,
+  "panel_height": 48,
+  "used_vram": 499712,
+  "scenes": [
+    {
+      "scene": 1,
+      "image_base": 0,
+      "text_base": 204800,
+      "rows": [
+        "^w rowie, pod leśnym okiem, gdzie mchy",
+        "się zielenią,",
+        "^dusiołek lazł, potwora podszyty",
+        "bezdenią.",
+        "^wtem widzi: nad strumykiem, w",
+        "porannym rozkwicie,",
+        "^dziewczyna cudna stoi, bujna",
+        "niespożycie!"
+      ],
+      "scroll_end": 160,
+      "text_height": 208
+    },
+    {
+      "scene": 2,
+      "image_base": 40960,
+      "text_base": 258048,
+      "rows": [
+        "^gors ma tak okazały, falujący w",
+        "słońcu,",
+        "^że aż potworny ślimak zapiał w swym",
+        "ogońcu.",
+        "^nie myśląc ani chwili (bo żądz krew mu",
+        "mąci),",
+        "^skoczył ^dusiołek z rowu,",
+        "bezwstydnik palący!"
+      ],
+      "scroll_end": 160,
+      "text_height": 208
+    },
+    {
+      "scene": 3,
+      "image_base": 81920,
+      "text_base": 311296,
+      "rows": [
+        "^obłapia ją łapskami, w krąg piersi",
+        "gnieść bierze,",
+        "^i poddusza niebogę, jak żaba , jak",
+        "zwierzę!",
+        "^śmiechem parska ropuchy, rechocze",
+        "bezwstydnie,",
+        "^myśli, że bezkarnie mu ta swawola",
+        "wyjdzie."
+      ],
+      "scroll_end": 160,
+      "text_height": 208
+    },
+    {
+      "scene": 4,
+      "image_base": 122880,
+      "text_base": 364544,
+      "rows": [
+        "^lecz niedoczekanie! ^dziewka ta",
+        "nieboga",
+        "^była żoną maga, groźnego jak",
+        "trwoga!",
+        "^wpadł czarnoksiężnik z lasu, rzucił",
+        "gromy w słońcu,",
+        "^i poraził piorunem potwora w",
+        "podogońcu!",
+        "^aż ^dusiołkowi dupsko rozbłysło od",
+        "ognia,",
+        "^skurczył się bezradnie, to rzecz aż",
+        "niegodna."
+      ],
+      "scroll_end": 216,
+      "text_height": 264
+    },
+    {
+      "scene": 5,
+      "image_base": 163840,
+      "text_base": 432128,
+      "rows": [
+        "^czarownik go za ogon capnął bez",
+        "litości,",
+        "^i cisnął w loch głęboki, gdzie",
+        "ciemność się mości.",
+        "^zatrzasnął rdzawą kratę i rzekł",
+        "wściwym głosem:",
+        "\"^gnij tam, ty bezwstydniku, tuż pod",
+        "naszym nosem!",
+        "^jak ci tam, w tej bezdeni, kuśka",
+        "całkiem uschnie,",
+        "^to nauczysz się, chamie, kultury",
+        "posłusznie!"
+      ],
+      "scroll_end": 216,
+      "text_height": 264
+    }
+  ]
+}

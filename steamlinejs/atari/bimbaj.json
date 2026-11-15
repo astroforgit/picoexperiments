@@ -1,0 +1,835 @@
+{
+  "format": 1,
+  "design": "classic",
+  "items": [
+    {
+      "type": "level",
+      "name": "Basics 2",
+      "rows": [
+        "@.#..",
+        ".....",
+        "#....",
+        ".#...",
+        ".....",
+        "...E."
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Basics 1",
+      "rows": [
+        "#...@",
+        ".E...",
+        "....#",
+        ".....",
+        ".....",
+        "...#."
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Basics 3",
+      "rows": [
+        "@.#..",
+        ".....",
+        ".....",
+        ".#...",
+        "#....",
+        "...E."
+      ]
+    },
+    {
+      "type": "text",
+      "text": "Może ciekawi Was, skąd u mnie pasja do black metalu?\n\nPewnego dnia wyjaśniła mi to moja mama. Otóż dostała ona kiedyś intratną propozycję zagrania jako statystka w teledysku grupy Satyricon.\n\nW trakcie epickiej, pełnej gore bitwy słonie tratowały i rozdeptywały ludzi.\n\nTak się akurat składało, że mama była wtedy w zaawansowanej ciąży z przyszłym Bimbajkiem. Można więc powiedzieć, że fanem black metalu zostałem jeszcze przed urodzeniem"
+    },
+    {
+      "type": "level",
+      "name": "Basics 4",
+      "rows": [
+        ".#..#",
+        "#....",
+        "..#..",
+        "..#E.",
+        "...#@",
+        "....."
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Basics 5",
+      "rows": [
+        "@....",
+        "#.#..",
+        ".#.E.",
+        "...#.",
+        "..#..",
+        "#...."
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Basics 6",
+      "rows": [
+        "#.#..",
+        ".....",
+        ".....",
+        ".E...",
+        ".....",
+        "...@."
+      ]
+    },
+    {
+      "type": "text",
+      "text": "Nie wszystkie słonie są miłe i przyjacielskie tak jak ja.\n\nNa przykład taki Słoń Trąbalski – nie znoszę gościa! Zamiast grać normalną muzykę, został gwiazdą słoń-popu i gra jakieś miałkie badziewie.\n\nNie wiem, za co dostaje te wszystkie platynowe płyty i dlaczego ma niezliczone fanki-słoniczki. Zero talentu, zero polotu. A jak w wywiadzie pytają go, ile fanek zaliczył, to bezczelnie odpowiada, że nie pamięta."
+    },
+    {
+      "type": "level",
+      "name": "Basics 7",
+      "rows": [
+        "@....",
+        "...#.",
+        "#....",
+        ".E...",
+        "#....",
+        ".#..."
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Basics 8",
+      "rows": [
+        "..P.#",
+        "...E.",
+        "....#",
+        ".....",
+        "@....",
+        "....."
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Basics 9",
+      "rows": [
+        "..#..",
+        "...P.",
+        "#.E..",
+        ".....",
+        "@.#..",
+        ".#..."
+      ]
+    },
+    {
+      "type": "text",
+      "text": "Siła black metalu tkwi we współpracy i dobrej kapeli, a tak naprawdę miarą jakości blackmetalowego zespołu są szybkie blasty.\n\nNasz skład nie istniałby, gdyby nie nasz pałkarz – leniwiec Marceli. Jak ktoś powie, że jest ktoś od niego lepszy, to go wyśmieję. Pozdro, Marceli!"
+    },
+    {
+      "type": "level",
+      "name": "Basics 10",
+      "rows": [
+        "..#@.",
+        "..E.#",
+        "##...",
+        ".....",
+        "..R..",
+        "#..#."
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Basics 11",
+      "rows": [
+        "...#E",
+        ".#...",
+        ".R..#",
+        "...#.",
+        ".....",
+        "@...."
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Basics 12",
+      "rows": [
+        ".....",
+        "..E..",
+        "..#..",
+        ".....",
+        ".#..P",
+        "@...."
+      ]
+    },
+    {
+      "type": "text",
+      "text": "Ci producenci gry o mnie są jacyś dziwni – mam wrażenie, że mnie unikają.\n\nPróbowałem się z jednym zaprzyjaźnić i zaproponowałem, że zrobię mu jakiś level do gry. Gościowi chyba się podobało, bo aż zbladł z wrażenia! Tylko czemu trzęsły mu się ręce? A oto mój level!"
+    },
+    {
+      "type": "level",
+      "name": "Elephant bonus: upside-down cross",
+      "rows": [
+        "........E",
+        "....#....",
+        "....#....",
+        "....#....",
+        "....#....",
+        "....#....",
+        "..#####..",
+        "....#....",
+        "@........"
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Basics 13",
+      "rows": [
+        "#....",
+        "...#.",
+        "....E",
+        "..X..",
+        ".....",
+        "@...X"
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Basics 14",
+      "rows": [
+        "....#.E",
+        "..#....",
+        ".....X#",
+        ".......",
+        "...P...",
+        "#..X...",
+        ".......",
+        "@..#..."
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Basics 15",
+      "rows": [
+        "#....#E",
+        "...R...",
+        "#....X#",
+        "...#...",
+        ".#.....",
+        "....#..",
+        ".......",
+        "@......"
+      ]
+    },
+    {
+      "type": "text",
+      "text": "Będę szczery – jakoś nie mam cierpliwości do gier logicznych. W sumie obecnie to moja praca, ale Tobie, graczu, podpowiem, że jeżeli wpiszesz tajny kod, to nie musisz przechodzić całej gry(aby uzyskać tajne hasło). Nie mogę zdradzić hasła, ale niech moc black metalu będzie z Tobą!"
+    },
+    {
+      "type": "level",
+      "name": "Basics 16",
+      "rows": [
+        ".....##",
+        ".......",
+        ".X...#.",
+        "..#E...",
+        "#...R.P",
+        "..#.#..",
+        ".......",
+        "@......"
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Force 1",
+      "rows": [
+        "..v.E",
+        ".....",
+        "....<",
+        ".....",
+        ".....",
+        "@...."
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Force 2",
+      "rows": [
+        "...#E",
+        ".#.P<",
+        "..<..",
+        ".....",
+        ".....",
+        "@..#."
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Force 3",
+      "rows": [
+        "%...#",
+        ".....",
+        ".....",
+        "..#..",
+        ".E...",
+        "@...%"
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Force 4",
+      "rows": [
+        "...X.",
+        ".E.%X",
+        "##.X.",
+        "..#..",
+        "P%.#.",
+        "@P.#."
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Force 5",
+      "rows": [
+        "#..X.",
+        "...%.",
+        ".>...",
+        "..E..",
+        "P%X..",
+        "@P..#"
+      ]
+    },
+    {
+      "type": "text",
+      "text": "Raz na imprezie zaczepiła mnie pewna dziewczyna. Spojrzała na mnie z góry i z absolutną pewnością siebie oświadczyła, że wszystko o mnie wie. Według jej błyskawicznej analizy mój głęboko skrywany wstyd i aspołeczność są bezpośrednim skutkiem podręcznikowego kompleksu Edypa. Twierdziła, że w odmętach mojej podświadomości drzemie stłumione pragnienie, by ostatecznie zdetronizować i zastąpić mojego potężnego słonia-ojca (das Vater-Elefant). Miałem rzekomo marzyć o tym, by stać się jedynym, dominującym samcem u boku mojej matki, przez co mój system obronny zablokował we mnie jakiekolwiek pożądanie do innych kobiet, chroniąc mnie przed lękiem kastracyjnym. Zapytaniem ją, jeżeli naprawdę wie wszystko, to żeby powiedziała, czy jestem słoniem afrykańskim, czy indyjskim. Zrobiła tylko złą minę i odeszła w milczeniu.\n"
+    },
+    {
+      "type": "level",
+      "name": "Force 6",
+      "rows": [
+        "E#...",
+        ".....",
+        ".....",
+        "%....",
+        ".X.%.",
+        "@.R.."
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Force 7",
+      "rows": [
+        "...#.",
+        ".v...",
+        ".....",
+        "P.^..",
+        ".XE..",
+        "@...#"
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Force 8",
+      "rows": [
+        "..%..",
+        ".v.v.",
+        ".....",
+        "..E..",
+        ".^%^.",
+        "@...."
+      ]
+    },
+    {
+      "type": "text",
+      "text": "aaahhhgggg  grrrrrrr wrrrraaaahhhhh aaaaaa!!! wooohhh!!! woooohhhh!!! - a to ty drogi graczu, tak sobie właśnie nuciłem, jak tam postępy w grze ? "
+    },
+    {
+      "type": "level",
+      "name": "Force 9",
+      "rows": [
+        "..#.v..",
+        ".......",
+        "...%.^.",
+        ".>.....",
+        "...E...",
+        ".......",
+        "..^..%.",
+        "@.....#"
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Force 10",
+      "rows": [
+        "..>...v",
+        ".......",
+        ".......",
+        "....E..",
+        "...R...",
+        ".......",
+        ".......",
+        "@.^...<"
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Force 11",
+      "rows": [
+        "%.....%",
+        "#...X.X",
+        ".......",
+        "....E#X",
+        ".#.....",
+        "P.....#",
+        ".......",
+        "@...#.."
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Force 12",
+      "rows": [
+        "#X...#.",
+        ".......",
+        "...^...",
+        "..<R>.P",
+        ".......",
+        ".#E....",
+        "...^...",
+        "@.....#"
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Trials 1",
+      "rows": [
+        "...LE",
+        "...KL",
+        ".....",
+        ".....",
+        ".#...",
+        "@...."
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Trials 2",
+      "rows": [
+        "..#.K",
+        "....R",
+        "....#",
+        ".....",
+        "LE...",
+        "@...."
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Trials 3",
+      "rows": [
+        "..X.X",
+        "...L.",
+        "KE.KL",
+        "..L..",
+        ".P...",
+        "@...."
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Trials 4",
+      "rows": [
+        ".......",
+        "...E...",
+        ".......",
+        "LLLLLLL",
+        "P..P..P",
+        ".K...R.",
+        ".......",
+        "@..P..."
+      ]
+    },
+    {
+      "type": "text",
+      "text": "Nie znoszę tego Trąbalskiego. Ostatnio wymyślił, że będzie grał latino elephant. Oczywiście ludzie łyknęli to jak pelikany i teraz Trabalski wozi się helikopterem – i to nie zwykłym, tylko specjalnym, do gaszenia pożarów lasów, bo do normalnego ta jego gruba dupa się nie mieści."
+    },
+    {
+      "type": "level",
+      "name": "Trials 5",
+      "rows": [
+        ".....#.",
+        ".X.L...",
+        "......L",
+        ".....K.",
+        "..E..R.",
+        "..#..L.",
+        "P...L.#",
+        "@KPX.#."
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Trials 6",
+      "rows": [
+        "L.....#",
+        "..X.P..",
+        "..L....",
+        "K.....R",
+        ".....X#",
+        "..P..LE",
+        "....X..",
+        "@..#..."
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Trials 7",
+      "rows": [
+        "X.....L.X",
+        "L.......L",
+        "L.......L",
+        "...K.....",
+        "...E.....",
+        "....R....",
+        ".L.......",
+        ".........",
+        ".........",
+        "@......LX"
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Trials 8",
+      "rows": [
+        "#.#.K....",
+        ".P..#E.L.",
+        ".........",
+        "LR.......",
+        "L........",
+        ".....#X.L",
+        "..X..#...",
+        "..#.....P",
+        ".........",
+        "@....#.L."
+      ]
+    },
+    {
+      "type": "text",
+      "text": "No nie wierzę. Przychodzę rano do pracy, a tu... Trabalski. Okazuje się, że też będzie grał w mojej grze. W dodatku robi głupie miny i udaje, że mnie nie zna – a może naprawdę zapomniał? Tak czy inaczej, siedzimy obok siebie i Trabalski pyta: \"Przepraszam, jak pan ma na imię?\". \"Bimbaj\". Chwilę pomyślał i mówi: \"Słoniu Bimbaju, czy chcesz kopa po lewym jaju?\". Co za obelga! Ale nie pozostanę mu dłużny... \"A pan jak się nazywa?\". \"Trabalski\". Myślę, myślę, nic sensownego nie przychodzi mi do głowy. Wreszcie oświecenie: \"Trabalski, ty chuju!"
+    },
+    {
+      "type": "level",
+      "name": "Dual 1",
+      "rows": [
+        "E....",
+        ".E.#.",
+        ".....",
+        ".#...",
+        ".....",
+        "@...@"
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Dual 2",
+      "rows": [
+        ".XEXE",
+        "....R",
+        "#....",
+        ".....",
+        "..P..",
+        "@...@"
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Dual 3",
+      "rows": [
+        "E...E",
+        "#..X#",
+        ".....",
+        ".....",
+        ".....",
+        "@.P.@"
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Dual 4",
+      "rows": [
+        ".#...X.",
+        ".....E#",
+        "..#....",
+        "#......",
+        "....#..",
+        "..E.#..",
+        ".......",
+        "@...X.@"
+      ]
+    },
+    {
+      "type": "text",
+      "text": "Cztery słonie, zielone słonie,\nkażdy kokardkę ma na ogonie,\nten pyzaty, ten smarkaty,\nkochają się jak wariaty  -eeeee... tak sobie nuciłem, właściwie to nic nie słyszałeś"
+    },
+    {
+      "type": "level",
+      "name": "Dual 5",
+      "rows": [
+        "......E",
+        "......#",
+        "#.#....",
+        "....E..",
+        "....X##",
+        "..#....",
+        "#......",
+        "@...#.@"
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Dual 6",
+      "rows": [
+        "#.....#",
+        "...#E.#",
+        ".......",
+        ".......",
+        ".....#.",
+        ".#E....",
+        "....#X.",
+        "@.....@"
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Dual 7",
+      "rows": [
+        ".......#.",
+        "....R....",
+        "...E##..#",
+        ".E#...P..",
+        ".........",
+        "....X..#.",
+        ".........",
+        ".........",
+        ".......X.",
+        "@..#....@"
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Dual 8",
+      "rows": [
+        "...P.....",
+        "..E......",
+        ".#.......",
+        "........P",
+        "..X......",
+        ".........",
+        "...#.....",
+        "....E...X",
+        "......R..",
+        "@.......@"
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Dual 9",
+      "rows": [
+        "....E....",
+        ".........",
+        ".........",
+        "#.......#",
+        ".........",
+        "....#....",
+        "....E....",
+        ".........",
+        "....R....",
+        "@.......@"
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Dual 10",
+      "rows": [
+        "...@....X",
+        "#........",
+        "....R....",
+        ".........",
+        ".........",
+        ".........",
+        "..##X....",
+        "...X..E.E",
+        ".@.......",
+        "........."
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Dual 11",
+      "rows": [
+        ".......@.",
+        "........X",
+        ".........",
+        ".....X...",
+        "E........",
+        "....X.@.P",
+        "...#.P.X.",
+        "..E......",
+        ".........",
+        "........."
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Dual 12",
+      "rows": [
+        ".E..R....",
+        "......#.#",
+        ".........",
+        "@...#.@..",
+        "##R....E.",
+        "....X....",
+        ".........",
+        ".....P..X",
+        ".........",
+        ".....#..."
+      ]
+    },
+    {
+      "type": "text",
+      "text": "Mam już dość tego Trąbalskiego, nie chce mi się już nic opowiadać. Mam nadzieję, że wytrwasz do końca gry, to już naprawdę niedaleko."
+    },
+    {
+      "type": "level",
+      "name": "Scale 1",
+      "rows": [
+        ".....#X..",
+        ".........",
+        "#.....E..",
+        "...P.....",
+        ".........",
+        ".........",
+        "...R..#..",
+        ".........",
+        ".#.......",
+        "@...#...."
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Scale 2",
+      "rows": [
+        ".........",
+        ".#.....#.",
+        "...X#....",
+        ".........",
+        "...E...X.",
+        ".R.#.....",
+        ".......#.",
+        "##..X....",
+        "...#.#.#.",
+        "@........"
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Scale 3",
+      "rows": [
+        "........#",
+        "..##.#...",
+        "#.#...#..",
+        "....E....",
+        "#.R......",
+        ".........",
+        ".R#...#..",
+        "........#",
+        "....#....",
+        "@.....##."
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Scale 4",
+      "rows": [
+        "#........",
+        "....#....",
+        ".........",
+        "..#....#.",
+        "....E#...",
+        "#........",
+        "......R.#",
+        "......#..",
+        "P...#....",
+        "@..X....."
+      ]
+    },
+    {
+      "type": "text",
+      "text": "To już naprawdę prawie koniec "
+    },
+    {
+      "type": "level",
+      "name": "Scale 5",
+      "rows": [
+        "..@......",
+        "R....X...",
+        "......#..",
+        ".P..#...#",
+        ".......P.",
+        ".E.#.....",
+        ".....#...",
+        "..P......",
+        ".........",
+        ".#..#...."
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Scale 6",
+      "rows": [
+        ".........",
+        "......##.",
+        ".........",
+        ".........",
+        "......E..",
+        "......R..",
+        "......#..",
+        ".#.R.X@..",
+        "....X.#X.",
+        "........."
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Scale 7",
+      "rows": [
+        ".P..X...E",
+        "...@..X..",
+        "...X.....",
+        "...#.X...",
+        ".........",
+        ".........",
+        "......#..",
+        ".R.......",
+        ".........",
+        "....X...."
+      ]
+    },
+    {
+      "type": "level",
+      "name": "Scale 8",
+      "rows": [
+        "...#.....",
+        "P........",
+        ".........",
+        "....@...X",
+        "..#.....#",
+        "....#X...",
+        "...X..X..",
+        "........#",
+        ".RE......",
+        "........#"
+      ]
+    },
+    {
+      "type": "text",
+      "text": "Brawo! Ukończyłeś moją grę – to znaczy grę ze mną. Tajne hasło to: „Słonie najlepsze po samogonie, aż żyrafy wchodzą do szafy”. Wyślij hasło na e-mail astrofortemp@gmail.com. W tytule wiadomości wpisz słowo „bimbaj”. Muzyczna niespodzianka już na Ciebie czeka!"
+    }
+  ]
+}

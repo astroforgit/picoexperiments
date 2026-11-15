@@ -11,7 +11,7 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || "playwright");
   await page.goto(process.env.EDITOR_URL || "http://127.0.0.1:8090/grapple/editor/");
   await page.waitForFunction(()=>!document.querySelector("#playMap").disabled);
   const original=await page.evaluate(()=>JSON.stringify(serializeMap()));
-  assert.match(await page.locator("#buildStatus").innerText(),/match/);
+  assert.match(await page.locator("#buildStatus").innerText(),/match|Playtesting is available/);
   await page.click("#playMap");
   await page.waitForFunction(()=>GrapplePlaytest.isOpen && GrapplePlaytest.game.ticks>0);
   await page.keyboard.down("ArrowRight");await page.waitForTimeout(180);await page.keyboard.up("ArrowRight");

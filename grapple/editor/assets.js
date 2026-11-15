@@ -75,20 +75,11 @@ const CLASSIFY = {
  * its sheet, so the tab shows what that character looks like on the Atari
  * rather than what the default one does. Mirrors PLAYER_PALETTES there.
  */
-const CHARACTERS = [
-  {
-    name: "Classic hero",
-    src: "../bin/assets/player.png",
-    // The browser game's own two colours; top and legs share the white, so
-    // the derived boots stay invisible.
-    palette: {16: "#ffffff", 17: "#ffffff", 18: "#ffffff", 20: "#ff0000"}
-  },
-  {
-    name: "PixelCharacterV1 · flowing hair",
-    src: "../design/PixelCharacterV1/player-pixelv1.png",
-    palette: {16: "#ffb499", 17: "#e2e2e2", 18: "#405230", 20: "#4894ff"}
-  }
-];
+const CHARACTERS = typeof module !== "undefined" ?
+  require("../design/characters.js") : window.GrappleCharacters;
+
+const THEMES = typeof module !== "undefined" ?
+  require("../design/asset-themes.js") : window.GrappleAssetThemes;
 
 // Source frame order the port packs into player-assets.bin. The slot index is
 // what choose_hero_frame stores in hero_frame.
@@ -167,6 +158,8 @@ const state = {
   workshop: null,      // {frames: {index -> grid}}
   penValue: 1,
   character: 0,
+  theme: "classic",
+  canvasCache: {},
   editingFrame: 0,
   presets: {}
 };
@@ -239,22 +232,88 @@ function sliceSheet(key, image) {
 
 function character() { return CHARACTERS[state.character]; }
 
+function sheetSource(key) {
+  return key === "player" ? character().src : `${THEMES[state.theme].dir}/${key}.png`;
+}
+
 async function loadAll() {
   const keys = Object.keys(SHEETS);
-  const sources = keys.map(key =>
-    key === "player" ? character().src : SHEETS[key].src);
+  const sources = keys.map(sheetSource);
   const images = await Promise.all(sources.map(loadImage));
+  const sheets = {};
   keys.forEach((key, index) => {
-    state.sheets[key] = sliceSheet(key, images[index]);
+    sheets[key] = sliceSheet(key, images[index]);
   });
+  state.sheets = sheets;
+  state.canvasCache = {};
   state.loaded = true;
 }
 
-/* Swap the hero sheet alone; the other assets do not change with her. */
+/* Load the matching full theme before resetting the hero workshop. */
 async function loadCharacter() {
-  const image = await loadImage(character().src);
-  state.sheets.player = sliceSheet("player", image);
+  await loadAll();
   applyPreset(state.workshop?.preset || "hero");
+}
+
+// The playtest uses display colours, never the red/green/blue source markers.
+// Render the workshop so painted changes and presets can be tested immediately.
+async function playerCanvas() {
+  if (!state.loaded) {
+    await loadAll();
+    applyPreset("hero");
+  }
+  const canvas = document.createElement("canvas");
+  canvas.width = 80;
+  canvas.height = 64;
+  const context = canvas.getContext("2d");
+  const colours = penColours();
+  ATARI_SLOTS.forEach(index => {
+    const grid = state.workshop.frames[index];
+    for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
+      const colour = colours[grid[y][x]];
+      if (!colour) continue;
+      context.fillStyle = colour;
+      context.fillRect((index % 5) * 16 + x, Math.floor(index / 5) * 16 + y, 1, 1);
+    }
+  });
+  return canvas;
+}
+
+// Render all companion sheets with exactly the native palette indices.
+// Theme changes keep the current workshop; gameplay snapshots all artwork.
+function assetCanvas(key) {
+  if (state.canvasCache[key]) return state.canvasCache[key];
+  const sheet = state.sheets[key];
+  const columns = SHEETS[key].cols;
+  const canvas = document.createElement("canvas");
+  canvas.width = columns * sheet.fw;
+  canvas.height = Math.ceil(sheet.frames.length / columns) * sheet.fh;
+  const context = canvas.getContext("2d");
+  sheet.frames.forEach((frame, index) => {
+    frame.grid.forEach((row, y) => row.forEach((value, x) => {
+      const colour = VBXE[value];
+      if (!colour) return;
+      context.fillStyle = colour;
+      context.fillRect((index % columns) * sheet.fw + x,
+        Math.floor(index / columns) * sheet.fh + y, 1, 1);
+    }));
+  });
+  state.canvasCache[key] = canvas;
+  return canvas;
+}
+
+function tilePreview(tile) {
+  const key = {11:"checkpoint",13:"mover",14:"cannon",16:"spikes",17:"thwomp"}[tile];
+  return key && state.loaded && state.theme !== "classic" ? assetCanvas(key) : null;
+}
+
+async function playtestCanvases() {
+  const player = await playerCanvas();
+  const canvases = {player};
+  Object.keys(SHEETS).filter(key => key !== "player").forEach(key => {
+    canvases[key] = assetCanvas(key);
+  });
+  return canvases;
 }
 
 // ---------------------------------------------------------------- drawing
@@ -520,7 +579,11 @@ function buildCatalogue(container) {
       anims.append(block);
       animators.push({canvas: live, sheet: entry.sheet, animation});
     });
-    card.append(anims);
+    const sourceLink = document.createElement("a");
+    sourceLink.textContent = "Download source sheet";
+    sourceLink.href = sheetSource(entry.sheet);
+    sourceLink.download = `${entry.sheet}.png`;
+    card.append(anims, sourceLink);
     container.append(card);
   });
 }
@@ -623,7 +686,13 @@ function buildWorkshop(root) {
     download("hero-frames.json",
       "data:application/json," + encodeURIComponent(payload));
   });
-  exportRow.append(pngButton, jsonButton);
+  const paletteButton = document.createElement("button");
+  paletteButton.textContent = "Export palette JSON";
+  paletteButton.addEventListener("click", () => {
+    download("player.palette.json", "data:application/json," +
+      encodeURIComponent(JSON.stringify(character().palette, null, 2)));
+  });
+  exportRow.append(pngButton, jsonButton, paletteButton);
 
   const help = document.createElement("p");
   help.className = "hint";
@@ -639,6 +708,7 @@ function buildWorkshop(root) {
     "<code>grapple/atari/build.sh</code> — boots, palette packing and the " +
     "run cycle all follow automatically, with no generator change.";
 
+  help.append(document.createTextNode(" To preserve this character's colours with an exported player.png, save Export palette JSON as player.palette.json beside it. Play with selected hero previews your workshop edits in the current map."));
   root.append(presetRow, preview, pens, frameSelect, editor, exportRow, help);
 }
 
@@ -694,9 +764,11 @@ function refresh() {
   animators.length = 0;
   buildCatalogue(document.querySelector("#assetGallery"));
   buildWorkshop(document.querySelector("#assetWorkshop"));
+  if (typeof refreshPalettePreviews === "function") refreshPalettePreviews();
+  if (typeof renderAll === "function") renderAll();
   const sheet = state.sheets.player;
   document.querySelector("#assetsStatus").textContent =
-    `${character().name} · ${sheet.regions ? "four-region" : "two-colour"} sheet`;
+    `${character().name} · ${sheet.regions ? "four-region" : "two-colour"} sheet · ${THEMES[state.theme].name} assets`;
 }
 
 function close() {
@@ -723,18 +795,63 @@ function init() {
       picker.append(option);
     });
     picker.addEventListener("change", async () => {
+      const previousCharacter = state.character;
+      const previousTheme = state.theme;
+      state.theme = CHARACTERS[Number(picker.value)].theme || "classic";
+      document.querySelector("#assetTheme").value = state.theme;
+      document.querySelector("#assetTheme").disabled = true;
       state.character = Number(picker.value);
+      picker.disabled = true;
+      document.querySelector("#assetPlaytest").disabled = true;
       const status = document.querySelector("#assetsStatus");
       status.textContent = `Loading ${character().name}…`;
       try {
         await loadCharacter();
       } catch (error) {
         status.textContent = `Could not load ${character().name}: ${error.message}`;
+        state.character = previousCharacter;
+        state.theme = previousTheme;
+        document.querySelector("#assetTheme").value = previousTheme;
+        picker.value = String(previousCharacter);
         return;
+      } finally {
+        picker.disabled = false;
+        document.querySelector("#assetTheme").disabled = false;
+        document.querySelector("#assetPlaytest").disabled = false;
       }
       refresh();
     });
   }
+
+  const themePicker = document.querySelector("#assetTheme");
+  Object.entries(THEMES).forEach(([id, theme]) => {
+    themePicker.append(new Option(theme.name, id));
+  });
+  themePicker.addEventListener("change", async () => {
+    const previousTheme = state.theme;
+    state.theme = themePicker.value;
+    themePicker.disabled = true;
+    picker.disabled = true;
+    document.querySelector("#assetPlaytest").disabled = true;
+    const status = document.querySelector("#assetsStatus");
+    status.textContent = `Loading ${THEMES[state.theme].name} assets…`;
+    try {
+      await loadAll();
+      refresh();
+    } catch (error) {
+      state.theme = previousTheme;
+      themePicker.value = previousTheme;
+      status.textContent = `Could not load asset theme: ${error.message}`;
+    } finally {
+      themePicker.disabled = false;
+      picker.disabled = false;
+      document.querySelector("#assetPlaytest").disabled = false;
+    }
+  });
+
+  document.querySelector("#assetPlaytest").addEventListener("click", () => {
+    window.GrapplePlaytest.open();
+  });
 
   // Deep link, so a review or a screenshot can land straight on a character.
   const query = new URLSearchParams(location.search);
@@ -744,9 +861,12 @@ function init() {
       entry.name.toLowerCase() === wanted);
     if (found >= 0) {
       state.character = found;
+      state.theme = CHARACTERS[found].theme || "classic";
       if (picker) picker.value = String(found);
     }
   }
+  if (THEMES[query.get("theme")]) state.theme = query.get("theme");
+  themePicker.value = state.theme;
   if (query.get("view") === "assets") open();
   const toggle = document.querySelector("#assetVbxeColours");
   if (toggle) {
@@ -768,9 +888,9 @@ if (typeof document !== "undefined") {
 return {
   get isOpen() { return state.open; },
   open, close, state, PRESETS, ATARI_SLOTS, CATALOGUE, CLASSIFY, SHEETS, VBXE,
-  CHARACTERS, loadCharacter, penValues,
+  CHARACTERS, THEMES, loadCharacter, penValues, playerCanvas, playtestCanvases, sheetSource, tilePreview,
   FLARE, exportSheetCanvas, exportSheetRGBA, classifySheet, applyPreset,
-  heroBaseline, setSheets(sheets) { state.sheets = sheets; state.loaded = true; }
+  heroBaseline, setSheets(sheets) { state.sheets = sheets; state.canvasCache = {}; state.loaded = true; }
 };
 })();
 

@@ -1,0 +1,7 @@
+{
+  "sap_files": 5,
+  "subsongs": 103,
+  "render_ms_per_subsong": 100,
+  "failures": 0,
+  "emulator": "ASAP (independent 6502 and POKEY emulation)"
+}

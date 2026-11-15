@@ -1,0 +1,54 @@
+{
+  "source_bytes": 2122,
+  "traced_code_bytes": 1136,
+  "segments": [
+    {
+      "index": 1,
+      "start": 5120,
+      "end": 5615,
+      "file_offset": 2,
+      "bytes": 496,
+      "traced_code_bytes": 428
+    },
+    {
+      "index": 2,
+      "start": 4096,
+      "end": 5119,
+      "file_offset": 502,
+      "bytes": 1024,
+      "traced_code_bytes": 297
+    },
+    {
+      "index": 3,
+      "start": 736,
+      "end": 737,
+      "file_offset": 1530,
+      "bytes": 2,
+      "traced_code_bytes": 0
+    },
+    {
+      "index": 4,
+      "start": 5632,
+      "end": 6213,
+      "file_offset": 1536,
+      "bytes": 582,
+      "traced_code_bytes": 411
+    }
+  ],
+  "entry_points": [
+    {
+      "address": 5200,
+      "reason": "RUNAD"
+    }
+  ],
+  "unresolved_control_flow": [
+    {
+      "address": 4492,
+      "reason": "indirect jump: target requires runtime analysis",
+      "file_offset": 902
+    }
+  ],
+  "overlapping_instructions_preserved_as_data": 7,
+  "parse_warning": null,
+  "analysis": "static; loaders are not executed; game semantics are not annotated"
+}

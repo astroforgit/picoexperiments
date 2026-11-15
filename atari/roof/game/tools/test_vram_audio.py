@@ -17,7 +17,7 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'tools'))
 from pcm_emu import PcmAtari
 from emu import load_labels, FRAME_CYCLES
-from sounds import sound_settings,sample_blobs
+from sounds import sound_settings,sample_blobs,vram_selection
 from samples import (AUDIO_BANKS,VRAM_USED,BUFFER_PAGES,BUFFER_SEGMENTS,BUFFER_CAPACITY,
                      VRAM_CAPACITY,vram_layout,pages,levels,hz,SOURCES)
 
@@ -32,7 +32,8 @@ def build(sound):
  return load_labels(work/'star-fisher.lab'),work/'star-fisher.xex',tmp
 
 def clip_data(sound):
- blobs=sample_blobs(sound);return [blobs[i] for i in range(len(sound['samples']['clips']))]
+ """The clips the build includes; ones that do not fit are skipped."""
+ blobs=sample_blobs(sound);keep,_=vram_selection(sound,blobs);return [blobs[i] for i in keep]
 
 def bank_image(clips):
  """Expected contents of the audio banks, in AUDIO_BANKS order."""
@@ -61,8 +62,8 @@ def tap(a,code):
 # ---------------------------------------------------------------- project
 L=load_labels(ROOT/'star-fisher.lab')
 sound=sound_settings(json.loads((ROOT/'editor-scene.json').read_text())['sound'])
-s=sound['samples'];assert L['CLIP_HQ']==1 and L['CLIP_COUNT']==len(s['clips'])
-clips=clip_data(sound);vram_layout(clips,s['rate'])
+s=sound['samples'];assert L['CLIP_HQ']==1
+clips=clip_data(sound);vram_layout(clips,s['rate']);assert L['CLIP_COUNT']==len(clips)
 a=PcmAtari(ROOT/'star-fisher.xex');a.boot();r=a.mem.ram;a.run_frames(2)
 check_upload(a,clips)
 boot=a.vram.copy()
@@ -132,7 +133,7 @@ b=PcmAtari(xex);b.boot();br=b.mem.ram;b.run_frames(2)
 check_upload(b,vclips)
 load(b,L2,0);br[L2['SILENCE_LEFT']]=0
 start=len(b.pcm[0xd203]);b.run_frames(3);assert br[L2['CLIP_ON']]
-expected=levels(long_clip,15,False,45)
+expected=levels(long_clip,15,False,45);expected+=[0]*(-len(expected)%256)
 b.run_frames(len(expected)*b.period()//FRAME_CYCLES+20)
 assert not br[L2['CLIP_ON']] and b.irqen==0
 log=[b.pcm[addr][start:] for addr in (0xd203,0xd205,0xd207)]

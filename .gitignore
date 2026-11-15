@@ -32,3 +32,24 @@ grapple/atari/builds/
 .DS_Store
 Thumbs.db
 *:Zone.Identifier
+
+# Local downloads, external source checkouts and bulk generated collections
+.mcp.json
+.runtime/
+.venv/
+atari-sound/.remix-build-*/
+atari-sound/Atari-Sound-Windows.zip
+atari-sound/asma/
+atari-sound/mscsrc/
+atari-sound/remixes/
+atari-sound/rmt-variations/
+atari/lkavalon-atari-main/
+atari/phoenix/src/phoenix-main/
+atari/collection/*
+!atari/collection/.gitignore
+!atari/collection/README.md
+!atari/collection/build.sh
+!atari/collection/tools/
+atari/kult/Starry_Night_Itch_Package.zip
+atari/roof/*.zip
+steamlinejs/heroes/backups/

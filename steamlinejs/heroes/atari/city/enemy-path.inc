@@ -9,6 +9,7 @@ path_tail  = $0691
 path_cell  = $0692
 path_start = $0693
 path_dir   = $0694
+path_depth = $06A0
 ; A cell -> C set and enemy_target/enemy_best_dist when the acting enemy could
 ; hit a living hero from that cell: within range (melee 1) and clear sight.
 ; The nearest such hero wins; ties go to the lower unit index.
@@ -85,6 +86,8 @@ hunt_dist  dta 0
         lda unit_cell,x
         sta path_start
         sta path_queue
+        tay
+        mva #0 path_depth,y
         mva #0 path_head
         mva #1 path_tail
 ?pop    ldx path_head
@@ -98,6 +101,7 @@ hunt_dist  dta 0
         jsr target_from
         bcc ?expand
         ldx path_cell
+        mva path_depth,x path_length
         lda path_first,x
         rts
 ?expand mva #0 path_dir
@@ -111,6 +115,11 @@ hunt_dist  dta 0
         bne ?skip
         lda #1
         sta path_seen,x
+        ldy path_cell
+        lda path_depth,y
+        clc
+        adc #1
+        sta path_depth,x
         txa
         ldy path_tail
         sta path_queue,y
@@ -133,5 +142,7 @@ hunt_dist  dta 0
 ?none   lda #$FF
         rts
 .endp
+
+path_length dta 0
 
         .endl

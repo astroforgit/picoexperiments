@@ -160,6 +160,7 @@ vbreg_main_vctl
         jsr blit_init
         jsr upload_fly_sprite
         jsr upload_missile_sprite
+        jsr upload_ruins
         jsr load_screen_palette
         jsr enable_display
 
@@ -1764,6 +1765,7 @@ vbreg_story_vctl
         jsr draw_board
         lda game_complete
         bne ?done
+        jsr draw_ruins
         jsr draw_map
 ?done   jmp wait_blit
 .endp
@@ -2209,10 +2211,7 @@ present_vbreg_xdl2
         lda #$FD                ; centre the original 16-pixel sBox
         ldy #0
         jsr set_tile_sprite_base
-        lda #<platform_pixels
-        ldx #>platform_pixels
-        ldy #16
-        jmp draw_tile_runs
+        jmp draw_sketch_platform
 .endp
 
 .proc draw_key
@@ -2811,6 +2810,8 @@ vbxe_relocations
         dta a(present_back_buffer.present_vbreg_xdl0_a+2)
         dta a(present_back_buffer.present_vbreg_xdl1_a+2)
         dta a(present_back_buffer.present_vbreg_xdl2+2)
+        dta a(upload_ruins.vbreg_restore+2),a(upload_ruins.vbreg_bank+2)
+        dta a(upload_ruins.vbreg_next_bank+2)
 vbxe_relocations_end
 
 .proc setup_xdl
@@ -2972,28 +2973,6 @@ vbreg_cb
         jmp ?next
 ?done   rts
 .endp
-
-palette
-        dta 0,   0,  0,  0
-        dta 1,   7,  3, 17
-        dta 2,  14,  7, 27
-        dta 3,   5, 31, 57
-        dta 4,   7,111,145
-        dta 5, 226,243,228
-        dta 6,  70,135,143
-        dta 7,  14,  7, 27
-        dta 8, 148,227, 68
-        dta 9, 239,255,158
-        dta 10,148,227, 68
-        dta 11,245, 79,119
-        dta 12,  38,177,218
-        dta 13,150,236,255
-        dta 14, 70,135,143
-        dta 15,255,255,255
-        dta 16,  3,  1, 10
-        dta 17,  0, 57,166
-        dta 18,213, 43, 30
-        dta $FF
 
         icl 'generated/sojka-screen-palette.inc'
 
@@ -3721,6 +3700,7 @@ story_display_list
         :22 dta $02
         dta $41,a(story_display_list)
 
+        ert * > $6000
         icl 'generated/sojka-ending-screen.inc'
 
         org $7000
@@ -3732,5 +3712,10 @@ text_screen
         icl 'generated/sojka-story-text.inc'
 
         icl 'generated/sojka-level06-missile.inc'
+
+        icl 'generated/sojka-ruins.inc'
+
+        icl 'ruins.asm'
+        icl 'theme-data.asm'
 
         run main

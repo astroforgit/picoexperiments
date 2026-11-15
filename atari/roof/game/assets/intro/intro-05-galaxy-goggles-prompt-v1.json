@@ -1,0 +1,6 @@
+{
+  "tool": "Built-in image_gen",
+  "file": "intro-05-galaxy-goggles-v1.png",
+  "reference": "intro-01-street-v1.png",
+  "prompt": "Create a new 4:3 landscape intro still for the Atari VBXE game Star Fisher. Use the supplied street artwork as a reference for the same character, outfit, and grainy, hand-dithered gothic pixel art. A tight, straight-on portrait at eye level on a rooftop in 19th-century Paris at night, with his whole face visible from the brim of the hat down to his beard and high coat collar. Match his short dark beard, black rounded hat and distinctive round, worn brass welding goggles with a leather strap. The two circular lenses dominate the composition: a sharply readable, pale blue-white spiral galaxy with a luminous core reflected in the left lens, and an angled lavender galaxy with a dust lane and tiny stars in the right. Curve the reflections naturally within the glass and keep the colors and light restrained outside the lenses. Dim blue-violet moonlight and a few warm brass highlights pick out his face. In the background, faint mansard roof and chimney silhouettes frame his head. Use granular, slightly broken pixel clusters, near-black indigo shadows and strong silhouettes that read at 320×240. Quiet, mysterious and distinctly period. No text, logos, borders or interface."
+}

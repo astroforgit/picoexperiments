@@ -38,15 +38,17 @@ if(!config)throw Error('Import the editor balance before building.');
 const variants=[],contracts=[];
 for(const [r,region] of config.regions.entries())for(const [stage,e] of region.stages.entries()){
  const start=variants.length;for(const v of e.variants)variants.push(v);
- const total=e.variants.reduce((n,v)=>n+v.weight,0);
+ const selectPicks=(optional)=>{
+ const eligible=v=>optional||!v.optionalAfterWins;
+ const total=e.variants.reduce((n,v)=>n+(eligible(v)?v.weight:0),0);
  if(total<=0)throw Error('No enabled variants');
- const picks=Array.from({length:256},(_,seed)=>{
+ return Array.from({length:256},(_,seed)=>{
   let state=(seed^Math.imul(r+1,0x9e3779b1)^Math.imul(stage+1,0x85ebca6b))>>>0;
   state=Math.imul(state^state>>>16,0x7feb352d)>>>0;
   state=Math.imul(state^state>>>15,0x846ca68b)>>>0;state=(state^state>>>16)>>>0;
   let pick=state/4294967296*total;
-  return start+e.variants.findIndex(v=>{pick-=v.weight;return pick<0;});
- });contracts.push({...e,picks,name:region.name.toUpperCase()+(c.endlessLairs?'':' '+(stage+1))});
+  return start+e.variants.findIndex(v=>{if(!eligible(v))return false;pick-=v.weight;return pick<0;});
+ });};contracts.push({...e,picks:selectPicks(false),optionalPicks:selectPicks(true),name:region.name.toUpperCase()+(c.endlessLairs?'':' '+(stage+1))});
 }
 if(variants.length>255)throw Error('Too many variants');
 ptr('contract_name',contracts.map((_,i)=>'contract_name_'+i));contracts.forEach((e,i)=>out.push(`contract_name_${i} dta c'${e.name}',0`));
@@ -57,20 +59,28 @@ if(variants.length*3>256)throw Error('Too many groups for three difficulty table
 const encounters=groupKeys.flatMap(key=>variants.map(v=>v[key]||v.enemies)).map(list=>list.flatMap((id,i)=>{const n=c.enemies.findIndex(u=>u.id===id);if(n<0||i>4)throw Error('Invalid encounter');return [15+n,[6,13,20,27,34][i]];}));
 // The three group tables live beside the release UI at $A000; $6000-$7FFF is full.
 const main=out;out=[];
+bytes('forest_optional_seed',contracts[2].optionalPicks);
 bytes('difficulty_group_base',[0,1,2].map(k=>k*variants.length));
-ptr('enemy_ptr',encounters.map((_,i)=>'enemies_'+i));encounters.forEach((a,i)=>bytes('enemies_'+i,[...a,255]));
+ptr('enemy_ptr',encounters.map((_,i)=>'enemies_'+i));
+// Shared rosters (including Nymph-only groups) need only one native copy.
+const rosterLabels=new Map();
+encounters.forEach((a,i)=>{const key=a.join(','),label='enemies_'+i;
+ if(rosterLabels.has(key))out.push(`${label} equ ${rosterLabels.get(key)}`);
+ else{rosterLabels.set(key,label);bytes(label,[...a,255]);}
+});
 fs.writeFileSync('generated/battle-groups.inc',out.join('\n')+'\n');out=main;
 const rewards=contracts.map(e=>e.reward);
 bytes('reward_lo',rewards.map(v=>v&255));bytes('reward_hi',rewards.map(v=>v>>8));
+out.push(`FINAL_CONTRACT = ${contracts.length-1}`);
 bytes('wins_required',config.progression.winsRequired);
 bytes('practice_lo',config.regions.map(e=>e.replayReward&255));
 bytes('practice_hi',config.regions.map(e=>e.replayReward>>8));
 const thresholds=config.progression.winsRequired;
-bytes('stage_for_win',thresholds.flatMap(n=>Array.from({length:10},(_,w)=>Math.min(2,Math.floor(w*3/n)))));
+bytes('stage_for_win',thresholds.flatMap((n,r)=>Array.from({length:10},(_,w)=>Math.min(config.regions[r].stages.length-1,Math.floor(w*config.regions[r].stages.length/n)))));
 // Ability IDs remain stable: Vampire uses the existing dark sprite set.
-bytes('type_ability',[...Array(15).fill(0),...c.enemies.map(e=>({dark:1,zombie:2,skeleton:3,ogre:4,imp:5,warlock:6}[e.id]||0))]);
+bytes('type_ability',[...Array(15).fill(0),...c.enemies.map(e=>({dark:1,zombie:2,skeleton:3,'bone-archer':3,ogre:4,imp:5,warlock:6,'evil-nymph':7}[e.id]||0))]);
 // Title ENEMY INFO page: one enemy per special ability, in campaign order.
-const info=['skeleton','zombie','dark','ogre','imp','warlock'].map(id=>{const n=c.enemies.findIndex(e=>e.id===id);if(n<0)throw Error('Missing enemy '+id);return n;});
+const info=['skeleton','zombie','dark','ogre','imp','warlock','evil-nymph'].map(id=>{const n=c.enemies.findIndex(e=>e.id===id);if(n<0)throw Error('Missing enemy '+id);return n;});
 bytes('info_type',info.map(n=>15+n));
 ptr('info_name',info.map((_,i)=>'info_name_'+i));
 info.forEach((n,i)=>out.push(`info_name_${i} dta c'${c.enemies[n].name.toUpperCase()}',0`));
@@ -96,4 +106,4 @@ fs.writeFileSync('generated/battle-content.inc',out.join('\n')+'\n');
 const version=fs.readFileSync('../../VERSION','utf8').trim();
 if(!/^[0-9]+\.[0-9]+$/.test(version))throw Error('VERSION must look like 1.2');
 fs.writeFileSync('generated/version.inc',`s_version dta c'V${version}',0\n`);
-console.log(`Exported 28 fighter types, ${encounters.length} weighted encounters, seed tables and monster abilities.`);
+console.log(`Exported ${15+c.enemies.length} fighter types, ${encounters.length} weighted encounters, seed tables and monster abilities.`);

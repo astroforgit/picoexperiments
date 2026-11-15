@@ -19,13 +19,13 @@ def check(page,capture=False):
   if level<3:
    m.put('selected_plot',0);m.call('recruit');assert m.get('army_count')==3+level
  # Existing troops retain their original purchase value.
- m.put('selected_plot',10);before=m.get('gold',2);m.call('dismiss_unit');assert m.get('gold',2)==before+7
+ m.put('selected_plot',10);before=m.get('gold',2);m.call('dismiss_unit');assert m.get('gold',2)==before+15
  m.put('selected_plot',0);before=m.get('gold',2);m.call('recruit');assert m.get('gold',2)==before-5 and m.array('army_paid_lo')[4]==5
- m.put('selected_plot',10);before=m.get('gold',2);m.call('dismiss_unit');assert m.get('gold',2)==before+2
+ m.put('selected_plot',10);before=m.get('gold',2);m.call('dismiss_unit');assert m.get('gold',2)==before+5
  # Discounted recruit + upgrade retains its true investment for dismissal.
  m.put('selected_plot',0);m.call('purchase');m.mem.ram[r.LABELS['building_levels']]=2;m.call('recruit');m.mem.ram[r.LABELS['building_levels']]=3
  m.put('selected_plot',10);m.call('purchase');assert m.array('army_units')[4]==2 and m.array('army_paid_lo')[4]==50
- before=m.get('gold',2);m.call('dismiss_unit');assert m.get('gold',2)==before+25
+ before=m.get('gold',2);m.call('dismiss_unit');assert m.get('gold',2)==before+38
  # Check the compiled native input; editor-only balance drafts may deliberately differ.
  content=json.loads((r.ROOT/'content.json').read_text())
  d={'players':[dict(family=b['id'],**{key:b[key][t] for key in ['hp','damage','move','shootRange']}) for b in content['buildings'] for t in range(3)],'enemies':content['enemies']}
@@ -35,7 +35,7 @@ def check(page,capture=False):
  for i,u in enumerate(d['enemies']):
   for key,table in [('hp','type_hp'),('damage','type_damage'),('move','type_move'),('shootRange','type_shoot_range')]:assert m.mem.ram[r.LABELS['battle.'+table]+15+i]==u[key]
  # Horse types use three distinct full-body sprite sets.
- assert [m.mem.ram[r.LABELS['battle.hero_set']+i] for i in (6,7,8)]==[108,114,120]
+ assert [m.mem.ram[r.LABELS['battle.hero_set']+i] for i in (6,7,8)]==[6*(5+len(d["enemies"])+i) for i in range(3)]
  if capture:
   m.call('new_city');m.screenshot('chapel-locked-slots.png')
   m.mem.ram[r.LABELS['army_units']:r.LABELS['army_units']+5]=bytes([6,7,8,255,255]);m.put('army_count',3);m.put('selected_location',0);m.call('battle.start');m.screenshot('mounted-battle.png')

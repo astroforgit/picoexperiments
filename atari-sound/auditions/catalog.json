@@ -1,0 +1,48 @@
+{
+  "summary": {
+    "music_games": 4
+  },
+  "games": [
+    {
+      "directory": "auditions/porterpatch1-1",
+      "title": "porterpatch1-1",
+      "kind": "music",
+      "banks": 1,
+      "warnings": [
+        "PICO filter flags (including detune/reverb/damping) are not emulated.",
+        "Listening trial: custom waves become shaped tonal instruments; large pitch effects are simplified."
+      ],
+      "arrangement": "porter-soft-v2"
+    },
+    {
+      "directory": "auditions/pushamo",
+      "title": "Pushamo",
+      "kind": "music",
+      "banks": 1,
+      "warnings": [
+        "Listening trial: custom waves become shaped tonal instruments; large pitch effects are simplified."
+      ],
+      "arrangement": "porter-soft-v2"
+    },
+    {
+      "directory": "auditions/porklike",
+      "title": "Porklike",
+      "kind": "music",
+      "banks": 1,
+      "warnings": [
+        "Listening trial: custom waves become shaped tonal instruments; large pitch effects are simplified."
+      ],
+      "arrangement": "porter-soft-v2"
+    },
+    {
+      "directory": "auditions/celeste-classic-2",
+      "title": "Celeste Classic 2",
+      "kind": "music",
+      "banks": 1,
+      "warnings": [
+        "Listening trial: custom waves become shaped tonal instruments; large pitch effects are simplified."
+      ],
+      "arrangement": "porter-soft-v2"
+    }
+  ]
+}

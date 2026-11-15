@@ -577,3 +577,16 @@ Below the mockup, the complete original Minifantasy dungeon and furniture atlase
 provide additional selectable 8×8 cells. Match/Undo work for every source; exports
 record the exact source file, SHA256, ID and crop (80×80 for the enlarged mockup,
 8×8 for native atlases). “Copy selection IDs” supplies the details for discussion.
+
+### Paged game intro
+
+`windows.ml_intro` supports up to 72 wrapped lines, shown nine at a time with a
+page counter. Enter/fire advances to the next page; the final press starts play.
+The Polish poem source is saved in `data/intro-pl.txt`. Edit the wrapped version
+in the editor’s Texts tab; keep each line within 100 pixels (31 glyphs maximum).
+Normal message windows retain their 12-line limit.
+
+The native build stores eight 512-byte intro pages in VRAM `$34000–$34fff` and
+copies the current page to the inventory text buffer while its modal is open.
+`tools/make_data.py` generates `data/intro.bin` and `gen/intro.asm`.
+Run `python3 tools/test_intro.py` after building to verify native page navigation.

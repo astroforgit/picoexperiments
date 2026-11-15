@@ -11,6 +11,7 @@ for(const b of c.buildings){
  for(const key of ['hp','damage','move','shootRange'])b[key]=rows.map(u=>u[key]);
  b.range=rows.map(u=>Math.max(1,u.shootRange));b.recruitCosts=rows.map(u=>u.recruit);b.costs=rows.map(u=>u.buildingCost);
 }
+c.enemies=d.enemies.map(u=>({...u}));
 for(const e of c.enemies){const u=d.enemies.find(u=>u.id===e.id);if(!u)throw Error('Missing enemy '+e.id);Object.assign(e,u);e.range=e.id==='warlock'?3:Math.max(1,e.shootRange);}
 c.encounters=d.encounterConfig.regions.flatMap(r=>r.stages.map(s=>({name:s.name.toUpperCase(),reward:s.reward,enemies:s.variants.find(v=>v.weight>0).enemies})));
 c.endlessLairs=!!d.endlessLairs;c.permanentCasualties=!!d.permanentCasualties;c.encounterConfig=d.encounterConfig;c.monsterAbilitiesVersion=d.monsterAbilitiesVersion||0;c.simulationSettings=d.simulationSettings||{};

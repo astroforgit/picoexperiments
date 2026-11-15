@@ -1,0 +1,1642 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bimbaj Editor</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Crect width=%2216%22 height=%2216%22 rx=%223%22 fill=%22%23151c26%22/%3E%3Ccircle cx=%228%22 cy=%228%22 r=%225%22 fill=%22none%22 stroke=%22%23e6b04a%22 stroke-width=%222.5%22/%3E%3C/svg%3E">
+<style>
+:root {
+    --bg: #0d1219;
+    --panel: #151c26;
+    --panel-2: #1b2430;
+    --line: #2a3546;
+    --text: #e6ebf3;
+    --muted: #8d9aae;
+    --accent: #e6b04a;
+    --accent-ink: #1a1305;
+    --blue: #7fa6f5;
+    --error: #ff7a7a;
+    --ok: #63d394;
+    --warn: #f0c060;
+    --radius: 8px;
+    color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    overflow: hidden;
+}
+button, input, textarea, select { font: inherit; color: inherit; }
+button {
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 5px 10px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+button:hover:not(:disabled) { border-color: #45556d; background: #212c3a; }
+button:disabled { opacity: .45; cursor: default; }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+button.primary:hover:not(:disabled) { background: #f0c060; }
+button.icon { padding: 3px 7px; min-width: 28px; }
+button.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+input[type=text], input[type=number], textarea {
+    background: #0f151e;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 5px 8px;
+}
+input:focus, textarea:focus, button:focus-visible, li:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+kbd {
+    font: 11px ui-monospace, monospace;
+    border: 1px solid var(--line);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    padding: 0 4px;
+    color: var(--muted);
+}
+
+/* Top bar */
+header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+    padding: 8px 14px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+}
+header h1 { font-size: 16px; margin: 0; letter-spacing: .04em; }
+header h1 span { color: var(--accent); }
+.source { color: var(--muted); font-size: 12px; }
+.source b { color: var(--text); font-weight: 500; }
+.dirty::after { content: " ●"; color: var(--accent); }
+.spacer { flex: 1; }
+.group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.meter { display: flex; flex-direction: column; gap: 3px; min-width: 210px; font-size: 12px; color: var(--muted); }
+.meter .bar { height: 5px; border-radius: 3px; background: #0f151e; overflow: hidden; }
+.meter .bar i { display: block; height: 100%; background: var(--ok); }
+.meter.full .bar i { background: var(--error); }
+#errorsButton { color: var(--error); border-color: #5a2b2b; }
+.design { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.design select { background: #0f151e; border: 1px solid var(--line); border-radius: 4px; padding: 3px 6px; }
+#errorsButton.clean { color: var(--ok); border-color: #24503a; }
+
+/* Main layout */
+.layout { display: grid; grid-template-columns: minmax(280px, 340px) 1fr; min-height: 0; }
+aside {
+    border-right: 1px solid var(--line);
+    background: var(--panel);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+.list-tools { display: flex; gap: 6px; padding: 10px; border-bottom: 1px solid var(--line); }
+.list-tools button { flex: 1; }
+#list { list-style: none; margin: 0; padding: 6px; overflow-y: auto; flex: 1; }
+.card {
+    display: grid;
+    grid-template-columns: 14px 44px 1fr auto;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 6px 6px 4px;
+    margin: 2px 0;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    cursor: pointer;
+    position: relative;
+}
+.card:hover { background: var(--panel-2); }
+.card.selected { background: #22303f; border-color: #3b4d66; }
+.card.dragging { opacity: .4; }
+.card.drop-before::before, .card.drop-after::after {
+    content: "";
+    position: absolute;
+    left: 4px; right: 4px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--accent);
+}
+.card.drop-before::before { top: -4px; }
+.card.drop-after::after { bottom: -4px; }
+.handle { color: #4d5b70; cursor: grab; font-size: 13px; letter-spacing: -2px; user-select: none; }
+.thumb { width: 44px; height: 44px; border-radius: 4px; background: #05070c; image-rendering: pixelated; object-fit: contain; }
+.texticon {
+    width: 44px; height: 44px; border-radius: 4px;
+    display: grid; place-items: center;
+    background: #241d10; color: var(--accent); font-size: 20px; font-family: Georgia, serif;
+}
+.card .meta { min-width: 0; }
+.card .title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card .num { color: var(--accent); font-variant-numeric: tabular-nums; margin-right: 4px; }
+.card.text .title { color: #f1d9a5; font-weight: 500; }
+.card .sub { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card .bad { color: var(--error); }
+.card .actions { display: flex; gap: 2px; opacity: 0; }
+.card:hover .actions, .card.selected .actions, .card:focus-within .actions { opacity: 1; }
+.card .actions button { padding: 3px; line-height: 0; background: transparent; border-color: transparent; color: var(--muted); }
+.card .actions svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.card .actions button:hover { color: var(--text); border-color: var(--line); }
+.list-help { padding: 8px 12px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--line); }
+
+main { overflow: auto; padding: 16px 20px 24px; min-width: 0; }
+.empty { color: var(--muted); padding: 40px; text-align: center; }
+.panel-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 12px; }
+.panel-head .kind { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.panel-head input[type=text] { font-size: 17px; font-weight: 600; min-width: 220px; flex: 1; max-width: 420px; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin-bottom: 10px; }
+.toolbar label { color: var(--muted); display: flex; gap: 6px; align-items: center; }
+.toolbar input[type=number] { width: 58px; }
+.toolbar .group { gap: 3px; }
+.palette { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px; }
+.palette button {
+    display: flex; align-items: center; gap: 6px;
+    padding: 3px 8px 3px 3px;
+    font-size: 12px;
+}
+.palette canvas { width: 28px; height: 28px; image-rendering: pixelated; border-radius: 3px; }
+.palette kbd { margin-left: 2px; }
+.editor-grid { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 18px; align-items: start; }
+.board-wrap {
+    background: #070a10;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px;
+    display: grid;
+    place-items: center;
+    min-height: 260px;
+    position: relative;
+}
+#board { image-rendering: pixelated; touch-action: none; cursor: crosshair; }
+#board.playing { cursor: default; }
+.board-info { color: var(--muted); font-size: 12px; margin-top: 6px; min-height: 18px; }
+.side { display: flex; flex-direction: column; gap: 12px; }
+.box { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; }
+.box h3 { margin: 0 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.box ul { margin: 0; padding-left: 18px; }
+.box p { margin: 4px 0; }
+.ok { color: var(--ok); }
+.err { color: var(--error); }
+.warn { color: var(--warn); }
+.muted { color: var(--muted); }
+.play-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 10px; }
+.banner {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    background: rgba(13, 18, 25, .92); border: 2px solid var(--accent); color: var(--accent);
+    padding: 10px 22px; border-radius: 10px; font-weight: 700; font-size: 20px; letter-spacing: .06em;
+    pointer-events: none;
+}
+
+/* Text editor */
+.text-grid { display: grid; grid-template-columns: minmax(300px, 1fr) minmax(320px, 660px); gap: 18px; align-items: start; }
+#storyText {
+    width: 100%;
+    min-height: 420px;
+    resize: vertical;
+    font: 14px/1.55 ui-monospace, "Cascadia Mono", Consolas, monospace;
+    padding: 10px 12px;
+}
+.preview {
+    background: #05070c;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 10px;
+}
+#pageCanvas { width: 100%; image-rendering: pixelated; display: block; aspect-ratio: 320 / 192; }
+.pages { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; align-items: center; }
+.pages button { padding: 2px 9px; font-size: 12px; }
+.help { color: var(--muted); font-size: 12px; margin-top: 8px; }
+.help code { color: var(--text); }
+
+/* Log and toast */
+#log {
+    display: none;
+    max-height: 30vh;
+    overflow: auto;
+    margin: 0;
+    padding: 10px 14px;
+    background: #0a0e14;
+    border-top: 1px solid var(--line);
+    font: 12px/1.45 ui-monospace, monospace;
+    white-space: pre-wrap;
+}
+#log.open { display: block; }
+#log .close { float: right; }
+#toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%);
+    background: #253246; border: 1px solid #3b4d66; border-radius: 8px;
+    padding: 8px 12px; display: none; gap: 12px; align-items: center; z-index: 10;
+    box-shadow: 0 6px 24px rgba(0,0,0,.4);
+}
+#toast.show { display: flex; }
+#draftBanner {
+    display: none; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 8px 14px; background: #2b2410; border-bottom: 1px solid #5a4a1c; color: #f1d9a5;
+}
+#draftBanner.show { display: flex; }
+.popover {
+    position: absolute; right: 14px; top: 52px; z-index: 5;
+    width: min(520px, calc(100vw - 28px)); max-height: 60vh; overflow: auto;
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 10px 12px; display: none; box-shadow: 0 8px 30px rgba(0,0,0,.45);
+}
+.popover.show { display: block; }
+.popover a { color: var(--error); cursor: pointer; display: block; padding: 2px 0; }
+.popover a:hover { text-decoration: underline; }
+
+@media (max-width: 1100px) {
+    .editor-grid, .text-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+    body { overflow: auto; }
+    .layout { grid-template-columns: 1fr; }
+    aside { border-right: 0; border-bottom: 1px solid var(--line); max-height: 45vh; }
+    main { padding: 12px 16px; }
+    .meter { min-width: 0; flex: 1 1 100%; order: 5; }
+    .panel-head input[type=text] { min-width: 0; }
+    .text-grid { grid-template-columns: minmax(0, 1fr); }
+    #storyText { min-height: 260px; }
+}
+</style>
+</head>
+<body>
+<header>
+    <h1><span>BIMBAJ</span> campaign editor</h1>
+    <div class="source" id="source">No campaign loaded</div>
+    <div class="spacer"></div>
+    <div class="meter" id="meter" title="Levels and story pages are stored in the 14 KB of RAM under the Atari OS ROM">
+        <div id="meterText">–</div>
+        <div class="bar"><i id="meterBar" style="width:0"></i></div>
+    </div>
+    <label class="design" title="Board design built into the game; Save stores it in bimbaj.json">Design
+        <select id="designSelect"></select></label>
+    <button id="errorsButton" class="clean">No errors</button>
+    <div class="group">
+        <button id="undoButton" class="icon" title="Undo (Ctrl+Z)">↶</button>
+        <button id="redoButton" class="icon" title="Redo (Ctrl+Shift+Z)">↷</button>
+    </div>
+    <div class="group">
+        <button id="openButton" title="Open a bimbaj.json file">Open…</button>
+        <button id="downloadButton" title="Download the campaign as bimbaj.json">Download</button>
+        <button id="saveButton" class="primary" title="Save (Ctrl+S)">Save</button>
+        <button id="buildButton" title="Run build.sh (needs editor-server.py)">Build</button>
+        <button id="runButton" title="Build and start the emulator (needs editor-server.py)">Build &amp; run</button>
+    </div>
+    <div class="popover" id="errorsPopover"></div>
+</header>
+
+<div class="layout">
+    <aside>
+        <div id="draftBanner">
+            <span id="draftText">An unsaved draft from this browser is available.</span>
+            <button id="restoreDraft">Restore</button>
+            <button id="discardDraft">Discard</button>
+        </div>
+        <div class="list-tools">
+            <button id="addLevel" title="Insert a level after the selection">+ Level</button>
+            <button id="addText" title="Insert a text after the selection">+ Text</button>
+        </div>
+        <ul id="list" tabindex="0" aria-label="Campaign order"></ul>
+        <div class="list-help">Drag to reorder. A text is shown after the levels above it.
+            <kbd>Alt</kbd>+<kbd>↑</kbd>/<kbd>↓</kbd> moves the selection.</div>
+    </aside>
+    <main id="main"><div class="empty">Loading…</div></main>
+</div>
+
+<pre id="log"></pre>
+<div id="toast"><span id="toastText"></span><button id="toastAction">Undo</button></div>
+<input type="file" id="fileInput" accept=".json,application/json" hidden>
+
+<template id="levelTemplate">
+    <div class="panel-head">
+        <span class="kind" id="levelKind">Level</span>
+        <input type="text" id="levelName" aria-label="Level name" spellcheck="false">
+        <button id="playButton" title="Playtest this level (P)">▶ Playtest</button>
+    </div>
+    <div class="toolbar" id="editTools">
+        <label>Width <input type="number" id="levelWidth" min="1" max="20"></label>
+        <label>Height <input type="number" id="levelHeight" min="1" max="18"></label>
+        <div class="group" title="Shift the board contents">
+            <button class="icon" data-shift="0,-1">↑</button>
+            <button class="icon" data-shift="0,1">↓</button>
+            <button class="icon" data-shift="-1,0">←</button>
+            <button class="icon" data-shift="1,0">→</button>
+        </div>
+        <div class="group">
+            <button class="icon" data-transform="flipH" title="Mirror left-right">⇋</button>
+            <button class="icon" data-transform="flipV" title="Mirror top-bottom">⇵</button>
+            <button class="icon" data-transform="rotate" title="Rotate clockwise">⟳</button>
+            <button data-transform="clear" title="Fill the board with floor">Clear</button>
+        </div>
+    </div>
+    <div class="palette" id="palette"></div>
+    <div class="editor-grid">
+        <div>
+            <div class="board-wrap" id="boardWrap"><canvas id="board"></canvas></div>
+            <div class="board-info" id="boardInfo"></div>
+            <div class="play-bar" id="playBar" hidden>
+                <button id="playUndo">Undo <kbd>U</kbd></button>
+                <button id="playRestart">Restart <kbd>R</kbd></button>
+                <button id="playSwitch">Switch elephant <kbd>Space</kbd></button>
+                <button id="playExit">Back to editing <kbd>Esc</kbd></button>
+                <span class="muted" id="playInfo"></span>
+            </div>
+        </div>
+        <div class="side">
+            <div class="box"><h3>Check</h3><div id="levelCheck"></div></div>
+            <div class="box"><h3>Solution</h3><div id="solveResult" class="muted">–</div></div>
+            <div class="box"><h3>Painting</h3>
+                <p class="muted">Left button paints, right button erases, <kbd>Alt</kbd>+click picks a tile.
+                Keys <kbd>1</kbd>–<kbd>0</kbd> and <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> choose tiles.</p>
+            </div>
+        </div>
+    </div>
+</template>
+
+<template id="textTemplate">
+    <div class="panel-head">
+        <span class="kind">Text</span>
+        <strong id="textWhen"></strong>
+        <span class="muted" id="textPages"></span>
+    </div>
+    <div class="text-grid">
+        <div>
+            <textarea id="storyText" spellcheck="true" lang="pl" aria-label="Story text"></textarea>
+            <div class="help">A blank line starts a new paragraph; single line breaks are joined.
+                The game wraps lines at 36 columns, 20 lines per page. Letters: English, Polish
+                (<code>ĄĆĘŁŃÓŚŹŻ ąćęłńóśźż</code>) and <code>–</code>. Typographic quotes and dashes are converted.</div>
+            <div id="textCheck" class="help"></div>
+        </div>
+        <div class="preview">
+            <canvas id="pageCanvas" width="640" height="384"></canvas>
+            <div class="pages" id="pageTabs"></div>
+            <div class="help">Exact Atari screen. Consecutive texts form one break and share its page numbers.</div>
+        </div>
+    </div>
+</template>
+
+<script src="bimbaj-format.js"></script>
+<script src="bimbaj-rules.js"></script>
+<script src="bimbaj-tiles.js"></script>
+<script src="story-font.js"></script>
+<script>
+'use strict';
+const F = window.BimbajFormat;
+const R = window.BimbajRules;
+const $ = id => document.getElementById(id);
+
+// ---- Atari colours ----------------------------------------------------------
+// Each design (designs/*.txt, built by generate_tiles.js) holds the game's own
+// ANTIC 4 tiles at all three zoom sizes. Pixel values: 0 background, 1 floor,
+// 2 light, 3 blue or copper, which the game shades per character row of a tile.
+const DESIGNS = window.BIMBAJ_DESIGNS;
+const TEXT_INK = '#ebe5cb';
+const TEXT_PAPER = '#05070c';
+const currentDesign = () => DESIGNS.find(d => d.id === project.design) || DESIGNS[0];
+const designColours = () => currentDesign().colours;
+
+// The game's zoom (calculate_board): 3x3 characters below 7 cells, 2x2 up to
+// 9 across and 10 down (a 10-row board drops the frame), else 1x1.
+function zoomFor(width, height) {
+    if (width < 7 && height < 7) return { name: 'large', cols: 3, rows: 3 };
+    if (width < 10 && height <= 10) return { name: 'medium', cols: 2, rows: 2 };
+    return { name: 'small', cols: 1, rows: 1 };
+}
+let zoom = zoomFor(1, 1);
+
+const tileCache = new Map();
+function tileCanvas(index, copper, size = zoom) {
+    const design = currentDesign();
+    const key = [design.id, size.name, index, copper ? 1 : 0].join();
+    if (tileCache.has(key)) return tileCache.get(key);
+    // ANTIC 4 pixels are twice as wide as tall: each one fills 2x1 canvas pixels.
+    const width = size.cols * 4, height = size.rows * 8;
+    const canvas = document.createElement('canvas');
+    canvas.width = width * 2;
+    canvas.height = height;
+    const context = canvas.getContext('2d');
+    const image = context.createImageData(width * 2, height);
+    const pixels = design[size.name][index];
+    const { background, floor, light, blue, copper: brown } = design.colours;
+    for (let y = 0; y < height; y++) {
+        const row = Math.floor(y / 8);
+        for (let x = 0; x < width * 2; x++) {
+            const value = pixels.charCodeAt(y * width + (x >> 1)) - 48;
+            const colour = [background, floor[row], light, (copper ? brown : blue)[row]][value];
+            const offset = (y * width * 2 + x) * 4;
+            image.data[offset] = parseInt(colour.slice(1, 3), 16);
+            image.data[offset + 1] = parseInt(colour.slice(3, 5), 16);
+            image.data[offset + 2] = parseInt(colour.slice(5, 7), 16);
+            image.data[offset + 3] = 255;
+        }
+    }
+    context.putImageData(image, 0, 0);
+    tileCache.set(key, canvas);
+    return canvas;
+}
+// The start cell's own tile is plain floor (the elephant always covers it in
+// the game), so the editor shows the elephant face; the second is copper.
+function cellTile(type, open = false, second = false, size = zoom) {
+    if (type === 1) return tileCanvas(31, second, size);
+    return tileCanvas(type === 12 && open ? 14 : type, currentDesign().copper[type], size);
+}
+
+// Small overview colours for list thumbnails, by cell type.
+const THUMB = ['#2b2f36', '#7fa6f5', '#e8c050', '#b98a3a', '#a8b0bc', '#6fd0c0', '#e06464',
+    '#b48cff', '#6fc27f', '#6fc27f', '#6fc27f', '#6fc27f', '#c2c2c2', '#ffd860'];
+
+// ---- Design switch ------------------------------------------------------------
+// Large tiles for the brush swatches, whatever the board's zoom.
+function drawSwatches() {
+    document.querySelectorAll('#palette canvas[data-tile]').forEach(canvas => {
+        const context = canvas.getContext('2d');
+        context.imageSmoothingEnabled = false;
+        context.drawImage(cellTile(+canvas.dataset.tile, false, false, zoomFor(1, 1)), 0, 0, 24, 24);
+    });
+}
+function renderDesign() {
+    const select = $('designSelect');
+    select.value = currentDesign().id;
+    select.title = currentDesign().about;
+    drawSwatches();
+}
+{
+    const select = $('designSelect');
+    for (const design of DESIGNS) select.add(new Option(design.name, design.id));
+    select.onchange = () => {
+        remember();
+        project.design = select.value;
+        changed(false);
+        drawBoard();
+        toast(`${currentDesign().name}: ${currentDesign().about}. Build to put it in the game.`);
+    };
+}
+
+// ---- Palette ----------------------------------------------------------------
+const PALETTE = [
+    ['.', '1'], ['#', '2'], ['@', '3'], ['E', '4'], ['P', '5'], ['R', '6'], ['X', '7'],
+    ['%', '8'], ['K', '9'], ['L', '0'], ['^', 'W'], ['>', 'D'], ['v', 'S'], ['<', 'A'],
+];
+const ARROW_NAMES = { '^': 'Arrow ↑', '>': 'Arrow →', 'v': 'Arrow ↓', '<': 'Arrow ←' };
+const tileName = char => ARROW_NAMES[char] || F.TILE_NAMES[F.TILE_CHARS.indexOf(char)];
+
+// ---- State ------------------------------------------------------------------
+const ID = Symbol('id');
+let nextId = 1;
+let project = { format: 1, design: DESIGNS[0].id, items: [] };
+let compiled = F.compile(project);
+let selectedId = null;
+let brush = '#';
+let dirty = false;
+let source = { kind: 'none', name: '', handle: null };
+let server = false;
+const undoStack = [];
+const redoStack = [];
+
+const assignIds = items => items.forEach(item => { if (!item[ID]) item[ID] = nextId++; });
+const indexOf = id => project.items.findIndex(item => item[ID] === id);
+const selectedIndex = () => indexOf(selectedId);
+const selectedItem = () => project.items[selectedIndex()];
+const serialize = () => JSON.stringify(project, null, 2) + '\n';
+
+function setProject(data, keepSelection) {
+    if (!data || !Array.isArray(data.items)) throw new Error('This file has no items list');
+    const index = keepSelection ? selectedIndex() : 0;
+    project = { format: 1, design: data.design || DESIGNS[0].id, items: data.items };
+    assignIds(project.items);
+    const item = project.items[Math.max(0, Math.min(index, project.items.length - 1))];
+    selectedId = item ? item[ID] : null;
+    stopPlay();
+    refresh(true);
+}
+
+// Call before a change; editing gestures merge into one undo step.
+let mergeKey = null;
+let mergeTime = 0;
+function remember(key) {
+    const now = Date.now();
+    if (key && key === mergeKey && now - mergeTime < 1500) {
+        mergeTime = now;
+        return;
+    }
+    mergeKey = key;
+    mergeTime = now;
+    undoStack.push({ json: JSON.stringify(project), selected: selectedIndex() });
+    if (undoStack.length > 300) undoStack.shift();
+    redoStack.length = 0;
+}
+
+function restore(from, to) {
+    const state = from.pop();
+    if (!state) return;
+    to.push({ json: JSON.stringify(project), selected: selectedIndex() });
+    project = JSON.parse(state.json);
+    assignIds(project.items);
+    const item = project.items[Math.min(state.selected, project.items.length - 1)];
+    selectedId = item ? item[ID] : null;
+    mergeKey = null;
+    stopPlay();
+    markDirty();
+    refresh(true);
+}
+
+function markDirty() {
+    dirty = true;
+    saveDraft();
+}
+
+// Recompile and redraw. `full` rebuilds the editor panel as well.
+function refresh(full) {
+    compiled = F.compile(project);
+    renderDesign();
+    renderList();
+    renderSummary();
+    if (full) renderEditor();
+    else updateEditor();
+}
+
+function changed(full) {
+    markDirty();
+    refresh(full);
+}
+
+// ---- Drafts -------------------------------------------------------------------
+const DRAFT_KEY = 'bimbaj-editor-draft';
+function saveDraft() {
+    try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({ json: serialize(), time: Date.now() }));
+    } catch (error) { /* storage unavailable */ }
+}
+function readDraft() {
+    try {
+        return JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null');
+    } catch (error) {
+        return null;
+    }
+}
+function clearDraft() {
+    try { localStorage.removeItem(DRAFT_KEY); } catch (error) { /* ignore */ }
+}
+function offerDraft() {
+    const draft = readDraft();
+    if (!draft || draft.json === serialize()) return;
+    $('draftText').textContent = `Unsaved changes from ${new Date(draft.time).toLocaleString()} are stored in this browser.`;
+    $('draftBanner').classList.add('show');
+}
+$('restoreDraft').onclick = () => {
+    const draft = readDraft();
+    $('draftBanner').classList.remove('show');
+    if (!draft) return;
+    remember();
+    setProject(JSON.parse(draft.json));
+    markDirty();
+    renderSource();
+};
+$('discardDraft').onclick = () => {
+    clearDraft();
+    $('draftBanner').classList.remove('show');
+};
+
+// ---- Summary and errors ---------------------------------------------------------
+function renderSummary() {
+    const levels = compiled.levels.length;
+    const texts = project.items.filter(item => item.type === 'text').length;
+    const percent = Math.min(100, compiled.used / compiled.capacity * 100);
+    $('meterText').textContent = `${levels}/${F.MAX_LEVELS} levels · ${texts} texts · ${compiled.pageCount} pages · ` +
+        `${compiled.used.toLocaleString()} / ${compiled.capacity.toLocaleString()} B`;
+    $('meterBar').style.width = percent + '%';
+    $('meter').classList.toggle('full', compiled.bank.overflow);
+    const count = compiled.errors.length;
+    const button = $('errorsButton');
+    button.textContent = count ? `${count} error${count > 1 ? 's' : ''}` : 'No errors';
+    button.classList.toggle('clean', !count);
+    const popover = $('errorsPopover');
+    popover.innerHTML = '';
+    compiled.errors.forEach(error => {
+        const link = document.createElement('a');
+        link.textContent = error.message;
+        link.onclick = () => {
+            popover.classList.remove('show');
+            if (error.index >= 0) select(project.items[error.index][ID]);
+        };
+        popover.append(link);
+    });
+    if (!count) popover.classList.remove('show');
+    $('undoButton').disabled = !undoStack.length;
+    $('redoButton').disabled = !redoStack.length;
+    renderSource();
+}
+$('errorsButton').onclick = () => {
+    if (compiled.errors.length) $('errorsPopover').classList.toggle('show');
+};
+
+function renderSource() {
+    const label = { none: 'Not saved yet', server: 'Project file', file: 'File', download: 'Loaded from' }[source.kind];
+    const element = $('source');
+    element.innerHTML = '';
+    element.append(label + (source.name ? ': ' : ''));
+    if (source.name) {
+        const name = document.createElement('b');
+        name.textContent = source.name;
+        element.append(name);
+    }
+    element.classList.toggle('dirty', dirty);
+    $('buildButton').disabled = $('runButton').disabled = !server;
+    document.title = (dirty ? '● ' : '') + 'Bimbaj Editor';
+}
+
+// ---- Campaign list --------------------------------------------------------------
+function levelNumberAt(index) {
+    return project.items.slice(0, index).filter(item => item.type === 'level').length;
+}
+
+function textWhen(index) {
+    const before = levelNumberAt(index);
+    const total = compiled.levels.length;
+    if (before === 0) return 'Before level 1';
+    if (before >= total) return 'After the last level';
+    return `After level ${before}`;
+}
+
+function itemErrors(index) {
+    return compiled.errors.filter(error => error.index === index);
+}
+
+function drawThumb(canvas, rows) {
+    const width = rows[0] ? rows[0].length : 1;
+    const height = rows.length || 1;
+    const scale = Math.max(1, Math.floor(44 / Math.max(width, height)));
+    canvas.width = width * scale;
+    canvas.height = height * scale;
+    const context = canvas.getContext('2d');
+    rows.forEach((row, y) => [...row].forEach((char, x) => {
+        context.fillStyle = THUMB[F.TILE_CHARS.indexOf(char)] || '#f0f';
+        context.fillRect(x * scale, y * scale, scale, scale);
+    }));
+}
+
+const ICONS = {
+    up: '<svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>',
+    down: '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>',
+    copy: '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>',
+    delete: '<svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>',
+};
+
+function renderList() {
+    const list = $('list');
+    const scroll = list.scrollTop;
+    list.innerHTML = '';
+    let levelNumber = 0;
+    const pagesByItem = new Map();
+    compiled.breaks.forEach(pause => pause.pages.forEach(page => {
+        pagesByItem.set(page.item, (pagesByItem.get(page.item) || 0) + 1);
+    }));
+    project.items.forEach((item, index) => {
+        const card = document.createElement('li');
+        card.className = 'card ' + item.type + (item[ID] === selectedId ? ' selected' : '');
+        card.draggable = true;
+        card.dataset.index = index;
+        const errors = itemErrors(index);
+        const handle = document.createElement('span');
+        handle.className = 'handle';
+        handle.textContent = '⋮⋮';
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        const title = document.createElement('div');
+        title.className = 'title';
+        const sub = document.createElement('div');
+        sub.className = 'sub';
+        let visual;
+        if (item.type === 'level') {
+            levelNumber++;
+            visual = document.createElement('canvas');
+            visual.className = 'thumb';
+            drawThumb(visual, item.rows || []);
+            const num = document.createElement('span');
+            num.className = 'num';
+            num.textContent = levelNumber;
+            title.append(num, item.name || 'Untitled level');
+            const { width, height } = F.levelSize(item);
+            sub.textContent = `${width}×${height}`;
+        } else {
+            visual = document.createElement('div');
+            visual.className = 'texticon';
+            visual.textContent = '¶';
+            title.textContent = textWhen(index);
+            const pages = pagesByItem.get(index) || 0;
+            const words = (item.text || '').replace(/\s+/g, ' ').trim();
+            sub.textContent = `${pages} page${pages === 1 ? '' : 's'} · ${words.slice(0, 60) || 'empty'}`;
+        }
+        if (errors.length) {
+            const bad = document.createElement('span');
+            bad.className = 'bad';
+            bad.textContent = ` · ${errors.length} error${errors.length > 1 ? 's' : ''}`;
+            sub.append(bad);
+        }
+        meta.append(title, sub);
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+        for (const [icon, tip, action] of [['up', 'Move up', () => moveItem(index, index - 1)],
+            ['down', 'Move down', () => moveItem(index, index + 2)],
+            ['copy', 'Duplicate', () => duplicateItem(index)], ['delete', 'Delete', () => deleteItem(index)]]) {
+            const button = document.createElement('button');
+            button.innerHTML = ICONS[icon];
+            button.title = tip;
+            button.setAttribute('aria-label', tip);
+            button.onclick = event => { event.stopPropagation(); action(); };
+            actions.append(button);
+        }
+        card.append(handle, visual, meta, actions);
+        card.onclick = () => select(item[ID]);
+        list.append(card);
+    });
+    list.scrollTop = scroll;
+}
+
+function select(id, focusList) {
+    if (id === selectedId) return;
+    selectedId = id;
+    mergeKey = null;
+    stopPlay();
+    renderList();
+    renderEditor();
+    const card = $('list').querySelector('.card.selected');
+    if (card) card.scrollIntoView({ block: 'nearest' });
+    if (focusList) $('list').focus();
+}
+
+// Move item `from` so it lands before the item currently at `to`.
+function moveItem(from, to) {
+    to = Math.max(0, Math.min(project.items.length, to));
+    if (to === from || to === from + 1) return;
+    remember();
+    const [item] = project.items.splice(from, 1);
+    project.items.splice(to > from ? to - 1 : to, 0, item);
+    changed(false);
+    updateEditorHeading();
+}
+
+function insertItem(item) {
+    remember();
+    assignIds([item]);
+    const index = selectedIndex();
+    project.items.splice(index < 0 ? project.items.length : index + 1, 0, item);
+    selectedId = item[ID];
+    stopPlay();
+    changed(true);
+    const card = $('list').querySelector('.card.selected');
+    if (card) card.scrollIntoView({ block: 'nearest' });
+}
+
+function duplicateItem(index) {
+    const copy = JSON.parse(JSON.stringify(project.items[index]));
+    if (copy.type === 'level') copy.name = (copy.name || 'Level') + ' copy';
+    selectedId = project.items[index][ID];
+    insertItem(copy);
+}
+
+function deleteItem(index) {
+    const item = project.items[index];
+    remember();
+    project.items.splice(index, 1);
+    if (item[ID] === selectedId) {
+        const next = project.items[Math.min(index, project.items.length - 1)];
+        selectedId = next ? next[ID] : null;
+        stopPlay();
+        changed(true);
+    } else {
+        changed(false);
+    }
+    toast(item.type === 'level' ? `Deleted level “${item.name || 'untitled'}”` : 'Deleted text', 'Undo', () => restore(undoStack, redoStack));
+}
+
+$('addLevel').onclick = () => insertItem({
+    type: 'level', name: 'New level',
+    rows: ['......E', '.......', '...#...', '.......', '.......', '.......', '@......'],
+});
+$('addText').onclick = () => insertItem({ type: 'text', text: '' });
+
+// Drag and drop between cards.
+let dragFrom = -1;
+let dropAt = -1;
+const list = $('list');
+list.addEventListener('dragstart', event => {
+    const card = event.target.closest('.card');
+    if (!card) return;
+    dragFrom = Number(card.dataset.index);
+    card.classList.add('dragging');
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', String(dragFrom));
+});
+list.addEventListener('dragend', () => {
+    dragFrom = -1;
+    clearDropMarks();
+    list.querySelectorAll('.dragging').forEach(card => card.classList.remove('dragging'));
+});
+list.addEventListener('dragover', event => {
+    if (dragFrom < 0) return;
+    event.preventDefault();
+    const cards = [...list.querySelectorAll('.card')];
+    dropAt = cards.length;
+    for (const card of cards) {
+        const box = card.getBoundingClientRect();
+        if (event.clientY < box.top + box.height / 2) {
+            dropAt = Number(card.dataset.index);
+            break;
+        }
+    }
+    clearDropMarks();
+    if (dropAt < cards.length) cards[dropAt].classList.add('drop-before');
+    else if (cards.length) cards[cards.length - 1].classList.add('drop-after');
+    // Scroll while dragging near the list edges.
+    const box = list.getBoundingClientRect();
+    if (event.clientY < box.top + 40) list.scrollTop -= 12;
+    else if (event.clientY > box.bottom - 40) list.scrollTop += 12;
+});
+list.addEventListener('drop', event => {
+    event.preventDefault();
+    const from = dragFrom;
+    clearDropMarks();
+    if (from >= 0 && dropAt >= 0) moveItem(from, dropAt);
+});
+function clearDropMarks() {
+    list.querySelectorAll('.drop-before, .drop-after').forEach(card => card.classList.remove('drop-before', 'drop-after'));
+}
+list.addEventListener('keydown', event => {
+    const index = selectedIndex();
+    if (index < 0) return;
+    if (event.altKey && event.key === 'ArrowUp') moveItem(index, index - 1);
+    else if (event.altKey && event.key === 'ArrowDown') moveItem(index, index + 2);
+    else if (event.key === 'ArrowUp' && index > 0) select(project.items[index - 1][ID], true);
+    else if (event.key === 'ArrowDown' && index < project.items.length - 1) select(project.items[index + 1][ID], true);
+    else if (event.key === 'Delete') deleteItem(index);
+    else return;
+    event.preventDefault();
+});
+
+// ---- Editor panel ---------------------------------------------------------------
+function renderEditor() {
+    const main = $('main');
+    const item = selectedItem();
+    main.innerHTML = '';
+    boardObserver.disconnect();
+    if (!item) {
+        main.innerHTML = '<div class="empty">The campaign is empty. Add a level to begin.</div>';
+        return;
+    }
+    if (item.type === 'level') renderLevelEditor(main, item);
+    else renderTextEditor(main, item);
+}
+
+function updateEditor() {
+    const item = selectedItem();
+    if (!item) return renderEditor();
+    updateEditorHeading();
+    if (item.type === 'level') {
+        updateLevelCheck(item);
+        drawBoard();
+    } else {
+        updateTextPreview(item);
+    }
+}
+
+function updateEditorHeading() {
+    const item = selectedItem();
+    if (!item) return;
+    if (item.type === 'level' && $('levelKind')) {
+        $('levelKind').textContent = `Level ${levelNumberAt(selectedIndex()) + 1} of ${compiled.levels.length}`;
+    } else if (item.type === 'text' && $('textWhen')) {
+        $('textWhen').textContent = textWhen(selectedIndex());
+    }
+}
+
+// ---- Level editor -----------------------------------------------------------------
+const boardObserver = new ResizeObserver(() => drawBoard());
+let play = null;            // { game, won, timer }
+let hover = null;
+let cellSize = 36;
+
+function renderLevelEditor(main, item) {
+    main.append($('levelTemplate').content.cloneNode(true));
+    const name = $('levelName');
+    name.value = item.name || '';
+    name.oninput = () => {
+        remember('name');
+        item.name = name.value;
+        changed(false);
+    };
+    $('levelWidth').onchange = () => resizeLevel(Number($('levelWidth').value), null);
+    $('levelHeight').onchange = () => resizeLevel(null, Number($('levelHeight').value));
+    main.querySelectorAll('[data-shift]').forEach(button => {
+        button.onclick = () => shiftLevel(...button.dataset.shift.split(',').map(Number));
+    });
+    main.querySelectorAll('[data-transform]').forEach(button => {
+        button.onclick = () => transformLevel(button.dataset.transform);
+    });
+    const palette = $('palette');
+    for (const [char, key] of PALETTE) {
+        const button = document.createElement('button');
+        button.dataset.char = char;
+        button.title = `${tileName(char)} (${key})`;
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = 24;
+        canvas.dataset.tile = F.TILE_CHARS.indexOf(char);
+        const label = document.createElement('span');
+        label.textContent = tileName(char).replace(' (start)', '').replace(' (goal)', '');
+        const hint = document.createElement('kbd');
+        hint.textContent = key;
+        button.append(canvas, label, hint);
+        button.onclick = () => setBrush(char);
+        palette.append(button);
+    }
+    drawSwatches();
+    setBrush(brush);
+    $('playButton').onclick = () => (play ? stopPlay() : startPlay());
+    $('playUndo').onclick = () => playAction('undo');
+    $('playRestart').onclick = () => playAction('restart');
+    $('playSwitch').onclick = () => playAction('switch');
+    $('playExit').onclick = () => stopPlay();
+    setupBoard();
+    updateEditorHeading();
+    updateLevelCheck(item);
+    boardObserver.observe($('boardWrap'));
+    drawBoard();
+}
+
+function setBrush(char) {
+    brush = char;
+    document.querySelectorAll('#palette button').forEach(button => button.classList.toggle('on', button.dataset.char === char));
+}
+
+function updateLevelCheck(item) {
+    const { width, height } = F.levelSize(item);
+    $('levelWidth').value = width;
+    $('levelHeight').value = height;
+    const errors = F.levelErrors(item);
+    const check = $('levelCheck');
+    check.innerHTML = '';
+    if (errors.length) {
+        const ul = document.createElement('ul');
+        errors.forEach(message => {
+            const li = document.createElement('li');
+            li.className = 'err';
+            li.textContent = message;
+            ul.append(li);
+        });
+        check.append(ul);
+    } else {
+        const ok = document.createElement('p');
+        ok.className = 'ok';
+        ok.textContent = '✓ Ready for the Atari';
+        check.append(ok);
+    }
+    const zoom = errors.length ? null : F.levelZoom(item);
+    const info = document.createElement('p');
+    info.className = 'muted';
+    info.textContent = `${width}×${height} = ${width * height} cells` +
+        (zoom ? ` · drawn with ${zoom}×${zoom}-character tiles · ${F.levelBytes(item).length} bytes` : '');
+    check.append(info);
+    scheduleSolve(item, errors.length === 0);
+}
+
+// Rows edits go through here so undo and the solver stay in sync.
+function editRows(rows, key) {
+    const item = selectedItem();
+    if (rows.join('\n') === item.rows.join('\n')) return;
+    remember(key);
+    item.rows = rows;
+    changed(false);
+}
+
+function resizeLevel(width, height) {
+    const item = selectedItem();
+    const size = F.levelSize(item);
+    width = Math.max(1, Math.min(F.MAX_WIDTH, width || size.width));
+    height = Math.max(1, Math.min(F.MAX_HEIGHT, height || size.height));
+    const rows = [];
+    for (let y = 0; y < height; y++) {
+        const row = item.rows[y] || '';
+        rows.push((row + '.'.repeat(width)).slice(0, width));
+    }
+    editRows(rows);
+}
+
+function shiftLevel(dx, dy) {
+    const item = selectedItem();
+    const { width, height } = F.levelSize(item);
+    const rows = [];
+    for (let y = 0; y < height; y++) {
+        let row = '';
+        for (let x = 0; x < width; x++) {
+            const sourceRow = item.rows[y - dy];
+            row += (sourceRow && sourceRow[x - dx]) || '.';
+        }
+        rows.push(row);
+    }
+    editRows(rows);
+}
+
+function transformLevel(kind) {
+    const rows = selectedItem().rows;
+    const map = (row, table) => [...row].map(char => table[char] || char).join('');
+    if (kind === 'flipH') editRows(rows.map(row => map([...row].reverse().join(''), { '<': '>', '>': '<' })));
+    else if (kind === 'flipV') editRows(rows.slice().reverse().map(row => map(row, { '^': 'v', 'v': '^' })));
+    else if (kind === 'clear') editRows(rows.map(row => '.'.repeat(row.length)));
+    else if (kind === 'rotate') {
+        const turn = { '^': '>', '>': 'v', 'v': '<', '<': '^' };
+        const out = [];
+        for (let x = 0; x < rows[0].length; x++) {
+            let row = '';
+            for (let y = rows.length - 1; y >= 0; y--) row += turn[rows[y][x]] || rows[y][x];
+            out.push(row);
+        }
+        editRows(out);
+    }
+}
+
+function setupBoard() {
+    const board = $('board');
+    let painting = null;
+    const cellAt = event => {
+        const box = board.getBoundingClientRect();
+        const item = selectedItem();
+        const { width, height } = F.levelSize(item);
+        const x = Math.floor((event.clientX - box.left) / box.width * width);
+        const y = Math.floor((event.clientY - box.top) / box.height * height);
+        return x >= 0 && y >= 0 && x < width && y < height ? { x, y } : null;
+    };
+    const paint = (cell, char, key) => {
+        const item = selectedItem();
+        const row = item.rows[cell.y];
+        if (row[cell.x] === char) return;
+        const rows = item.rows.slice();
+        rows[cell.y] = row.slice(0, cell.x) + char + row.slice(cell.x + 1);
+        editRows(rows, key);
+    };
+    board.addEventListener('contextmenu', event => event.preventDefault());
+    board.addEventListener('pointerdown', event => {
+        if (play) return;
+        const cell = cellAt(event);
+        if (!cell) return;
+        if (event.altKey || event.button === 1) {
+            setBrush(selectedItem().rows[cell.y][cell.x]);
+            event.preventDefault();
+            return;
+        }
+        board.setPointerCapture(event.pointerId);
+        painting = { char: event.button === 2 ? '.' : brush, key: 'stroke' + Date.now() };
+        paint(cell, painting.char, painting.key);
+    });
+    board.addEventListener('pointermove', event => {
+        const cell = cellAt(event);
+        const same = cell && hover && cell.x === hover.x && cell.y === hover.y;
+        hover = cell;
+        if (!same) drawBoard();
+        if (painting && cell) paint(cell, painting.char, painting.key);
+    });
+    const end = () => { painting = null; mergeKey = null; };
+    board.addEventListener('pointerup', end);
+    board.addEventListener('pointercancel', end);
+    board.addEventListener('pointerleave', () => { hover = null; drawBoard(); });
+}
+
+function drawBoard() {
+    const board = $('board');
+    const item = selectedItem();
+    if (!board || !item || item.type !== 'level') return;
+    const rows = item.rows || [];
+    const { width, height } = F.levelSize(item);
+    if (!width || !height) return;
+    zoom = zoomFor(width, height);
+    const wrap = $('boardWrap');
+    const room = Math.max(120, wrap.clientWidth - 30);
+    const tall = Math.max(240, window.innerHeight - wrap.getBoundingClientRect().top - 90);
+    // Whole multiples of the 24-pixel art keep the pixels even.
+    const fit = Math.min(room / width, tall / height);
+    cellSize = [72, 60, 48, 36, 24, 18, 12].find(size => size <= fit) || 12;
+    const ratio = window.devicePixelRatio || 1;
+    board.width = width * cellSize * ratio;
+    board.height = height * cellSize * ratio;
+    board.style.width = width * cellSize + 'px';
+    board.style.height = height * cellSize + 'px';
+    const context = board.getContext('2d');
+    context.imageSmoothingEnabled = false;
+    context.setTransform(ratio, 0, 0, ratio, 0, 0);
+    const game = play && play.game;
+    const open = game ? game.keyCollected() : false;
+    // Elephants are numbered column by column, as in the game.
+    let secondStart = -1;
+    for (let x = 0, found = 0; x < width && secondStart < 0; x++) {
+        for (let y = 0; y < height; y++) {
+            if (rows[y][x] === '@' && ++found === 2) {
+                secondStart = y * width + x;
+                break;
+            }
+        }
+    }
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const type = F.TILE_CHARS.indexOf(rows[y][x]);
+            // During play the start cell is under the elephant.
+            const shown = type < 0 ? 0 : (game && type === 1 ? 0 : type);
+            if (type < 0) {
+                context.fillStyle = '#f0f';
+                context.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+            } else {
+                context.drawImage(cellTile(shown, open, y * width + x === secondStart), x * cellSize, y * cellSize, cellSize, cellSize);
+            }
+        }
+    }
+    if (game) drawTrunks(context, game);
+    if (hover && !play) {
+        context.strokeStyle = 'rgba(230, 176, 74, .9)';
+        context.lineWidth = 2;
+        context.strokeRect(hover.x * cellSize + 1, hover.y * cellSize + 1, cellSize - 2, cellSize - 2);
+    }
+    board.classList.toggle('playing', !!play);
+    const info = $('boardInfo');
+    if (info) {
+        info.textContent = play ? '' : hover
+            ? `x ${hover.x + 1}, y ${hover.y + 1} · ${tileName(rows[hover.y][hover.x]) || 'unknown'}`
+            : 'Hover a cell for its position.';
+    }
+}
+
+// Trunk tiles as the Atari composes them: 15 + neighbour mask (up 1,
+// right 2, down 4, left 8); single-ended masks are the flared tips; the
+// start cell shows the elephant facing its first segment.
+const FACES = { 0: 31, 1: 33, 2: 34, 4: 31, 8: 32 };
+function drawTrunks(context, game) {
+    const width = game.width;
+    const link = (a, b) => {
+        if (b === undefined) return 0;
+        const dx = b % width - a % width;
+        const dy = Math.floor(b / width) - Math.floor(a / width);
+        if (Math.abs(dx) + Math.abs(dy) !== 1) return 0;
+        return dy < 0 ? 1 : dx > 0 ? 2 : dy > 0 ? 4 : 8;
+    };
+    game.paths.forEach((path, player) => {
+        const first = game.bodyStart(player);
+        for (let index = first; index < path.length; index++) {
+            const cell = path[index];
+            const back = index > first ? link(cell, path[index - 1]) : 0;
+            const ahead = link(cell, path[index + 1]);
+            const tile = index === 0 ? FACES[ahead] : 15 + (back | ahead);
+            context.drawImage(tileCanvas(tile, player === 1), (cell % width) * cellSize,
+                Math.floor(cell / width) * cellSize, cellSize, cellSize);
+        }
+        if (game.paths.length > 1 && player === game.active && !game.won()) {
+            const head = path[path.length - 1];
+            context.strokeStyle = (player === 1 ? designColours().copper : designColours().blue)[0];
+            context.lineWidth = 2;
+            context.strokeRect((head % width) * cellSize + 1, Math.floor(head / width) * cellSize + 1, cellSize - 2, cellSize - 2);
+        }
+    });
+}
+
+// ---- Playtest -----------------------------------------------------------------------
+function startPlay(solution) {
+    const item = selectedItem();
+    if (!item || item.type !== 'level') return;
+    if (F.levelErrors(item).length) {
+        toast('Fix the level errors before playtesting');
+        return;
+    }
+    stopPlay();
+    play = { game: new R.Game(item.rows), timer: null };
+    $('playBar').hidden = false;
+    $('editTools').style.opacity = .4;
+    $('palette').style.opacity = .4;
+    $('playButton').textContent = '■ Stop';
+    $('playButton').classList.add('on');
+    updatePlay();
+    if (solution) {
+        let step = 0;
+        play.timer = setInterval(() => {
+            if (!play || step >= solution.length) return clearInterval(play && play.timer);
+            const { player, dir } = solution[step++];
+            play.game.active = player;
+            play.game.input(dir);
+            updatePlay();
+        }, 420);
+    }
+}
+
+function stopPlay() {
+    if (!play) return;
+    clearInterval(play.timer);
+    play = null;
+    if ($('playBar')) {
+        $('playBar').hidden = true;
+        $('editTools').style.opacity = '';
+        $('palette').style.opacity = '';
+        $('playButton').textContent = '▶ Playtest';
+        $('playButton').classList.remove('on');
+        const banner = $('boardWrap').querySelector('.banner');
+        if (banner) banner.remove();
+        drawBoard();
+    }
+}
+
+function playAction(action) {
+    if (!play) return;
+    clearInterval(play.timer);
+    const game = play.game;
+    if (action === 'undo') game.undo();
+    else if (action === 'restart') play.game = new R.Game(selectedItem().rows);
+    else if (action === 'switch') game.switchPlayer();
+    else if (!game.won()) game.input(action);
+    updatePlay();
+}
+
+function updatePlay() {
+    const game = play.game;
+    const players = game.paths.length;
+    $('playInfo').textContent = `Moves ${game.moves.length}` +
+        (players > 1 ? ` · trunk ${game.active + 1}/2` : '') + ' · arrows or WASD to move';
+    const wrap = $('boardWrap');
+    let banner = wrap.querySelector('.banner');
+    if (game.won() && !banner) {
+        banner = document.createElement('div');
+        banner.className = 'banner';
+        banner.textContent = `SOLVED IN ${game.moves.length} MOVES`;
+        wrap.append(banner);
+    } else if (!game.won() && banner) {
+        banner.remove();
+    }
+    drawBoard();
+}
+
+// ---- Solver -------------------------------------------------------------------------
+let solveToken = 0;
+let solveTimer = null;
+function scheduleSolve(item, valid) {
+    const token = ++solveToken;
+    clearTimeout(solveTimer);
+    const box = $('solveResult');
+    if (!valid) {
+        box.className = 'muted';
+        box.textContent = 'Fix the errors to check the level.';
+        return;
+    }
+    box.className = 'muted';
+    box.textContent = 'Searching…';
+    const rows = item.rows.slice();
+    solveTimer = setTimeout(() => R.solve(rows, {
+        limit: 300000,
+        onProgress: ({ explored, depth }) => {
+            if (token !== solveToken) return false;
+            box.textContent = `Searching… ${explored.toLocaleString()} positions, ${depth} moves deep`;
+            return true;
+        },
+        onDone: result => {
+            if (token !== solveToken || result.cancelled) return;
+            box.innerHTML = '';
+            if (result.solved) {
+                box.className = 'ok';
+                box.append(`✓ Solvable in ${result.moves.length} move${result.moves.length === 1 ? '' : 's'} (fewest). `);
+                const show = document.createElement('button');
+                show.textContent = 'Show solution';
+                show.onclick = () => startPlay(result.moves);
+                box.append(show);
+            } else if (result.complete) {
+                box.className = 'err';
+                box.textContent = '✕ No solution: no sequence of moves reaches every ring.';
+            } else {
+                box.className = 'warn';
+                box.textContent = `Not decided: stopped after ${result.explored.toLocaleString()} positions.`;
+            }
+        },
+    }), 250);
+}
+
+// ---- Text editor ---------------------------------------------------------------------
+const FONT = Uint8Array.from(atob(window.BIMBAJ_STORY_FONT || ''), char => char.charCodeAt(0));
+let pageShown = 0;
+
+function renderTextEditor(main, item) {
+    main.append($('textTemplate').content.cloneNode(true));
+    const area = $('storyText');
+    area.value = item.text || '';
+    pageShown = 0;
+    area.oninput = () => {
+        remember('text');
+        item.text = area.value;
+        changed(false);
+    };
+    area.onblur = () => {
+        const clean = F.normalizeText(area.value);
+        if (clean !== item.text) {
+            remember();
+            item.text = area.value = clean;
+            changed(false);
+        }
+    };
+    // Follow the caret: show the page containing the paragraph being edited.
+    area.addEventListener('keyup', () => followCaret(item));
+    area.addEventListener('click', () => followCaret(item));
+    updateEditorHeading();
+    updateTextPreview(item);
+}
+
+function itemPages(index) {
+    const pages = [];
+    compiled.breaks.forEach(pause => pause.pages.forEach((page, number) => {
+        if (page.item === index) pages.push(Object.assign({ number, total: pause.pages.length }, page));
+    }));
+    return pages;
+}
+
+function followCaret(item) {
+    const area = $('storyText');
+    const before = F.normalizeText(area.value.slice(0, area.selectionStart));
+    const words = before.split(/\s+/).filter(Boolean).length;
+    // Count words on each page until the caret's word is reached.
+    const pages = itemPages(selectedIndex());
+    let seen = 0;
+    for (let index = 0; index < pages.length; index++) {
+        seen += pages[index].lines.join(' ').split(/\s+/).filter(Boolean).length;
+        if (words <= seen || index === pages.length - 1) {
+            if (index !== pageShown) {
+                pageShown = index;
+                updateTextPreview(item);
+            }
+            return;
+        }
+    }
+}
+
+function updateTextPreview(item) {
+    const index = selectedIndex();
+    const pages = itemPages(index);
+    pageShown = Math.min(pageShown, Math.max(0, pages.length - 1));
+    $('textPages').textContent = pages.length
+        ? `${pages.length} page${pages.length === 1 ? '' : 's'}` : 'no pages';
+    const tabs = $('pageTabs');
+    tabs.innerHTML = '';
+    pages.forEach((page, number) => {
+        const button = document.createElement('button');
+        button.textContent = `${page.number + 1}/${page.total}`;
+        button.classList.toggle('on', number === pageShown);
+        button.onclick = () => { pageShown = number; updateTextPreview(item); };
+        tabs.append(button);
+    });
+    drawPage(pages[pageShown]);
+    const check = $('textCheck');
+    check.innerHTML = '';
+    for (const error of itemErrors(index)) {
+        const line = document.createElement('div');
+        line.className = 'err';
+        line.textContent = error.message.replace(/^Item \d+: /, '');
+        check.append(line);
+    }
+}
+
+function drawPage(page) {
+    const canvas = $('pageCanvas');
+    const context = canvas.getContext('2d');
+    const image = context.createImageData(320, 192);
+    const paper = [5, 7, 12];
+    const ink = [235, 229, 203];
+    for (let i = 0; i < 320 * 192; i++) image.data.set([...paper, 255], i * 4);
+    for (const [row, col, line] of page ? page.layout : []) {
+        [...line].forEach((char, offset) => {
+            const code = F.storyCode(char);
+            for (let y = 0; y < 8; y++) {
+                const bits = code < 0 ? 0xFF : FONT[code * 8 + y];
+                for (let x = 0; x < 8; x++) {
+                    if (!(bits & (0x80 >> x))) continue;
+                    const pixel = ((row * 8 + y) * 320 + (col + offset) * 8 + x) * 4;
+                    image.data.set(code < 0 ? [255, 90, 90, 255] : [...ink, 255], pixel);
+                }
+            }
+        });
+    }
+    const scratch = document.createElement('canvas');
+    scratch.width = 320;
+    scratch.height = 192;
+    scratch.getContext('2d').putImageData(image, 0, 0);
+    context.imageSmoothingEnabled = false;
+    context.drawImage(scratch, 0, 0, canvas.width, canvas.height);
+}
+
+// ---- Files, saving and the build server -------------------------------------------------
+function log(text, open = true) {
+    const element = $('log');
+    element.innerHTML = '<button class="close" onclick="this.parentNode.classList.remove(\'open\')">Close</button>';
+    element.append(text);
+    element.classList.toggle('open', open);
+}
+
+let toastTimer = null;
+function toast(text, actionLabel, action) {
+    $('toastText').textContent = text;
+    const button = $('toastAction');
+    button.hidden = !action;
+    button.textContent = actionLabel || '';
+    button.onclick = () => { $('toast').classList.remove('show'); action(); };
+    $('toast').classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => $('toast').classList.remove('show'), 5000);
+}
+
+function loaded(text, kind, name, handle) {
+    const data = JSON.parse(text);
+    undoStack.length = redoStack.length = 0;
+    setProject(data);
+    source = { kind, name, handle: handle || null };
+    dirty = false;
+    renderSource();
+    offerDraft();
+}
+
+async function openFile() {
+    if (window.showOpenFilePicker && !server) {
+        try {
+            const [handle] = await showOpenFilePicker({ types: [{ description: 'Bimbaj campaign', accept: { 'application/json': ['.json'] } }] });
+            const file = await handle.getFile();
+            loaded(await file.text(), 'file', file.name, handle);
+        } catch (error) {
+            if (error.name !== 'AbortError') toast('Could not open the file: ' + error.message);
+        }
+        return;
+    }
+    $('fileInput').click();
+}
+$('fileInput').onchange = async () => {
+    const file = $('fileInput').files[0];
+    $('fileInput').value = '';
+    if (!file) return;
+    try {
+        loaded(await file.text(), 'download', file.name);
+    } catch (error) {
+        toast('Could not open the file: ' + error.message);
+    }
+};
+
+function download() {
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(new Blob([serialize()], { type: 'application/json' }));
+    link.download = 'bimbaj.json';
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+}
+
+async function save() {
+    $('storyText') && $('storyText').onblur && $('storyText').onblur();
+    if (compiled.errors.length) toast(`Saved with ${compiled.errors.length} error(s); the build will refuse them until fixed.`);
+    try {
+        if (source.kind === 'server') {
+            const result = await api('save', serialize());
+            if (!result.ok) throw new Error(result.log);
+        } else if (source.handle) {
+            const writable = await source.handle.createWritable();
+            await writable.write(serialize());
+            await writable.close();
+        } else {
+            download();
+            source = { kind: 'download', name: 'bimbaj.json (downloaded)', handle: null };
+        }
+        dirty = false;
+        clearDraft();
+        renderSource();
+        if (!compiled.errors.length) toast('Saved');
+        return true;
+    } catch (error) {
+        toast('Save failed: ' + error.message);
+        return false;
+    }
+}
+
+async function api(name, body) {
+    const response = await fetch('api/' + name, { method: 'POST', body: body || '', headers: { 'Content-Type': 'application/json' } });
+    return response.json();
+}
+
+async function build(run) {
+    if (compiled.errors.length) {
+        $('errorsPopover').classList.add('show');
+        toast('Fix the errors before building');
+        return;
+    }
+    if (dirty && !(await save())) return;
+    const button = run ? $('runButton') : $('buildButton');
+    button.disabled = true;
+    log(run ? 'Building and starting the emulator…' : 'Building…');
+    try {
+        const result = await api(run ? 'run' : 'build');
+        log((result.ok ? '' : 'BUILD FAILED\n\n') + result.log);
+        toast(result.ok ? (run ? 'Built; the emulator is starting' : 'Built bimbaj.xex') : 'Build failed; see the log');
+    } catch (error) {
+        log('The editor server is not reachable: ' + error.message);
+    } finally {
+        button.disabled = false;
+    }
+}
+
+$('openButton').onclick = openFile;
+$('downloadButton').onclick = download;
+$('saveButton').onclick = save;
+$('buildButton').onclick = () => build(false);
+$('runButton').onclick = () => build(true);
+$('undoButton').onclick = () => restore(undoStack, redoStack);
+$('redoButton').onclick = () => restore(redoStack, undoStack);
+
+window.addEventListener('beforeunload', event => {
+    if (dirty) {
+        event.preventDefault();
+        event.returnValue = '';
+    }
+});
+window.addEventListener('resize', () => drawBoard());
+
+// ---- Keyboard -----------------------------------------------------------------------------
+document.addEventListener('keydown', event => {
+    const typing = event.target.matches('input, textarea');
+    const ctrl = event.ctrlKey || event.metaKey;
+    if (ctrl && event.key.toLowerCase() === 's') {
+        event.preventDefault();
+        save();
+        return;
+    }
+    if (typing) return;
+    if (ctrl && event.key.toLowerCase() === 'z') {
+        event.preventDefault();
+        restore(event.shiftKey ? redoStack : undoStack, event.shiftKey ? undoStack : redoStack);
+        return;
+    }
+    if (ctrl && event.key.toLowerCase() === 'y') {
+        event.preventDefault();
+        restore(redoStack, undoStack);
+        return;
+    }
+    if (ctrl || event.altKey || event.target === $('list')) return;
+    const item = selectedItem();
+    if (!item || item.type !== 'level') return;
+    const key = event.key.length === 1 ? event.key.toUpperCase() : event.key;
+    if (play) {
+        const dirs = { ArrowUp: 0, W: 0, ArrowRight: 1, D: 1, ArrowDown: 2, S: 2, ArrowLeft: 3, A: 3 };
+        if (key in dirs) playAction(dirs[key]);
+        else if (key === ' ' || key === 'Tab') playAction('switch');
+        else if (key === 'U' || key === 'Z' || key === 'Backspace') playAction('undo');
+        else if (key === 'R') playAction('restart');
+        else if (key === 'Escape' || key === 'P') stopPlay();
+        else return;
+        event.preventDefault();
+        return;
+    }
+    const entry = PALETTE.find(([, hotkey]) => hotkey === key);
+    if (entry) setBrush(entry[0]);
+    else if (key === 'P') startPlay();
+    else return;
+    event.preventDefault();
+});
+document.addEventListener('click', event => {
+    if (!event.target.closest('#errorsPopover, #errorsButton')) $('errorsPopover').classList.remove('show');
+});
+
+// ---- Start ----------------------------------------------------------------------------------
+async function start() {
+    renderSource();
+    if (location.protocol.startsWith('http')) {
+        try {
+            const ping = await fetch('api/ping').then(response => response.json());
+            server = ping.server === 'bimbaj';
+        } catch (error) { /* plain static hosting */ }
+        try {
+            const response = await fetch('bimbaj.json', { cache: 'no-store' });
+            if (response.ok) {
+                loaded(await response.text(), server ? 'server' : 'download',
+                    server ? 'steamlinejs/atari/bimbaj.json' : 'bimbaj.json (save downloads a copy)');
+                return;
+            }
+        } catch (error) { /* fall through */ }
+    }
+    const draft = readDraft();
+    if (draft) {
+        loaded(draft.json, 'none', '');
+        dirty = true;
+        renderSource();
+        toast('Restored your unsaved draft from this browser');
+        return;
+    }
+    project = { format: 1, design: DESIGNS[0].id, items: [] };
+    refresh(true);
+    $('main').innerHTML = '<div class="empty">Open <b>bimbaj.json</b> to start editing, or run ' +
+        '<code>python3 editor-server.py</code> and open <code>http://localhost:8770/</code> to load, save and build ' +
+        'the project directly.<br><br><button id="emptyOpen" class="primary">Open bimbaj.json…</button></div>';
+    $('emptyOpen').onclick = openFile;
+}
+start();
+</script>
+</body>
+</html>

@@ -123,3 +123,57 @@ VBXE device configured.
 
 If VBXE is not detected at either the `$D6xx` or `$D7xx` register page, the
 program displays `VBXE REQUIRED` and stops.
+
+## Visual transition at the rocket
+
+Levels 1–6, including the rocket level, use surreal grey outline ruins on pure
+black and hollow warm-white architectural sketch platforms. The stronger
+platform contours remain distinct from the darker ruins.
+
+From level 7 onward, gameplay uses glossy fluorescent pink/purple plastic
+platforms against a painted blue-purple/teal galaxy. This is a visual theme
+change only: platform footprint (16×7), origins, collision maps, hazards,
+movement, and level order stay unchanged. The editor previews both themes.
+
+Background source assets are `assets/ukr1-line-background-source.png`,
+`assets/ukr2-line-background-source.png`, and
+`assets/galaxy-painted-source.png`. Their corresponding `-vbxe.png` files are
+exact runtime previews. Platform assets are `assets/platform-outline-0.png`,
+`platform-outline-1.png`, `platform-neon-0.png`, and `platform-neon-1.png`.
+Old artwork variants and original photographs are retained.
+
+`generate_ruins.py` packs two 112×70 line backgrounds (3920 bytes each) at
+$1000 and $B000. `generate_galaxy.py` packs the painted galaxy at 56×35 (980
+bytes), preserving broad brush-stroke colours within the Atari memory budget.
+Both display at 224×140. At startup `ruins.asm` uploads the three images to
+separate VBXE banks 4, 5, and 6. Each room draws its theme into the static cache
+with one blit; no additional per-frame scenery drawing is needed.
+
+`generate_platforms.py` produces native platform run tables. Palette entries
+32–47 are grey scenery, 48–53 are warm sketch contours, 54–59 are fluorescent
+plastic, and 64–79 are galaxy paint colours. `theme-data.asm` stores the compact
+galaxy, palette and neon sprites at $0800–$0FFF; runtime scenery routines and
+outline sprites occupy $AC00–$AFFF. Assembly assertions guard these segments.
+The launcher regenerates all artwork before assembly.
+
+Verification (requires Python Pillow, py65 and MADS):
+
+```sh
+python3 atari/verify_ruins.py
+```
+
+The test assembles in a temporary directory, checks segment overlap, executes
+the upload in a 6502 model, and compares every uploaded pixel against all three
+background previews. It verifies theme selection and collision-map preservation
+in all 24 rooms and both platform variants on either side of the rocket.
+Optional `--preview FILE.png` renders static room backgrounds from assembled
+routines. This is a software rendering, not an emulator screenshot; moving
+actors and the rocket are not included.
+
+Ruins were edited using built-in imagegen with a surreal grey contour-only
+prompt: pure black background and interiors, no shading or filled walls,
+leaning broken towers and floating fragments. The galaxy was generated with
+the same tool: a hand-painted surreal galaxy, broad flowing indigo, plum-purple
+and deep teal nebula brush strokes on black space, sparse stars, a sweeping
+spiral, painterly gouache/oil texture and large simple masses readable at low
+resolution. It deliberately stays darker than fluorescent foreground platforms.

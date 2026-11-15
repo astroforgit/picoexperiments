@@ -116,10 +116,8 @@ clip_hq_start
         lda #LOAD_IDLE
         sta load_state
         ldx load_clip
-        lda clip_end_lo,x
-        sta clip_end
         lda clip_end_hi,x
-        sta clip_end+1
+        sta clip_end
         lda clip_last_seg,x
         sta clip_last
         ldx #0
@@ -136,15 +134,11 @@ clip_set_seg
         sta clip_ptr+1
         cpx clip_last
         beq clip_seg_last
-        lda #0
-        sta clip_limit_lo
         lda seg_end_hi,x
         sta clip_limit_hi
         rts
 clip_seg_last
         lda clip_end
-        sta clip_limit_lo
-        lda clip_end+1
         sta clip_limit_hi
         rts
 clip_seg dta 0
@@ -222,15 +216,17 @@ ambient_set_chunk
         rts
 ambient_chunk dta 0
         .elseif CLIP_HQ
-        pha
-        txa
-        pha
+; Lean path (~70 cycles): registers saved in self-modified immediates, and
+; clips are whole pages (padded with level 0), so ends are only checked
+; when the pointer crosses a page. The IRQ only runs while a clip plays.
+        sta clip_irq_a
+        stx clip_irq_x
         lda #0
         sta $d20e
-        lda irq_mask
+        lda #1
         sta $d20e
 clip_ptr = *+1
-        ldx $ffff
+        ldx $ff00
         lda ambient_dac_0,x
         sta $d203
         lda ambient_dac_1,x
@@ -238,13 +234,8 @@ clip_ptr = *+1
         lda ambient_dac_2,x
         sta $d207
         inc clip_ptr
-        bne clip_hq_check
-        inc clip_ptr+1
-clip_hq_check
-        lda clip_ptr
-clip_limit_lo = *+1
-        cmp #0
         bne clip_hq_done
+        inc clip_ptr+1
         lda clip_ptr+1
 clip_limit_hi = *+1
         cmp #0
@@ -265,9 +256,10 @@ clip_hq_end
         sta $d207
         jsr next_silence
 clip_hq_done
-        pla
-        tax
-        pla
+clip_irq_a = *+1
+        lda #0
+clip_irq_x = *+1
+        ldx #0
         rti
         .else
         pha

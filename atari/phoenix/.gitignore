@@ -1,0 +1,5 @@
+gen/logs/
+shots/emu/
+shots/prof/
+shots/verify/
+tools/__pycache__/

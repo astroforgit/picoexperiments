@@ -43,8 +43,8 @@ def import_audio(name,body):
  return dict(file=name,duration=seconds)
 
 def original(clip):
- """The selected slice of the source recording as a 22 kHz WAV."""
- return subprocess.run(['ffmpeg','-v','error','-ss',str(clip['start']),'-t',str(clip['length']),'-i',str(samples.source_path(clip['file'])),'-ac','1','-ar','22050','-f','wav','-'],capture_output=True,check=True).stdout
+ """The selected source excerpt in mono, without the Atari filters or gain."""
+ return subprocess.run(['ffmpeg','-v','error','-ss',str(clip['start']),'-t',str(clip['length']),'-i',str(samples.source_path(clip['file'])),'-ac','1','-ar','44100','-f','wav','-'],capture_output=True,check=True).stdout
 LOCK=threading.RLock()
 MAX_SIZE=600_000
 
@@ -122,10 +122,12 @@ class Handler(BaseHTTPRequestHandler):
     if path=='/api/sample-original':self.send(200,original(clip),'audio/wav')
     else:
      maximum=45 if body.get('clean') is True else 15
-     self.send(200,dict(rate=samples.hz(rate),maximum=maximum,levels=samples.levels(clip,rate,loop,maximum)))
+     compress=maximum==45 and not loop and body.get('uncompressed') is not True
+     self.send(200,dict(rate=samples.hz(rate),maximum=maximum,compressed=compress,
+                        levels=samples.levels(clip,rate,loop,maximum,compress=compress)))
     return
    if path=='/api/sound-usage':
-    self.send(200,usage(sound_settings(body),strict=False));return
+    self.send(200,usage(sound_settings(body)));return
    with LOCK:
     if path=='/api/build':
      sound=validate(body)['sound']

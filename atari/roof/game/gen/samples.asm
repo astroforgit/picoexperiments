@@ -134,97 +134,87 @@
         ins 'gen/sample_26.bin'
         ini upload_bank
         org load_bank
-        dta 107
+        dta 109
         org $a000
         ins 'gen/sample_27.bin'
         ini upload_bank
         org load_bank
-        dta 108
+        dta 110
         org $a000
         ins 'gen/sample_28.bin'
         ini upload_bank
         org load_bank
-        dta 109
+        dta 111
         org $a000
         ins 'gen/sample_29.bin'
         ini upload_bank
         org load_bank
-        dta 110
+        dta 112
         org $a000
         ins 'gen/sample_30.bin'
         ini upload_bank
         org load_bank
-        dta 111
+        dta 113
         org $a000
         ins 'gen/sample_31.bin'
         ini upload_bank
         org load_bank
-        dta 112
+        dta 114
         org $a000
         ins 'gen/sample_32.bin'
         ini upload_bank
         org load_bank
-        dta 113
+        dta 115
         org $a000
         ins 'gen/sample_33.bin'
         ini upload_bank
         org load_bank
-        dta 114
+        dta 116
         org $a000
         ins 'gen/sample_34.bin'
         ini upload_bank
         org load_bank
-        dta 115
+        dta 117
         org $a000
         ins 'gen/sample_35.bin'
         ini upload_bank
         org load_bank
-        dta 116
+        dta 118
         org $a000
         ins 'gen/sample_36.bin'
         ini upload_bank
         org load_bank
-        dta 117
+        dta 119
         org $a000
         ins 'gen/sample_37.bin'
         ini upload_bank
         org load_bank
-        dta 118
+        dta 120
         org $a000
         ins 'gen/sample_38.bin'
         ini upload_bank
         org load_bank
-        dta 119
+        dta 121
         org $a000
         ins 'gen/sample_39.bin'
         ini upload_bank
         org load_bank
-        dta 120
+        dta 122
         org $a000
         ins 'gen/sample_40.bin'
         ini upload_bank
         org load_bank
-        dta 121
+        dta 123
         org $a000
         ins 'gen/sample_41.bin'
         ini upload_bank
         org load_bank
-        dta 122
+        dta 124
         org $a000
         ins 'gen/sample_42.bin'
         ini upload_bank
         org load_bank
-        dta 123
-        org $a000
-        ins 'gen/sample_43.bin'
-        ini upload_bank
-        org load_bank
-        dta 124
-        org $a000
-        ins 'gen/sample_44.bin'
-        ini upload_bank
-        org load_bank
         dta 125
         org $a000
-        ins 'gen/sample_45.bin'
+        ins 'gen/sample_43.bin'
         ini upload_bank

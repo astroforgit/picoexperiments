@@ -1,0 +1,30 @@
+RECOIL 7.0.0 — Retro Computer Image Library
+Copyright (c) 2009-2026 Piotr Fusik
+License: MIT (full text in RECOIL-LICENSE.txt and recoil.js)
+Website: https://recoil.sourceforge.net/
+Source: https://github.com/pfusik/recoil
+
+This copy is the JavaScript translation of the official 7.0.0 source release:
+https://downloads.sourceforge.net/project/recoil/recoil/7.0.0/recoil-7.0.0.tar.gz
+SHA-256: 1f1b9e4a5c4a867d3aa4bd69228c73a4035fed1649bde65dcc0015b3dbfef488
+
+Generated with the Node.js host of Fusion fut 3.3.9:
+https://github.com/fusionlanguage/fut/archive/refs/tags/fut-3.3.9.tar.gz
+SHA-256: fe9c56b507062bb95a6b26a2f4f888cfc8bf3c15b90c8bc4b347bdc4647d7cd4
+
+To regenerate, unpack both archives and run with Node.js 22:
+node fut-fut-3.3.9/fut.js -o recoil.js -I recoil-7.0.0 recoil-7.0.0/recoil.fu
+
+Packaging changes only (no decoder changes):
+- Replace "export class RECOIL" with "class RECOIL".
+- Prepend the MIT license as a comment.
+- Wrap the generated code in (function (root) { ... })(typeof globalThis !==
+  'undefined' ? globalThis : this).
+- At the end of the wrapper export RECOIL through module.exports when present,
+  otherwise through root.RECOIL. This allows file:// use and Node.js tests.
+
+The g2f.js adapter supplies an identity Atari palette to recover colour codes,
+then samples the rendered screen to Zorro's double-width pixel grid.
+RECOIL's G2F decoder renders a fixed 336 by 240 viewport, including borders.
+Unsupported project features are rejected, not silently discarded.
+The library is bundled for offline/local/static-host use; users need no compiler.
