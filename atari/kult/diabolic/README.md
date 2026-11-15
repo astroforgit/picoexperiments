@@ -87,7 +87,7 @@ The verifier rejects stale screenshots as well as missing expected pixels.
 Open http://127.0.0.1:8772/flight/ while `python3 editor/serve.py --port 8772`
 is running from the Kult directory. Select a sector and wave, enemy slot,
 movement path, hit points and drop pattern. The lower canvas previews the
-selected encounter; click it and use arrows to steer and Space to fire.
+selected encounter; click it and use arrows to steer, Ctrl to fire and Space to activate a shield.
 Browser entry timing and drawing are approximations of the native game.
 
 There are five animated ship styles and 36 enemy designs (32 original plus
@@ -120,3 +120,108 @@ The preceding saved project is `saved/project-before-aggressive.json`.
 
 Enemy bullets are bright rectangular 8×4-pixel laser bolts, distinct from the
 2×2 stars. The browser encounter preview uses the same proportions.
+
+
+## Meteor showers and skull sub-boss
+
+The Flight workshop's Encounter selector chooses normal formation, three meteor-shower presets, or skull sub-boss.
+All meteor presets now enter from the top only.
+The applied sequence begins with normal waves 1–2, meteor showers at waves 3, 5 and 7 and a skull at wave 8.
+The same introductory sequence is available in each sector; later waves retain
+their original formations unless edited.
+
+Enemy numbers are one-based editor labels: original enemy 15 (rock) and enemy
+20 (skull), independent of appearance assignments to ordinary enemy slots.
+Meteors resist shots and make no drops. Each lane waits before
+spawning a rock at Y=0. At update 192 spawning stops; existing rocks keep
+travelling until their top edge passes the bottom of the sky. No visible rock
+is removed at the wave deadline. Dodge them.
+The skull enters from the right as a 64×32-pixel composite of eight tiles,
+bobs vertically, shares one health pool (wave hit points × 8), and fires
+four concurrent aimed rockets in bursts: a shot opportunity every three
+updates for 40 updates, then a 24-update pause. Global firing Off still disables
+its rockets. The skull must be defeated to advance.
+The applied wave-8 skull has 64 HP. Defeating it
+always releases exactly three packages: weapon-2 upgrade, weapon-3 upgrade,
+and a shield. They are spread apart and drift left for collection. Ordinary sprite/explosion buffers are
+restored after the encounter. The original end-of-sector guardian is preserved.
+
+Even-numbered ordinary enemy slots (2, 4, …, 32 in the editor) can fire a
+left-facing copy of the original player bullet. One such shot uses the spare
+PMG player, preserving its eight-row bitmap at hardware pixel width; other
+shots and boss rockets retain their large bolt graphics.
+
+The browser preview uses the same tracks and burst cadence, with approximate
+native timing. Its health bar is a preview aid; the Atari HUD is unchanged.
+Old project JSON files without encounter selections load as ordinary waves.
+
+Implementation references inspected locally (ideas adapted, no imported code):
+- `allgames/[ShootEmUp]/Nebula Fighter v1.0.5.p8`: separate fighter, carrier,
+  mini-boss and boss definitions; aimed and radial enemy firing routines.
+- `allgames/[ShootEmUp]/4 Giga Boss Fights.p8`: boss progression and separate
+  boss health/death states. This Atari adaptation uses bounded four-missile
+  bursts to fit the hardware, rather than dense radial bullet fields.
+
+Native hooks are in `encounters.asm`; `test_encounters.py` checks meteor weapon immunity, shared boss health, completion, sprite restoration and
+packed-export flags, and recovery after player death. `editor/encounters.test.cjs` checks preview behaviour.
+
+
+Fuel is removed from this edition: no fuel packages, depletion, refills or
+empty-fuel death. The fuel icon, gauge and its frame are removed from the lower HUD.
+Weapons, score and lives remain. The former bonus area now displays a shield icon and stock count.
+
+
+Meteor lanes now use mixed speeds of 2, 3, 4, 5, 6 and 7 scanlines per update;
+the fastest rocks move over twice as fast as the slowest. The former fuel
+gauge now shows remaining boss HP (skull and original sector guardian),
+clearing between boss encounters. The top lives icon is a spaceship.
+
+The first rock travels slowly (2 scanlines per update). The next lane waits
+32 updates before spawning, giving roughly two seconds of warning.
+
+
+## Shields and controls
+
+Start with three shields; shield pickups replenish stock to a maximum of three.
+Press **Space** to consume one and gain 17 native updates of invulnerability
+(about one second at PAL speed), shown by a tight ellipse around the spaceship.
+Holding Space consumes only one shield; release and press again after it ends.
+The shield protects against enemies, meteors, guardian contact and projectiles.
+It causes no damage. The old Shift bomb action is removed. The old fuel and
+score-only bonus packages are absent; shield pickups use a shield-shaped sprite.
+
+Native controls: arrows move; shooting is automatic; tap/release Left Ctrl to
+cycle available weapons; Space activates a shield. Editor preview: arrows move,
+Ctrl fires, Space activates a shield. Its shield stock and expiry match the game.
+`verify-emulator.ps1 -CheckShield` adds a labelled visual diagnostic capture after
+normal gameplay, setting only temporary emulator RAM to show the shield ring.
+
+The active shield is a tight 44×20-pixel ellipse around the 40×16 ship,
+with a one-pixel outline and approximately one clear pixel at its bounds.
+It is drawn in the playfield and restored separately in both framebuffers;
+it does not enlarge the ship collision box or leave trails when it expires.
+
+## Imported enemy sheet
+
+The 31 designs in `../enemys.webp` are available in the flight workshop as
+**Sheet · …** entries, with four animation frames each. Upward-facing fighters
+and rockets now face left. The current game and default project assign these
+to enemy slots 1–31; slot 32 retains its original design. Existing wave paths,
+shooting and rewards are retained. Meteor and skull encounters continue to
+use their separate original artwork, regardless of ordinary slot assignments.
+
+Refresh http://127.0.0.1:8772/flight/ to see the updated catalog. If a previously
+saved browser draft still shows the old assignments, save it first if wanted,
+then click **Load current game** to load the current Atari project's settings.
+Use **Apply to local game** after changing selections and restart the emulator.
+Regenerate the imported assets with `python3 diabolic/import_enemies.py` from
+the Kult directory, then run `./diabolic/build.sh`.
+
+Enemy drawing and background restoration clip at the bottom of the 128-row
+sky. Meteors remain visible until they completely leave the screen, without
+writing into the adjacent framebuffer or game code. The regression test runs
+the native blitter and restore routine at every bottom-edge position in both
+framebuffers and checks that memory outside the screen remains unchanged.
+
+Use `verify-emulator.ps1 -LongRun` for an extended emulator run beyond the
+previous crash point; the verifier rejects logged illegal-instruction stops.

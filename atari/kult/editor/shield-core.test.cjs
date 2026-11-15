@@ -1,0 +1,10 @@
+const assert=require('node:assert/strict');const {Encounter}=require('./flight-core.js');
+(async()=>{const d=await(await fetch('http://127.0.0.1:8772/api/diabolic')).json();const e=new Encounter(d.project,d.sine);e.invulnerable=0;
+const incoming=()=>({x:e.player.x+d.project.firing.speed+1,y:e.player.y+1,dy:0});
+e.hostile=[incoming()];e.update({shield:true});assert.equal(e.shields,2);assert.equal(e.shieldTicks,17);assert.equal(e.hits,0);
+for(let i=0;i<17;i++)e.update({shield:true});assert.equal(e.shieldTicks,0);assert.equal(e.shields,2);
+e.hostile=[incoming()];e.update({shield:false});assert.equal(e.hits,1);
+e.update({shield:true});assert.equal(e.shields,1);
+e.shields=3;e.pickups=[{x:e.player.x+2,y:e.player.y,type:'Shield'}];e.update();assert.equal(e.shields,3);
+const b=new Encounter(d.project,d.sine,0,7);b.bossHP=0;b.update();assert.equal(b.pickups.length,3);assert.equal(b.pickups[2].type,'Shield');b.update();assert.equal(b.pickups.length,3);
+console.log('Shield duration, immunity, hold protection, stock cap and boss rewards passed.');})().catch(e=>{console.error(e);process.exitCode=1});

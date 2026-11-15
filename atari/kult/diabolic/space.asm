@@ -19,6 +19,11 @@ Init
     sta $D01B
     lda #0
     sta Clock
+    sta $2D20
+    sta $2D60
+    sta $2D61
+    sta $2D63
+    sta $2D64
     sta $D008
     sta $D009
     sta $D00A
@@ -123,6 +128,7 @@ Twinkle
     tay
     lda FarRamp,y
     sta $02C2
+    lda #$0C
     sta $02C3
     rts
 Menu
@@ -191,21 +197,55 @@ Shots
     ldy #127
 ClearMissilePage
     sta $3328,y
+    sta $3728,y
     dey
     bpl ClearMissilePage
+    sta $D003
+    sta $D00B
     lda FireMode
     bne FireEnabled
-    jmp InitShots
+    jsr InitShots
+    rts
 FireEnabled
+    jmp FireGate
+SkipFire
+    jmp MoveShots
+FireGate
     lda $FD04
-    bne MoveShots
+    bne SkipFire
+    lda $2D20
+    beq RegularFire
+    cmp #4
+    bne SkipFire
+    lda $2D22
+    beq SkipFire
+    lda $2D21
+    and #63
+    cmp #40
+    bcs SkipFire
+    inc FireClock
+    lda FireClock
+    cmp #3
+    jmp FireCompare
+RegularFire
     inc FireClock
     lda FireClock
     cmp FireInterval
-    bcc MoveShots
+FireCompare
+    bcs FireNow
+    jmp MoveShots
+FireNow
     lda #0
     sta FireClock
     ldx #3
+    lda $2D20
+    bne FindFree
+    lda $FB8B
+    and #1
+    beq FindFree
+    lda Active
+    bne FindFree
+    ldx #0
 FindFree
     lda Active,x
     beq ChooseEnemy
@@ -216,6 +256,12 @@ ChooseEnemy
     inc EnemyIndex
     lda EnemyIndex
     and #7
+    ldy $2D20
+    cpy #4
+    bne FireFromEnemy
+    and #4
+    eor #4
+FireFromEnemy
     sta EnemyIndex
     tay
     lda $74E0,y
@@ -254,6 +300,16 @@ ChooseEnemy
 AimDown
     sta BulletDY,x
 ActivateShot
+    lda #0
+    sta BulletStyle,x
+    cpx #0
+    bne ActivateReady
+    lda $2D20
+    bne ActivateReady
+    lda $FB8B
+    and #1
+    sta BulletStyle,x
+ActivateReady
     lda #1
     sta Active,x
 MoveShots
@@ -262,7 +318,9 @@ MoveOne
     lda #0
     sta $D004,x
     lda Active,x
-    beq NextShot
+    bne MoveActive
+    jmp NextShot
+MoveActive
     lda BulletX,x
     sec
     sbc FireSpeed
@@ -274,6 +332,13 @@ MoveOne
     cmp #125
     bcs RemoveShot
     sta BulletY,x
+    lda BulletStyle,x
+    beq BulletBoundsDone
+    lda BulletY,x
+    cmp #121
+    bcs RemoveShot
+BulletBoundsDone
+    lda BulletY,x
     ; Narrow collision box around the visible player, respecting invulnerability.
     sec
     sbc $E958
@@ -295,6 +360,11 @@ RemoveShot
     sta Active,x
     beq NextShot
 DrawShot
+    lda BulletStyle,x
+    beq DrawLaser
+    jsr DrawPlayerBullet
+    jmp NextShot
+DrawLaser
     lda BulletX,x
     clc
     adc #64
@@ -324,6 +394,26 @@ NextShot
     jmp MoveOne
 ShotsDone
     rts
+DrawPlayerBullet
+    lda BulletX,x
+    clc
+    adc #64
+    sta $D003
+    lda BulletY,x
+    clc
+    adc #40
+    tay
+    ldx #0
+PlayerBulletRows
+    lda $2F80,x
+    sta $3700,y
+    iny
+    inx
+    cpx #8
+    bcc PlayerBulletRows
+    ldx #0
+    rts
+BulletStyle = $2D50
 ShotBits dta 3,12,48,192
 FireMode = $2D00
 FireInterval = $2D01

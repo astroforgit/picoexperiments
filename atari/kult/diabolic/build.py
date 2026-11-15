@@ -29,13 +29,15 @@ def ship_bytes(im):
 def package(p,ram):
     # Keep a literal prefix in the retired tile bank: compressing empty space too
     # aggressively lets the in-place decoder overwrite its unread input.
+    # 5120 literal bytes preserve that gap while fitting the imported enemies;
+    # the remaining star tables are compressed. Replay below checks every block.
     streams=[bytearray(),bytearray()];phase=0;old=p['banks']['ram']
     for block in p['blocks']:
         a=block['start'];data=bytearray(block['data'])
         for i in range(len(data)):
             if ram[a+i]!=old[a+i]:data[i]=ram[a+i]
         streams[phase]+=rle(struct.pack('<HH',a,len(data)))
-        streams[phase]+=(b''.join(bytes([0xbf,v,1]) if v in (0xbf,0xcf) else bytes([v]) for v in data[:6144])+rle(data[6144:]) if a==0x2400 else rle(data))
+        streams[phase]+=(b''.join(bytes([0xbf,v,1]) if v in (0xbf,0xcf) else bytes([v]) for v in data[:5120])+rle(data[5120:]) if a==0x2400 else rle(data))
         if a==0xbb00:
             streams[0]+=rle(bytes(4));phase=1
     streams[1]+=rle(struct.pack('<HH',0x7fee,0xffff))
@@ -99,7 +101,63 @@ def create_runtime(settings=None,assemble=False,write_files=False):
             ram[base+shift*80:base+(shift+1)*80]=ship_bytes(aligned)
     if assemble:subprocess.run([os.environ.get('MADS','mads'),str(ROOT/'space.asm'),'-o:'+str(ROOT/'space.bin'),'-l:'+str(ROOT/'space.lst')],check=True,stdout=subprocess.PIPE)
     code=(ROOT/'space.bin').read_bytes();ram[0x4000:0x4000+len(code)]=code
+    if assemble:subprocess.run([os.environ.get('MADS','mads'),str(ROOT/'encounters.asm'),'-o:'+str(ROOT/'encounters.bin'),'-l:'+str(ROOT/'encounters.lst')],check=True)
+    extra=(ROOT/'encounters.bin').read_bytes();ram[0x3b00:0x3b00+len(extra)]=extra
+    # Remove the fuel icon, gauge and its inner frame; retain adjacent HUD controls.
+    for y in range(31,48):
+        for x in range(144,245):
+            ram[0x6385+y*32+x//8]&=~(0x80>>(x%8))&255
+    # 14x8 right-facing twin-engine spaceship in the lives display.
+    icon=('11000000000000','01111000000000','00111111000000',
+          '11111111111100','11111111111111','00111111000000',
+          '01111000000000','11000000000000')
+    for y,row in enumerate(icon,8):
+        for x,pixel in enumerate(row,160):
+            address=0x6385+y*32+x//8;mask=0x80>>(x%8)
+            ram[address]=(ram[address]&(~mask&255))|(mask if pixel=='1' else 0)
+    # Shield outline replaces the old bonus-package icon. Existing digits count stock.
+    shield=(0x7ffe,0x4002,0x4002,0x4002,0x4002,0x4002,0x4002,0x4002,
+            0x2004,0x2004,0x1008,0x1008,0x0810,0x0420,0x0240,0x0180)
+    for y,bits in enumerate(shield,32):
+        for x in range(16):
+            if bits&(0x8000>>x):
+                px=202+x;ram[0x6385+y*32+px//8]|=0x80>>(px%8)
+    pickup=word(ram,0x7264+4*2)
+    ram[pickup:pickup+48]=b''.join(bits.to_bytes(2,'big')+b'\x00' for bits in shield)
+    ring=Image.new('1',(44,20));ImageDraw.Draw(ring).ellipse((0,0,43,19),outline=1)
+    points=[(x,y) for y in range(20) for x in range(44) if ring.getpixel((x,y))]
+    assert len(points)<128
+    ram[0x2b00:0x2b00+len(points)]=bytes(x for x,y in points)
+    ram[0x2b80:0x2b80+len(points)]=bytes(y for x,y in points)
+    ram[0x2d68]=len(points)
+    ram[0x4e7b]=0
     patches={
+        0xEE11:('adbeed','20213b'), # clip enemy drawing at framebuffer bottom
+        0xED7A:('aebeed','20243b'), # clip restoration identically
+        0xF90B:('20a7ec','201e3b'), # erase old shield from current backbuffer
+        0xF93C:('2005ec','201b3b'), # tight shield ellipse after sprites
+        0xF92B:('adbff0','20183b'), # keep ship visible inside shield
+
+        0xF7FB:('201af5','20123b'), # Space shield before collision, including guardians
+        0xF890:('01','03'),         # start with three shields
+        0xFA04:('05','04'),         # pickup stock cap: three
+        0xF420:('a9','60'),         # remove old stacked bomb icons
+        0xF46F:('76','77'),         # former bonus digits now display shield count
+
+        0xF81C:('20e5f3','200f3b'), # boss HP in the former fuel meter
+
+        0xF841:('aebcf8','4c5bf8'), # skip depletion and empty-fuel death
+        0xF3E5:('ad','60'),         # remove gauge updater
+        0xC1B4:('8d7b4e','eaeaea'), # no stage fuel refill
+        0xF886:('8d7b4e','eaeaea'), # no new-game fuel refill
+        0xFA13:('8d7b4e','eaeaea'), # obsolete pickup cannot restore fuel
+
+        0xFC22:('206bf1','20003b'), # select wave encounter and graphics
+        0xF7F2:('20a4e7','20033b'), # normal, meteor or sub-boss motion
+        0xEB60:('bd3c74','20063b'), # composite boss tile selection
+        0xFA64:('de8675','20093b'), # immunity / shared boss health
+        0xF816:('2061f3','200c3b'), # bombs obey encounter rules
+
         0xEBB1:('d003','eaea'), # always advance formation twice per update
         0xFC1B:('80','60'),     # spawn closer to the right edge
 

@@ -19,13 +19,24 @@ class NativeSpaceTests(unittest.TestCase):
             c.step()
         self.fail(f'CPU did not return from {pc:04x}')
     def test_only_intended_ranges_changed(self):
-        allowed=[(0x4a00,0x4b00),(0x7310,0x7410),(0xebb1,0xebb3),(0xfc1b,0xfc1c),(0x2400,0x4400),(0x6a84,0x6f84),(0xf746,0xf749),(0xf834,0xf837),(0xc41b,0xc41e),(0xe843,0xe846),(0xf75f,0xf760),(0xf764,0xf765),(0xf769,0xf76a),(0xc126,0xc129),(0xc23b,0xc23c),(0xf975,0xf977)]
+        allowed=[(0xee11,0xee14),(0xed7a,0xed7d),(0x4f80,0x5f80),(0xf90b,0xf90e),(0xf93c,0xf93f),(0xf92b,0xf92e),(0xf7fb,0xf7fe),(0xf890,0xf891),(0xfa04,0xfa05),(0xf420,0xf421),(0xf46f,0xf470),(0x7044,0x7074),(0x6499,0x657b),(0xf81c,0xf81f),(0x6777,0x699c),(0x4e7b,0x4e7c),(0xf841,0xf844),(0xf3e5,0xf3e6),(0xc1b4,0xc1b7),(0xf886,0xf889),(0xfa13,0xfa16),(0x4400,0x4a00),(0xfc22,0xfc25),(0xf7f2,0xf7f5),(0xeb60,0xeb63),(0xfa64,0xfa67),(0xf816,0xf819),(0x4a00,0x4b00),(0x7310,0x7410),(0xebb1,0xebb3),(0xfc1b,0xfc1c),(0x2400,0x4400),(0x6a84,0x6f84),(0xf746,0xf749),(0xf834,0xf837),(0xc41b,0xc41e),(0xe843,0xe846),(0xf75f,0xf760),(0xf764,0xf765),(0xf769,0xf76a),(0xc126,0xc129),(0xc23b,0xc23c),(0xf975,0xf977)]
         loaded=set()
         for block in project('kult')['blocks']:
             if block['start'] not in (0xd301,0xbb00):loaded.update(range(block['start'],block['start']+block['size']))
         for a in loaded:
             old,new=self.original[a],self.ram[a]
             if old!=new:self.assertTrue(any(lo<=a<hi for lo,hi in allowed),hex(a))
+    def test_no_fuel_items_logic_or_gauge(self):
+        self.assertNotIn(7,self.ram[0x4a00:0x4b00])
+        c=self.cpu();c.memory[0x4e7b]=0;c.memory[0xf398]=0
+        for _ in range(1000):
+            c.pc=0xf841;c.step();self.assertEqual(c.pc,0xf85b)
+        self.assertEqual(c.memory[0xf398],0)
+        before=c.memory[0x6300:0x6a00].copy();self.call(c,0xf3e5)
+        self.assertEqual(c.memory[0x6300:0x6a00],before)
+        for y in range(31,48):
+            for x in range(144,183):self.assertFalse(self.ram[0x6385+y*32+x//8]&(0x80>>(x%8)))
+
     def test_ship_alignments(self):
         for frame in range(4):
             base=word(self.ram,0x7450+frame*2);src=self.ram[base:base+80]
@@ -44,16 +55,16 @@ class NativeSpaceTests(unittest.TestCase):
         c=self.cpu();c.memory[0xe9d6]=0x60;self.call(c,0x4000)
         positions=c.memory[0xd004:0xd008]
         graphics=c.memory[0x3300:0x3800]
-        pages=(0x3800,0x3900,0x3a00,0x3b00)
+        pages=(0x3800,0x3900,0x3a00)
         original=[c.memory[p+40:p+168] for p in pages]
         colours=[]
         for _ in range(16):
             stack=c.sp;self.call(c,0x4003,0xf908);c.sp=stack
             colours.append(tuple(c.memory[0x2c0:0x2c4]))
-        for page,data,shift in zip(pages,original,(28,12,4,0)):
+        for page,data,shift in zip(pages,original,(28,12,4)):
             expected=[58+(v-58-shift)%137 if v else 0 for v in data]
             self.assertEqual(c.memory[page+40:page+168],expected)
-        for lane in range(4):
+        for lane in range(3):
             for y in range(256):
                 x=c.memory[0x3800+lane*256+y]
                 self.assertEqual(c.memory[0x3400+lane*256+y],c.memory[0x2800+lane*256+y]&c.memory[0x2c00+x])

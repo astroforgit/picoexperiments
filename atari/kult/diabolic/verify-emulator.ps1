@@ -1,4 +1,4 @@
-param([string]$OutputDirectory, [switch]$CheckEdges, [string]$GamePath)
+param([string]$OutputDirectory, [switch]$CheckEdges, [switch]$CheckShield, [switch]$LongRun, [string]$GamePath, [string]$FirstCycles='1312D00')
 $ErrorActionPreference='Stop'
 $game=Join-Path $PSScriptRoot 'kult-diabolic.xex'
 if ($GamePath) {$game=$GamePath}
@@ -9,8 +9,9 @@ if (!$OutputDirectory) {$OutputDirectory=Join-Path $PSScriptRoot 'verification'}
 $log=Join-Path $OutputDirectory 'gameplay.log'
 $commands=@(
 ('.logopen "'+$log+'"'),
-'gcr $1312D00',
+('gcr $'+$FirstCycles),
 ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'direct-start.png')+'"'),
+'db 2D20 L10','db 2F00 L20','db 7A00 L30','db 7AC0 L30','db 743A L8',
 # No emulator RAM edits: the distributed executable starts flight itself.
 'gcr $989680',
 ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'flight.png')+'"'),
@@ -18,6 +19,19 @@ $commands=@(
 'gcr $989680',
 ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'flight-later.png')+'"'),
 'db 43FF L1','db 4E75 L10','r','.logclose','.autotest_exit')
+if ($LongRun) {
+    $commands=$commands[0..($commands.Count-3)]
+    $commands+=@('gcr $6000000','db C298 L2','r',
+        ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'long-run.png')+'"'),
+        '.logclose','.autotest_exit')
+}
+if ($CheckShield) {
+    $commands=$commands[0..($commands.Count-3)]
+    # Diagnostic visual check only; the executable is never patched.
+    $commands+=@('e 2D61 11','e F0BF 20','e F398 00','e E957 30 38','gcr $40000',
+        ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'shield.png')+'"'),
+        '.gtia','db 2D60 L4','.logclose','.autotest_exit')
+}
 if ($CheckEdges) {
     $commands=$commands[0..($commands.Count-3)]
     $commands+=Get-Content -LiteralPath (Join-Path $PSScriptRoot 'verification\edge-check.commands')
@@ -27,9 +41,12 @@ $argsList=@('/nosi','/w','/portablealt',('"'+$config+'"'),'/noautoprofile','/har
 foreach($cmd in $commands){$argsList+=('/debugcmd:"'+$cmd.Replace('"','\"')+'"')}
 $started=Get-Date
 $p=Start-Process -FilePath $emulator -ArgumentList $argsList -PassThru
-if (!$p.WaitForExit(60000)) {$p.Kill();throw 'Emulator verification timed out.'}
+$timeout=60000
+if ($LongRun) {$timeout=180000}
+if (!$p.WaitForExit($timeout)) {$p.Kill();throw 'Emulator verification timed out.'}
 foreach ($name in @('direct-start.png','flight.png','flight-later.png')) {
     $capture=Get-Item -LiteralPath (Join-Path $OutputDirectory $name)
     if ($capture.LastWriteTime -lt $started) {throw ('Missing fresh emulator capture: '+$name)}
 }
+if ((Get-Content -Raw -LiteralPath $log) -match 'Illegal instruction hit') {throw 'Emulator hit an illegal instruction; inspect gameplay.log.'}
 Write-Output ('Altirra exit code: '+$p.ExitCode)

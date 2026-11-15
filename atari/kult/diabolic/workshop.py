@@ -13,22 +13,28 @@ def pack(frame,width,height):
 def catalog():
     generated=json.loads((ROOT/'art/designs.json').read_text());ram=original_project('kult')['banks']['ram']
     enemies=[dict(id=f'original-{i}',name=f'Original enemy {i+1:02}',width=16,height=16,source='Kult',frames=[pixels(ram[0x4f80+i*128+f*32:0x4fa0+i*128+f*32],16,16) for f in range(4)]) for i in range(32)]
-    return {'ships':[v for v in generated if v['width']==40], 'enemies':enemies+[v for v in generated if v['width']==16]}
+    return {'ships':[v for v in generated if v['width']==40], 'enemies':enemies+[v for v in generated if v['width']==16]+json.loads((ROOT/'art/imported-enemies.json').read_text())}
 def aggressive_motion(row):
     return [max(-128,min(127,(1 if n>=0 else -1)*((abs(n)*3+1)//2))) if i<4 else n for i,n in enumerate(row)]
 def default_project():
     ram=original_project('kult')['banks']['ram']
     signed=lambda b:b if b<128 else b-256
-    return dict(version=1,ship='ship-2',slots=[f'original-{i}' for i in range(32)],
+    return dict(version=1,ship='ship-2',slots=[f'sheet-{i:02}' for i in range(31)]+['original-31'],
       waves=[[list(ram[0x4400+s*192+w*4:0x4404+s*192+w*4]) for w in range(48)] for s in range(8)],
       motions=[aggressive_motion([signed(b) for b in ram[0x7310+i*8:0x7318+i*8]]) for i in range(32)],
-      firing=dict(mode=2,interval=18,speed=3))
+      firing=dict(mode=2,interval=18,speed=3),encounters=[[0,0,1,0,2,0,3,4]+[0]*40 for _ in range(8)])
 def integer(v,lo,hi):
     if type(v)!=int or not lo<=v<=hi:raise ValueError(f'Expected integer {lo}..{hi}')
     return v
 def validate(value):
-    if not isinstance(value,dict) or set(value)!={'version','ship','slots','waves','motions','firing'}:raise ValueError('Invalid Diabolic project fields')
+    if isinstance(value,dict) and 'encounters' not in value:value=dict(value,encounters=[[0]*48 for _ in range(8)])
+    if not isinstance(value,dict) or set(value)!={'version','ship','slots','waves','motions','firing','encounters'}:raise ValueError('Invalid Diabolic project fields')
     if value['version']!=1:raise ValueError('Unsupported project version')
+    encounters=value['encounters']
+    if not isinstance(encounters,list) or len(encounters)!=8:raise ValueError('Expected 8 encounter sectors')
+    for sector in encounters:
+        if not isinstance(sector,list) or len(sector)!=48:raise ValueError('Expected 48 encounter types')
+        for kind in sector:integer(kind,0,4)
     lib=catalog()
     if value['ship'] not in {a['id'] for a in lib['ships']}:raise ValueError('Unknown ship')
     slots=value['slots'];known={a['id'] for a in lib['enemies']}
@@ -64,20 +70,32 @@ def apply_project(ram,value):
     for slot,id in enumerate(value['slots']):
         for f,frame in enumerate(enemies[id]['frames']):ram[0x4f80+slot*128+f*32:0x4fa0+slot*128+f*32]=pack(frame,16,16)
     for sector,waves in enumerate(value['waves']):
-        for w,record in enumerate(waves):ram[0x4400+sector*192+w*4:0x4404+sector*192+w*4]=bytes(record)
+        for w,record in enumerate(waves):
+            encoded=list(record);encoded[1]|=value['encounters'][sector][w]<<5
+            ram[0x4400+sector*192+w*4:0x4404+sector*192+w*4]=bytes(encoded)
     for i,motion in enumerate(value['motions']):ram[0x7310+i*8:0x7318+i*8]=bytes(n&255 for n in motion)
     # Each nonzero drop-table entry belongs to one of eight enemies.
     # Retain at most two original awards per pattern, spread through the wave.
     for pattern in range(32):
         start=0x4a00+pattern*8
+        for i in range(8):
+            if ram[start+i]>=6:ram[start+i]=0  # remove fuel and score-only bonus packages
         eligible=[i for i in range(8) if ram[start+i]]
         keep=set(eligible if len(eligible)<=2 else (eligible[len(eligible)//3],eligible[2*len(eligible)//3]))
         for i in range(8):
             if i not in keep:ram[start+i]=0
+    # Fixed original sprites, independent of user-remapped enemy slots.
+    original=original_project('kult')['banks']['ram']
+    ram[0x2f00:0x2f80]=original[0x4f80+14*128:0x5000+14*128]
+    ram[0x2f80:0x2f88]=bytes(int(f'{b:08b}'[::-1],2) for b in original[0x7278:0x7280])
+    head=pixels(original[0x4f80+19*128:0x4fa0+19*128],16,16)
+    for tile in range(8):
+        frame=[head[((tile//4*16+y)//2)*16+(tile%4*16+x)//4] for y in range(16) for x in range(16)]
+        ram[0x2e00+tile*32:0x2e20+tile*32]=pack(frame,16,16)
     ram[0x2d00:0x2d03]=bytes(value['firing'][k] for k in ('mode','interval','speed'))
 def public():
     ram=original_project('kult')['banks']['ram']
-    return dict(project=load_project(),defaults=default_project(),catalog=catalog(),sine=list(ram[0x7164:0x7264]))
+    return dict(project=load_project(),defaults=default_project(),catalog=catalog(),playerBullet=[int(f'{b:08b}'[::-1],2) for b in ram[0x7278:0x7280]],sine=list(ram[0x7164:0x7264]))
 def export(value,apply=False):
     spec=importlib.util.spec_from_file_location("diabolic_native_build",ROOT/"build.py")
     builder=importlib.util.module_from_spec(spec);spec.loader.exec_module(builder)
