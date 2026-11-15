@@ -17,12 +17,12 @@ class WorkshopTests(unittest.TestCase):
             c.step()
         self.fail('Routine did not return')
     def test_catalog_and_animation(self):
-        lib=catalog();self.assertEqual(len(lib['ships']),5);self.assertEqual(len(lib['enemies']),67)
+        lib=catalog();self.assertEqual(len(lib['ships']),5);self.assertEqual(len(lib['enemies']),99)
         for a in lib['ships']+lib['enemies']:
             self.assertEqual(len(a['frames']),4)
             for frame in a['frames']:
                 self.assertEqual(len(frame),a['width']*a['height']);self.assertTrue(set(frame)<={0,1})
-            if a.get('source') in ('image-model','enemys.webp'):self.assertGreater(len({tuple(f) for f in a['frames']}),1)
+            if a.get('source') in ('image-model','enemys.webp','original-redesign'):self.assertGreater(len({tuple(f) for f in a['frames']}),1)
     def test_custom_native_export_roundtrip(self):
         config=default_project();config['ship']='ship-2';config['slots']=['enemy-'+str(i%4) for i in range(32)]
         config['motions'][0]=[-3,7,2,-1,16,-32,9,12];config['waves'][0][0]=[3,0,7,4]
@@ -34,7 +34,8 @@ class WorkshopTests(unittest.TestCase):
         enemy=next(a for a in catalog()['enemies'] if a['id']=='enemy-3')
         self.assertEqual(loaded[0x4f80+3*128:0x4fa0+3*128],pack(enemy['frames'][0],16,16))
     def test_imported_enemies_in_native_waves(self):
-        config=default_project()
+        config=default_project();config['slots']=[f'sheet-{i:02}' for i in range(31)]+['original-31']
+        _,ram,_,_=create_runtime(config)
         imported={a['id']:a for a in catalog()['enemies'] if a.get('source')=='enemys.webp'}
         self.assertEqual(len(imported),31)
         used={config['slots'][wave[0]] for sector,kinds in zip(config['waves'],config['encounters']) for wave,kind in zip(sector,kinds) if kind==0}
@@ -42,10 +43,21 @@ class WorkshopTests(unittest.TestCase):
         for slot,id in enumerate(config['slots'][:31]):
             for f,frame in enumerate(imported[id]['frames']):
                 start=0x4f80+slot*128+f*32
+                self.assertEqual(ram[start:start+32],pack(frame,16,16))
+    def test_redesigns_replace_all_slots_and_special_encounters(self):
+        lib={a['id']:a for a in catalog()['enemies']}
+        self.assertEqual(default_project()['slots'],[f'redesign-{i}' for i in range(32)])
+        for i in range(32):
+            a=lib[f'redesign-{i}'];self.assertEqual(a['original'],f'original-{i}')
+            self.assertNotEqual(a['frames'],lib[a['original']]['frames'])
+            for f,frame in enumerate(a['frames']):
+                start=0x4f80+i*128+f*32
                 self.assertEqual(self.ram[start:start+32],pack(frame,16,16))
-        from assets import project as original_project
-        original=original_project('kult')['banks']['ram']
-        self.assertEqual(self.ram[0x2f00:0x2f80],original[0x5680:0x5700])
+        self.assertEqual(self.ram[0x2f00:0x2f80],b''.join(pack(f,16,16) for f in lib['redesign-14']['frames']))
+        head=lib['redesign-19']['frames'][0]
+        for tile in range(8):
+            frame=[head[((tile//4*16+y)//2)*16+(tile%4*16+x)//4] for y in range(16) for x in range(16)]
+            self.assertEqual(self.ram[0x2e00+tile*32:0x2e20+tile*32],pack(frame,16,16))
 
     def test_enemy_blit_and_restore_clip_bottom_without_corrupting_code(self):
         for base in (0x8000,0xa000):

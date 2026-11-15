@@ -13,13 +13,13 @@ def pack(frame,width,height):
 def catalog():
     generated=json.loads((ROOT/'art/designs.json').read_text());ram=original_project('kult')['banks']['ram']
     enemies=[dict(id=f'original-{i}',name=f'Original enemy {i+1:02}',width=16,height=16,source='Kult',frames=[pixels(ram[0x4f80+i*128+f*32:0x4fa0+i*128+f*32],16,16) for f in range(4)]) for i in range(32)]
-    return {'ships':[v for v in generated if v['width']==40], 'enemies':enemies+[v for v in generated if v['width']==16]+json.loads((ROOT/'art/imported-enemies.json').read_text())}
+    return {'ships':[v for v in generated if v['width']==40], 'enemies':enemies+[v for v in generated if v['width']==16]+json.loads((ROOT/'art/imported-enemies.json').read_text())+json.loads((ROOT/'art/redesigned-enemies.json').read_text())}
 def aggressive_motion(row):
     return [max(-128,min(127,(1 if n>=0 else -1)*((abs(n)*3+1)//2))) if i<4 else n for i,n in enumerate(row)]
 def default_project():
     ram=original_project('kult')['banks']['ram']
     signed=lambda b:b if b<128 else b-256
-    return dict(version=1,ship='ship-2',slots=[f'sheet-{i:02}' for i in range(31)]+['original-31'],
+    return dict(version=1,ship='ship-2',slots=[f'redesign-{i}' for i in range(32)],
       waves=[[list(ram[0x4400+s*192+w*4:0x4404+s*192+w*4]) for w in range(48)] for s in range(8)],
       motions=[aggressive_motion([signed(b) for b in ram[0x7310+i*8:0x7318+i*8]]) for i in range(32)],
       firing=dict(mode=2,interval=18,speed=3),encounters=[[0,0,1,0,2,0,3,4]+[0]*40 for _ in range(8)])
@@ -84,11 +84,11 @@ def apply_project(ram,value):
         keep=set(eligible if len(eligible)<=2 else (eligible[len(eligible)//3],eligible[2*len(eligible)//3]))
         for i in range(8):
             if i not in keep:ram[start+i]=0
-    # Fixed original sprites, independent of user-remapped enemy slots.
+    # Redesigned meteor and skull, independent of ordinary enemy slot assignments.
     original=original_project('kult')['banks']['ram']
-    ram[0x2f00:0x2f80]=original[0x4f80+14*128:0x5000+14*128]
+    ram[0x2f00:0x2f80]=b''.join(pack(f,16,16) for f in enemies['redesign-14']['frames'])
     ram[0x2f80:0x2f88]=bytes(int(f'{b:08b}'[::-1],2) for b in original[0x7278:0x7280])
-    head=pixels(original[0x4f80+19*128:0x4fa0+19*128],16,16)
+    head=enemies['redesign-19']['frames'][0]
     for tile in range(8):
         frame=[head[((tile//4*16+y)//2)*16+(tile%4*16+x)//4] for y in range(16) for x in range(16)]
         ram[0x2e00+tile*32:0x2e20+tile*32]=pack(frame,16,16)

@@ -4,7 +4,8 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 const browser=await chromium.launch({headless:true});try{
  const page=await browser.newPage({viewport:{width:1440,height:1100}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(url+'/flight/');await page.waitForSelector('#workspace:not([hidden])');
- assert.equal(await page.locator('#ship option').count(),5);assert.equal(await page.locator('#design option').count(),67);
+ assert.equal(await page.locator('#ship option').count(),5);assert.equal(await page.locator('#design option').count(),99);
+ assert.equal(await page.locator('#originalGrid .enemy-comparison').count(),32);assert.equal(await page.locator('#originalGrid canvas').count(),64);await page.locator('#originalGrid button').first().click();assert.equal(await page.locator('#design').inputValue(),'original-0');await page.click('#useRedesigns');assert.ok(await page.evaluate(()=>project.slots.every((id,i)=>id===`redesign-${i}`)));
  await page.selectOption('#design','original-0');await page.click('#loadApplied');await page.waitForFunction(()=>document.querySelector('#status').textContent.startsWith('Loaded the current'));assert.equal(await page.locator('#design').inputValue(),initial.slots[initial.waves[0][0][0]]);
  await page.selectOption('#ship','ship-2');await page.selectOption('#design','sheet-16');await page.fill('#param0','-3');await page.locator('#param0').dispatchEvent('change');await page.fill('#hp','4');await page.locator('#hp').dispatchEvent('change');await page.fill('#fireInterval','12');await page.locator('#fireInterval').dispatchEvent('change');
  await page.locator('#flight').focus();const before=await page.evaluate(()=>encounter.player.x);await page.keyboard.down('ArrowRight');await page.waitForTimeout(240);await page.keyboard.up('ArrowRight');assert.ok(await page.evaluate(()=>encounter.player.x)>before);

@@ -14,7 +14,7 @@ function validate(p,lib){
 class Encounter{
  constructor(project,sine,sector=0,wave=0){this.project=project;this.sine=sine;this.sector=sector;this.wave=wave;this.player={x:12,y:56};this.hits=0;this.tick=0;this.shields=3;this.shieldTicks=0;this.shieldHeld=false;this.reset();}
  get kind(){return this.project.encounters?.[this.sector]?.[this.wave]||0;}
- reset(){this.bossHP=this.record[3]*8;this.rewarded=false;this.pickups=[];this.collected=[];this.age=0;this.phase=[0,0,0,0];this.enemies=Array.from({length:8},(_,i)=>({i,x:160,y:i*14,hp:this.record[3],trail:[],meteorY:128,wait:i?i*8+24:0}));this.shots=[];this.hostile=[];this.cooldown=0;this.invulnerable=40;this.fireClock=0;this.enemyIndex=0;}
+ reset(){this.bossHP=this.record[3]*8;this.rewarded=false;this.pickups=[];this.collected=[];this.age=0;this.phase=[0,0,0,0];this.enemies=Array.from({length:8},(_,i)=>({i,x:160,y:i*14,hp:this.record[3],trail:[],meteorY:128,wait:i?i*16+24:0}));this.shots=[];this.hostile=[];this.cooldown=0;this.invulnerable=40;this.fireClock=0;this.enemyIndex=0;}
  get record(){return this.project.waves[this.sector][this.wave];}
  update(input={}){
   this.tick++;this.age++;this.cooldown=Math.max(0,this.cooldown-1);this.invulnerable=Math.max(0,this.invulnerable-1);
@@ -27,7 +27,7 @@ class Encounter{
   const entry=Math.max(0,96-this.age*6),exit=Math.max(0,(this.age-100)*4);
   for(const e of this.enemies){e.x=points[e.i][0]+entry-exit;e.y=points[e.i][1];
    if(this.kind>0&&this.kind<4){
-    if(e.meteorY<128){e.meteorY+=[2,4,6,3,5,4,7,5][e.i];if(e.meteorY>=128){e.meteorY=128;e.wait=12;}}
+    if(e.meteorY<128){e.meteorY+=[2,4,6,3,5,4,7,5][e.i];if(e.meteorY>=128){e.meteorY=128;e.wait=32;}}
     else if(this.age<192){if(e.wait>0)e.wait--;else e.meteorY=0;}
     e.visible=e.meteorY<128;e.x=[20,68,105,40,88,12,58,115][e.i];e.y=e.meteorY;
    }

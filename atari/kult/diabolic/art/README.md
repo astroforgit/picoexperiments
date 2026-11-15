@@ -21,3 +21,19 @@ shows the converted designs. Details are simplified at Atari resolution.
 
 The supplied sheet displays Shutterstock attribution (2807464639); these
 imports are user-supplied artwork, not newly generated original designs.
+
+## Original enemy redesigns
+
+The built-in image-generation tool received `original-enemies-reference.png`,
+a contact sheet extracted from the 32 original Kult enemies. Its resulting
+8×4 sheet is `redesigned-enemies-sheet.png`; the exact prompt is saved in
+`redesign-prompt.txt`. `../import_redesigns.py` converts the sheet into native
+16×16 monochrome four-frame sprites in `redesigned-enemies.json`, with a
+converted overview in `redesigned-enemies-native.png`. Animation is added by
+the importer (rear exhaust or a small pulsing light); the model produced the
+base designs. The twin-pod fighter is rotated left during conversion.
+
+The editor shows all 32 original animations beside their redesigns. The current
+and default Atari projects use the redesigns for all ordinary slots, plus the
+redesigned meteor and skull for special encounters. Original sprites and the
+previous imported catalog remain selectable; original game files are untouched.

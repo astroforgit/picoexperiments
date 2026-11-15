@@ -205,10 +205,10 @@ it does not enlarge the ship collision box or leave trails when it expires.
 
 The 31 designs in `../enemys.webp` are available in the flight workshop as
 **Sheet · …** entries, with four animation frames each. Upward-facing fighters
-and rockets now face left. The current game and default project assign these
-to enemy slots 1–31; slot 32 retains its original design. Existing wave paths,
-shooting and rewards are retained. Meteor and skull encounters continue to
-use their separate original artwork, regardless of ordinary slot assignments.
+and rockets face left. This earlier imported set remains available for any
+ordinary enemy slot. The current game uses the model redesigns below instead.
+Existing wave paths, shooting and rewards are retained. Meteor and skull
+encounters use their dedicated redesigns regardless of ordinary slot assignments.
 
 Refresh http://127.0.0.1:8772/flight/ to see the updated catalog. If a previously
 saved browser draft still shows the old assignments, save it first if wanted,
@@ -225,3 +225,14 @@ framebuffers and checks that memory outside the screen remains unchanged.
 
 Use `verify-emulator.ps1 -LongRun` for an extended emulator run beyond the
 previous crash point; the verifier rejects logged illegal-instruction stops.
+
+## Model redesigns of all originals
+
+The current game now uses the **Redesigned 01–32** catalog, generated using a
+reference sheet of all original enemies. The flight editor's **All 32 original
+enemies** panel shows original and redesigned animations side by side. Click
+either thumbnail to use it in its numbered slot, or **Use all 32 redesigns**
+to update all slots in your draft. **Apply to local game** writes your choices.
+**Load current game** replaces an older browser draft with the applied settings.
+The meteor and skull encounters use redesigns 15 and 20 independently of slots.
+See `art/README.md` for the reference, generated sheet, prompt and conversion.

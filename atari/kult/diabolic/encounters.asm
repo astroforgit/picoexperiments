@@ -135,6 +135,7 @@ NoDrops
  asl
  asl
  asl
+ asl
  beq FirstMeteorDelay
  clc
  adc #24
@@ -190,7 +191,7 @@ MeteorLoop
  bcc PlaceMeteor
  lda #128
  sta MeteorY,x
- lda #12
+ lda #32
  sta MeteorWait,x
  jmp HideMeteor
 MeteorWaiting
