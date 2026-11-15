@@ -103,27 +103,12 @@ def create_runtime(settings=None,assemble=False,write_files=False):
     code=(ROOT/'space.bin').read_bytes();ram[0x4000:0x4000+len(code)]=code
     if assemble:subprocess.run([os.environ.get('MADS','mads'),str(ROOT/'encounters.asm'),'-o:'+str(ROOT/'encounters.bin'),'-l:'+str(ROOT/'encounters.lst')],check=True)
     extra=(ROOT/'encounters.bin').read_bytes();ram[0x3b00:0x3b00+len(extra)]=extra
-    # Remove the fuel icon, gauge and its inner frame; retain adjacent HUD controls.
-    for y in range(31,48):
-        for x in range(144,245):
-            ram[0x6385+y*32+x//8]&=~(0x80>>(x%8))&255
-    # 14x8 right-facing twin-engine spaceship in the lives display.
-    icon=('11000000000000','01111000000000','00111111000000',
-          '11111111111100','11111111111111','00111111000000',
-          '01111000000000','11000000000000')
-    for y,row in enumerate(icon,8):
-        for x,pixel in enumerate(row,160):
-            address=0x6385+y*32+x//8;mask=0x80>>(x%8)
-            ram[address]=(ram[address]&(~mask&255))|(mask if pixel=='1' else 0)
-    # Shield outline replaces the old bonus-package icon. Existing digits count stock.
-    shield=(0x7ffe,0x4002,0x4002,0x4002,0x4002,0x4002,0x4002,0x4002,
-            0x2004,0x2004,0x1008,0x1008,0x0810,0x0420,0x0240,0x0180)
-    for y,bits in enumerate(shield,32):
-        for x in range(16):
-            if bits&(0x8000>>x):
-                px=202+x;ram[0x6385+y*32+px//8]|=0x80>>(px%8)
-    pickup=word(ram,0x7264+4*2)
-    ram[pickup:pickup+48]=b''.join(bits.to_bytes(2,'big')+b'\x00' for bits in shield)
+    # Model-redesigned weapon and shield collectibles, in native 3-byte rows.
+    pickups=json.loads((ROOT/'art/pickups.json').read_text())
+    for i,icon in enumerate(pickups):
+        frame=icon['frames'][0];address=word(ram,0x7264+i*2)
+        raw=bytes(sum(frame[y*16+x+k]<<(7-k) for k in range(8)) for y in range(16) for x in (0,8))
+        ram[address:address+48]=b''.join(raw[y*2:y*2+2]+b'\x00' for y in range(16))
     ring=Image.new('1',(44,20));ImageDraw.Draw(ring).ellipse((0,0,43,19),outline=1)
     points=[(x,y) for y in range(20) for x in range(44) if ring.getpixel((x,y))]
     assert len(points)<128
@@ -131,7 +116,29 @@ def create_runtime(settings=None,assemble=False,write_files=False):
     ram[0x2b80:0x2b80+len(points)]=bytes(y for x,y in points)
     ram[0x2d68]=len(points)
     ram[0x4e7b]=0
+    from hud_art import build_hud
+    build_hud(ram)
+    if assemble:subprocess.run([os.environ.get('MADS','mads'),str(ROOT/'hud.asm'),'-o:'+str(ROOT/'hud.bin'),'-l:'+str(ROOT/'hud.lst')],check=True)
+    hud=(ROOT/'hud.bin').read_bytes()
+    ram[0x6384:0x6684]=hud+bytes(768-len(hud))
+    # Replace the top bitmap with 24 blank scanlines, preserving sky timing.
+    for dl in (0x6001,0x61c3):
+        target=dl+26
+        ram[dl:dl+6]=bytes([0x70,0x70,0x70,0x01,target&255,target>>8])
+
     patches={
+        0xF8DE:('a0','60'), # retired progress-bar reset must not erase HUD/bomb code
+
+        0xEB25:('a0008c','4c46eb'), # remove wave mini-map plotting
+        0xED1C:('a0','60'), # remove mini-map clearing
+        0xF814:('d003','eaea'), # bombs also available during guardian encounters
+
+        0xF891:('8d774e','208763'), # initialize independent bombs and shields
+        0xF39D:('a2','60'), # obsolete four-weapon HUD renderer
+        0xF81F:('2020f42066f42075f4208cf420adf420c1f4','eaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaea'),
+        0xF48D:('90','0e'), 0xF491:('64','68'), # score at x80,y12
+        0xF476:('a2','72'), 0xF47A:('64','69'), # stage at x112,y23
+
         0xEE11:('adbeed','20213b'), # clip enemy drawing at framebuffer bottom
         0xED7A:('aebeed','20243b'), # clip restoration identically
         0xF90B:('20a7ec','201e3b'), # erase old shield from current backbuffer
@@ -144,7 +151,7 @@ def create_runtime(settings=None,assemble=False,write_files=False):
         0xF420:('a9','60'),         # remove old stacked bomb icons
         0xF46F:('76','77'),         # former bonus digits now display shield count
 
-        0xF81C:('20e5f3','200f3b'), # boss HP in the former fuel meter
+        0xF81C:('20e5f3','208463'), # boss HP in the former fuel meter
 
         0xF841:('aebcf8','4c5bf8'), # skip depletion and empty-fuel death
         0xF3E5:('ad','60'),         # remove gauge updater

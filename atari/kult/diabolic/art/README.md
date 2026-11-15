@@ -37,3 +37,13 @@ The editor shows all 32 original animations beside their redesigns. The current
 and default Atari projects use the redesigns for all ordinary slots, plus the
 redesigned meteor and skull for special encounters. Original sprites and the
 previous imported catalog remain selectable; original game files are untouched.
+
+## Pickup redesigns
+
+`pickups-reference.png` collects the four existing weapon pickup icons and
+shield. The built-in image model redesigned these into the five-cell
+`pickups-redesigned-sheet.png`, using the saved `pickups-prompt.txt`.
+`../import_pickups.py` converts it to `pickups.json` and `pickups-native.png`.
+The Atari builder writes all five icons into their original 3-byte × 16-row
+sprite locations, with a blank alignment byte. Editor encounter rewards use
+those same converted icons. Pickup behavior and drop rates are unchanged.

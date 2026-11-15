@@ -8,7 +8,7 @@
     jmp Raster
 Init
     jsr $E9D6
-    lda #$8F
+    lda #$80
     sta $601B
     sta $61DD
     lda #$30

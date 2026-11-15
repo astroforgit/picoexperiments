@@ -95,7 +95,7 @@ def apply_project(ram,value):
     ram[0x2d00:0x2d03]=bytes(value['firing'][k] for k in ('mode','interval','speed'))
 def public():
     ram=original_project('kult')['banks']['ram']
-    return dict(project=load_project(),defaults=default_project(),catalog=catalog(),playerBullet=[int(f'{b:08b}'[::-1],2) for b in ram[0x7278:0x7280]],sine=list(ram[0x7164:0x7264]))
+    return dict(pickups=json.loads((ROOT/'art/pickups.json').read_text()),project=load_project(),defaults=default_project(),catalog=catalog(),playerBullet=[int(f'{b:08b}'[::-1],2) for b in ram[0x7278:0x7280]],sine=list(ram[0x7164:0x7264]))
 def export(value,apply=False):
     spec=importlib.util.spec_from_file_location("diabolic_native_build",ROOT/"build.py")
     builder=importlib.util.module_from_spec(spec);spec.loader.exec_module(builder)

@@ -6,6 +6,12 @@ if (!(Test-Path -LiteralPath $game)) {throw 'Build the XEX first.'}
 $config=Join-Path $PSScriptRoot '..\..\babajaga\altirra-standard.ini'
 $emulator=Join-Path $env:USERPROFILE 'OneDrive\Desktop\atari\emulator\Altirra64.exe'
 if (!$OutputDirectory) {$OutputDirectory=Join-Path $PSScriptRoot 'verification'}
+# Automated runs must keep advancing if another application takes focus.
+# Use a disposable copy; never change the user's normal emulator profile.
+$testConfig=[System.IO.Path]::GetTempFileName()
+$profileText=[System.IO.File]::ReadAllText($config).Replace('"Pause when inactive" = 1','"Pause when inactive" = 0')
+[System.IO.File]::WriteAllText($testConfig,$profileText,(New-Object System.Text.UTF8Encoding($false)))
+$config=$testConfig
 $log=Join-Path $OutputDirectory 'gameplay.log'
 $commands=@(
 ('.logopen "'+$log+'"'),
@@ -43,7 +49,9 @@ $started=Get-Date
 $p=Start-Process -FilePath $emulator -ArgumentList $argsList -PassThru
 $timeout=60000
 if ($LongRun) {$timeout=180000}
-if (!$p.WaitForExit($timeout)) {$p.Kill();throw 'Emulator verification timed out.'}
+if (!$p.WaitForExit($timeout)) {$p.Kill();Remove-Item -LiteralPath $testConfig -Force;throw 'Emulator verification timed out.'}
+Remove-Item -LiteralPath $testConfig -Force
+if ($p.ExitCode -ne 0) {throw ('Emulator exited with code '+$p.ExitCode)}
 foreach ($name in @('direct-start.png','flight.png','flight-later.png')) {
     $capture=Get-Item -LiteralPath (Join-Path $OutputDirectory $name)
     if ($capture.LastWriteTime -lt $started) {throw ('Missing fresh emulator capture: '+$name)}

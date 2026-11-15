@@ -318,7 +318,7 @@ OrdinaryHit
  dec $7586,x
  rts
 BombEncounter
- rts
+ jmp $638A
 
 DefeatBoss
  jsr FinishEncounter
@@ -363,7 +363,7 @@ HaveHealth
  inc MeterVisible
  lda #0
  sta Remainder
- ldx #14
+ ldx #8
 ScaleHealth
  lda Remainder
  clc
@@ -382,61 +382,7 @@ KeepRemainder
  bne DrawMeter
  inc Filled
 DrawMeter
- lda #$79
- sta $80
- lda #$67
- sta $81
- ldx #15
-MeterRow
- ldy #0
- lda #0
- sta ($80),y
- iny
- sta ($80),y
- iny
- lda ($80),y
- and #7
- sta ($80),y
- lda MeterVisible
- beq NextMeterRow
- cpx #15
- beq MeterBorder
- cpx #0
- beq MeterBorder
- ldy #0
- lda #2
- sta ($80),y
- ldy #2
- lda ($80),y
- ora #8
- sta ($80),y
- cpx Filled
- bcc MeterFill
- beq MeterFill
- bne NextMeterRow
-MeterBorder
- ldy #0
- lda #3
- sta ($80),y
- ldy #2
- lda ($80),y
- ora #$F8
- sta ($80),y
-MeterFill
- ldy #1
- lda #$FF
- sta ($80),y
-NextMeterRow
- clc
- lda $80
- adc #32
- sta $80
- bcc MeterPointer
- inc $81
-MeterPointer
- dex
- bpl MeterRow
- rts
+ jmp $6390
 ShieldBlink
  lda ShieldTime
  beq NormalBlink

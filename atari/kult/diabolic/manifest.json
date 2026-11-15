@@ -1,8 +1,52 @@
 {
   "original_sha256": "ed2184b5c94871646a306c58702c5128a228776d71a5f5a36adae65522fb72cd",
-  "output_sha256": "2b5b6b6db5bbee5aba7270c09db70e2086f9ff9b557487a1a93afcd12e1338c5",
-  "runtime_changed_bytes": 11530,
+  "output_sha256": "d0c9befa7a025929c11b945aea9bdee8e9cb9f8eaa261cf52679ab9929a2aefd",
+  "runtime_changed_bytes": 12839,
   "patches": {
+    "F8DE": {
+      "before": "a0",
+      "after": "60"
+    },
+    "EB25": {
+      "before": "a0008c",
+      "after": "4c46eb"
+    },
+    "ED1C": {
+      "before": "a0",
+      "after": "60"
+    },
+    "F814": {
+      "before": "d003",
+      "after": "eaea"
+    },
+    "F891": {
+      "before": "8d774e",
+      "after": "208763"
+    },
+    "F39D": {
+      "before": "a2",
+      "after": "60"
+    },
+    "F81F": {
+      "before": "2020f42066f42075f4208cf420adf420c1f4",
+      "after": "eaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaea"
+    },
+    "F48D": {
+      "before": "90",
+      "after": "0e"
+    },
+    "F491": {
+      "before": "64",
+      "after": "68"
+    },
+    "F476": {
+      "before": "a2",
+      "after": "72"
+    },
+    "F47A": {
+      "before": "64",
+      "after": "69"
+    },
     "EE11": {
       "before": "adbeed",
       "after": "20213b"
@@ -45,7 +89,7 @@
     },
     "F81C": {
       "before": "20e5f3",
-      "after": "200f3b"
+      "after": "208463"
     },
     "F841": {
       "before": "aebcf8",

@@ -12,7 +12,7 @@ function validate(p,lib){
  return JSON.parse(JSON.stringify(p));
 }
 class Encounter{
- constructor(project,sine,sector=0,wave=0){this.project=project;this.sine=sine;this.sector=sector;this.wave=wave;this.player={x:12,y:56};this.hits=0;this.tick=0;this.shields=3;this.shieldTicks=0;this.shieldHeld=false;this.reset();}
+ constructor(project,sine,sector=0,wave=0){this.project=project;this.sine=sine;this.sector=sector;this.wave=wave;this.player={x:12,y:56};this.hits=0;this.tick=0;this.bombs=3;this.bombHeld=false;this.shields=3;this.shieldTicks=0;this.shieldHeld=false;this.reset();}
  get kind(){return this.project.encounters?.[this.sector]?.[this.wave]||0;}
  reset(){this.bossHP=this.record[3]*8;this.rewarded=false;this.pickups=[];this.collected=[];this.age=0;this.phase=[0,0,0,0];this.enemies=Array.from({length:8},(_,i)=>({i,x:160,y:i*14,hp:this.record[3],trail:[],meteorY:128,wait:i?i*16+24:0}));this.shots=[];this.hostile=[];this.cooldown=0;this.invulnerable=40;this.fireClock=0;this.enemyIndex=0;}
  get record(){return this.project.waves[this.sector][this.wave];}
@@ -21,6 +21,8 @@ class Encounter{
   this.shieldTicks=Math.max(0,this.shieldTicks-1);
   if(input.shield&&!this.shieldHeld&&!this.shieldTicks&&this.shields>0){this.shields--;this.shieldTicks=17;}
   this.shieldHeld=!!input.shield;
+  if(input.bomb&&!this.bombHeld&&this.bombs>0){this.bombs--;this.hostile=[];if(this.kind===4)this.bossHP=Math.max(0,this.bossHP-16);else if(!this.kind)for(const e of this.enemies)e.hp=0;}
+  this.bombHeld=!!input.bomb;
   this.player.x=Math.max(0,Math.min(100,this.player.x+((input.right?1:0)-(input.left?1:0))*3));
   this.player.y=Math.max(0,Math.min(112,this.player.y+((input.down?1:0)-(input.up?1:0))*4));
   const points=native.motionPoints(this.sine,this.project.motions[this.record[1]].map(n=>n&255),this.phase);

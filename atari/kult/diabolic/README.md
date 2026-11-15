@@ -187,11 +187,11 @@ Press **Space** to consume one and gain 17 native updates of invulnerability
 (about one second at PAL speed), shown by a tight ellipse around the spaceship.
 Holding Space consumes only one shield; release and press again after it ends.
 The shield protects against enemies, meteors, guardian contact and projectiles.
-It causes no damage. The old Shift bomb action is removed. The old fuel and
+It causes no damage. Shift activates a bomb from its separate stock. The old fuel and
 score-only bonus packages are absent; shield pickups use a shield-shaped sprite.
 
 Native controls: arrows move; shooting is automatic; tap/release Left Ctrl to
-cycle available weapons; Space activates a shield. Editor preview: arrows move,
+cycle available weapons; Space activates a shield; Shift uses a bomb. Editor preview: arrows move,
 Ctrl fires, Space activates a shield. Its shield stock and expiry match the game.
 `verify-emulator.ps1 -CheckShield` adds a labelled visual diagnostic capture after
 normal gameplay, setting only temporary emulator RAM to show the shield ring.
@@ -236,3 +236,35 @@ to update all slots in your draft. **Apply to local game** writes your choices.
 **Load current game** replaces an older browser draft with the applied settings.
 The meteor and skull encounters use redesigns 15 and 20 independently of slots.
 See `art/README.md` for the reference, generated sheet, prompt and conversion.
+
+## Single bottom HUD
+
+The top HUD, progress indicator and wave mini-map are removed. One thin-bordered
+bottom panel shows the miniature ship with animated exhaust and a dotted preview
+of the selected weapon, score, stage, lives, bombs and shields. Bomb and shield
+icons share the same row. Boss health uses eight horizontal segments at the
+bottom-right, empty outside boss encounters.
+
+Start with three bombs and three shields. **Shift** uses one bomb per press;
+holding it does not consume more. Bombs destroy ordinary active enemies, clear
+enemy projectiles and deal 16 damage to skulls/guardians. Meteors remain
+indestructible. Bombs are a three-use reserve per new game; shield pickups still
+replenish shields only. **Space** still provides one second of shield immunity.
+
+`hud_art.py` draws the native 256×32 panel and dotted patterns; `hud.asm` updates
+its counters and controls in the memory formerly used by the hidden top panel.
+The playfield dimensions and meteor clipping remain unchanged.
+
+Emulator verification uses a temporary profile with background pausing disabled;
+the normal runner profile is not modified.
+
+The obsolete progress-bar reset at `$F8DE` is disabled as well as its frame
+updates: it used to erase the new bomb routine when a stage initialized.
+`test_hud.py` now runs native initialization before activating a bomb, including
+actual sound setup and explosion progression. `verify-bombs.ps1` consumes all
+three bombs in Altirra, checks the stock sequence and runtime code, and runs
+on after the explosions. It simulates the Shift status read in temporary RAM
+and restores it; the distributed executable is never patched by the test.
+
+Weapon and shield pickups now use the model-redesigned badges documented in
+`art/README.md`. The editor's encounter preview displays the same icons.

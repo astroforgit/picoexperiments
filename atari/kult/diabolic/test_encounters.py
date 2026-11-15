@@ -74,13 +74,13 @@ class Encounters(unittest.TestCase):
   self.assertEqual(c.memory[0x7482],0)
  def test_boss_meter_full_half_empty_and_hidden(self):
   c=self.cpu();self.load(c,4)
-  for hp,filled in ((32,14),(16,7),(1,1),(0,0)):
+  for hp,filled in ((32,8),(16,4),(1,1),(0,0)):
    c.memory[0x2d22]=hp;self.call(c,0x3b0f)
-   self.assertEqual(sum(c.memory[0x679a+row*32]==255 for row in range(14)),filled)
+   self.assertEqual(sum(c.memory[0x6684+24*32+23+i]==0x7e for i in range(8)),filled)
   c.memory[0x2d20]=0;self.call(c,0x3b0f)
-  self.assertTrue(all(c.memory[0x677a+row*32]==0 for row in range(16)))
+  self.assertTrue(all(c.memory[0x6684+24*32+23+i]==0 for i in range(8)))
   c.memory[0xfd04]=1;c.memory[0xfd0a]=50;self.call(c,0x3b0f)
-  self.assertEqual(sum(c.memory[0x679a+row*32]==255 for row in range(14)),7)
+  self.assertEqual(sum(c.memory[0x6684+24*32+23+i]==0x7e for i in range(8)),4)
  def test_space_shield_stock_duration_and_hold(self):
   c=self.cpu();c.memory[0xf51a]=0x60;c.memory[0xf398]=0;c.memory[0xf0bf]=0
   c.memory[0x4e77]=3;c.memory[0xd20f]=0xfb;c.memory[0xd209]=0x21
@@ -122,7 +122,11 @@ class Encounters(unittest.TestCase):
   for y in range(128):c.memory[0x6000+y*3:0x6002+y*3]=list((0x8000+y*64).to_bytes(2,'little'))
   self.call(c,0x3b1b);count=c.memory[0x2d63];self.assertLess(count,c.memory[0x2d68]);self.assertGreater(count,0)
   for i in range(count):self.assertTrue(0x8000<=c.memory[0x2500+i]+256*c.memory[0x2600+i]<0xa000)
- def test_bomb_key_no_longer_damages_boss(self):
-  c=self.cpu();self.load(c,4);c.memory[0xd20f]=0;c.memory[0x4e77]=2;c.memory[0xf360]=0
-  self.call(c,0x3b0c);self.assertEqual(c.memory[0x2d22],32);self.assertEqual(c.memory[0x4e77],2)
+ def test_bombs_are_separate_from_shields_and_require_repress(self):
+  c=self.cpu();self.load(c,4);c.memory[0xf533]=0x60;c.memory[0xd20f]=0;c.memory[0x4e77]=2;c.memory[0x2d70]=3
+  self.call(c,0x3b0c);self.assertEqual(c.memory[0x2d22],16);self.assertEqual(c.memory[0x4e77],2);self.assertEqual(c.memory[0x2d70],2)
+  self.call(c,0x3b0c);self.assertEqual(c.memory[0x2d70],2)
+  c.memory[0xd20f]=8;self.call(c,0x3b0c);c.memory[0xd20f]=0;self.call(c,0x3b0c)
+  self.assertEqual(c.memory[0x2d22],0);self.assertEqual(c.memory[0x2d70],1)
+  self.assertEqual(c.memory[0x7482:0x7485],[0x11,0x12,0x14])
 if __name__=='__main__':unittest.main()
