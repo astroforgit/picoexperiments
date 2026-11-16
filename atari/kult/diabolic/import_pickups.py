@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from PIL import Image,ImageDraw
 ROOT=Path(__file__).resolve().parent
-im=Image.open(ROOT/'art/pickups-redesigned-sheet.png').convert('L');items=[]
+im=Image.open(ROOT/'art/pickups-circular-sheet.png').convert('L');items=[]
 preview=Image.new('RGB',(640,128),'black');d=ImageDraw.Draw(preview)
 for i,name in enumerate(['Weapon 1','Weapon 2','Weapon 3','Weapon 4','Shield']):
  cell=im.crop((round(i*im.width/5),0,round((i+1)*im.width/5),im.height)).point(lambda p:255 if p>=128 else 0)

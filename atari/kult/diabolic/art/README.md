@@ -47,3 +47,9 @@ shield. The built-in image model redesigned these into the five-cell
 The Atari builder writes all five icons into their original 3-byte × 16-row
 sprite locations, with a blank alignment byte. Editor encounter rewards use
 those same converted icons. Pickup behavior and drop rates are unchanged.
+
+The current importer uses `pickups-circular-sheet.png`, a model revision of the
+previous sheet with matching circular rings around all five emblems, including
+the shield. Its prompt is saved in `pickups-circular-prompt.txt`. The previous
+source sheet remains available as a reference. The converted native icons and
+editor data retain their existing filenames and pickup behavior.
