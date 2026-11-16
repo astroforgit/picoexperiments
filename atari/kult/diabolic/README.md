@@ -268,3 +268,33 @@ and restores it; the distributed executable is never patched by the test.
 
 Weapon and shield pickups now use the model-redesigned badges documented in
 `art/README.md`. The editor's encounter preview displays the same icons.
+
+### Native boss missile patterns
+
+Boss settings export to `$2D74` (0 rotation, 1 curved fan, 2 weave, 3 slalom)
+and `$2D75` (0–2 intensity). Four hardware missiles fire from HeadX/HeadY+16,
+with individual ages/phases and eight updates between shots. A muzzle marker
+telegraphs the first train. Two four-shot trains fit a 192-update cycle, leaving
+time for all projectiles to leave naturally before the next warning. Captured
+vertical aim is fixed, not homing. The skull stays at X88/Y48 after entering.
+
+`boss.asm` occupies `$6550..$6683`, after the HUD code and before its bitmap.
+The builder checks both bounds. Scratch uses `$2D76..$2D7D` and `$2D7F`;
+per-shot ages occupy `$2D80..$2D83`. `test_boss_patterns.py` checks real 6502
+execution, mouth origins, dodge routes, stationary-player hits, fixed boss
+position, cleanup and code-memory preservation.
+
+### Temporary debug shortcut
+
+During Atari gameplay, press **1** to jump to the first skull sub-boss wave in the
+current sector (wave 8 in the default project). Holding the key does not retrigger;
+release and press again to restart the fight. Existing enemies, pickups and shots
+are cleared, the ship is repositioned, and brief invulnerability protects entry.
+Lives, score, weapons, bombs and shield stock are preserved. Edited sectors with
+no sub-boss wave are left unchanged.
+
+This temporary hook is isolated in `debug.asm` at `$3F50`, called in place of the
+normal wave-loader call at `$F801`; `$2D7E` is its held-key latch. Remove that build
+hook/module when debug navigation is no longer wanted. `test_debug.py` covers all
+sectors, reordered/missing bosses and release/repress behavior. Emulator diagnostic:
+`verify-emulator.ps1 -CheckDebugJump`.

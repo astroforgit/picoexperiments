@@ -1,7 +1,7 @@
 {
   "original_sha256": "ed2184b5c94871646a306c58702c5128a228776d71a5f5a36adae65522fb72cd",
-  "output_sha256": "a3323905db46ebba6c9a01894fbf5d1e350083385e0df7866a748403af206426",
-  "runtime_changed_bytes": 12839,
+  "output_sha256": "418c586857e0ea1f76354e1f301dcd8f26a79808f94dbbd947b4c8379b3e5e72",
+  "runtime_changed_bytes": 12985,
   "patches": {
     "F8DE": {
       "before": "a0",
@@ -14,6 +14,10 @@
     "ED1C": {
       "before": "a0",
       "after": "60"
+    },
+    "F801": {
+      "before": "208cfb",
+      "after": "20503f"
     },
     "F814": {
       "before": "d003",

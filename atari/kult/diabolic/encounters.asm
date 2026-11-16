@@ -65,6 +65,8 @@ ReadKind
  sta Mode
  lda #0
  sta Age
+ sta $2D76
+ sta $2D78
  sta Finished
  lda #128
  sta HeadX
@@ -252,15 +254,7 @@ MoveHead
  dec HeadX
  dec HeadX
 HeadEntered
- lda Age
- and #63
- cmp #32
- bcc HeadBob
- eor #63
-HeadBob
- lsr
- clc
- adc #40
+ lda #48
  sta HeadY
  ldx #7
 HeadTiles

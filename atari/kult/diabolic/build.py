@@ -103,6 +103,14 @@ def create_runtime(settings=None,assemble=False,write_files=False):
     code=(ROOT/'space.bin').read_bytes();ram[0x4000:0x4000+len(code)]=code
     if assemble:subprocess.run([os.environ.get('MADS','mads'),str(ROOT/'encounters.asm'),'-o:'+str(ROOT/'encounters.bin'),'-l:'+str(ROOT/'encounters.lst')],check=True)
     extra=(ROOT/'encounters.bin').read_bytes();ram[0x3b00:0x3b00+len(extra)]=extra
+    assert 0x3b00+len(extra)<=0x3f50
+    if assemble:subprocess.run([os.environ.get('MADS','mads'),str(ROOT/'debug.asm'),'-o:'+str(ROOT/'debug.bin')],check=True,stdout=subprocess.PIPE)
+    debug=(ROOT/'debug.bin').read_bytes()
+    assert len(debug)<=0xb0
+    ram[0x3f50:0x3f50+len(debug)]=debug
+    if assemble:subprocess.run([os.environ.get('MADS','mads'),str(ROOT/'boss.asm'),'-o:'+str(ROOT/'boss.bin'),'-l:'+str(ROOT/'boss.lst')],check=True,stdout=subprocess.PIPE)
+    boss_code=(ROOT/'boss.bin').read_bytes()
+    assert len(boss_code)<=0x134
     # Model-redesigned weapon and shield collectibles, in native 3-byte rows.
     pickups=json.loads((ROOT/'art/pickups.json').read_text())
     for i,icon in enumerate(pickups):
@@ -121,6 +129,8 @@ def create_runtime(settings=None,assemble=False,write_files=False):
     if assemble:subprocess.run([os.environ.get('MADS','mads'),str(ROOT/'hud.asm'),'-o:'+str(ROOT/'hud.bin'),'-l:'+str(ROOT/'hud.lst')],check=True)
     hud=(ROOT/'hud.bin').read_bytes()
     ram[0x6384:0x6684]=hud+bytes(768-len(hud))
+    assert 0x6384+len(hud)<=0x6550
+    ram[0x6550:0x6550+len(boss_code)]=boss_code
     # Replace the top bitmap with 24 blank scanlines, preserving sky timing.
     for dl in (0x6001,0x61c3):
         target=dl+26
@@ -131,6 +141,7 @@ def create_runtime(settings=None,assemble=False,write_files=False):
 
         0xEB25:('a0008c','4c46eb'), # remove wave mini-map plotting
         0xED1C:('a0','60'), # remove mini-map clearing
+        0xF801:('208cfb','20503f'), # TEMP DEBUG: 1 skips to sector's first skull wave
         0xF814:('d003','eaea'), # bombs also available during guardian encounters
 
         0xF891:('8d774e','208763'), # initialize independent bombs and shields

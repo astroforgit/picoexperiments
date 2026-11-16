@@ -23,7 +23,7 @@ class Handler(BaseHTTPRequestHandler):
 
             try:self.send(200,json.dumps(public(path.rsplit('/',1)[-1])).encode(),'application/json')
             except ValueError as e:self.send(400,str(e).encode(),'text/plain')
-        elif path in ('/web/', '/web/index.html', '/web/engine.js', '/web/game.js', '/web/space.js', '/web/style.css', '/web/assets.json', '/web/README.md'):
+        elif path in ('/web/', '/web/index.html', '/web/engine.js', '/web/game.js', '/web/space.js', '/web/renderer.js', '/web/style.css', '/web/assets.json', '/web/README.md'):
             name='index.html' if path=='/web/' else path.rsplit('/',1)[-1]
             file=HERE.parent/'web'/name
             if file.is_file(): self.send(200,file.read_bytes(),mimetypes.guess_type(name)[0] or 'text/plain')

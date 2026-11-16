@@ -1,4 +1,4 @@
-param([string]$OutputDirectory, [switch]$CheckEdges, [switch]$CheckShield, [switch]$LongRun, [string]$GamePath, [string]$FirstCycles='1312D00')
+param([string]$OutputDirectory, [switch]$CheckEdges, [switch]$CheckShield, [switch]$LongRun, [switch]$CheckDebugJump, [string]$GamePath, [string]$FirstCycles='1312D00')
 $ErrorActionPreference='Stop'
 $game=Join-Path $PSScriptRoot 'kult-diabolic.xex'
 if ($GamePath) {$game=$GamePath}
@@ -25,6 +25,16 @@ $commands=@(
 'gcr $989680',
 ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'flight-later.png')+'"'),
 'db 43FF L1','db 4E75 L10','r','.logclose','.autotest_exit')
+if ($CheckDebugJump) {
+    $commands=$commands[0..($commands.Count-3)]
+    # Simulate held 1 at the two POKEY read sites, then restore runtime code.
+    # The distributed XEX stays unchanged.
+    $commands+=@('e 3F50 A9 00 EA','e 3F57 A9 1F EA','gcr $200000',
+        'e 3F50 AD 0F D2','e 3F57 AD 09 D2','db 2D20 L10','db FB8A L2',
+        'gcr $989680',
+        ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'debug-boss.png')+'"'),
+        'db 2D20 L10','r','.logclose','.autotest_exit')
+}
 if ($LongRun) {
     $commands=$commands[0..($commands.Count-3)]
     $commands+=@('gcr $6000000','db C298 L2','r',
@@ -57,4 +67,5 @@ foreach ($name in @('direct-start.png','flight.png','flight-later.png')) {
     if ($capture.LastWriteTime -lt $started) {throw ('Missing fresh emulator capture: '+$name)}
 }
 if ((Get-Content -Raw -LiteralPath $log) -match 'Illegal instruction hit') {throw 'Emulator hit an illegal instruction; inspect gameplay.log.'}
+if ($CheckDebugJump -and (Get-Content -Raw -LiteralPath $log) -notmatch '(?i)2D20:\s+04') {throw 'Debug shortcut did not enter the skull encounter.'}
 Write-Output ('Altirra exit code: '+$p.ExitCode)

@@ -139,3 +139,41 @@ Editor drafts do not automatically change the browser game.
 **Play CETAS** opens http://127.0.0.1:8772/cetas-web/ on the same local server.
 It uses the recovered sprite bank, title art, spawn script and movement tables,
 with browser gameplay adaptations. See [CETAS browser notes](../cetas-web/README.md).
+
+## Diabolic wave editor and simulator
+
+Open `/flight/` (Wave & flight editor). Each sector has a horizontally scrollable
+48-card timeline with animated-design thumbnails and encounter/path/HP summaries.
+Select any card to edit its wave, move it earlier/later, or copy and paste it over
+another wave. These edits use the existing project JSON and Atari export format.
+
+**Play from selected wave** runs the remaining waves of that sector, preserving
+bombs, shields and weapon choice. **Loop selected wave** resumes individual path
+tuning. **Play draft in browser game** opens `/web/` with a snapshot of the draft,
+without changing the applied Atari game. Browser playback shares the current
+native sprites, circular pickups and bottom-only HUD. Save/Open project retains
+wave edits; Apply to local game rebuilds the native executable.
+
+### Boss bullet patterns
+
+Select rotating attacks, a curved fan, a weaving stream, or a slower slalom, plus
+three intensity levels. Preview boss fight opens a temporary skull encounter
+without changing the selected wave. Show bullet paths projects each active shot's
+trajectory. Settings persist in project JSON and Atari exports.
+
+Both versions emit from the boss's front/mouth (head X, head Y + 16), not from
+screen-wide lanes. A 24-update muzzle warning precedes four shots spaced eight
+updates apart. A second train follows, then all shots drain before the next
+192-update cycle. Each shot has its own age and phase, producing staggered curved
+formations. Captured vertical aim is fixed for that cycle; bullets do not home.
+The ship can dodge around the train instead of following a permanently safe band.
+
+Native and browser encounters use four projectiles, with three horizontal speeds.
+Fan shots spread while curving; weave shots oscillate; slalom shots make wider,
+slower turns. The boss stays fixed after entering. Bombs clear bullets; browser
+bombs also provide a short firing pause. Shooting Off disables boss attacks.
+
+Tests check mouth origins, staggered launch times, stationary-player damage and
+reachable routes at native ship speed. The route checks exclude flying directly
+into the boss body. Native sector guardians retain their existing attacks;
+browser guardians share these patterns.

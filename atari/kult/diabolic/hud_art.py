@@ -5,7 +5,7 @@ ROOT=Path(__file__).resolve().parent
 FONT={'S':['111','100','111','001','111'],'C':['111','100','100','100','111'],'O':['111','101','101','101','111'],'R':['110','101','110','101','101'],'E':['111','100','110','100','111'],'T':['111','010','010','010','010'],'A':['010','101','111','101','101'],'G':['111','100','101','101','111'],'B':['110','101','110','101','110']}
 def packed(im):
  return bytes(sum(int(im.getpixel((x+i,y)))<<(7-i) for i in range(8)) for y in range(im.height) for x in range(0,im.width,8))
-def build_hud(ram):
+def build_hud(ram, write_patterns=True):
  im=Image.new('1',(256,32));d=ImageDraw.Draw(im);d.rectangle((0,0,255,31),outline=1)
  def label(x,y,text):
   for letter in text:
@@ -29,5 +29,5 @@ def build_hud(ram):
   for y in lanes:
    for x in (2,7,12):draw.point((x,y),fill=1)
   patterns.append(packed(shot))
- (ROOT/'hud-patterns.bin').write_bytes(b''.join(patterns))
+ if write_patterns:(ROOT/'hud-patterns.bin').write_bytes(b''.join(patterns))
  return im

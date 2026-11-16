@@ -1,6 +1,7 @@
 'use strict';
 const $=id=>document.getElementById(id),clone=v=>JSON.parse(JSON.stringify(v));
 let payload,project,encounter,paused=false,last=0,acc=0,images=new Map(),busy=false;
+let campaign=null,renderer,clipboard=null,wavePlans=[],mapFrame=40,mapClock=0,mapLast=0;
 const keys=new Set(),storageKey='kult-diabolic-flight-encounters-v1';
 function status(message,error=false){$('status').textContent=message;$('status').classList.toggle('error',error);}
 function persist(){try{localStorage.setItem(storageKey,JSON.stringify(project));status('Draft saved in this browser. Apply to local game when ready.');}catch{status('Browser storage unavailable; save a project file.',true);}}
@@ -8,33 +9,79 @@ function options(select,items,value){select.replaceChildren(...items.map(([id,na
 function sprite(asset,frame){const key=asset.id+':'+frame;if(images.has(key))return images.get(key);const c=document.createElement('canvas');c.width=asset.width;c.height=asset.height;const g=c.getContext('2d');g.fillStyle='#e6e6e6';asset.frames[frame].forEach((p,i)=>{if(p)g.fillRect(i%asset.width,Math.floor(i/asset.width),1,1);});images.set(key,c);return c;}
 function asset(kind,id){return payload.catalog[kind].find(v=>v.id===id);}
 function record(){return project.waves[Number($('sector').value)][Number($('wave').value)];}
-function restart(){encounter=new FlightWorkshop.Encounter(project,payload.sine,Number($('sector').value),Number($('wave').value));$('previewTitle').textContent=`Sector ${Number($('sector').value)+1} · Wave ${Number($('wave').value)+1}`;}
-function showWave(){const kind=project.encounters[Number($('sector').value)][Number($('wave').value)];$('encounter').value=kind;const w=record();options($('slot'),project.slots.map((id,i)=>[i,`${i+1} · ${asset('enemies',id).name}`]),w[0]);$('motion').value=w[1];$('drop').value=w[2];$('hp').value=w[3];$('design').value=project.slots[w[0]];showPath();restart();}
+function restart(){campaign=null;encounter=new FlightWorkshop.Encounter(project,payload.sine,Number($('sector').value),Number($('wave').value),{drops:payload.drops});$('previewTitle').textContent=`Sector ${Number($('sector').value)+1} · Wave ${Number($('wave').value)+1}`;}
+function showWave(){$('bossPattern').value=project.boss.pattern;$('bossDifficulty').value=project.boss.difficulty;const kind=project.encounters[Number($('sector').value)][Number($('wave').value)];$('encounter').value=kind;const w=record();options($('slot'),project.slots.map((id,i)=>[i,`${i+1} · ${asset('enemies',id).name}`]),w[0]);$('motion').value=w[1];$('drop').value=w[2];$('hp').value=w[3];$('design').value=project.slots[w[0]];showPath();restart();timeline();}
 function showPath(){project.motions[record()[1]].forEach((n,i)=>$('param'+i).value=n);}
-function changed(reset=true){persist();if(reset)restart();}
+function changed(reset=true){persist();if(reset)restart();timeline();}
 function drawAsset(id,thing,frame){const c=$(id),g=c.getContext('2d');g.clearRect(0,0,c.width,c.height);g.imageSmoothingEnabled=false;const scale=thing.width===40?4:5;g.drawImage(sprite(thing,frame),(c.width-thing.width*scale)/2,(c.height-thing.height*scale)/2,thing.width*scale,thing.height*scale);}
 function drawFrames(id,thing){const c=$(id),g=c.getContext('2d');g.clearRect(0,0,c.width,c.height);g.imageSmoothingEnabled=false;for(let f=0;f<4;f++)g.drawImage(sprite(thing,f),f*100+(100-thing.width*2)/2,8,thing.width*2,thing.height*2);}
-const stars=Array.from({length:56},(_,i)=>({x:(i*137.51)%512,y:(i*79.43)%256,z:i<8?2:i<24?1:0}));
+
 function render(){if(!encounter)return;const frame=Math.floor(encounter.tick/3)%4,ship=asset('ships',project.ship),enemy=asset('enemies',encounter.kind===4?'redesign-19':encounter.kind?'redesign-14':project.slots[record()[0]]);
  drawAsset('shipPreview',ship,frame);drawAsset('enemyPreview',enemy,frame);drawFrames('shipFrames',ship);drawFrames('enemyFrames',enemy);
- const g=$('flight').getContext('2d');g.imageSmoothingEnabled=false;g.fillStyle='#000';g.fillRect(0,0,512,256);
- for(const s of stars){const light=[50,105,190][s.z]+Math.sin(encounter.tick*.07+s.x)*15;g.fillStyle=`rgb(${light},${light},${light})`;const x=((s.x-encounter.tick*[1,3,7][s.z])%512+512)%512;g.beginPath();g.arc(x,s.y,1.4,0,Math.PI*2);g.fill();}
- if($('trails').checked){g.strokeStyle='#555';g.lineWidth=1;for(const e of encounter.enemies){g.beginPath();e.trail.forEach(([x,y],i)=>i?g.lineTo(x*4+16,y*2+16):g.moveTo(x*4+16,y*2+16));g.stroke();}}
- if(encounter.kind===4&&encounter.bossHP>0){const e=encounter.enemies[0];g.drawImage(sprite(enemy,0),Math.round(e.x*4),Math.round(e.y*2),128,64);g.fillStyle='#fff';g.fillRect(360,8,120*encounter.bossHP/(record()[3]*8),4);}
- else if(encounter.kind!==4)for(const e of encounter.enemies)if(e.visible)g.drawImage(sprite(enemy,frame),Math.round(e.x*4),Math.round(e.y*2),32,32);
- if(encounter.shieldTicks||encounter.invulnerable<1||encounter.tick%4<2)g.drawImage(sprite(ship,frame),encounter.player.x*4,encounter.player.y*2,80,32);
- g.fillStyle='#fff';for(const b of encounter.hostile){if(b.style){for(let y=0;y<8;y++)for(let x=0;x<8;x++)if(payload.playerBullet[y]&(128>>x))g.fillRect(Math.round(b.x*4)+x*4,Math.round(b.y*2)+y*2,4,2);}else g.fillRect(Math.round(b.x*4),Math.round(b.y*2),16,8);}for(const b of encounter.shots)g.fillRect(b.x*4,b.y*2,8,2);
- if(encounter.shieldTicks){g.strokeStyle='#fff';g.lineWidth=2;g.beginPath();g.ellipse(encounter.player.x*4+40,encounter.player.y*2+16,44,20,0,0,Math.PI*2);g.stroke();}
- for(const p of encounter.pickups){const index=p.type==='Shield'?4:Number(p.type.slice(-1))-1;const icon=payload.pickups?.[index];if(icon)g.drawImage(sprite(icon,0),p.x*4,p.y*2,32,32);}
-
- $('hits').textContent=(encounter.kind===4?`Boss HP: ${encounter.bossHP} · `:encounter.kind?'Indestructible meteors · ':'')+`Bombs: ${encounter.bombs}/3 · Shields: ${encounter.shields}/3 · Hits to ship: ${encounter.hits} · Enemy shots: ${encounter.hostile.length}/4`;
+ $('previewTitle').textContent=`Sector ${encounter.sector+1} · Wave ${encounter.wave+1}`;
+ renderer.draw(encounter,{trails:$('trails').checked,bossGuide:$('bossGuide').checked});
+ $('playbackStatus').textContent=campaign?`Sector ${encounter.sector+1} · Wave ${encounter.wave+1} / 48 · ${campaign.mode==='playing'?'Playing sequence':campaign.mode==='won'?'Sector complete':'Flight ended — restart to try again'}`:'Looping selected wave';
+ $('hits').textContent=(encounter.kind===4?`Boss HP: ${encounter.bossHP} · `:encounter.kind?'Indestructible meteors · ':'')+`Bombs: ${encounter.bombs}/3 · Shields: ${encounter.shields}/3 · Hits to ship: ${encounter.hits} · Enemy shots: ${encounter.hostile.length}/4${encounter.attack?' · '+['','Opening fan','Sine streams','Sweeping corridor'][encounter.attack.pattern]+' · '+encounter.attack.state:''}`;
  if($('originalGallery').open)for(const c of $('originalGrid').querySelectorAll('canvas')){const a=asset('enemies',c.dataset.id),ctx=c.getContext('2d');ctx.clearRect(0,0,64,64);ctx.imageSmoothingEnabled=false;ctx.drawImage(sprite(a,frame),0,0,64,64);}
  if($('gallery').open)for(const c of $('galleryGrid').querySelectorAll('canvas')){const a=asset('enemies',c.dataset.id),ctx=c.getContext('2d');ctx.clearRect(0,0,64,64);ctx.imageSmoothingEnabled=false;ctx.drawImage(sprite(a,frame),0,0,64,64);}
 }
-function loop(time){if(!last)last=time;acc+=Math.min(.15,(time-last)/1000);last=time;while(acc>=.06){if(encounter&&!paused)encounter.update({left:keys.has('ArrowLeft'),right:keys.has('ArrowRight'),up:keys.has('ArrowUp'),down:keys.has('ArrowDown'),fire:keys.has('ControlLeft')||keys.has('ControlRight'),shield:keys.has('Space'),bomb:keys.has('ShiftLeft')||keys.has('ShiftRight')});acc-=.06;}render();requestAnimationFrame(loop);}
+function loop(time){if(!last)last=time;acc+=Math.min(.15,(time-last)/1000);last=time;while(acc>=.06){if(encounter&&!paused){(campaign||encounter).update({left:keys.has('ArrowLeft'),right:keys.has('ArrowRight'),up:keys.has('ArrowUp'),down:keys.has('ArrowDown'),fire:!!campaign||keys.has('ControlLeft')||keys.has('ControlRight'),shield:keys.has('Space'),bomb:keys.has('ShiftLeft')||keys.has('ShiftRight')});if(campaign){const previous=encounter;encounter=campaign.encounter;highlightWave();if(previous!==encounter)$('waveTimeline').children[encounter.wave].scrollIntoView({block:'nearest',inline:'nearest'});}}acc-=.06;}render();renderWavePlans(time);requestAnimationFrame(loop);}
 function download(blob,name){const a=document.createElement('a'),url=URL.createObjectURL(blob);a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 async function submit(apply){if(busy)return;busy=true;$('apply').disabled=$('export').disabled=true;status('Building and checking the Atari executable…');try{FlightWorkshop.validate(project,payload.catalog);const r=await fetch('/api/diabolic/'+(apply?'apply':'export'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(project)});if(!r.ok)throw Error(await r.text());if(apply){await r.json();status('Applied. Restart diabolic/run-emulator.sh to play your selections.');}else{download(await r.blob(),'kult-diabolic-custom.xex');status('Verified Atari executable downloaded.');}}catch(e){status(e.message,true);}finally{busy=false;$('apply').disabled=$('export').disabled=false;}}
+// Capture the actual simulator's unopposed movement, including meteor entry/drain.
+function captureWave(sector,wave){
+ const sim=new FlightWorkshop.Encounter(project,payload.sine,sector,wave,{loop:false}),frames=[];
+ const limit=sim.kind>0&&sim.kind<4?240:sim.kind===4?160:150;
+ for(let i=0;i<limit;i++){sim.invulnerable=999;sim.update();frames.push(sim.enemies.map(e=>({x:e.x,y:e.y,visible:e.visible})));if(sim.complete)break;}
+ return {frames,kind:sim.kind,id:sim.kind===4?'redesign-19':sim.kind?'redesign-14':project.slots[sim.record[0]]};
+}
+function drawWavePlan(canvas,plan,index){
+ const g=canvas.getContext('2d'),scale=canvas.width/512,frame=plan.frames[index];if(!frame)return;
+ g.save();g.scale(scale,scale);g.imageSmoothingEnabled=false;g.fillStyle='#05070b';g.fillRect(0,0,512,256);
+ g.strokeStyle='#151c25';g.lineWidth=1;for(let x=0;x<512;x+=64){g.beginPath();g.moveTo(x,0);g.lineTo(x,256);g.stroke();}for(let y=0;y<256;y+=64){g.beginPath();g.moveTo(0,y);g.lineTo(512,y);g.stroke();}
+ const count=plan.kind===4?1:8;
+ for(let n=0;n<count;n++){
+  g.strokeStyle=n===0?'#78899d':'#354252';g.lineWidth=n===0?1.5:1;g.beginPath();let prev=null;
+  for(let i=Math.max(0,index-60);i<=index;i++){const e=plan.frames[i][n];if(!e.visible){prev=null;continue;}const x=e.x*4+(plan.kind===4?64:16),y=e.y*2+(plan.kind===4?32:16);if(prev&&Math.abs(e.y-prev.y)<40&&Math.abs(e.x-prev.x)<40)g.lineTo(x,y);else g.moveTo(x,y);prev=e;}g.stroke();
+  const e=frame[n];if(!e.visible)continue;const x=e.x*4,y=e.y*2;
+  g.drawImage(sprite(asset('enemies',plan.id),Math.floor(index/3)%4),x,y,plan.kind===4?128:32,plan.kind===4?64:32);
+  const previous=plan.frames[Math.max(0,index-2)][n],dx=e.x-previous.x,dy=e.y-previous.y;
+  if(previous.visible&&Math.hypot(dx,dy)>.1&&Math.abs(dy)<40){const angle=Math.atan2(dy*2,dx*4),cx=x+(plan.kind===4?64:16)+Math.cos(angle)*24,cy=y+(plan.kind===4?32:16)+Math.sin(angle)*24;g.strokeStyle='#c2cedd';g.beginPath();g.moveTo(cx-7*Math.cos(angle-.6),cy-7*Math.sin(angle-.6));g.lineTo(cx,cy);g.lineTo(cx-7*Math.cos(angle+.6),cy-7*Math.sin(angle+.6));g.stroke();}
+ }
+ g.globalAlpha=.5;g.drawImage(sprite(asset('ships',project.ship),0),16,112,80,32);g.restore();
+}
+function renderWavePlans(time){
+ if(!wavePlans.length)return;
+ if(time-mapLast<80)return;mapLast=time;
+ const selected=Number($('wave').value),plan=wavePlans[selected];
+ if($('animateWaveMap').checked){mapClock+=1;mapFrame=(mapFrame+1)%plan.frames.length;$('waveTime').value=mapFrame;}
+ drawWavePlan($('waveMap'),plan,mapFrame);
+ $('waveMapTime').textContent=`${(mapFrame*.06).toFixed(1)} s / ${((plan.frames.length-1)*.06).toFixed(1)} s · ${plan.kind===4?'Sub-boss entrance and movement':plan.kind?'Meteors enter from the top':'Eight-enemy formation'}`;
+ const bounds=$('waveTimeline').getBoundingClientRect();for(const c of $('waveTimeline').querySelectorAll('canvas')){const r=c.getBoundingClientRect();if(r.right<bounds.left||r.left>bounds.right)continue;const i=Number(c.dataset.wave),p=wavePlans[i];drawWavePlan(c,p,$('animateWaveMap').checked?(40+mapClock)%p.frames.length:Math.min(mapFrame,p.frames.length-1));}
+}
+function timeline(){
+ const sector=Number($('sector').value),selected=Number($('wave').value),names=['Formation','Meteors','Meteors B','Meteors C','Skull boss'];
+ wavePlans=project.waves[sector].map((_,i)=>captureWave(sector,i));mapFrame=40;mapClock=0;$('waveTime').max=wavePlans[selected].frames.length-1;$('waveTime').value=mapFrame;$('waveMapTitle').textContent=`Sector ${sector+1} · Wave ${selected+1} flight plan`;
+ $('waveTimeline').replaceChildren(...project.waves[sector].map((w,i)=>{const b=document.createElement('button'),c=document.createElement('canvas'),title=document.createElement('strong'),description=document.createElement('span');b.type='button';b.dataset.wave=i;b.setAttribute('aria-pressed',String(i===selected));b.setAttribute('aria-label',`Wave ${i+1}: ${names[project.encounters[sector][i]]}`);c.width=256;c.height=128;c.dataset.wave=i;const kind=project.encounters[sector][i];drawWavePlan(c,wavePlans[i],40);title.textContent=`${String(i+1).padStart(2,'0')} · ${names[kind]}`;description.textContent=`Path ${w[1]+1} · HP ${w[3]}`;b.append(c,title,description);b.onclick=()=>selectWave(i);return b;}));
+ $('previousWave').disabled=$('moveEarlier').disabled=selected===0;$('nextWave').disabled=$('moveLater').disabled=selected===47;highlightWave();
+}
+function selectWave(i){$('wave').value=Math.max(0,Math.min(47,i));showWave();$('waveTimeline').children[Number($('wave').value)].scrollIntoView({block:'nearest',inline:'nearest'});}
+function highlightWave(){for(const b of $('waveTimeline').children)b.classList.toggle('playing',!!campaign&&campaign.encounter.wave===Number(b.dataset.wave));}
+function moveWave(offset){const sector=Number($('sector').value),from=Number($('wave').value),to=from+offset;if(to<0||to>47)return;for(const rows of [project.waves,project.encounters])[rows[sector][from],rows[sector][to]]=[rows[sector][to],rows[sector][from]];selectWave(to);persist();}
 function mount(){
+ for(const [id,key] of [['bossPattern','pattern'],['bossDifficulty','difficulty']])$(id).onchange=()=>{project.boss[key]=Number($(id).value);changed();};
+ $('testBoss').onclick=()=>{restart();encounter=new FlightWorkshop.Encounter(project,payload.sine,Number($('sector').value),Number($('wave').value),{bossPreview:true,drops:payload.drops});paused=false;$('pause').textContent='Pause';$('flight').focus();};
+ $('waveTime').oninput=()=>{$('animateWaveMap').checked=false;mapFrame=Number($('waveTime').value);mapLast=0;renderWavePlans(performance.now());};
+ renderer=new DiabolicRenderer($('flight'),payload);
+ $('previousWave').onclick=()=>selectWave(Number($('wave').value)-1);$('nextWave').onclick=()=>selectWave(Number($('wave').value)+1);
+ $('moveEarlier').onclick=()=>moveWave(-1);$('moveLater').onclick=()=>moveWave(1);
+ $('copyWave').onclick=()=>{clipboard={record:clone(record()),kind:project.encounters[Number($('sector').value)][Number($('wave').value)]};$('pasteWave').disabled=false;status('Wave copied. Select a destination and paste to replace it.');};
+ $('pasteWave').onclick=()=>{if(!clipboard)return;const s=Number($('sector').value),w=Number($('wave').value);project.waves[s][w]=clone(clipboard.record);project.encounters[s][w]=clipboard.kind;showWave();persist();};
+ $('waveTimeline').onkeydown=e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();selectWave(Number($('wave').value)+(e.key==='ArrowRight'?1:-1));$('waveTimeline').children[Number($('wave').value)].focus();}};
+ $('playWaves').onclick=()=>{campaign=new FlightWorkshop.Campaign(project,payload.sine,Number($('sector').value),Number($('wave').value),{sectorOnly:true,drops:payload.drops});encounter=campaign.encounter;paused=false;$('pause').textContent='Pause';$('flight').focus();};
+ $('loopWave').onclick=()=>{restart();paused=false;$('pause').textContent='Pause';$('flight').focus();highlightWave();};
+ $('openSimulator').onclick=()=>{try{localStorage.setItem('kult-diabolic-simulator-draft',JSON.stringify(project));window.open(`/web/?draft=1&sector=${$('sector').value}&wave=${$('wave').value}`,'_blank');}catch(e){status('Could not store draft: '+e.message,true);}};
+
  options($('sector'),Array.from({length:8},(_,i)=>[i,`Sector ${i+1}`]),0);options($('wave'),Array.from({length:48},(_,i)=>[i,`Wave ${i+1}`]),0);options($('motion'),Array.from({length:32},(_,i)=>[i,`Path ${String(i+1).padStart(2,'0')}`]),0);options($('drop'),Array.from({length:32},(_,i)=>[i,`Pattern ${i+1}`]),0);
  options($('ship'),payload.catalog.ships.map(v=>[v.id,v.name]),project.ship);options($('design'),payload.catalog.enemies.map(v=>[v.id,v.name]),project.slots[0]);
  const labels=['Y phase A','Y phase B','X phase A','X phase B','Y spacing A','Y spacing B','X spacing A','X spacing B'];

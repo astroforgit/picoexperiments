@@ -1,0 +1,10 @@
+const assert=require('node:assert/strict');
+const {Encounter,Campaign}=require('./flight-core.js');
+(async()=>{const d=await(await fetch('http://127.0.0.1:8772/api/diabolic')).json(),p=structuredClone(d.project);
+p.encounters=Array.from({length:8},()=>Array(48).fill(0));p.firing.mode=0;
+const c=new Campaign(p,d.sine,0,47,{drops:d.drops});c.encounter.bombs=1;c.encounter.shields=2;c.encounter.weapon=3;c.encounter.score=500;c.encounter.age=149;c.update();assert.equal(c.encounter.sector,1);assert.equal(c.encounter.wave,0);assert.equal(c.encounter.bombs,1);assert.equal(c.encounter.shields,2);assert.equal(c.encounter.weapon,3);assert.equal(c.encounter.score,500);
+for(const [sector,sectorOnly] of [[0,true],[7,false]]){const end=new Campaign(p,d.sine,sector,47,{sectorOnly});end.encounter.age=149;end.update();assert.equal(end.mode,'won');}
+const m=new Campaign(p,d.sine);p.encounters[0][0]=1;m.encounter.age=191;m.encounter.enemies.forEach(e=>{e.meteorY=128;e.wait=99;});m.encounter.enemies[0].meteorY=100;m.update();assert.equal(m.encounter.wave,0);for(let i=0;i<15;i++)m.update();assert.equal(m.encounter.wave,1);
+p.encounters[0][0]=0;const e=new Encounter(p,d.sine,0,0,{loop:false,drops:Array.from({length:32},()=>[1,0,0,0,5,0,0,0])});e.update({bomb:true});assert.equal(e.pickups.length,2);assert.equal(e.score,800);e.update({bomb:true});assert.equal(e.pickups.length,2);e.update({weapon:true});assert.equal(e.weapon,2);e.update({weapon:true});assert.equal(e.weapon,2);
+const guardian=new Campaign(p,d.sine,0,47,{guardians:true});guardian.encounter.age=149;guardian.update();assert.equal(guardian.encounter.kind,5);assert.equal(guardian.encounter.bossHP,100);assert.equal(guardian.encounter.enemies.length,16);guardian.encounter.bossHP=0;guardian.update();assert.equal(guardian.encounter.sector,1);assert.equal(guardian.encounter.kind,0);
+console.log('Wave boundaries, inventory carryover, meteor drain, bounded drops and weapon edges passed.');})().catch(e=>{console.error(e);process.exitCode=1;});

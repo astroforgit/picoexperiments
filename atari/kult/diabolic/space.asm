@@ -24,6 +24,7 @@ Init
     sta $2D61
     sta $2D63
     sta $2D64
+    sta $2D7E
     sta $D008
     sta $D009
     sta $D00A
@@ -218,15 +219,12 @@ FireGate
     cmp #4
     bne SkipFire
     lda $2D22
-    beq SkipFire
-    lda $2D21
-    and #63
-    cmp #40
-    bcs SkipFire
-    inc FireClock
-    lda FireClock
-    cmp #3
-    jmp FireCompare
+    bne BossAlive
+    jsr InitShots
+    jmp MoveShots
+BossAlive
+    jsr $6550
+    jmp MoveShots
 RegularFire
     inc FireClock
     lda FireClock
@@ -321,9 +319,22 @@ MoveOne
     bne MoveActive
     jmp NextShot
 MoveActive
+    cmp #2
+    bne LiveMissile
+    jmp DrawLaser
+LiveMissile
+    lda $2D20
+    cmp #4
+    bne NormalVelocity
+    lda BulletX,x
+    sec
+    sbc $2D7C
+    jmp MovedX
+NormalVelocity
     lda BulletX,x
     sec
     sbc FireSpeed
+MovedX
     bcc RemoveShot
     sta BulletX,x
     lda BulletY,x

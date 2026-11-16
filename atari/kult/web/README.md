@@ -1,96 +1,66 @@
-# Kult browser edition — Diabolic space variant
+# Diabolic browser simulator
 
-A playable, local JavaScript adaptation of the supplied Atari Kult game.
+The browser now loads the currently applied Atari project from the local editor
+server, including selected animated sprites, all 8 × 48 waves, native movement
+parameters, encounters, capped drop tables and circular pickup icons. It uses the
+same simulation and renderer as the flight workshop. The bottom-only HUD uses the
+actual native 256 × 32 artwork and digit font, with dotted weapon patterns, lives,
+bombs, shields and the skull boss health bar. Equal-sized monochrome stars move
+right to left at three speeds. No fuel, planets, buildings or wave minimap.
 
-The current browser variant replaces the helicopter with the **Diabolic**, a
-swept-wing spacecraft with claw-like tips, a glowing cockpit and animated
-engines. A seeded layered starfield, slowly moving nebulae and a shaded planet
-replace the building terrain. Depth-dependent star speeds and steering parallax
-create a perspective effect. There is no terrain collision in this variant.
-Enemy waves, weapons, pickups and stage progression remain.
-
-`space.js` contains the new canvas artwork. Original helicopter and map data
-remain archived in `assets.json`; the browser no longer draws them. The Atari
-XEX and the pixel editor are unchanged.
-Start the persistent local server from the Kult directory:
+From the Kult directory:
 
 ```sh
 python3 editor/start-background.py
 ```
 
-Then open **http://127.0.0.1:8772/web/**. The server runs independently of the
-launching terminal. Run the command again after rebooting; an already-running
-server is reused. Logs and its PID are saved under `editor/.runtime/`.
-Alternatively, `editor/run.sh` runs in the foreground until its terminal closes.
-The pixel workshop also links to it through **Play Kult**.
-
-Alternatively serve this directory with `python3 -m http.server 8773 --bind
-127.0.0.1` and open http://127.0.0.1:8773. The workshop backlink then needs the
-editor's separate address. No npm install, external CDN or runtime Python
-asset decoding is required: `assets.json` is committed-ready static data.
+Open http://127.0.0.1:8772/web/ to start flying immediately. A plain static HTTP
+server is no longer sufficient: this version needs `/api/diabolic` and the shared
+flight simulation served by the editor. No npm install is needed.
 
 ## Controls
 
-- Arrow keys or WASD: move. Space: fire. X: screen-clearing pulse.
-- P/Escape: pause/resume. Enter: start, resume or play again.
-- Touch: drag the playfield to steer; hold Fire and tap Pulse.
-- Choose any of eight starting sectors before starting/restarting.
-- Sound toggle enables synthesized effects after interaction; fullscreen is
-  available in supporting browsers. Leaving the tab automatically pauses.
+- Arrows / WASD: move; the ship fires automatically.
+- Ctrl: cycle four weapon patterns.
+- Shift: bomb; Space: one-second shield. Three of each at the start.
+- P / Escape or Pause: pause/resume. Leaving the window pauses automatically.
+- Touch: drag to steer, use the weapon/bomb/shield buttons.
+- Select a sector and starting wave, then Restart here to practice.
 
-Three ships and three pulses start each flight. Weapons have three spread
-levels, with a maximum of six player shots on screen. Every twelfth defeated
-enemy drops a pickup; weapon, pulse and extra-ship drops cycle. A guardian ends
-each sector. Clearing all eight sectors wins. High score persists locally;
-progress within a flight does not. Restart immediately begins a fresh flight.
+Each sequence preserves inventory, weapon, score and damage between waves.
+Meteors drain offscreen before the next wave begins. Skull bosses drop three
+rewards. Normal formations use the current native drop tables (at most two).
 
-## Original data and reconstruction limits
+## Editor drafts
 
-`build_assets.py` uses the existing recovery tools against `Kult (v1).xex`.
-It executes Kult's own map decoder at $0300 for each stream in $C217, expands
-section sequences at $4B00 using the map pointer formula from $E920, and reads:
+At http://127.0.0.1:8772/flight/, select a sector and scroll its 48 wave cards.
+Choose a card to edit encounter type, enemy slot, movement, HP and drop pattern.
+Move earlier/later reorders the whole record and its encounter type; Copy/Paste
+replaces a destination wave. Sector lengths stay fixed for Atari compatibility.
 
-- Four player frames and all 32 enemy designs × four frames, plus effects.
-- 256 background tiles and eight stage maps (512 columns × eight rows).
-- All 384 wave records, in original stage order.
-- The sine lookup at $7164 and all 32 motion records at $7310.
-- Guardian composition at $FED2 and tiles at $DAC0 (one-based map indices).
+Play from selected wave runs to the end of the selected sector inside the editor.
+Loop selected wave is for movement tuning. Play draft in browser game saves a
+separate local preview snapshot and opens the full browser simulator at the
+selected wave. It does not apply changes to Atari files. Save/Open project and
+Apply to local game include all edits; applying rebuilds the native XEX.
 
-`motionPoints` translates $E7A4–$E7F8, preserving byte wrapping and all eight
-slot positions. Tests compare 80 successive updates for every referenced
-motion against execution of the original 6502 routine (2,560 samples).
+## Reconstruction limits
 
-This is **not a cycle-accurate port or Atari emulator**. Gameplay scheduling,
-entry/exit offsets, coordinate scaling, scrolling speed, enemy health, weapon
-spread, collision cores, pickups, score, lives, guardian attacks and stage
-completion rules are reconstructed/adapted. Formation/state and delay fields
-are retained in the extracted wave records but not interpreted as original
-behaviour. Each wave launches eight enemies. Waves expire after a bounded
-time so the player can progress after missing enemies. Stage progression is
-tied to 48 waves and a guardian, not the original map-end counter. The guardian
-uses the original initial composition, without all original transformations.
+This is a JavaScript simulation, not an Atari emulator. Wave movement uses the
+translated native motion routine; collision, timing, scoring, weapons and sounds
+are approximations. Sector-end guardians retain their recovered original artwork and 100 HP; POKEY
+music is not reproduced.
+`engine.js`, `space.js` and `assets.json` retain the earlier reconstruction and
+archived source data; the active UI uses `flight-core.js` and `renderer.js`.
 
-Colours are an illustrative four-colour palette. Sound effects are Web Audio
-synthesis; original POKEY music, interrupt/display-list effects and menus are
-not reproduced. Editor drafts are not automatically applied to the browser
-version. Original XEX/ATR files remain unchanged.
+Checks: `editor/waves-core.test.cjs`, `editor/waves.browser.test.cjs`, plus existing
+flight, encounter, shield and bomb tests. Browser tests require Playwright.
 
-The original scenery remains recoverable with `build_assets.py`. Regenerating
-assets does not replace the browser ship or space artwork.
+## Boss attacks
 
-## Development and checks
-
-```sh
-python3 web/build_assets.py
-node web/engine.test.cjs
-node web/browser.test.cjs
-```
-
-Run from the parent Kult directory. Extraction requires `py65`, as does the
-existing decompiler. Browser testing requires Playwright and the editor server;
-set `PLAYWRIGHT_MODULE`, `CHROMIUM_PATH` or `GAME_URL` if needed. The native
-engine uses a fixed 50 Hz simulation, independent of rendering frame rate.
-
-Tests cover CPU motion equivalence, map/wave coverage, shooting, pickups,
-invulnerability, pause, all stage transitions, victory/restart, keyboard and
-touch input, sound activation, local score persistence and narrow layout.
+Skull bosses and sector guardians emit staggered, curved bullet trains from their
+front/mouth. The editor selects curved fans, weaving streams, slower slaloms or a
+rotating sequence. A muzzle warning precedes each cycle. Shots use captured aim,
+then follow independent trajectories; they never home on the player. Up to four
+shots are active, with pauses between trains. The editor can show projected paths
+for practice; no fixed safe corridor is drawn.
