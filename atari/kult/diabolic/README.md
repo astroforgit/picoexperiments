@@ -503,3 +503,15 @@ These are tested escape routes, not a guarantee that arbitrary movement is safe.
 `test_boss_actions.py` also compares primary firing directly against execution
 of the original guardian routine, checks reduced sine-shot density and confirms
 native/browser state and projectile parity through full fights.
+
+
+Incoming sprite visibility: meteor lane reservations for every direction remain
+hidden until their progress is below 128. Ordinary formations reset their
+position-ready flag when loaded and set it on their first movement update;
+this prevents new graphics flashing at the previous wave's coordinates.
+`test_entry_visibility.py` covers both framebuffers and all four scroll phases,
+while preserving active sprites, explosions and rewards. The Altirra check
+`verify-emulator.ps1 -CheckPendingSprites -DebugKey 3` holds pending actors across
+real scroll/render cycles and checks that neither buffer saves their pixels.
+Pass `-GamePath` to capture a pre-fix executable for comparison (the no-draw
+assertion is intentionally disabled for that baseline).

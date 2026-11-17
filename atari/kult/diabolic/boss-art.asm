@@ -171,14 +171,22 @@ VisibleActor
  lda $FD04
  bne OrdinaryActor
  lda $2D20
- cmp #7
- bne CheckSubBossActor
+ beq FormationActor
+ cmp #4
+ beq CheckSubBossActor
+ ; Hide every meteor lane reservation until its scheduled entry.
  lda $2D40,y
  bmi HiddenActor
  jmp OrdinaryActor
-CheckSubBossActor
- cmp #4
+FormationActor
+ ; Loader runs after motion: these are still the previous wave's positions.
+ lda $2D21
  bne OrdinaryActor
+ lda $74E0,y
+ cmp #16
+ bne OrdinaryActor
+ beq HiddenActor
+CheckSubBossActor
  lda $2D22
  beq OrdinaryActor
  lda $F398

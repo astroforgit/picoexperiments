@@ -66,6 +66,7 @@ class BossPerformance(unittest.TestCase):
                 m = c.memory
                 m[0x2d20],m[0x2d22],m[0xf398],m[0xfd04] = mode,hp,dying,guardian
                 c.y = 3
+                m[0x2d21] = 1 # Existing ordinary formation has run its motion.
                 m[0x74e3] = state
                 call(c, 0x486)
                 self.assertEqual(c.a, state)

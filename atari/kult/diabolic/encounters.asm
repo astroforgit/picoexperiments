@@ -169,6 +169,8 @@ MoveEncounter
 NotMixedMove
  lda Mode
  bne SpecialMove
+ lda #1
+ sta Age ; This wave now owns its positions; allow ordinary enemy drawing.
  jmp $E7A4
 SpecialMove
  ; Original player-death effect reuses the sprite buffers, then clears actors.

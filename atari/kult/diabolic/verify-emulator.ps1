@@ -1,4 +1,4 @@
-param([string]$OutputDirectory, [switch]$CheckEdges, [switch]$CheckShield, [switch]$LongRun, [switch]$CheckDebugJump, [switch]$CheckSpriteWaves, [switch]$CheckBossActions, [switch]$CheckBossExit, [switch]$CheckBossPerformance, [switch]$CheckBossMeteorDeath, [switch]$CheckMeteorEdges, [switch]$PerformanceContinuous, [string]$GamePath, [string]$FirstCycles='1312D00', [ValidateRange(1,6)][int]$DebugKey=1)
+param([string]$OutputDirectory, [switch]$CheckEdges, [switch]$CheckShield, [switch]$LongRun, [switch]$CheckDebugJump, [switch]$CheckSpriteWaves, [switch]$CheckBossActions, [switch]$CheckBossExit, [switch]$CheckBossPerformance, [switch]$CheckBossMeteorDeath, [switch]$CheckMeteorEdges, [switch]$CheckPendingSprites, [switch]$PerformanceContinuous, [string]$GamePath, [string]$FirstCycles='1312D00', [ValidateRange(1,6)][int]$DebugKey=1)
 $ErrorActionPreference='Stop'
 $game=Join-Path $PSScriptRoot 'kult-diabolic.xex'
 if ($GamePath) {$game=$GamePath}
@@ -25,7 +25,7 @@ $commands=@(
 'gcr $989680',
 ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'flight-later.png')+'"'),
 'db 43FF L1','db 4E75 L10','r','.logclose','.autotest_exit')
-if ($CheckDebugJump -or $CheckSpriteWaves -or $CheckBossActions -or $CheckBossExit -or $CheckBossPerformance -or $CheckBossMeteorDeath -or $CheckMeteorEdges) {
+if ($CheckDebugJump -or $CheckSpriteWaves -or $CheckBossActions -or $CheckBossExit -or $CheckBossPerformance -or $CheckBossMeteorDeath -or $CheckMeteorEdges -or $CheckPendingSprites) {
     $commands=$commands[0..($commands.Count-3)]
     # Simulate a held debug number at the two POKEY read sites, then restore runtime code.
     $keyCode=@(0x1F,0x1E,0x1A,0x18,0x1D,0x1B)[$DebugKey-1]
@@ -36,6 +36,29 @@ if ($CheckDebugJump -or $CheckSpriteWaves -or $CheckBossActions -or $CheckBossEx
         ('gcr $'+$previewCycles),
         ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'debug-boss.png')+'"'),
         'db 2D20 L10','r','.logclose','.autotest_exit')
+}
+if ($CheckPendingSprites) {
+    $commands=$commands[0..($commands.Count-3)]
+    # Hold the mover while exercising real render/scroll/restore loops.
+    # Pending state and coordinates reproduce the incoming-edge placeholders.
+    # Disable player-shot hits during the artificial hold so they cannot turn
+    # these pending actors into intentionally visible explosion frames.
+    $commands+=@('e 3B03 60','e F7F5 EA EA EA','e FD04 00','e 1BE0 00 00 00 00 00 00 00 00')
+    foreach ($mode in @(2,3,0)) {
+        $commands+=@(('e 2D20 {0:X2} 00' -f $mode),'e F398 00','e F0BF FF',
+          'e 74E0 10 10 10 10 10 10 10 10','e 7482 00 00 00 00 00 00 00 00',
+          'e 2D40 80 80 80 80 80 80 80 80','e 746A 00 10 20 30 40 50 60 70')
+        if ($mode -eq 0) {$commands+=@('e 7444 60','e 7462 1C 1C 1C 1C 1C 1C 1C 1C')}
+        else {$commands+=@('e 7444 00','e 7462 7C 7C 7C 7C 7C 7C 7C 7C')}
+        foreach ($sample in 1..3) {
+            $commands+=@('gcr $80000',
+              ('.autotest_saveimage "'+(Join-Path $OutputDirectory ('pending-'+$mode+'-'+$sample+'.png'))+'"'),
+              'db 74A8 L20','db 2D20 L2','db 7444 L3')
+        }
+    }
+    $commands+=@('e 3B03 4C','e F7F5 20 27 FA','gcr $200000',
+      ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'pending-resumed.png')+'"'),
+      'db 2D20 L2','.logclose','.autotest_exit')
 }
 if ($CheckMeteorEdges) {
     $commands=$commands[0..($commands.Count-3)]
@@ -136,6 +159,18 @@ foreach ($name in @('direct-start.png','flight.png','flight-later.png')) {
     if ($capture.LastWriteTime -lt $started) {throw ('Missing fresh emulator capture: '+$name)}
 }
 if ((Get-Content -Raw -LiteralPath $log) -match 'Illegal instruction hit') {throw 'Emulator hit an illegal instruction; inspect gameplay.log.'}
+if ($CheckPendingSprites -and !$GamePath) {
+    $trace=Get-Content -Raw -LiteralPath $log
+    $records=[regex]::Matches($trace,'(?im)^74(?:A8|B8):\s+((?:[0-9A-F]{2}\s+){16})')
+    if ($records.Count -ne 18) {throw 'Missing pending-sprite framebuffer checks.'}
+    foreach ($record in $records) {
+        $values=$record.Groups[1].Value.Trim() -split '\s+'
+        for ($i=1;$i -lt 16;$i+=2) {
+            if ([Convert]::ToInt32($values[$i],16) -ge 128) {throw 'A pending actor was drawn and saved into a framebuffer.'}
+        }
+    }
+    if ($trace -notmatch '(?im)^2D20:\s+00 01\s') {throw 'Ordinary wave did not resume movement after the pending-state check.'}
+}
 if ($CheckBossMeteorDeath) {
     $trace=Get-Content -Raw -LiteralPath $log
     $deaths=@([regex]::Matches($trace,'(?im)^F398:\s+([0-9A-F]{2})') | ForEach-Object {$_.Groups[1].Value})
