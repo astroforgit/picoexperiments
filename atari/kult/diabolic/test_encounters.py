@@ -31,7 +31,8 @@ class Encounters(unittest.TestCase):
    c.memory[0x74e0:0x74e8]=[0]*8;self.call(c,0x3b03);self.assertEqual(c.memory[0x74e0:0x74e8],[0]*8)
  def test_boss_composite_health_and_restore(self):
   c=self.cpu();original=c.memory[0x7d00:0x8000].copy();self.load(c,4)
-  for _ in range(25):self.call(c,0x3b03)
+  for _ in range(25):
+   self.call(c,0x3b03);self.call(c,0xdac0)
   self.assertEqual(c.memory[0x7462:0x746a],[88,96,104,112]*2)
   self.assertEqual(c.memory[0x2d22],32)
   for i in range(8):c.y=i;self.call(c,0x3b06);self.assertEqual(c.a,i)

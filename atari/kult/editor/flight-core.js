@@ -53,7 +53,9 @@ class Encounter{
  get meteor(){return this.kind>0&&this.kind!==4&&this.kind!==5;}
  get boss(){return this.kind===4||this.kind===5;}
  get kind(){if(this.options.bossPreview)return 4;if(this.options.guardian)return 5;return this.project.encounters?.[this.sector]?.[this.wave]||0;}
- reset(){this.bossWarmup=24;this.bossClock=29;this.attack=null;this.attackCycle=-1;this.bombSuppress=0;this.complete=false;this.bossHP=this.options.guardian?100:this.record[3]*8;this.bossMaxHP=this.bossHP;this.rewarded=false;this.pickups=[];this.collected=[];this.age=0;this.phase=[0,0,0,0];this.enemies=Array.from({length:this.options.guardian?16:8},(_,i)=>({i,x:160,y:i*14,hp:this.record[3],trail:[],meteorY:128,wait:i?i*16+24:0}));this.shots=[];this.hostile=[];this.cooldown=0;this.invulnerable=40;this.fireClock=0;this.enemyIndex=0;}
+ get bossVulnerable(){return this.bossHP>0&&(this.options.curtainOnly||this.ai.phase===1||this.ai.phase===2);}
+ get bossVisible(){return this.bossHP>0&&(this.options.curtainOnly||[1,2,3,6,8].includes(this.ai.phase))&&this.bossX<128;}
+ reset(){this.ai={phase:0,timer:0,rng:this.options.aiSeed??0x5d,cooldown:0,art:1,frame:0,direction:0,wait:[]};this.bossX=this.options.curtainOnly?88:128;this.bossTop=32;this.bossWarmup=24;this.bossClock=29;this.attack=null;this.attackCycle=-1;this.bombSuppress=0;this.complete=false;this.bossHP=this.options.guardian?100:this.record[3]*8;this.bossMaxHP=this.bossHP;this.rewarded=false;this.pickups=[];this.collected=[];this.age=0;this.phase=[0,0,0,0];this.enemies=Array.from({length:8},(_,i)=>({i,x:160,y:i*14,hp:this.record[3],trail:[],meteorY:128,wait:i?i*16+24:0}));this.shots=[];this.hostile=[];this.cooldown=0;this.invulnerable=40;this.fireClock=0;this.enemyIndex=0;}
  get record(){return this.project.waves[this.sector][this.wave];}
  update(input={}){
   if(this.complete)return;
@@ -63,7 +65,7 @@ class Encounter{
   this.shieldTicks=Math.max(0,this.shieldTicks-1);
   if(input.shield&&!this.shieldHeld&&!this.shieldTicks&&this.shields>0){this.shields--;this.shieldTicks=17;}
   this.shieldHeld=!!input.shield;
-  if(input.bomb&&!this.bombHeld&&this.bombs>0){this.bombs--;this.hostile=[];this.bombSuppress=0;this.bossWarmup=25;this.bossClock=29;if(this.boss)this.bossHP=Math.max(0,this.bossHP-16);else if(!this.kind)for(const e of this.enemies)e.hp=0;}
+  if(input.bomb&&!this.bombHeld&&this.bombs>0){this.bombs--;if(!this.boss||this.ai.art!==2)this.hostile=[];this.bombSuppress=0;this.bossWarmup=25;this.bossClock=29;if(this.boss&&(this.options.curtainOnly||this.ai.phase<3))this.bossHP=Math.max(0,this.bossHP-16);else if(!this.kind)for(const e of this.enemies)e.hp=0;}
   this.bombHeld=!!input.bomb;
   if(input.right&&!input.left&&this.player.x<100)this.player.x+=3;
   if(input.left&&!input.right&&this.player.x>=3)this.player.x-=3;
@@ -76,7 +78,7 @@ class Encounter{
     else if(this.age<192){if(e.wait>0)e.wait--;else e.meteorY=0;}
     e.visible=e.meteorY<128;const up=this.kind===2||(this.kind===6&&(e.i&1));e.x=this.kind===3?127-e.meteorY:[8,68,108,38,88,18,58,118][e.i];e.y=this.kind===3?[0,64,112,32,96,16,80,48][e.i]:up?127-e.meteorY:e.meteorY;
    }
-   else if(this.boss){e.x=(this.kind===4?88:Math.max(88,128-this.age*2))+(e.i%4)*8;e.y=48+Math.floor(e.i/4)*16;e.visible=this.bossHP>0;}
+   else if(this.boss){e.x=this.bossX+(e.i%4)*8;e.y=this.bossTop+16+Math.floor(e.i/4)*16;e.visible=this.bossVulnerable;}
    else e.visible=e.hp>0;
 e.trail.push([e.x,e.y]);if(e.trail.length>28)e.trail.shift();}
   if(input.fire&&!this.cooldown){for(const y of [[8],[4,11],[2,8,14],[1,5,10,14]][this.weapon-1])this.shots.push({x:this.player.x+20,y:this.player.y+y});this.cooldown=4;}
@@ -86,8 +88,8 @@ e.trail.push([e.x,e.y]);if(e.trail.length>28)e.trail.shift();}
   if(this.boss&&this.bossHP<=0)for(const e of this.enemies)e.visible=false;
   for(const e of this.enemies)if(e.visible&&this.player.x<e.x+8&&this.player.x+20>e.x&&this.player.y<e.y+16&&this.player.y+16>e.y&&!this.invulnerable&&!this.shieldTicks){this.hits++;this.invulnerable=40;}
   // Conservative contact envelope for the full 64x64 native tile artwork.
-  if(this.kind===4&&this.bossHP>0&&this.player.x+20>88&&this.player.x<120&&this.player.y+16>32&&this.player.y<96&&!this.invulnerable&&!this.shieldTicks){this.hits++;this.invulnerable=40;}
-  const f={...this.project.firing};if(this.kind)f.mode=0;if(this.boss)this.bossAttack();
+  if(this.boss&&this.bossVisible&&this.player.x+20>this.bossX&&this.player.x<this.bossX+32&&this.player.y+16>this.bossTop&&this.player.y<this.bossTop+64&&!this.invulnerable&&!this.shieldTicks){this.hits++;this.invulnerable=40;}
+  const f={...this.project.firing};if(this.kind)f.mode=0;if(this.boss){if(this.options.curtainOnly)this.curtainAttack();else this.bossActions();}
   if(f.mode&&++this.fireClock>=f.interval){this.fireClock=0;this.enemyIndex=this.boss?(this.enemyIndex===0?4:0):(this.enemyIndex+1)&7;const e=this.enemies[this.enemyIndex];
    if(this.hostile.length<4&&e.visible&&e.x>=24&&e.x<120&&e.y+8<124)this.hostile.push({x:e.x,y:e.y+8,style:!this.kind&&(this.record[0]&1)&&!this.hostile.some(b=>b.style)?1:0,dy:f.mode===2?Math.sign(this.player.y-e.y):0});
   }
@@ -99,7 +101,39 @@ e.trail.push([e.x,e.y]);if(e.trail.length>28)e.trail.shift();}
   this.pickups=this.pickups.filter(p=>p.x>-8);
   if((!this.kind&&this.age>=150)||(this.meteor&&this.age>=192&&this.enemies.every(e=>!e.visible))||(this.boss&&this.rewarded&&!this.pickups.length)){if(this.options.loop===false)this.complete=true;else this.reset();}
  }
- bossAttack(){
+ bossActions(){
+  const a=this.ai,rand=()=>a.rng=(a.rng>>1)^((a.rng&1)?0xb8:0),count=()=>this.hostile.length;
+  const clean=()=>{this.hostile=this.hostile.filter(b=>b.x>=0);};
+  const orbs=()=>{for(const b of this.hostile){b.x-=b.style===2?3:4;b.age++;if(b.style===2)b.y=Math.max(0,Math.min(112,b.baseY+(this.sine[(b.age*8)&255]>>1)-14));}clean();};
+  const rocks=()=>{for(let lane=7;lane>=0;lane--){let b=this.hostile.find(b=>b.lane===lane);if(b){b.progress+=[2,4,6,3,5,4,7,5][lane];if(b.progress>=128){this.hostile=this.hostile.filter(v=>v!==b);a.wait[lane]=32;continue;}}else if(a.phase===5&&this.project.firing.mode){if(a.wait[lane]>0){a.wait[lane]--;continue;}b={boss:true,art:'meteor',lane,progress:0,x:0,y:0};this.hostile.push(b);}else continue;
+   b.x=a.direction===3?127-b.progress:[8,68,108,38,88,18,58,118][lane];b.y=a.direction===3?[0,64,112,32,96,16,80,48][lane]:a.direction===2||(a.direction===6&&(lane&1))?127-b.progress:b.progress;
+  }};
+  if(this.bossHP<=0){this.hostile=[];return;}
+  if(a.phase===0){a.phase=8;this.bossX=128;this.bossTop=32;a.timer=0;a.cooldown=0;a.frame=0;a.art=1;this.hostile=[];}
+  if(a.phase===1||a.phase===2){
+   const i=(a.timer>>2)&15,target=[64,40,16,16,8,14,8,4,0,4,8,14,8,16,16,40][i];
+   a.frame=[0,1,1,2,2,3,3,3,3,3,3,3,2,2,1,1][i];this.bossTop+=Math.max(-4,Math.min(4,target-this.bossTop));orbs();
+   if(a.cooldown>0)a.cooldown--;else if(a.phase===2||(rand()&3)===0){
+    const limit=a.phase===2?4:6;let lane=limit-1;while(lane>=0&&this.hostile.some(b=>b.lane===lane))lane--;
+    if(lane>=0&&this.project.firing.mode){this.hostile.push({boss:true,art:'orb',lane,x:this.bossX,y:this.bossTop+24,baseY:this.bossTop+24,age:0,style:a.phase});if(a.phase===2)a.cooldown=11;}
+   }
+   if(++a.timer>=96){a.phase=3;a.nextHazard=4+(rand()&1);}
+  }else if(a.phase===3){
+   orbs();if(this.bossX<128)this.bossX+=2;else if(!count()){
+    a.phase=a.nextHazard;a.timer=0;this.bossWarmup=0;this.bossClock=29;this.attack=null;
+    if(a.phase===4){a.art=0;this.bossX=88;this.bossTop=32;}else{a.art=2;a.direction=[1,2,3,6][rand()&3];a.wait=Array.from({length:8},(_,i)=>i?i*16+24:0);}
+   }
+  }else if(a.phase===4){this.curtainAttack();clean();if(++a.timer>=120)a.phase=7;}
+  else if(a.phase===5){rocks();if(++a.timer>=192)a.phase=7;}
+  else if(a.phase===7){
+   if(a.art===2)rocks();else{for(const b of this.hostile)advanceBossShot(b);clean();}
+   if(!count()){a.phase=6;this.bossX=128;this.bossX-=2;}
+  }else{
+   this.bossX-=2;if(this.bossX===88){a.timer=0;a.cooldown=0;a.art=1;a.phase=1+(rand()&1);this.attack=null;}
+  }
+  for(const e of this.enemies){e.x=this.bossX+(e.i%4)*8;e.y=this.bossTop+16+Math.floor(e.i/4)*16;e.visible=this.bossVulnerable;}
+ }
+ curtainAttack(){
   const setting=this.project.boss||{pattern:0,difficulty:1};
   this.bombSuppress=Math.max(0,this.bombSuppress-1);
   if(this.bossHP<=0||!this.project.firing.mode){this.hostile=[];this.attack=null;return;}
@@ -111,7 +145,7 @@ e.trail.push([e.x,e.y]);if(e.trail.length>28)e.trail.shift();}
   const a=this.attack;a.phase=phase;a.state=phase<=18?'forming':'rush';
   for(const b of this.hostile)advanceBossShot(b);
   for(let lane=0;lane<8;lane++)if(phase===(lane<6?0:a.guardDelay)&&!this.hostile.some(b=>b.lane===lane&&b.x>=0)){
-   const head=this.enemies[0];this.hostile.push({boss:true,x:head.x,y:head.y+16,lane,pattern:a.pattern,age:0,gapRow:a.gapRow,baseX:head.x,sine:this.sine});
+   const head={x:88,y:48};this.hostile.push({boss:true,art:'curtain',x:head.x,y:head.y+16,lane,pattern:a.pattern,age:0,gapRow:a.gapRow,baseX:head.x,sine:this.sine});
   }
 
  }

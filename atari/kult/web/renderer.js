@@ -1,7 +1,7 @@
 /* Shared monochrome renderer: current Atari sprites and actual 256×32 HUD art. */
 (function(root){'use strict';
 class Renderer{
- constructor(canvas,payload){this.canvas=canvas;this.g=canvas.getContext('2d');this.data=payload;this.cache=new Map();this.assets=new Map([...payload.catalog.ships,...payload.catalog.enemies,...payload.catalog.bosses,...payload.pickups,{id:'guardian',width:64,height:64,frames:[payload.guardian]}].map(a=>[a.id,a]));this.panel=document.createElement('canvas');this.panel.width=256;this.panel.height=32;this.pg=this.panel.getContext('2d');}
+ constructor(canvas,payload){this.canvas=canvas;this.g=canvas.getContext('2d');this.data=payload;this.cache=new Map();this.assets=new Map([...payload.catalog.ships,...payload.catalog.enemies,...payload.catalog.bosses,...payload.catalog.projectiles,...payload.pickups,{id:'guardian',width:64,height:64,frames:[payload.guardian]}].map(a=>[a.id,a]));this.panel=document.createElement('canvas');this.panel.width=256;this.panel.height=32;this.pg=this.panel.getContext('2d');}
  sprite(id,frame=0){const key=id+':'+frame;if(this.cache.has(key))return this.cache.get(key);const a=this.assets.get(id),c=document.createElement('canvas');c.width=a.width;c.height=a.height;const g=c.getContext('2d');g.fillStyle='#e6e6e6';a.frames[frame%a.frames.length].forEach((v,i)=>{if(v)g.fillRect(i%a.width,Math.floor(i/a.width),1,1);});this.cache.set(key,c);return c;}
  draw(e,{trails=false,hud=true,bossGuide=false}={}){
   const g=this.g,frame=Math.floor(e.tick/3)%4;g.imageSmoothingEnabled=false;g.fillStyle='#000';g.fillRect(0,0,this.canvas.width,this.canvas.height);g.save();g.beginPath();g.rect(0,0,512,256);g.clip();
@@ -15,11 +15,11 @@ class Renderer{
   if(bossGuide)for(const b of e.hostile)if(b.boss&&b.trail){g.strokeStyle='#596a80';g.beginPath();b.trail.forEach(([x,y],i)=>i?g.lineTo(x*4+16,y*2+16):g.moveTo(x*4+16,y*2+16));g.stroke();}
   if(bossGuide){const bullets=e.hostile.filter(b=>b.boss);if(bullets.length){const left=Math.min(...bullets.map(b=>b.x))*4,right=Math.max(...bullets.map(b=>b.x))*4+32,top=Math.min(...bullets.map(b=>b.y))*2,bottom=Math.max(...bullets.map(b=>b.y))*2+32;g.strokeStyle='#72859b';g.setLineDash([3,4]);g.strokeRect(left,top,right-left,bottom-top);g.setLineDash([]);}}
   const enemy=e.kind===5?'boss-insect-queen':e.kind===4?(e.project.boss?.design||'boss-bone-dragon'):e.kind?'redesign-14':e.project.slots[e.record[0]];
-  if(e.boss&&e.bossHP>0){const a=e.enemies[0];g.drawImage(this.sprite(enemy,(e.age>>2)&3),Math.round(a.x*4),Math.round((a.y-(e.kind===4?16:0))*2),128,128);}
+  if(e.boss&&e.bossVisible){g.drawImage(this.sprite(enemy,e.options.curtainOnly?(e.age>>2)&3:e.ai.frame),Math.round(e.bossX*4),Math.round(e.bossTop*2),128,128);}
   else if(!e.boss)for(const a of e.enemies)if(a.visible&&a.hp>0)g.drawImage(this.sprite(enemy,frame),Math.round(a.x*4),Math.round(a.y*2),32,32);
   if(e.shieldTicks||!e.invulnerable||e.tick%4<2)g.drawImage(this.sprite(e.project.ship,frame),e.player.x*4,e.player.y*2,80,32);
   g.fillStyle='#fff';for(const b of e.shots)g.fillRect(b.x*4,b.y*2,8,2);
-  for(const b of e.hostile){if(b.boss){g.drawImage(this.sprite('original-17',2+((e.bossClock>>2)&1)),Math.round(b.x*4),Math.round(b.y*2),32,32);}else if(b.style){for(let y=0;y<8;y++)for(let x=0;x<8;x++)if(this.data.playerBullet[y]&(128>>x))g.fillRect(Math.round(b.x*4)+x*4,Math.round(b.y*2)+y*2,4,2);}else g.fillRect(Math.round(b.x*4),Math.round(b.y*2),16,8);}
+  for(const b of e.hostile){if(b.boss){g.drawImage(this.sprite(b.art==='orb'?'boss-orb':b.art==='meteor'?'redesign-14':'original-17',b.art==='orb'||b.art==='meteor'?0:2+((e.bossClock>>2)&1)),Math.round(b.x*4),Math.round(b.y*2),32,32);}else if(b.style){for(let y=0;y<8;y++)for(let x=0;x<8;x++)if(this.data.playerBullet[y]&(128>>x))g.fillRect(Math.round(b.x*4)+x*4,Math.round(b.y*2)+y*2,4,2);}else g.fillRect(Math.round(b.x*4),Math.round(b.y*2),16,8);}
   if(e.shieldTicks){g.strokeStyle='#fff';g.lineWidth=2;g.beginPath();g.ellipse(e.player.x*4+40,e.player.y*2+16,44,20,0,0,Math.PI*2);g.stroke();}
   for(const p of e.pickups){const index=p.type==='Shield'?4:Number(p.type.slice(-1))-1;g.drawImage(this.sprite(this.data.pickups[index].id),p.x*4,p.y*2,32,32);}
   g.restore();if(hud)this.hud(e);

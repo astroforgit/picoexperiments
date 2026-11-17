@@ -135,6 +135,8 @@ ClearHostile
  sta $2D10,x
  dex
  bpl ClearHostile
+ jsr $0309
+ bcc BombSound
  lda $FD04
  beq BombFormation
  lda $FD0A

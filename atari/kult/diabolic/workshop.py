@@ -13,7 +13,8 @@ def pack(frame,width,height):
 def catalog():
     generated=json.loads((ROOT/'art/designs.json').read_text());ram=original_project('kult')['banks']['ram']
     enemies=[dict(id=f'original-{i}',name=f'Original enemy {i+1:02}',width=16,height=16,source='Kult',frames=[pixels(ram[0x4f80+i*128+f*32:0x4fa0+i*128+f*32],16,16) for f in range(4)]) for i in range(32)]
-    return {'bosses':json.loads((ROOT/'art/bosses/catalog.json').read_text()), 'ships':[v for v in generated if v['width']==40], 'enemies':enemies+[v for v in generated if v['width']==16]+json.loads((ROOT/'art/imported-enemies.json').read_text())+json.loads((ROOT/'art/redesigned-enemies.json').read_text())}
+    orb=dict(id='boss-orb',name='Boss orb',width=16,height=16,frames=[[int(15<=(x-7.5)**2+(y-7.5)**2<=36 or ((x-5)**2+(y-5)**2<=2)) for y in range(16) for x in range(16)]])
+    return {'projectiles':[orb], 'bosses':json.loads((ROOT/'art/bosses/catalog.json').read_text()), 'ships':[v for v in generated if v['width']==40], 'enemies':enemies+[v for v in generated if v['width']==16]+json.loads((ROOT/'art/imported-enemies.json').read_text())+json.loads((ROOT/'art/redesigned-enemies.json').read_text())}
 def aggressive_motion(row):
     return [max(-128,min(127,(1 if n>=0 else -1)*((abs(n)*3+1)//2))) if i<4 else n for i,n in enumerate(row)]
 def default_project():
@@ -133,6 +134,14 @@ def apply_project(ram,value):
             for row in range(16):
                 bits=((source[frame*32+row*2]<<8)|source[frame*32+row*2+1])<<(8-alignment*2)
                 ram[address+row*3:address+row*3+3]=bits.to_bytes(3,'big')
+    # Static rounded orbs and the existing meteor, with all four alignments.
+    orb=[int(15<=(x-7.5)**2+(y-7.5)**2<=36 or ((x-5)**2+(y-5)**2<=2)) for y in range(16) for x in range(16)]
+    for base,frame in ((0x680,orb),(0x740,enemies['redesign-14']['frames'][0])):
+        raw=pack(frame,16,16)
+        for alignment in range(4):
+            for row in range(16):
+                bits=int.from_bytes(raw[row*2:row*2+2],'big')<<(8-alignment*2)
+                ram[base+alignment*48+row*3:base+alignment*48+row*3+3]=bits.to_bytes(3,'big')
     formations=json.loads((ROOT.parent/'editor/boss-formations.json').read_text())
     for i,f in enumerate(formations,1):
         ram[0x2300+i]=f['doubleTime'];ram[0x2310+i]=f['phase'];ram[0x2320+i]=f['rowShift'];ram[0x2350+i]=f['xPhase']

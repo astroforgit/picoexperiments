@@ -30,7 +30,7 @@ def package(p,ram):
     # Keep a literal prefix in the retired tile bank: compressing empty space too
     # aggressively lets the in-place decoder overwrite its unread input.
     # Retired map resources stay literal, preserving the original input gap.
-    # 3552 literal bytes plus the preceding sprite bank preserve the later gap;
+    # 3520 literal bytes plus the preceding sprite bank preserve the later gap;
     # the remaining star tables are compressed. Replay below checks every block.
     streams=[bytearray(),bytearray()];phase=0;old=p['banks']['ram']
     for block in p['blocks']:
@@ -41,7 +41,7 @@ def package(p,ram):
             streams[phase]+=rle(struct.pack('<HH',0x1800,0xc00))+rle(ram[0x1800:0x2400])
         streams[phase]+=rle(struct.pack('<HH',a,len(data)))
         literal=lambda values:b''.join(bytes([0xbf,v,1]) if v in (0xbf,0xcf) else bytes([v]) for v in values)
-        if a==0x2400:encoded=literal(data[:3552])+rle(data[3552:])
+        if a==0x2400:encoded=literal(data[:3520])+rle(data[3520:])
         elif a==0x480:encoded=literal(data)
         else:encoded=rle(data)
         streams[phase]+=encoded
@@ -110,8 +110,12 @@ def create_runtime(settings=None,assemble=False,write_files=False):
     ram[0x480:0x1781]=bytes(0x1301)
     if assemble:subprocess.run([os.environ.get('MADS','mads'),str(ROOT/'boss-art.asm'),'-o:'+str(ROOT/'boss-art.bin')],check=True,stdout=subprocess.PIPE)
     art_code=(ROOT/'boss-art.bin').read_bytes()
-    assert len(art_code)<=0x380
+    assert len(art_code)<=0x200
     ram[0x480:0x480+len(art_code)]=art_code
+    if assemble:subprocess.run([os.environ.get('MADS','mads'),str(ROOT/'boss-tools.asm'),'-o:'+str(ROOT/'boss-tools.bin')],check=True,stdout=subprocess.PIPE)
+    helpers=(ROOT/'boss-tools.bin').read_bytes()
+    assert len(helpers)<=0x180
+    ram[0x300:0x480]=helpers+bytes(0x180-len(helpers))
     rng=random.Random(0xD1AB)
     # Blank terrain eliminates competing sideways motion. Stars use PM DMA.
     scenery(ram,rng,write_files)
@@ -161,6 +165,11 @@ def create_runtime(settings=None,assemble=False,write_files=False):
         ram[dl:dl+6]=bytes([0x70,0x70,0x70,0x01,target&255,target>>8])
 
     patches={
+        0xF80E:('2083fe','20c0da'), # shared boss action controller
+        0xF819:('203ffe','200c03'), # guardian damage gate and moving target
+        0xFB8C:('a207a900','4c0f03ea'), # retain active sub-boss while it retreats
+        0xFC9B:('8d08fd','201803'), # clip guardian background erasure at right edge
+        0xFDAD:('a210a000','4c8304ea'), # clip tile copies at right sky edge
         0xF925:('20d5fd','208004'), # shared 64x64 animated guardian/sub-boss renderer
         0xC1FF:('200003','eaeaea'), # retired terrain decoder: reserve 1800-23FF for full-size bullet sprites
         0xF8DE:('a0','60'), # retired progress-bar reset must not erase HUD/bomb code
@@ -222,6 +231,10 @@ def create_runtime(settings=None,assemble=False,write_files=False):
         ram[at:at+len(bytes.fromhex(new))]=bytes.fromhex(new)
     from workshop import apply_project, default_project
     apply_project(ram,settings if settings is not None else default_project())
+    if assemble:subprocess.run([os.environ.get('MADS','mads'),str(ROOT/'boss-ai.asm'),'-o:'+str(ROOT/'boss-ai.bin')],check=True,stdout=subprocess.PIPE)
+    ai=(ROOT/'boss-ai.bin').read_bytes()
+    assert len(ai)<=0x440
+    ram[0xdac0:0xdf00]=ai+bytes(0x440-len(ai))
     return p,ram,patches,frames
 
 def main():

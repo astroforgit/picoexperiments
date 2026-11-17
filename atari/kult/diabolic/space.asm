@@ -223,7 +223,6 @@ FireGate
     jsr InitShots
     jmp MoveShots
 BossAlive
-    jsr $6550
     jsr InitShots
     jmp MoveShots
 RegularFire

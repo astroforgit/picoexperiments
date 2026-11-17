@@ -5,6 +5,7 @@
  jmp Erase
  jmp Draw
  jmp Update
+ jmp HitSprite
 Slot = $1BB0
 Record = $1BB1
 Rows = $1BB2
@@ -170,31 +171,36 @@ TargetY
  sta $1BD8,x
 
 Collision
+ jsr HitSprite
+NextActor
+ dex
+ bmi UpdateDone
+ jmp Actors
+UpdateDone
+ rts
+
+HitSprite
  lda $F0BF
  ora $F398
  ora $2D61
- bne NextActor
+ bne HitDone
  lda $1BD0,x
  sec
  sbc $E957
  clc
  adc #8
  cmp #28
- bcs NextActor
+ bcs HitDone
  lda $1BD8,x
  sec
  sbc $E958
  clc
  adc #16
  cmp #32
- bcs NextActor
+ bcs HitDone
  lda #3
  sta $F398
-NextActor
- dex
- bmi UpdateDone
- jmp Actors
-UpdateDone
+HitDone
  rts
 
 ; Return the per-buffer record index and backup pointer in FC/FD.
@@ -259,15 +265,20 @@ EraseNext
 
 Draw
  jsr $3B1B
+ lda $FD04
+ bne DrawGuardian
  lda $2D20
  cmp #4
  beq DrawBoss
  rts
+DrawGuardian
+ lda $FD0A
+ jmp DrawHealth
 DrawBoss
  lda $2D22
+DrawHealth
  beq EarlyDone
- lda $2D00
- bne DrawReady
+ jmp DrawReady
 EarlyDone
  rts
 DrawReady
@@ -305,18 +316,7 @@ RowCount
  sta $1B80,x
  lda $F9
  sta $1B90,x
- lda $43FF
- and #4
- ora #8
- sta $1BB4
- lda PhysicalX
- and #3
- ora $1BB4
- tax
- lda $2DA0,x
- sta $FA
- lda $2DB0,x
- sta $FB
+ jsr $0315
 DrawRow
  ldy #2
 DrawByte

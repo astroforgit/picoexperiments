@@ -1,4 +1,4 @@
-param([string]$OutputDirectory, [switch]$CheckEdges, [switch]$CheckShield, [switch]$LongRun, [switch]$CheckDebugJump, [switch]$CheckSpriteWaves, [string]$GamePath, [string]$FirstCycles='1312D00', [ValidateRange(1,6)][int]$DebugKey=1)
+param([string]$OutputDirectory, [switch]$CheckEdges, [switch]$CheckShield, [switch]$LongRun, [switch]$CheckDebugJump, [switch]$CheckSpriteWaves, [switch]$CheckBossActions, [switch]$CheckBossExit, [string]$GamePath, [string]$FirstCycles='1312D00', [ValidateRange(1,6)][int]$DebugKey=1)
 $ErrorActionPreference='Stop'
 $game=Join-Path $PSScriptRoot 'kult-diabolic.xex'
 if ($GamePath) {$game=$GamePath}
@@ -25,7 +25,7 @@ $commands=@(
 'gcr $989680',
 ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'flight-later.png')+'"'),
 'db 43FF L1','db 4E75 L10','r','.logclose','.autotest_exit')
-if ($CheckDebugJump -or $CheckSpriteWaves) {
+if ($CheckDebugJump -or $CheckSpriteWaves -or $CheckBossActions -or $CheckBossExit) {
     $commands=$commands[0..($commands.Count-3)]
     # Simulate a held debug number at the two POKEY read sites, then restore runtime code.
     $keyCode=@(0x1F,0x1E,0x1A,0x18,0x1D,0x1B)[$DebugKey-1]
@@ -36,18 +36,24 @@ if ($CheckDebugJump -or $CheckSpriteWaves) {
         ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'debug-boss.png')+'"'),
         'db 2D20 L10','r','.logclose','.autotest_exit')
 }
-if ($CheckSpriteWaves) {
-    # The faster first wave can kill an idle pilot before the overview capture.
-    # Protect the diagnostic pilot immediately after jumping, before advancing.
-    $at=[Array]::IndexOf($commands,'e 3F57 AD 09 D2')
-    $commands=$commands[0..$at]+@('e F0BF FF','e 2D22 FF')+$commands[($at+1)..($commands.Count-1)]
+if ($CheckBossExit) {
     $commands=$commands[0..($commands.Count-3)]
-    # Keep this diagnostic encounter alive; no changes to the distributed game.
-    $commands+=@('e 2D22 FF','e 2D76 00','e 1BE0 00 00 00 00 00 00 00 00')
-    foreach ($frame in 1..6) {
-        $commands+=@('e F0BF FF','gcr $800000',
-            ('.autotest_saveimage "'+(Join-Path $OutputDirectory ('boss-wave-'+$frame+'.png'))+'"'),
-            'db 2D23 L2','db 2D76 L4','db 1BD0 L18','r')
+    $commands+=@('e 2DC0 03 00 96 05 01','e 2D23 58 30','e 1BE0 00 00 00 00 00 00 00 00')
+    foreach ($frame in 1..36) {
+        $commands+=@('e F398 00','e F0BF FF','e 2D22 FF','e FD0A FF','gcr $18000',
+            ('.autotest_saveimage "'+(Join-Path $OutputDirectory ('boss-exit-'+$frame+'.png'))+'"'),
+            'db 2DC0 L9','db 2D23 L2')
+    }
+    $commands+=@('.logclose','.autotest_exit')
+}
+if ($CheckBossActions -or $CheckSpriteWaves) {
+    $commands=$commands[0..($commands.Count-3)]
+    # Deterministic diagnostic seed; preserve the distributed executable.
+    $commands+=@('e 2DC0 01 00 96','e 2DC4 01','e 2D23 58 30','e 1BE0 00 00 00 00 00 00 00 00')
+    foreach ($frame in 1..48) {
+        $commands+=@('e F398 00','e F0BF FF','e 2D22 FF','e FD0A FF','gcr $200000',
+            ('.autotest_saveimage "'+(Join-Path $OutputDirectory ('boss-action-'+$frame+'.png'))+'"'),
+            'db 2DC0 L9','db 2D23 L2','db 1740 L40','db FCFA L10','r')
     }
     $commands+=@('.logclose','.autotest_exit')
 }
@@ -74,7 +80,7 @@ foreach($cmd in $commands){$argsList+=('/debugcmd:"'+$cmd.Replace('"','\"')+'"')
 $started=Get-Date
 $p=Start-Process -FilePath $emulator -ArgumentList $argsList -PassThru
 $timeout=60000
-if ($LongRun -or $CheckSpriteWaves) {$timeout=180000}
+if ($LongRun -or $CheckSpriteWaves -or $CheckBossActions) {$timeout=180000}
 if (!$p.WaitForExit($timeout)) {$p.Kill();Remove-Item -LiteralPath $testConfig -Force;throw 'Emulator verification timed out.'}
 Remove-Item -LiteralPath $testConfig -Force
 if ($p.ExitCode -ne 0) {throw ('Emulator exited with code '+$p.ExitCode)}
@@ -83,7 +89,21 @@ foreach ($name in @('direct-start.png','flight.png','flight-later.png')) {
     if ($capture.LastWriteTime -lt $started) {throw ('Missing fresh emulator capture: '+$name)}
 }
 if ((Get-Content -Raw -LiteralPath $log) -match 'Illegal instruction hit') {throw 'Emulator hit an illegal instruction; inspect gameplay.log.'}
+if ($CheckBossExit) {
+    $trace=Get-Content -Raw -LiteralPath $log
+    $positions=@([regex]::Matches($trace,'(?im)^2D23:\s+([0-9A-F]{2})') | ForEach-Object {[Convert]::ToInt32($_.Groups[1].Value,16)})
+    if ($positions.Count -lt 20 -or $positions[-1] -ne 128) {throw 'Boss did not complete its rightward exit.'}
+    for ($i=1;$i -lt $positions.Count;$i++) {
+        $step=$positions[$i]-$positions[$i-1]
+        if ($step -lt 0 -or $step -gt 2) {throw 'Boss exit jumped instead of moving gradually.'}
+    }
+}
 if ($CheckDebugJump -and $DebugKey -eq 1 -and (Get-Content -Raw -LiteralPath $log) -notmatch '(?i)2D20:\s+04') {throw 'Debug shortcut did not enter the skull encounter.'}
-if ($CheckSpriteWaves -and ([regex]::Matches((Get-Content -Raw -LiteralPath $log),'(?im)^2D23:\s+58\s+30').Count -ne 6)) {throw 'Sprite-wave captures did not remain in the stationary boss encounter.'}
+if ($CheckBossActions -or $CheckSpriteWaves) {
+    $trace=Get-Content -Raw -LiteralPath $log
+    foreach ($phase in @('01','02','04','05')) {
+        if ($trace -notmatch ('(?im)^2DC0:\s+'+$phase+'\s')) {throw ('Boss action not observed: '+$phase)}
+    }
+}
 if ($CheckDebugJump -and $DebugKey -eq 6 -and (Get-Content -Raw -LiteralPath $log) -notmatch '(?i)FD04:\s+01') {throw 'Debug shortcut did not enter the Insect Queen guardian encounter.'}
 Write-Output ('Altirra exit code: '+$p.ExitCode)

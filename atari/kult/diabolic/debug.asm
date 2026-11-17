@@ -24,6 +24,8 @@ Pressed
  jmp $FB8C
 JumpWave
  sta $2D7E
+ lda #0
+ sta $2DC0
  lda Kinds,x
  sta CompareKind+1
  jsr $FB5F

@@ -374,7 +374,7 @@ The native/browser parity test requires Node.js 22 or later on PATH alongside Py
 
 Temporary Atari debug keys: **1** jumps to the first sub-boss in the current sector, **2** to top-down meteors, **3** to bottom-up meteors, **4** to right-to-left meteors, and **5** to alternating top/bottom meteors. Holding a key does not repeatedly restart the wave. If that encounter type is absent from the sector, the current wave continues.
 
-**6** jumps directly to the Insect Queen (100 HP, generated animation and the end-of-level attack routine). It shares the debug-key hold protection and can be used after keys 1–5. Press 1–5 to leave the dragon for another debug encounter.
+**6** jumps directly to the Insect Queen (100 HP, generated animation and the shared four-action controller). It shares the debug-key hold protection and can be used after keys 1–5. Press 1–5 to leave the guardian for another debug encounter.
 
 ## Selectable 64×64 sub-boss artwork
 
@@ -383,7 +383,7 @@ has four 64×64 monochrome frames. Save/export retains `boss.design`; older
 projects automatically select Bone Dragon. Apply to local game and restart,
 then press **1** to preview. **6** loads the generated Insect Queen end-of-level fight.
 
-The sub-boss is anchored at X=88 colour clocks, with artwork spanning Y=32..95.
+During firing, the sub-boss stays at X=88 colour clocks and bobs vertically.
 It uses the original guardian tile drawing/erasing routines, with its own tile
 bank and frame maps. The central 64×32 damage area, health, rewards and six
 attack patterns are retained. The browser/safety search uses the full 64×64
@@ -399,3 +399,34 @@ Boss-route validation now reserves the full 64×64 artwork. Starts beside the
 boss (X > 136 pixels) react after three updates and may retreat during warm-up;
 normal flight starts retain the 27-update initial wait. Later transitions keep
 the same three-update reaction delay. The lab displays this initial wait.
+
+
+## Shared boss actions
+
+Both the sub-boss (debug **1**) and Insect Queen (**6**) now enter from the right,
+choose straight or sinusoidal fire for 96 updates, then retreat to launch either
+four curtain waves or a meteor section. Entry and retreat each take 20 updates
+(about 1.2 seconds at 17 updates/second), with the body drawn until it crosses
+the right edge. They return only after every remaining
+hazard has left the playfield. The next firing style and hazard are chosen by a
+small random generator.
+
+Straight fire uses rounded hollow orbs, up to six at once. Sine fire has at most
+four, launched every 12 updates. Meteors use one of the existing top, bottom,
+right, or separated alternating top/bottom lane layouts. Their first meteor is
+slow; spawning ends after 192 updates without deleting surviving rocks. Bosses
+can be damaged only during the two firing actions. Bombs clear projectiles but
+do not destroy meteors.
+
+The flight editor's boss preview and browser game run the same controller.
+**Inspect curtain pattern** keeps the isolated formation inspection available.
+`test_boss_actions.py` compares 6,400 native CPU updates with browser state and
+projectile coordinates, and searches for a continuous escape route using the
+player's actual movement steps and collision bounds. This proves route existence
+for the tested seeds, not that every player reaction or random sequence succeeds.
+
+The controller occupies the retired dragon bank at $DAC0..$DEFF; helpers use
+$0300..$047F. State is at $2DC0, with meteor lane waits at $2DE0. Rounded orb and
+meteor graphics use $0680..$07FF. Both tile drawing and erasing clip at the right
+edge during entry/retreat. `verify-emulator.ps1 -CheckBossActions -DebugKey 1`
+(or `6`) captures and checks all four actions in Altirra.

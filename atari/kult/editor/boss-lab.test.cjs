@@ -7,8 +7,8 @@ function moved(p,dx,dy){return [p.x+(dx>0&&p.x<100?3:dx<0&&p.x>=3?-3:0),Math.max
  for(const s of lab.scenarios){
   if(lab.patterns)Object.assign(s,lab.patterns[s.pattern]);assert.ok(s.passable);
   const p=structuredClone(d.project);p.boss.pattern=s.pattern;
-  const idle=new Encounter(p,d.sine,0,0,{loop:false,bossPreview:true});idle.player={x:s.start[0],y:s.start[1]};
-  const pilot=new Encounter(p,d.sine,0,0,{loop:false,bossPreview:true});pilot.player={x:s.start[0],y:s.start[1]};
+  const idle=new Encounter(p,d.sine,0,0,{curtainOnly:true,loop:false,bossPreview:true});idle.player={x:s.start[0],y:s.start[1]};
+  const pilot=new Encounter(p,d.sine,0,0,{curtainOnly:true,loop:false,bossPreview:true});pilot.player={x:s.start[0],y:s.start[1]};
   for(let t=0;t<s.frames.length;t++){
    idle.invulnerable=999;idle.update();
    assert.deepEqual(idle.hostile.map(b=>[b.lane,b.x,b.y]).sort((a,b)=>a[0]-b[0]),s.frames[t],`CPU/browser mismatch ${s.pattern}/${s.start}/${t+1}`);

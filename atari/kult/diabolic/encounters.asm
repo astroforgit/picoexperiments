@@ -65,6 +65,7 @@ ReadKind
  sta Mode
  lda #0
  sta Age
+ sta $2DC0
  sta $2D76
  sta $2D7B
  lda #24
@@ -248,10 +249,6 @@ MoveHead
  lda Health
  beq FinishEncounter
  inc Age
- lda #88
- sta HeadX
- lda #48
- sta HeadY
  ldx #7
 HeadTiles
  txa
@@ -292,6 +289,8 @@ HitEncounter
  beq OrdinaryHit
  cmp #4
  bne IgnoreHit
+ jsr $0309
+ bcc IgnoreHit
  lda Health
  beq IgnoreHit
  dec Health

@@ -11,7 +11,7 @@ class BossPatterns(unittest.TestCase):
   cls.original_sine=bytes(original['banks']['ram'][0x7164:0x7264])
   cls.shots=int(re.search(r'^\s*\d+\s+([0-9A-F]{4})\s+Shots\s*$',Path(__file__).with_name('space.lst').read_text(),re.M)[1],16)
  def call(self,c):
-  c.pc=self.shots;c.stPushWord(0x1ff)
+  c.pc=0x6550;c.stPushWord(0x1ff)
   for _ in range(30000):
    if c.pc==0x200:return
    c.step()
@@ -46,12 +46,16 @@ class BossPatterns(unittest.TestCase):
      c=MPU(memory=list(self.ram));m=c.memory;m[0x2d00]=2;m[0x2d20]=4;m[0x2d22]=80;m[0x2d23]=88;m[0x2d24]=48;m[0xfd04]=0;m[0x2d74]=pattern;m[0x2d75]=intensity;m[0xe957]=x;m[0xe958]=56;m[0xf0bf]=0;m[0xf398]=0
      for _ in range(255):self.call(c)
      self.assertEqual(m[0xf398],3,(pattern,intensity,x))
-     m[0x2d22]=0;self.call(c);self.assertEqual(m[0x2d10:0x2d14],[0]*4)
+     m[0x2d22]=0
+     from boss_lab import call
+     call(c,0xdac0);self.assertEqual(m[0x1be0:0x1be8],[0]*8)
  def test_boss_stays_anchored_after_entry(self):
   c=MPU(memory=list(self.ram));m=c.memory;m[0x2d20]=4;m[0x2d22]=80;m[0x2d23]=128;m[0x74e0:0x74e8]=[16]*8;m[0x2d29]=0;m[0x7446]=0
   for tick in range(300):
    c.pc=0x3b03;c.stPushWord(0x1ff)
    while c.pc!=0x200:c.step()
-   self.assertEqual(m[0x2d24],48)
-   if tick>=19:self.assertEqual(m[0x2d23],88)
+   from boss_lab import call
+   m[0xf0bf]=255;call(c,0xdac0)
+   self.assertTrue(16<=m[0x2d24]<=80)
+   if m[0x2dc0] in (1,2):self.assertEqual(m[0x2d23],88)
 if __name__=='__main__':unittest.main()

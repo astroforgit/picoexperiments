@@ -27,7 +27,7 @@ class BossArt(unittest.TestCase):
    p=default_project();p['boss']['design']=b['id'];original,ram,_,_=create_runtime(p)
    decoded=kult(package(original,ram))[0]
    self.assertEqual(bytes(decoded[0x480:0x1781]),bytes(ram[0x480:0x1781]))
-   self.assertEqual(bytes(ram[0xdac0:0xdf00]),bytes(0x440))
+   self.assertEqual(bytes(ram[0xdac0:0xdac0+3]),bytes.fromhex('4cc3da'))
    self.assertEqual(bytes(ram[0xfed2:0xff12]),bytes(64))
    for f,frame in enumerate(b['frames']):
     for tile in range(16):
@@ -41,7 +41,7 @@ class BossArt(unittest.TestCase):
     c=MPU(memory=list(self.ram));m=c.memory;base=0x8000+buffer*8192
     m[0x7e:0x80]=[0,0x60];m[0x7439]=buffer
     for y in range(128):m[0x6000+y*3:0x6002+y*3]=list((base+y*64).to_bytes(2,'little'))
-    m[0x2d20]=4;m[0x2d22]=64;m[0x2d21]=frame*4;m[0xfd04]=0
+    m[0x2d20]=4;m[0x2d22]=64;m[0x2dc0]=1;m[0x2dc8]=frame;m[0x2d23]=88;m[0x2d24]=48;m[0xfd04]=0
     m[base:base+8192]=[0]*8192
     state=m[0xfcfa:0xfd04].copy();other=m[0xa000 if buffer==0 else 0x8000:0xc000 if buffer==0 else 0xa000].copy()
     self.call(c,0x480)
@@ -69,12 +69,33 @@ class BossArt(unittest.TestCase):
  def test_main_boss_draws_generated_queen_through_original_routine(self):
   queen=next(b for b in catalog()['bosses'] if b['id']=='boss-insect-queen')
   for phase,frame in ((0,0),(1,1),(3,2),(5,3)):
-   c=MPU(memory=list(self.ram));m=c.memory;m[0xfd04]=1;m[0xfd05]=phase
+   c=MPU(memory=list(self.ram));m=c.memory;m[0xfd04]=1;m[0xfd0a]=100;m[0x2dc0]=1;m[0x2dc8]=frame;m[0x2d23]=88;m[0x2d24]=48
    m[0x7e:0x80]=[0,0x60];m[0x7439]=0;m[0x8000:0xa000]=[0]*8192
    for y in range(128):m[0x6000+y*3:0x6002+y*3]=list((0x8000+y*64).to_bytes(2,'little'))
    self.call(c,0x480)
-   y=m[0xfcfb];expected=pack(queen['frames'][frame],64,64)
-   for row in range(64):self.assertEqual(bytes(m[0x8000+(y+row)*64+23:0x8000+(y+row)*64+31]),expected[row*8:row*8+8])
+   y=32;expected=pack(queen['frames'][frame],64,64)
+   for row in range(64):self.assertEqual(bytes(m[0x8000+(y+row)*64+22:0x8000+(y+row)*64+30]),expected[row*8:row*8+8])
+ def test_retreat_draw_and_erase_never_touch_right_gutter(self):
+  for buffer in (0,1):
+   for x in range(88,129,4):
+    c=MPU(memory=list(self.ram));m=c.memory;base=0x8000+buffer*8192
+    m[0x7e:0x80]=[0,0x60];m[0x7439]=buffer;m[0x2d20]=4;m[0x2d22]=64;m[0x2dc0]=3;m[0x2d23]=x;m[0x2d24]=48
+    for y in range(128):
+     m[0x6000+y*3:0x6002+y*3]=list((base+y*64).to_bytes(2,'little'))
+     m[base+y*64:base+y*64+32]=[0]*32;m[base+y*64+32:base+(y+1)*64]=[165]*32
+    self.call(c,0x480);self.call(c,0xfc7e)
+    for y in range(128):
+     self.assertEqual(m[base+y*64:base+y*64+32],[0]*32)
+     self.assertEqual(m[base+y*64+32:base+(y+1)*64],[165]*32)
+ def test_main_boss_remains_visible_with_scrolled_row_addresses(self):
+  queen=next(b for b in catalog()['bosses'] if b['id']=='boss-insect-queen')
+  for offset in (0,16,32,48):
+   c=MPU(memory=list(self.ram));m=c.memory;m[0xfd04]=1;m[0xfd0a]=100;m[0x2dc0]=3;m[0x2dc8]=0;m[0x2d23]=88;m[0x2d24]=48;m[0x7446]=0
+   m[0x7e:0x80]=[0,0x60];m[0x7439]=0;m[0x8000:0xa100]=[0]*8448
+   for y in range(128):m[0x6000+y*3:0x6002+y*3]=list((0x8000+offset+y*64).to_bytes(2,'little'))
+   self.call(c,0x480);expected=pack(queen['frames'][0],64,64)
+   for row in range(64):self.assertEqual(bytes(m[0x8000+offset+(32+row)*64+22:0x8000+offset+(32+row)*64+30]),expected[row*8:row*8+8])
+   self.call(c,0xfc7e);self.assertEqual(m[0x8000:0xa100],[0]*8448)
  def test_defeated_boss_does_not_draw(self):
   c=MPU(memory=list(self.ram));c.memory[0x2d20]=4;c.memory[0x2d22]=0
   before=c.memory[0x8000:0xc000].copy();self.call(c,0x480);self.assertEqual(c.memory[0x8000:0xc000],before)
