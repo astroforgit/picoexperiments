@@ -1,8 +1,28 @@
 {
   "original_sha256": "ed2184b5c94871646a306c58702c5128a228776d71a5f5a36adae65522fb72cd",
-  "output_sha256": "e4c5c881820413d89534545973f455b8b4136cd7819342bad8afa67d6a77ff5b",
-  "runtime_changed_bytes": 20455,
+  "output_sha256": "86190b2f1c40b7ba9e53747e73d5ccb179a3e567e8c39b97aa95e3d9b9329d72",
+  "runtime_changed_bytes": 20615,
   "patches": {
+    "F914": {
+      "before": "207efc",
+      "after": "208317"
+    },
+    "EAAD": {
+      "before": "ce8e75",
+      "after": "4c80de"
+    },
+    "F91C": {
+      "before": "20f9e7",
+      "after": "20a0de"
+    },
+    "EB52": {
+      "before": "b9e074",
+      "after": "208604"
+    },
+    "FCAB": {
+      "before": "ac08fd",
+      "after": "4c8904"
+    },
     "F80E": {
       "before": "2083fe",
       "after": "20c0da"

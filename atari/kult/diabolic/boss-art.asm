@@ -3,7 +3,11 @@
  org $0480
  jmp DrawBoss
  jmp CopyTile
+ jmp VisibleActor
+ jmp EraseRows
 DrawBoss
+ jsr $1780
+ jcs Done
  lda $FD04
  bne MainHealth
  lda $2D20
@@ -81,6 +85,17 @@ QueenArt
  sta $FD01
 Paint
  jsr $FD0B
+ ldx $7439
+ lda #1
+ sta $2DD2,x
+ lda $2D23
+ sta $2DD4,x
+ lda $2D24
+ sta $2DD6,x
+ lda $2DC8
+ sta $2DD8,x
+ lda $FD04
+ sta $2DDA,x
  ldx #0
 RestoreState
  pla
@@ -110,32 +125,98 @@ CopyTile
 OneByte
  lda #1
 HaveBytes
- sta $2DCC
- ldx #16
-CopyRow
+ cmp #1
+ beq CopySingle
  ldy #0
-CopyByte
+CopyPair
  lda ($82),y
  sta ($84),y
  iny
- cpy $2DCC
- bcc CopyByte
- clc
- lda $82
- adc #2
- sta $82
- bcc SourceReady
- inc $83
-SourceReady
+ lda ($82),y
+ sta ($84),y
+ iny
  clc
  lda $84
- adc #64
+ adc #62
  sta $84
- bcc TargetReady
+ bcc PairRowReady
  inc $85
-TargetReady
- dex
- bne CopyRow
+PairRowReady
+ cpy #32
+ bne CopyPair
 CopyDone
  rts
+CopySingle
+ ldy #0
+CopySingleRow
+ lda ($82),y
+ sta ($84),y
+ iny
+ iny
+ clc
+ lda $84
+ adc #62
+ sta $84
+ bcc SingleRowReady
+ inc $85
+SingleRowReady
+ cpy #32
+ bne CopySingleRow
+ rts
+
+; The eight sub-boss actors are collision targets, not visible sprites.
+; Do not draw/back up blank tiles on top of the separately rendered boss.
+; Keep the ordinary path for its death/rewards and all other encounters.
+VisibleActor
+ lda $FD04
+ bne OrdinaryActor
+ lda $2D20
+ cmp #4
+ bne OrdinaryActor
+ lda $2D22
+ beq OrdinaryActor
+ lda $F398
+ bne OrdinaryActor
+ lda #$80
+ rts
+OrdinaryActor
+ lda $74E0,y
+ rts
+
+; Full-width 64x64 erasure is the common case; partial exits use the
+; original width-aware loop. FD09 already holds the number of scanlines.
+EraseRows
+ ldy $FD08
+ cpy #7
+ bne PartialErase
+EraseFullRow
+ lda #0
+ sta ($F8),y
+ dey
+ sta ($F8),y
+ dey
+ sta ($F8),y
+ dey
+ sta ($F8),y
+ dey
+ sta ($F8),y
+ dey
+ sta ($F8),y
+ dey
+ sta ($F8),y
+ dey
+ sta ($F8),y
+ clc
+ lda $F8
+ adc #64
+ sta $F8
+ bcc EraseAddressReady
+ inc $F9
+EraseAddressReady
+ ldy #7
+ dec $FD09
+ bne EraseFullRow
+ rts
+PartialErase
+ jmp $FCAE
  ert * > $0680

@@ -97,6 +97,6 @@ class BossArt(unittest.TestCase):
    for row in range(64):self.assertEqual(bytes(m[0x8000+offset+(32+row)*64+22:0x8000+offset+(32+row)*64+30]),expected[row*8:row*8+8])
    self.call(c,0xfc7e);self.assertEqual(m[0x8000:0xa100],[0]*8448)
  def test_defeated_boss_does_not_draw(self):
-  c=MPU(memory=list(self.ram));c.memory[0x2d20]=4;c.memory[0x2d22]=0
+  c=MPU(memory=list(self.ram));c.memory[0xfd04]=0;c.memory[0x2d20]=4;c.memory[0x2d22]=0
   before=c.memory[0x8000:0xc000].copy();self.call(c,0x480);self.assertEqual(c.memory[0x8000:0xc000],before)
 if __name__=='__main__':unittest.main()

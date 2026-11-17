@@ -30,7 +30,7 @@ def package(p,ram):
     # Keep a literal prefix in the retired tile bank: compressing empty space too
     # aggressively lets the in-place decoder overwrite its unread input.
     # Retired map resources stay literal, preserving the original input gap.
-    # 3520 literal bytes plus the preceding sprite bank preserve the later gap;
+    # 3264 literal bytes plus the preceding sprite bank preserve the later gap;
     # the remaining star tables are compressed. Replay below checks every block.
     streams=[bytearray(),bytearray()];phase=0;old=p['banks']['ram']
     for block in p['blocks']:
@@ -38,10 +38,10 @@ def package(p,ram):
         for i in range(len(data)):
             if ram[a+i]!=old[a+i]:data[i]=ram[a+i]
         if a==0x2400:
-            streams[phase]+=rle(struct.pack('<HH',0x1800,0xc00))+rle(ram[0x1800:0x2400])
+            streams[phase]+=rle(struct.pack('<HH',0x1780,0xc80))+rle(ram[0x1780:0x2400])
         streams[phase]+=rle(struct.pack('<HH',a,len(data)))
         literal=lambda values:b''.join(bytes([0xbf,v,1]) if v in (0xbf,0xcf) else bytes([v]) for v in values)
-        if a==0x2400:encoded=literal(data[:3520])+rle(data[3520:])
+        if a==0x2400:encoded=literal(data[:3264])+rle(data[3264:])
         elif a==0x480:encoded=literal(data)
         else:encoded=rle(data)
         streams[phase]+=encoded
@@ -53,7 +53,7 @@ def package(p,ram):
         assert len(encoded)<=end-base,(hex(base),len(encoded),end-base)
         offset=6+base-0x2b00;result[offset:offset+len(encoded)]=encoded
     replay,_,_,_=kult(result)
-    assert replay[0x1800:0x2400]==ram[0x1800:0x2400]
+    assert replay[0x1780:0x2400]==ram[0x1780:0x2400]
     for b in p['blocks']:
         a=b['start'];n=b['size']
         if a not in (0xd301,0xbb00):assert replay[a:a+n]==ram[a:a+n],hex(a)
@@ -112,6 +112,10 @@ def create_runtime(settings=None,assemble=False,write_files=False):
     art_code=(ROOT/'boss-art.bin').read_bytes()
     assert len(art_code)<=0x200
     ram[0x480:0x480+len(art_code)]=art_code
+    if assemble:subprocess.run([os.environ.get('MADS','mads'),str(ROOT/'boss-cache.asm'),'-o:'+str(ROOT/'boss-cache.bin')],check=True,stdout=subprocess.PIPE)
+    cache=(ROOT/'boss-cache.bin').read_bytes()
+    assert len(cache)<=0x80
+    ram[0x1780:0x1800]=cache+bytes(0x80-len(cache))
     if assemble:subprocess.run([os.environ.get('MADS','mads'),str(ROOT/'boss-tools.asm'),'-o:'+str(ROOT/'boss-tools.bin')],check=True,stdout=subprocess.PIPE)
     helpers=(ROOT/'boss-tools.bin').read_bytes()
     assert len(helpers)<=0x180
@@ -165,6 +169,11 @@ def create_runtime(settings=None,assemble=False,write_files=False):
         ram[dl:dl+6]=bytes([0x70,0x70,0x70,0x01,target&255,target>>8])
 
     patches={
+        0xF914:('207efc','208317'), # retain unchanged body pixels in each framebuffer
+        0xEAAD:('ce8e75','4c80de'), # hold retired terrain scrolling during bosses
+        0xF91C:('20f9e7','20a0de'), # avoid obsolete terrain copies in sub-boss fights
+        0xEB52:('b9e074','208604'), # skip rendering invisible sub-boss collision targets
+        0xFCAB:('ac08fd','4c8904'), # fast full-width boss erasure
         0xF80E:('2083fe','20c0da'), # shared boss action controller
         0xF819:('203ffe','200c03'), # guardian damage gate and moving target
         0xFB8C:('a207a900','4c0f03ea'), # retain active sub-boss while it retreats

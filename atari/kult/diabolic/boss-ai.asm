@@ -418,4 +418,37 @@ Directions dta 1,2,3,6
 Speeds dta 2,4,6,3,5,4,7,5
 Columns dta 8,68,108,38,88,18,58,118
 Rows dta 0,64,112,32,96,16,80,48
+ ; The original guardian bypasses terrain drawing, but the sub-boss used to
+ ; scroll/copy the retired building buffers throughout the fight. Hold that
+ ; scroll state for either boss; PM parallax stars keep moving independently.
+ ert * > $DE80
+ :($DE80-*) dta 0
+BossScroll
+ ; Respawn waits for scroll phase 2 at $FB18. Never freeze that clock
+ ; while the pilot is dying, even when the boss itself is still alive.
+ lda $F398
+ bne ScrollTerrain
+ lda $FD04
+ bne HoldTerrain
+ lda $2D20
+ cmp #4
+ bne ScrollTerrain
+ lda $2D22
+ bne HoldTerrain
+ScrollTerrain
+ dec $758E
+ jmp $EAB0
+HoldTerrain
+ jmp $EAD8
+ ert * > $DEA0
+ :($DEA0-*) dta 0
+BossTerrain
+ lda $2D20
+ cmp #4
+ bne DrawTerrain
+ lda $2D22
+ beq DrawTerrain
+ rts
+DrawTerrain
+ jmp $E7F9
  ert * > $DF00

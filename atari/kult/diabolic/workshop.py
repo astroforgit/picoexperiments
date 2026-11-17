@@ -107,7 +107,7 @@ def apply_project(ram,value):
             pixels=[frame[(tile//4*16+y)*64+tile%4*16+x] for y in range(16) for x in range(16)]
             at=0x800+f*512+tile*32
             ram[at:at+32]=pack(pixels,16,16)
-    ram[0x1000:0x1040]=bytes(range(1,65))
+    ram[0x1000:0x1040]=bytes(i+1 if any(ram[0x800+i*32:0x820+i*32]) else 0 for i in range(64))
     # End-of-level guardian: replace every original dragon tile and frame map.
     queen=next(b for b in lib['bosses'] if b['id']=='boss-insect-queen')
     tiles=[];maps=[]

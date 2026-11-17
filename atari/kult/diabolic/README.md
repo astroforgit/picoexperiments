@@ -430,3 +430,37 @@ $0300..$047F. State is at $2DC0, with meteor lane waits at $2DE0. Rounded orb an
 meteor graphics use $0680..$07FF. Both tile drawing and erasing clip at the right
 edge during entry/retreat. `verify-emulator.ps1 -CheckBossActions -DebugKey 1`
 (or `6`) captures and checks all four actions in Altirra.
+
+## Boss rendering performance
+
+The sub-boss collision actors remain active for damage tests, but their eight
+invisible sprites no longer perform bitmap drawing/background backups. The
+obsolete building-buffer scroll and copying pause during either boss fight;
+PM parallax stars continue normally. Full-width boss erasure and the tile/bullet
+copy loops use faster paths, with partial-edge clipping retained. Blank body
+tiles are skipped. A separate cache for each framebuffer keeps unchanged boss
+pixels; animation, movement, disappearance, death, and boss type invalidate it.
+The cache helper occupies $1780..$17FF and its state uses $2DD2..$2DDB.
+
+Measured on the PAL Altirra runner, the same continuous six-orb firing test
+completed 32 updates before and 68 after in 8 × 1,048,576 emulated cycles:
+approximately **6.8 → 14.4 game updates/second**. This is a targeted firing test,
+not a claim of constant frame rate across every encounter. The native CPU test
+for drawing/restoring the body, hit targets and six orbs fell from 95,352 to
+42,545 cycles (55% less). Reusing an unchanged body costs under 500 cycles.
+
+`test_boss_performance.py` protects those budgets, collision state, ordinary
+actors/rewards, cache invalidation, scrolling resumption and loader coverage.
+`verify-emulator.ps1 -CheckBossPerformance -PerformanceContinuous -DebugKey 1`
+repeats the live timing test. Omit `-PerformanceContinuous` to restart the
+six-orb burst in each measurement window; `-GamePath` accepts a baseline XEX.
+The diagnostic wrapper only modifies emulator RAM, not the distributed game.
+
+
+Boss death/respawn regression: the terrain hold releases while `$F398` marks
+player death. Kult's original respawn waits for scroll phase 2, so freezing that
+counter could leave the ship invisible forever after a meteor collision. The
+body caches invalidate during death as well. `test_boss_respawn.py` covers all
+four scroll phases for both bosses. `verify-emulator.ps1 -CheckBossMeteorDeath`
+forces a real right-to-left meteor collision and waits through the original
+particle effect to check that one life is spent and gameplay resumes.

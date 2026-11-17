@@ -242,21 +242,29 @@ EraseActor
  lda $1BA0,x
  beq EraseNext
  sta Rows
+ asl
+ clc
+ adc Rows
+ sta Rows
  lda #0
  sta $1BA0,x
  lda $1B80,x
  sta $F8
  lda $1B90,x
  sta $F9
+ ldy #0
 EraseRow
- ldy #2
-EraseByte
  lda ($FC),y
  sta ($F8),y
- dey
- bpl EraseByte
+ iny
+ lda ($FC),y
+ sta ($F8),y
+ iny
+ lda ($FC),y
+ sta ($F8),y
+ iny
  jsr NextRow
- dec Rows
+ cpy Rows
  bne EraseRow
 EraseNext
  dec Slot
@@ -317,17 +325,30 @@ RowCount
  lda $F9
  sta $1B90,x
  jsr $0315
+ lda Rows
+ asl
+ clc
+ adc Rows
+ sta Rows
+ ldy #0
 DrawRow
- ldy #2
-DrawByte
  lda ($F8),y
  sta ($FC),y
  ora ($FA),y
  sta ($F8),y
- dey
- bpl DrawByte
+ iny
+ lda ($F8),y
+ sta ($FC),y
+ ora ($FA),y
+ sta ($F8),y
+ iny
+ lda ($F8),y
+ sta ($FC),y
+ ora ($FA),y
+ sta ($F8),y
+ iny
  jsr NextRow
- dec Rows
+ cpy Rows
  bne DrawRow
 DrawNext
  inc Slot
@@ -338,26 +359,14 @@ DrawNext
 DrawDone
  rts
 NextRow
+ ; Y walks the 48-byte sprite and backup linearly (three bytes per row).
+ ; Move the screen pointer by 64-3 so pointer+Y still advances one scanline.
  clc
  lda $F8
- adc #64
+ adc #61
  sta $F8
  bcc FrameReady
  inc $F9
 FrameReady
- clc
- lda $FC
- adc #3
- sta $FC
- bcc BackupReady
- inc $FD
-BackupReady
- clc
- lda $FA
- adc #3
- sta $FA
- bcc SourceReady
- inc $FB
-SourceReady
  rts
  ert * > $1B80

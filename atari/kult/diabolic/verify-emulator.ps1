@@ -1,4 +1,4 @@
-param([string]$OutputDirectory, [switch]$CheckEdges, [switch]$CheckShield, [switch]$LongRun, [switch]$CheckDebugJump, [switch]$CheckSpriteWaves, [switch]$CheckBossActions, [switch]$CheckBossExit, [string]$GamePath, [string]$FirstCycles='1312D00', [ValidateRange(1,6)][int]$DebugKey=1)
+param([string]$OutputDirectory, [switch]$CheckEdges, [switch]$CheckShield, [switch]$LongRun, [switch]$CheckDebugJump, [switch]$CheckSpriteWaves, [switch]$CheckBossActions, [switch]$CheckBossExit, [switch]$CheckBossPerformance, [switch]$CheckBossMeteorDeath, [switch]$PerformanceContinuous, [string]$GamePath, [string]$FirstCycles='1312D00', [ValidateRange(1,6)][int]$DebugKey=1)
 $ErrorActionPreference='Stop'
 $game=Join-Path $PSScriptRoot 'kult-diabolic.xex'
 if ($GamePath) {$game=$GamePath}
@@ -25,7 +25,7 @@ $commands=@(
 'gcr $989680',
 ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'flight-later.png')+'"'),
 'db 43FF L1','db 4E75 L10','r','.logclose','.autotest_exit')
-if ($CheckDebugJump -or $CheckSpriteWaves -or $CheckBossActions -or $CheckBossExit) {
+if ($CheckDebugJump -or $CheckSpriteWaves -or $CheckBossActions -or $CheckBossExit -or $CheckBossPerformance -or $CheckBossMeteorDeath) {
     $commands=$commands[0..($commands.Count-3)]
     # Simulate a held debug number at the two POKEY read sites, then restore runtime code.
     $keyCode=@(0x1F,0x1E,0x1A,0x18,0x1D,0x1B)[$DebugKey-1]
@@ -35,6 +35,36 @@ if ($CheckDebugJump -or $CheckSpriteWaves -or $CheckBossActions -or $CheckBossEx
         'gcr $989680',
         ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'debug-boss.png')+'"'),
         'db 2D20 L10','r','.logclose','.autotest_exit')
+}
+if ($CheckBossMeteorDeath) {
+    $commands=$commands[0..($commands.Count-3)]
+    # Real collision in the right-to-left meteor phase, with no immunity.
+    # Scroll phase 1 reproduces the old respawn wait deadlock.
+    $commands+=@('e 2DC0 05 00 5D 00 02 00 03 03','e 2D23 80 30',
+      'e 2D61 00','e F398 00','e F0BF 00','e E957 0C 38','e 4E78 03',
+      'e 758E 01','e 1BE0 00 01 00 00 00 00 00 00','e 1BE8 00 64 00 00 00 00 00 00',
+      'e 2DE0 FF FF FF FF FF FF FF FF','gcr $200000',
+      'db F398 L1','db 4E78 L1','db 758E L1','db 2DC0 L9',
+      ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'meteor-respawn.png')+'"'),
+      'gcr $800000','db F398 L1','db 4E78 L1','db 2DC0 L9',
+      ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'meteor-after-respawn.png')+'"'),
+      '.logclose','.autotest_exit')
+}
+if ($CheckBossPerformance) {
+    $commands=$commands[0..($commands.Count-3)]
+    # Count actual controller updates over fixed emulated CPU-cycle windows.
+    # Diagnostic wrapper and state changes never touch the executable on disk.
+    $commands+=@('e 2DF8 EE F0 2D 4C C0 DA','e F80E 20 F8 2D')
+    foreach ($sample in 1..8) {
+        $commands+=@('e F398 00','e F0BF FF','e 2D22 FF','e FD0A FF')
+        if ($sample -eq 1 -or !$PerformanceContinuous) {
+            $commands+=@('e 2DC0 01 00 5D 00 01 00 03','e 2D23 58 30',
+              'e 1BE0 01 01 01 01 01 01 00 00','e 1BD0 70 70 70 70 70 70 00 00',
+              'e 1BD8 00 14 28 3C 50 64 00 00','e 1BC0 01 01 01 01 01 01 00 00')
+        }
+        $commands+=@('e 2DF0 00','gcr $100000','db 2DF0 L1')
+    }
+    $commands+=@('.logclose','.autotest_exit')
 }
 if ($CheckBossExit) {
     $commands=$commands[0..($commands.Count-3)]
@@ -89,6 +119,20 @@ foreach ($name in @('direct-start.png','flight.png','flight-later.png')) {
     if ($capture.LastWriteTime -lt $started) {throw ('Missing fresh emulator capture: '+$name)}
 }
 if ((Get-Content -Raw -LiteralPath $log) -match 'Illegal instruction hit') {throw 'Emulator hit an illegal instruction; inspect gameplay.log.'}
+if ($CheckBossMeteorDeath) {
+    $trace=Get-Content -Raw -LiteralPath $log
+    $deaths=@([regex]::Matches($trace,'(?im)^F398:\s+([0-9A-F]{2})') | ForEach-Object {$_.Groups[1].Value})
+    $lives=@([regex]::Matches($trace,'(?im)^4E78:\s+([0-9A-F]{2})') | ForEach-Object {$_.Groups[1].Value})
+    if ($deaths.Count -lt 2 -or $deaths[-1] -ne '00' -or $lives[-1] -ne '02') {
+        throw 'Meteor collision did not finish respawning with exactly one life spent.'
+    }
+}
+if ($CheckBossPerformance) {
+    $trace=Get-Content -Raw -LiteralPath $log
+    $counts=@([regex]::Matches($trace,'(?im)^2DF0:\s+([0-9A-F]{2})') | ForEach-Object {[Convert]::ToInt32($_.Groups[1].Value,16)})
+    if ($counts.Count -ne 8 -or ($counts | Where-Object {$_ -eq 0}).Count -gt 0) {throw 'Missing boss update measurements.'}
+    Write-Output ('Boss updates per 1048576 cycles: '+($counts -join ', '))
+}
 if ($CheckBossExit) {
     $trace=Get-Content -Raw -LiteralPath $log
     $positions=@([regex]::Matches($trace,'(?im)^2D23:\s+([0-9A-F]{2})') | ForEach-Object {[Convert]::ToInt32($_.Groups[1].Value,16)})
