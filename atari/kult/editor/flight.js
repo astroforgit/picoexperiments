@@ -1,7 +1,7 @@
 'use strict';
 const $=id=>document.getElementById(id),clone=v=>JSON.parse(JSON.stringify(v));
 let payload,project,encounter,paused=false,last=0,acc=0,images=new Map(),busy=false;
-let campaign=null,renderer,clipboard=null,wavePlans=[],mapFrame=40,mapClock=0,mapLast=0;
+let campaign=null,renderer,clipboard=null,wavePlans=[],mapFrame=40,mapClock=0,mapLast=0,measuredBulletWaves=[];
 const keys=new Set(),storageKey='kult-diabolic-flight-encounters-v1';
 function status(message,error=false){$('status').textContent=message;$('status').classList.toggle('error',error);}
 function persist(){try{localStorage.setItem(storageKey,JSON.stringify(project));status('Draft saved in this browser. Apply to local game when ready.');}catch{status('Browser storage unavailable; save a project file.',true);}}
@@ -10,18 +10,20 @@ function sprite(asset,frame){const key=asset.id+':'+frame;if(images.has(key))ret
 function asset(kind,id){return payload.catalog[kind].find(v=>v.id===id);}
 function record(){return project.waves[Number($('sector').value)][Number($('wave').value)];}
 function restart(){campaign=null;encounter=new FlightWorkshop.Encounter(project,payload.sine,Number($('sector').value),Number($('wave').value),{drops:payload.drops});$('previewTitle').textContent=`Sector ${Number($('sector').value)+1} · Wave ${Number($('wave').value)+1}`;}
-function showWave(){$('bossPattern').value=project.boss.pattern;$('bossDifficulty').value=project.boss.difficulty;const kind=project.encounters[Number($('sector').value)][Number($('wave').value)];$('encounter').value=kind;const w=record();options($('slot'),project.slots.map((id,i)=>[i,`${i+1} · ${asset('enemies',id).name}`]),w[0]);$('motion').value=w[1];$('drop').value=w[2];$('hp').value=w[3];$('design').value=project.slots[w[0]];showPath();restart();timeline();}
+function showWave(){$('bossDesign').value=project.boss.design;$('bossPattern').value=project.boss.pattern;$('bossDifficulty').value=project.boss.difficulty;const kind=project.encounters[Number($('sector').value)][Number($('wave').value)];$('encounter').value=kind;const w=record();options($('slot'),project.slots.map((id,i)=>[i,`${i+1} · ${asset('enemies',id).name}`]),w[0]);$('motion').value=w[1];$('drop').value=w[2];$('hp').value=w[3];$('design').value=project.slots[w[0]];showPath();restart();timeline();}
 function showPath(){project.motions[record()[1]].forEach((n,i)=>$('param'+i).value=n);}
 function changed(reset=true){persist();if(reset)restart();timeline();}
-function drawAsset(id,thing,frame){const c=$(id),g=c.getContext('2d');g.clearRect(0,0,c.width,c.height);g.imageSmoothingEnabled=false;const scale=thing.width===40?4:5;g.drawImage(sprite(thing,frame),(c.width-thing.width*scale)/2,(c.height-thing.height*scale)/2,thing.width*scale,thing.height*scale);}
-function drawFrames(id,thing){const c=$(id),g=c.getContext('2d');g.clearRect(0,0,c.width,c.height);g.imageSmoothingEnabled=false;for(let f=0;f<4;f++)g.drawImage(sprite(thing,f),f*100+(100-thing.width*2)/2,8,thing.width*2,thing.height*2);}
+function drawAsset(id,thing,frame){const c=$(id),g=c.getContext('2d');g.clearRect(0,0,c.width,c.height);g.imageSmoothingEnabled=false;const scale=Math.min(thing.width===40?4:5,(c.width-8)/thing.width,(c.height-8)/thing.height);g.drawImage(sprite(thing,frame),(c.width-thing.width*scale)/2,(c.height-thing.height*scale)/2,thing.width*scale,thing.height*scale);}
+function drawFrames(id,thing){const c=$(id),g=c.getContext('2d');g.clearRect(0,0,c.width,c.height);g.imageSmoothingEnabled=false;const cell=c.width/4,scale=Math.min((cell-8)/thing.width,(c.height-8)/thing.height);for(let f=0;f<4;f++)g.drawImage(sprite(thing,f),f*cell+(cell-thing.width*scale)/2,4,thing.width*scale,thing.height*scale);}
 
-function render(){if(!encounter)return;const frame=Math.floor(encounter.tick/3)%4,ship=asset('ships',project.ship),enemy=asset('enemies',encounter.kind===4?'redesign-19':encounter.kind?'redesign-14':project.slots[record()[0]]);
- drawAsset('shipPreview',ship,frame);drawAsset('enemyPreview',enemy,frame);drawFrames('shipFrames',ship);drawFrames('enemyFrames',enemy);
+function render(){if(!encounter)return;const frame=Math.floor(encounter.tick/3)%4,ship=asset('ships',project.ship),enemy=encounter.kind===4?asset('bosses',project.boss.design):asset('enemies',encounter.kind?'redesign-14':project.slots[record()[0]]);
+ for(const c of $('bossGallery').querySelectorAll('canvas')){const a=asset('bosses',c.dataset.id),g=c.getContext('2d');g.clearRect(0,0,128,128);g.imageSmoothingEnabled=false;g.drawImage(sprite(a,(encounter.age>>2)&3),0,0,128,128);c.parentElement.setAttribute('aria-pressed',String(a.id===project.boss.design));}
+ drawFrames('bossFrames',asset('bosses',project.boss.design));
+ drawAsset('shipPreview',ship,frame);drawAsset('enemyPreview',enemy,encounter.kind===4?(encounter.age>>2)&3:frame);drawFrames('shipFrames',ship);drawFrames('enemyFrames',enemy);
  $('previewTitle').textContent=`Sector ${encounter.sector+1} · Wave ${encounter.wave+1}`;
  renderer.draw(encounter,{trails:$('trails').checked,bossGuide:$('bossGuide').checked});
  $('playbackStatus').textContent=campaign?`Sector ${encounter.sector+1} · Wave ${encounter.wave+1} / 48 · ${campaign.mode==='playing'?'Playing sequence':campaign.mode==='won'?'Sector complete':'Flight ended — restart to try again'}`:'Looping selected wave';
- $('hits').textContent=(encounter.kind===4?`Boss HP: ${encounter.bossHP} · `:encounter.kind?'Indestructible meteors · ':'')+`Bombs: ${encounter.bombs}/3 · Shields: ${encounter.shields}/3 · Hits to ship: ${encounter.hits} · Enemy shots: ${encounter.hostile.length}/4${encounter.attack?' · '+['','Opening fan','Sine streams','Sweeping corridor'][encounter.attack.pattern]+' · '+encounter.attack.state:''}`;
+ $('hits').textContent=(encounter.kind===4?`Boss HP: ${encounter.bossHP} · `:encounter.kind?'Indestructible meteors · ':'')+`Bombs: ${encounter.bombs}/3 · Shields: ${encounter.shields}/3 · Hits to ship: ${encounter.hits} · Enemy shots: ${encounter.hostile.length}/${encounter.boss?8:4}${encounter.attack?' · '+FlightWorkshop.formations[encounter.attack.pattern-1].name+' · '+encounter.attack.state:''}`;
  if($('originalGallery').open)for(const c of $('originalGrid').querySelectorAll('canvas')){const a=asset('enemies',c.dataset.id),ctx=c.getContext('2d');ctx.clearRect(0,0,64,64);ctx.imageSmoothingEnabled=false;ctx.drawImage(sprite(a,frame),0,0,64,64);}
  if($('gallery').open)for(const c of $('galleryGrid').querySelectorAll('canvas')){const a=asset('enemies',c.dataset.id),ctx=c.getContext('2d');ctx.clearRect(0,0,64,64);ctx.imageSmoothingEnabled=false;ctx.drawImage(sprite(a,frame),0,0,64,64);}
 }
@@ -30,10 +32,10 @@ function download(blob,name){const a=document.createElement('a'),url=URL.createO
 async function submit(apply){if(busy)return;busy=true;$('apply').disabled=$('export').disabled=true;status('Building and checking the Atari executable…');try{FlightWorkshop.validate(project,payload.catalog);const r=await fetch('/api/diabolic/'+(apply?'apply':'export'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(project)});if(!r.ok)throw Error(await r.text());if(apply){await r.json();status('Applied. Restart diabolic/run-emulator.sh to play your selections.');}else{download(await r.blob(),'kult-diabolic-custom.xex');status('Verified Atari executable downloaded.');}}catch(e){status(e.message,true);}finally{busy=false;$('apply').disabled=$('export').disabled=false;}}
 // Capture the actual simulator's unopposed movement, including meteor entry/drain.
 function captureWave(sector,wave){
- const sim=new FlightWorkshop.Encounter(project,payload.sine,sector,wave,{loop:false}),frames=[];
- const limit=sim.kind>0&&sim.kind<4?240:sim.kind===4?160:150;
+ const sim=new FlightWorkshop.Encounter(project,payload.sine,sector,wave,{loop:false,bulletWaves:measuredBulletWaves}),frames=[];
+ const limit=sim.meteor?240:sim.kind===4?160:150;
  for(let i=0;i<limit;i++){sim.invulnerable=999;sim.update();frames.push(sim.enemies.map(e=>({x:e.x,y:e.y,visible:e.visible})));if(sim.complete)break;}
- return {frames,kind:sim.kind,id:sim.kind===4?'redesign-19':sim.kind?'redesign-14':project.slots[sim.record[0]]};
+ return {frames,kind:sim.kind,id:sim.kind===4?project.boss.design:sim.kind?'redesign-14':project.slots[sim.record[0]]};
 }
 function drawWavePlan(canvas,plan,index){
  const g=canvas.getContext('2d'),scale=canvas.width/512,frame=plan.frames[index];if(!frame)return;
@@ -44,7 +46,7 @@ function drawWavePlan(canvas,plan,index){
   g.strokeStyle=n===0?'#78899d':'#354252';g.lineWidth=n===0?1.5:1;g.beginPath();let prev=null;
   for(let i=Math.max(0,index-60);i<=index;i++){const e=plan.frames[i][n];if(!e.visible){prev=null;continue;}const x=e.x*4+(plan.kind===4?64:16),y=e.y*2+(plan.kind===4?32:16);if(prev&&Math.abs(e.y-prev.y)<40&&Math.abs(e.x-prev.x)<40)g.lineTo(x,y);else g.moveTo(x,y);prev=e;}g.stroke();
   const e=frame[n];if(!e.visible)continue;const x=e.x*4,y=e.y*2;
-  g.drawImage(sprite(asset('enemies',plan.id),Math.floor(index/3)%4),x,y,plan.kind===4?128:32,plan.kind===4?64:32);
+  g.drawImage(sprite(asset(plan.kind===4?'bosses':'enemies',plan.id),plan.kind===4?((index+1)>>2)&3:Math.floor(index/3)%4),x,y-(plan.kind===4?32:0),plan.kind===4?128:32,plan.kind===4?128:32);
   const previous=plan.frames[Math.max(0,index-2)][n],dx=e.x-previous.x,dy=e.y-previous.y;
   if(previous.visible&&Math.hypot(dx,dy)>.1&&Math.abs(dy)<40){const angle=Math.atan2(dy*2,dx*4),cx=x+(plan.kind===4?64:16)+Math.cos(angle)*24,cy=y+(plan.kind===4?32:16)+Math.sin(angle)*24;g.strokeStyle='#c2cedd';g.beginPath();g.moveTo(cx-7*Math.cos(angle-.6),cy-7*Math.sin(angle-.6));g.lineTo(cx,cy);g.lineTo(cx-7*Math.cos(angle+.6),cy-7*Math.sin(angle+.6));g.stroke();}
  }
@@ -56,11 +58,13 @@ function renderWavePlans(time){
  const selected=Number($('wave').value),plan=wavePlans[selected];
  if($('animateWaveMap').checked){mapClock+=1;mapFrame=(mapFrame+1)%plan.frames.length;$('waveTime').value=mapFrame;}
  drawWavePlan($('waveMap'),plan,mapFrame);
- $('waveMapTime').textContent=`${(mapFrame*.06).toFixed(1)} s / ${((plan.frames.length-1)*.06).toFixed(1)} s · ${plan.kind===4?'Sub-boss entrance and movement':plan.kind?'Meteors enter from the top':'Eight-enemy formation'}`;
+ $('waveMapTime').textContent=`${(mapFrame*.06).toFixed(1)} s / ${((plan.frames.length-1)*.06).toFixed(1)} s · ${plan.kind===4?'Sub-boss entrance and movement':plan.kind?({1:'Meteors from above',2:'Meteors from below',3:'Meteors from the right',6:'Alternating top / bottom lanes'}[plan.kind]):'Eight-enemy formation'}`;
  const bounds=$('waveTimeline').getBoundingClientRect();for(const c of $('waveTimeline').querySelectorAll('canvas')){const r=c.getBoundingClientRect();if(r.right<bounds.left||r.left>bounds.right)continue;const i=Number(c.dataset.wave),p=wavePlans[i];drawWavePlan(c,p,$('animateWaveMap').checked?(40+mapClock)%p.frames.length:Math.min(mapFrame,p.frames.length-1));}
 }
+function showBossRanges(){const profiles=measuredBulletWaves=FlightWorkshop.measureBulletWaves(project,payload.sine);$('bossRange').textContent='Six trigonometric curtains use the original sine table. Each has one 32-pixel opening, slow formation, and a 24-pixel/update rush. A new wave forms every 30 updates while the previous guards pass.';options($('bossPattern'),[[0,'Rotate all six'],...FlightWorkshop.formations.map((f,i)=>[i+1,f.name])],project.boss.pattern);return profiles;}
 function timeline(){
- const sector=Number($('sector').value),selected=Number($('wave').value),names=['Formation','Meteors','Meteors B','Meteors C','Skull boss'];
+ showBossRanges();
+ const sector=Number($('sector').value),selected=Number($('wave').value),names=['Formation','Meteors ↓','Meteors ↑','Meteors ←','Sub-boss','Reserved','Meteors ↓↑'];
  wavePlans=project.waves[sector].map((_,i)=>captureWave(sector,i));mapFrame=40;mapClock=0;$('waveTime').max=wavePlans[selected].frames.length-1;$('waveTime').value=mapFrame;$('waveMapTitle').textContent=`Sector ${sector+1} · Wave ${selected+1} flight plan`;
  $('waveTimeline').replaceChildren(...project.waves[sector].map((w,i)=>{const b=document.createElement('button'),c=document.createElement('canvas'),title=document.createElement('strong'),description=document.createElement('span');b.type='button';b.dataset.wave=i;b.setAttribute('aria-pressed',String(i===selected));b.setAttribute('aria-label',`Wave ${i+1}: ${names[project.encounters[sector][i]]}`);c.width=256;c.height=128;c.dataset.wave=i;const kind=project.encounters[sector][i];drawWavePlan(c,wavePlans[i],40);title.textContent=`${String(i+1).padStart(2,'0')} · ${names[kind]}`;description.textContent=`Path ${w[1]+1} · HP ${w[3]}`;b.append(c,title,description);b.onclick=()=>selectWave(i);return b;}));
  $('previousWave').disabled=$('moveEarlier').disabled=selected===0;$('nextWave').disabled=$('moveLater').disabled=selected===47;highlightWave();
@@ -69,6 +73,10 @@ function selectWave(i){$('wave').value=Math.max(0,Math.min(47,i));showWave();$('
 function highlightWave(){for(const b of $('waveTimeline').children)b.classList.toggle('playing',!!campaign&&campaign.encounter.wave===Number(b.dataset.wave));}
 function moveWave(offset){const sector=Number($('sector').value),from=Number($('wave').value),to=from+offset;if(to<0||to>47)return;for(const rows of [project.waves,project.encounters])[rows[sector][from],rows[sector][to]]=[rows[sector][to],rows[sector][from]];selectWave(to);persist();}
 function mount(){
+ options($('bossDesign'),payload.catalog.bosses.map(b=>[b.id,b.name]),project.boss.design);
+ $('bossDesign').onchange=()=>{project.boss.design=$('bossDesign').value;changed();};
+ for(const b of payload.catalog.bosses){const button=document.createElement('button'),canvas=document.createElement('canvas'),label=document.createElement('span');canvas.width=canvas.height=128;canvas.dataset.id=b.id;label.textContent=b.name;button.setAttribute('aria-pressed',String(b.id===project.boss.design));button.append(canvas,label);button.onclick=()=>{$('bossDesign').value=b.id;$('bossDesign').dispatchEvent(new Event('change'));};$('bossGallery').append(button);}
+
  for(const [id,key] of [['bossPattern','pattern'],['bossDifficulty','difficulty']])$(id).onchange=()=>{project.boss[key]=Number($(id).value);changed();};
  $('testBoss').onclick=()=>{restart();encounter=new FlightWorkshop.Encounter(project,payload.sine,Number($('sector').value),Number($('wave').value),{bossPreview:true,drops:payload.drops});paused=false;$('pause').textContent='Pause';$('flight').focus();};
  $('waveTime').oninput=()=>{$('animateWaveMap').checked=false;mapFrame=Number($('waveTime').value);mapLast=0;renderWavePlans(performance.now());};

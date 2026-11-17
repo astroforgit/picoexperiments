@@ -54,10 +54,8 @@ class WorkshopTests(unittest.TestCase):
                 start=0x4f80+i*128+f*32
                 self.assertEqual(self.ram[start:start+32],pack(frame,16,16))
         self.assertEqual(self.ram[0x2f00:0x2f80],b''.join(pack(f,16,16) for f in lib['redesign-14']['frames']))
-        head=lib['redesign-19']['frames'][0]
-        for tile in range(8):
-            frame=[head[((tile//4*16+y)//2)*16+(tile%4*16+x)//4] for y in range(16) for x in range(16)]
-            self.assertEqual(self.ram[0x2e00+tile*32:0x2e20+tile*32],pack(frame,16,16))
+        # Sub-boss targets are invisible; the guardian renderer owns its artwork.
+        self.assertEqual(self.ram[0x2e00:0x2f00],bytes(256))
 
     def test_enemy_blit_and_restore_clip_bottom_without_corrupting_code(self):
         for base in (0x8000,0xa000):

@@ -29,15 +29,22 @@ def ship_bytes(im):
 def package(p,ram):
     # Keep a literal prefix in the retired tile bank: compressing empty space too
     # aggressively lets the in-place decoder overwrite its unread input.
-    # 5120 literal bytes preserve that gap while fitting the imported enemies;
+    # Retired map resources stay literal, preserving the original input gap.
+    # 3552 literal bytes plus the preceding sprite bank preserve the later gap;
     # the remaining star tables are compressed. Replay below checks every block.
     streams=[bytearray(),bytearray()];phase=0;old=p['banks']['ram']
     for block in p['blocks']:
         a=block['start'];data=bytearray(block['data'])
         for i in range(len(data)):
             if ram[a+i]!=old[a+i]:data[i]=ram[a+i]
+        if a==0x2400:
+            streams[phase]+=rle(struct.pack('<HH',0x1800,0xc00))+rle(ram[0x1800:0x2400])
         streams[phase]+=rle(struct.pack('<HH',a,len(data)))
-        streams[phase]+=(b''.join(bytes([0xbf,v,1]) if v in (0xbf,0xcf) else bytes([v]) for v in data[:5120])+rle(data[5120:]) if a==0x2400 else rle(data))
+        literal=lambda values:b''.join(bytes([0xbf,v,1]) if v in (0xbf,0xcf) else bytes([v]) for v in values)
+        if a==0x2400:encoded=literal(data[:3552])+rle(data[3552:])
+        elif a==0x480:encoded=literal(data)
+        else:encoded=rle(data)
+        streams[phase]+=encoded
         if a==0xbb00:
             streams[0]+=rle(bytes(4));phase=1
     streams[1]+=rle(struct.pack('<HH',0x7fee,0xffff))
@@ -46,6 +53,7 @@ def package(p,ram):
         assert len(encoded)<=end-base,(hex(base),len(encoded),end-base)
         offset=6+base-0x2b00;result[offset:offset+len(encoded)]=encoded
     replay,_,_,_=kult(result)
+    assert replay[0x1800:0x2400]==ram[0x1800:0x2400]
     for b in p['blocks']:
         a=b['start'];n=b['size']
         if a not in (0xd301,0xbb00):assert replay[a:a+n]==ram[a:a+n],hex(a)
@@ -89,6 +97,21 @@ def create_runtime(settings=None,assemble=False,write_files=False):
     # Retire all building tiles, retaining black space in the scrolling buffers,
     # and reuse the remainder for PM DMA and the small 6502 extension.
     ram[0x2400:0x4400]=bytes(0x2000)
+    ram[0x1800:0x2400]=bytes(0xc00)
+    if assemble:subprocess.run([os.environ.get('MADS','mads'),str(ROOT/'boss-sprites.asm'),'-o:'+str(ROOT/'boss-sprites.bin')],check=True,stdout=subprocess.PIPE)
+    sprite_code=(ROOT/'boss-sprites.bin').read_bytes()
+    assert len(sprite_code)<=0x380
+    ram[0x1800:0x1800+len(sprite_code)]=sprite_code
+    if assemble:subprocess.run([os.environ.get('MADS','mads'),str(ROOT/'meteors.asm'),'-o:'+str(ROOT/'meteors.bin')],check=True,stdout=subprocess.PIPE)
+    meteor_code=(ROOT/'meteors.bin').read_bytes()
+    assert len(meteor_code)<=0xa0
+    ram[0x2360:0x2360+len(meteor_code)]=meteor_code
+    # Reuse retired compressed terrain sources for guardian-format resources.
+    ram[0x480:0x1781]=bytes(0x1301)
+    if assemble:subprocess.run([os.environ.get('MADS','mads'),str(ROOT/'boss-art.asm'),'-o:'+str(ROOT/'boss-art.bin')],check=True,stdout=subprocess.PIPE)
+    art_code=(ROOT/'boss-art.bin').read_bytes()
+    assert len(art_code)<=0x380
+    ram[0x480:0x480+len(art_code)]=art_code
     rng=random.Random(0xD1AB)
     # Blank terrain eliminates competing sideways motion. Stars use PM DMA.
     scenery(ram,rng,write_files)
@@ -101,6 +124,7 @@ def create_runtime(settings=None,assemble=False,write_files=False):
             ram[base+shift*80:base+(shift+1)*80]=ship_bytes(aligned)
     if assemble:subprocess.run([os.environ.get('MADS','mads'),str(ROOT/'space.asm'),'-o:'+str(ROOT/'space.bin'),'-l:'+str(ROOT/'space.lst')],check=True,stdout=subprocess.PIPE)
     code=(ROOT/'space.bin').read_bytes();ram[0x4000:0x4000+len(code)]=code
+    assert 0x4000+len(code)<=0x43ff
     if assemble:subprocess.run([os.environ.get('MADS','mads'),str(ROOT/'encounters.asm'),'-o:'+str(ROOT/'encounters.bin'),'-l:'+str(ROOT/'encounters.lst')],check=True)
     extra=(ROOT/'encounters.bin').read_bytes();ram[0x3b00:0x3b00+len(extra)]=extra
     assert 0x3b00+len(extra)<=0x3f50
@@ -137,6 +161,8 @@ def create_runtime(settings=None,assemble=False,write_files=False):
         ram[dl:dl+6]=bytes([0x70,0x70,0x70,0x01,target&255,target>>8])
 
     patches={
+        0xF925:('20d5fd','208004'), # shared 64x64 animated guardian/sub-boss renderer
+        0xC1FF:('200003','eaeaea'), # retired terrain decoder: reserve 1800-23FF for full-size bullet sprites
         0xF8DE:('a0','60'), # retired progress-bar reset must not erase HUD/bomb code
 
         0xEB25:('a0008c','4c46eb'), # remove wave mini-map plotting
@@ -152,8 +178,8 @@ def create_runtime(settings=None,assemble=False,write_files=False):
 
         0xEE11:('adbeed','20213b'), # clip enemy drawing at framebuffer bottom
         0xED7A:('aebeed','20243b'), # clip restoration identically
-        0xF90B:('20a7ec','201e3b'), # erase old shield from current backbuffer
-        0xF93C:('2005ec','201b3b'), # tight shield ellipse after sprites
+        0xF90B:('20a7ec','200018'), # erase old shield from current backbuffer
+        0xF93C:('2005ec','200318'), # tight shield ellipse after sprites
         0xF92B:('adbff0','20183b'), # keep ship visible inside shield
 
         0xF7FB:('201af5','20123b'), # Space shield before collision, including guardians
@@ -208,5 +234,7 @@ def main():
     preview.resize((656,80),Image.Resampling.NEAREST).convert('RGB').save(ROOT/'ship.png')
     manifest={'original_sha256':hashlib.sha256(p['original']).hexdigest(),'output_sha256':hashlib.sha256(out).hexdigest(),'runtime_changed_bytes':sum(a!=b for a,b in zip(old,ram)),'patches':{f'{a:04X}':{'before':x,'after':y} for a,(x,y) in patches.items()},'cpu_depacker_verified':True}
     (ROOT/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
+    formations=json.loads((ROOT.parent/'editor/boss-formations.json').read_text())
+    (ROOT.parent/'editor/boss-formations.js').write_text('// Generated from boss-formations.json by the native builder.\n(function(root){const formations='+json.dumps(formations,separators=(',',':'))+";if(typeof module!=='undefined')module.exports=formations;else root.BossFormations=formations;})(globalThis);\n")
     print('Built',ROOT/'kult-diabolic.xex','with verified original-loader replay.')
 if __name__=='__main__':main()

@@ -1,5 +1,5 @@
-; TEMPORARY DEBUG: press 1 once to load the first skull wave in this sector.
-; Key code follows atari800/src/akey.h (AKEY_1=$1F).
+; TEMPORARY DEBUG: 1 skull, 2 top, 3 bottom, 4 right, 5 top/bottom, 6 Insect Queen.
+; POKEY key codes verified against Altirra uikeyboard.cpp.
  opt h-
  org $3F50
 DebugWave
@@ -8,23 +8,32 @@ DebugWave
  bne Released
  lda $D209
  and #$3F
- cmp #$1F
+ ldx #5
+FindKey
+ cmp Keys,x
  beq Pressed
+ dex
+ bpl FindKey
 Released
  lda #0
  sta $2D7E
  jmp $FB8C
 Pressed
- lda $2D7E
- beq JumpBoss
+ cmp $2D7E
+ bne JumpWave
  jmp $FB8C
-JumpBoss
- inc $2D7E
+JumpWave
+ sta $2D7E
+ lda Kinds,x
+ sta CompareKind+1
  jsr $FB5F
  ldy #1
+ lda CompareKind+1
+ beq FoundBoss
 FindBoss
  lda ($80),y
  and #$E0
+CompareKind
  cmp #$80
  beq FoundBoss
  iny
@@ -66,6 +75,14 @@ ClearEnemyShots
  sta $E958
  lda #40
  sta $F0BF
- ; Let the normal loader rebuild graphics, HP, paths, and the boss clock.
+ lda $2D7E
+ cmp #$1B
+ bne LoadWave
+ lda #33
+ sta $4E79
+LoadWave
+ ; The normal loader enters the original guardian at progress 33.
  jmp $FB8C
+Keys dta $1F,$1E,$1A,$18,$1D,$1B
+Kinds dta $80,$20,$40,$60,$C0,0
  ert * > $4000

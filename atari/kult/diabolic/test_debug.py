@@ -27,4 +27,35 @@ class DebugJump(unittest.TestCase):
   c=MPU(memory=list(self.ram));m=c.memory;m[0x4e75]=0;m[0xd20f]=0;m[0xd209]=0x1f;m[0x74e0:0x74e8]=[16]*8;m[0xfb8a]=5
   for w in range(48):m[0x4401+w*4]&=31
   self.call(c);self.assertEqual(m[0xfb8a],5)
+ def test_all_shortcuts_and_direct_key_changes(self):
+  for stage in range(8):
+   c=MPU(memory=list(self.ram));m=c.memory;m[0x4e75]=stage;m[0xd20f]=0
+   for key,kind,wave in ((0x1f,4,8),(0x1e,1,3),(0x1a,2,5),(0x18,3,7),(0x1d,6,11)):
+    m[0x74e0:0x74e8]=[16]*8;m[0xd209]=key
+    self.call(c)
+    self.assertEqual(m[0x2d20],kind);self.assertEqual(m[0xfb8a],wave)
+    self.assertEqual(m[0x2d7e],key)
+    m[0x2d21]=77;self.call(c);self.assertEqual(m[0x2d21],77)
+    m[0xd20f]=4;self.call(c);m[0xd20f]=0
+    self.call(c);self.assertEqual(m[0x2d21],0)
+ def test_missing_meteor_kind_leaves_current_wave(self):
+  for key in (0x1e,0x1a,0x18,0x1d):
+   c=MPU(memory=list(self.ram));m=c.memory;m[0xd20f]=0;m[0xd209]=key;m[0xfb8a]=5;m[0x74e0:0x74e8]=[16]*8
+   for wave in range(48):m[0x4401+wave*4]&=31
+   self.call(c);self.assertEqual(m[0xfb8a],5)
+ def test_dragon_shortcut_from_every_encounter_and_sector(self):
+  for stage in range(8):
+   for previous in (0x1f,0x1e,0x1a,0x18,0x1d):
+    c=MPU(memory=list(self.ram));m=c.memory;m[0x4e75]=stage;m[0xd20f]=0;m[0xd209]=previous
+    self.call(c)
+    m[0xd209]=0x1b;self.call(c)
+    self.assertEqual(m[0xfd04],1);self.assertEqual(m[0xfd0a],100)
+    self.assertEqual(m[0x4e79],33);self.assertEqual(m[0xfd05],0)
+    self.assertEqual(m[0x74e0:0x74e8],[0]*8)
+    self.assertEqual(m[0x74e8:0x74ee],[0]*6)
+    m[0xfd0a]=37;self.call(c);self.assertEqual(m[0xfd0a],37)
+    m[0xd20f]=4;self.call(c);m[0xd20f]=0;self.call(c)
+    self.assertEqual(m[0xfd0a],100)
+    m[0xd209]=0x1f;self.call(c)
+    self.assertEqual(m[0xfd04],0);self.assertEqual(m[0x2d20],4)
 if __name__=='__main__':unittest.main()

@@ -224,6 +224,7 @@ FireGate
     jmp MoveShots
 BossAlive
     jsr $6550
+    jsr InitShots
     jmp MoveShots
 RegularFire
     inc FireClock
@@ -328,14 +329,15 @@ LiveMissile
     bne NormalVelocity
     lda BulletX,x
     sec
-    sbc $2D7C
+    sbc $2D88,x
     jmp MovedX
 NormalVelocity
     lda BulletX,x
     sec
     sbc FireSpeed
 MovedX
-    bcc RemoveShot
+    cmp #128
+    bcs RemoveShot
     sta BulletX,x
     lda BulletY,x
     clc

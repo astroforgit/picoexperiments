@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Local asset editor. Original games are read-only; exports are downloads."""
-import argparse,json,mimetypes,sys
+import argparse,json,mimetypes,sys,hashlib
 from http.server import BaseHTTPRequestHandler,ThreadingHTTPServer
 from pathlib import Path
 from assets import public,export
@@ -14,7 +14,16 @@ class Handler(BaseHTTPRequestHandler):
         path=self.path.split('?')[0]
         if path=='/api/diabolic':
             self.send(200,json.dumps(workshop.public()).encode(),'application/json')
-        elif path in ('/flight/','/flight.html','/flight.js','/flight.css','/flight-core.js'):
+        elif path=='/api/boss-lab':
+            file=HERE/'boss-lab-data.json'
+            if not file.is_file():self.send(404,b'Generate traces with diabolic/boss_lab.py','text/plain');return
+            data=json.loads(file.read_text())
+            data['matchesBuild']=data['executableSha256']==hashlib.sha256((HERE.parent/'diabolic/kult-diabolic.xex').read_bytes()).hexdigest()
+            self.send(200,json.dumps(data).encode(),'application/json')
+        elif path in ('/boss-lab/','/boss-lab.js'):
+            file=HERE/('boss-lab.html' if path=='/boss-lab/' else 'boss-lab.js')
+            self.send(200,file.read_bytes(),mimetypes.guess_type(str(file))[0] or 'text/plain')
+        elif path in ('/flight/','/flight.html','/flight.js','/flight.css','/flight-core.js','/boss-formations.js'):
             name='flight.html' if path=='/flight/' else path[1:]
             self.send(200,(HERE/name).read_bytes(),mimetypes.guess_type(name)[0] or 'text/plain')
         elif path=='/flight/concept.png':

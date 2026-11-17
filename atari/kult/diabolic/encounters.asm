@@ -66,8 +66,13 @@ ReadKind
  lda #0
  sta Age
  sta $2D76
- sta $2D78
+ sta $2D7B
+ lda #24
+ sta $2D7C
+ lda #0
  sta Finished
+ lda #1
+ sta $2D78
  lda #128
  sta HeadX
  lda $FC09
@@ -215,11 +220,7 @@ SpawnMeteor
  lda #0
 PlaceMeteor
  sta MeteorY,x
- sta $746A,x
- lda Columns,x
- sec
- sbc $7446
- sta $7462,x
+ jsr $2360
  lda #$10
  sta $74E0,x
  jmp NextMeteor
@@ -247,13 +248,8 @@ MoveHead
  lda Health
  beq FinishEncounter
  inc Age
- lda HeadX
- cmp #88
- bcc HeadEntered
- beq HeadEntered
- dec HeadX
- dec HeadX
-HeadEntered
+ lda #88
+ sta HeadX
  lda #48
  sta HeadY
  ldx #7
@@ -569,5 +565,4 @@ ClippedRows
  rts
 
 MeteorSpeed dta 2,4,6,3,5,4,7,5
-Columns dta 20,68,105,40,88,12,58,115
  ert * > $4000

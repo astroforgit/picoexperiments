@@ -53,3 +53,17 @@ previous sheet with matching circular rings around all five emblems, including
 the shield. Its prompt is saved in `pickups-circular-prompt.txt`. The previous
 source sheet remains available as a reference. The converted native icons and
 editor data retain their existing filenames and pickup behavior.
+
+## Animated boss candidates
+
+`bosses/original-dragon-reference.png` contains the original game's four dragon
+frames. The built-in image-generation tool received that reference and produced
+`bosses/candidates-sheet.png`: Bone Dragon, Iron Manta, Void Kraken, and Insect
+Queen, each with four authored animation frames. `bosses/prompt.txt` records the
+prompt. No CLI/API fallback was used.
+
+`../import_bosses.py` converts fixed atlas cells to 64×64 monochrome frames without
+inventing animation or resizing each pose separately. `bosses/catalog.json`
+contains only the four generated candidates. The reference dragon is retained
+solely as generation provenance, not as a selectable or runtime resource. `bosses/native-preview.png`
+shows the exact converted frames. The editor and native exporter share this data.

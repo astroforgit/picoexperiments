@@ -1,4 +1,4 @@
-param([string]$OutputDirectory, [switch]$CheckEdges, [switch]$CheckShield, [switch]$LongRun, [switch]$CheckDebugJump, [string]$GamePath, [string]$FirstCycles='1312D00')
+param([string]$OutputDirectory, [switch]$CheckEdges, [switch]$CheckShield, [switch]$LongRun, [switch]$CheckDebugJump, [switch]$CheckSpriteWaves, [string]$GamePath, [string]$FirstCycles='1312D00', [ValidateRange(1,6)][int]$DebugKey=1)
 $ErrorActionPreference='Stop'
 $game=Join-Path $PSScriptRoot 'kult-diabolic.xex'
 if ($GamePath) {$game=$GamePath}
@@ -25,15 +25,31 @@ $commands=@(
 'gcr $989680',
 ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'flight-later.png')+'"'),
 'db 43FF L1','db 4E75 L10','r','.logclose','.autotest_exit')
-if ($CheckDebugJump) {
+if ($CheckDebugJump -or $CheckSpriteWaves) {
     $commands=$commands[0..($commands.Count-3)]
-    # Simulate held 1 at the two POKEY read sites, then restore runtime code.
+    # Simulate a held debug number at the two POKEY read sites, then restore runtime code.
+    $keyCode=@(0x1F,0x1E,0x1A,0x18,0x1D,0x1B)[$DebugKey-1]
     # The distributed XEX stays unchanged.
-    $commands+=@('e 3F50 A9 00 EA','e 3F57 A9 1F EA','gcr $200000',
-        'e 3F50 AD 0F D2','e 3F57 AD 09 D2','db 2D20 L10','db FB8A L2',
+    $commands+=@('e 3F50 A9 00 EA',('e 3F57 A9 {0:X2} EA' -f $keyCode),'gcr $200000',
+        'e 3F50 AD 0F D2','e 3F57 AD 09 D2','e F398 00','e F0BF FF','db 2D20 L10','db FB8A L2','db FD04 L7',
         'gcr $989680',
         ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'debug-boss.png')+'"'),
         'db 2D20 L10','r','.logclose','.autotest_exit')
+}
+if ($CheckSpriteWaves) {
+    # The faster first wave can kill an idle pilot before the overview capture.
+    # Protect the diagnostic pilot immediately after jumping, before advancing.
+    $at=[Array]::IndexOf($commands,'e 3F57 AD 09 D2')
+    $commands=$commands[0..$at]+@('e F0BF FF','e 2D22 FF')+$commands[($at+1)..($commands.Count-1)]
+    $commands=$commands[0..($commands.Count-3)]
+    # Keep this diagnostic encounter alive; no changes to the distributed game.
+    $commands+=@('e 2D22 FF','e 2D76 00','e 1BE0 00 00 00 00 00 00 00 00')
+    foreach ($frame in 1..6) {
+        $commands+=@('e F0BF FF','gcr $800000',
+            ('.autotest_saveimage "'+(Join-Path $OutputDirectory ('boss-wave-'+$frame+'.png'))+'"'),
+            'db 2D23 L2','db 2D76 L4','db 1BD0 L18','r')
+    }
+    $commands+=@('.logclose','.autotest_exit')
 }
 if ($LongRun) {
     $commands=$commands[0..($commands.Count-3)]
@@ -58,7 +74,7 @@ foreach($cmd in $commands){$argsList+=('/debugcmd:"'+$cmd.Replace('"','\"')+'"')
 $started=Get-Date
 $p=Start-Process -FilePath $emulator -ArgumentList $argsList -PassThru
 $timeout=60000
-if ($LongRun) {$timeout=180000}
+if ($LongRun -or $CheckSpriteWaves) {$timeout=180000}
 if (!$p.WaitForExit($timeout)) {$p.Kill();Remove-Item -LiteralPath $testConfig -Force;throw 'Emulator verification timed out.'}
 Remove-Item -LiteralPath $testConfig -Force
 if ($p.ExitCode -ne 0) {throw ('Emulator exited with code '+$p.ExitCode)}
@@ -67,5 +83,7 @@ foreach ($name in @('direct-start.png','flight.png','flight-later.png')) {
     if ($capture.LastWriteTime -lt $started) {throw ('Missing fresh emulator capture: '+$name)}
 }
 if ((Get-Content -Raw -LiteralPath $log) -match 'Illegal instruction hit') {throw 'Emulator hit an illegal instruction; inspect gameplay.log.'}
-if ($CheckDebugJump -and (Get-Content -Raw -LiteralPath $log) -notmatch '(?i)2D20:\s+04') {throw 'Debug shortcut did not enter the skull encounter.'}
+if ($CheckDebugJump -and $DebugKey -eq 1 -and (Get-Content -Raw -LiteralPath $log) -notmatch '(?i)2D20:\s+04') {throw 'Debug shortcut did not enter the skull encounter.'}
+if ($CheckSpriteWaves -and ([regex]::Matches((Get-Content -Raw -LiteralPath $log),'(?im)^2D23:\s+58\s+30').Count -ne 6)) {throw 'Sprite-wave captures did not remain in the stationary boss encounter.'}
+if ($CheckDebugJump -and $DebugKey -eq 6 -and (Get-Content -Raw -LiteralPath $log) -notmatch '(?i)FD04:\s+01') {throw 'Debug shortcut did not enter the Insect Queen guardian encounter.'}
 Write-Output ('Altirra exit code: '+$p.ExitCode)

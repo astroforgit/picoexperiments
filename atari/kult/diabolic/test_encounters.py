@@ -19,7 +19,7 @@ class Encounters(unittest.TestCase):
   c.memory[0x80:0x82]=[0,0x44];c.memory[0x4401]=kind<<5;c.memory[0xfb8a]=0;c.memory[0xfc09]=4;c.a=7
   self.call(c,0x3b00)
  def test_meteor_immunity_and_exit(self):
-  for kind in (1,2,3):
+  for kind in (1,2,3,6):
    c=self.cpu();self.load(c,kind);c.memory[0x4e77]=3;c.memory[0xd20f]=0
    for _ in range(192):
     self.call(c,0x3b03)
@@ -45,11 +45,11 @@ class Encounters(unittest.TestCase):
   p['encounters']=[[5]*48]*8
   with self.assertRaises(ValueError):validate(p)
  def test_player_death_does_not_resurrect_corrupted_sprites(self):
-  for kind in (1,2,3,4):
+  for kind in (1,2,3,4,6):
    c=self.cpu();self.load(c,kind);c.memory[0x74e0:0x74e8]=[0]*8
    self.call(c,0x3b03);self.assertEqual(c.memory[0x74e0:0x74e8],[0]*8)
- def test_meteors_spawn_at_top_and_drain_without_vanishing(self):
-  for kind in (1,2,3):
+ def test_meteor_progress_starts_at_edge_and_drains_without_vanishing(self):
+  for kind in (1,2,3,6):
    c=self.cpu();self.load(c,kind);previous=[128]*8;spawned=0;speeds=(2,4,6,3,5,4,7,5)
    for tick in range(245):
     self.call(c,0x3b03);current=c.memory[0x2d40:0x2d48]
@@ -60,6 +60,36 @@ class Encounters(unittest.TestCase):
       self.assertEqual(new,min(128,old+speeds[i]))
     previous=current.copy()
    self.assertGreater(spawned,8);self.assertEqual(previous,[128]*8)
+ def test_meteor_directions_disjoint_lanes_and_scroll(self):
+  columns=[8,68,108,38,88,18,58,118];rows=[0,64,112,32,96,16,80,48]
+  for kind in (1,2,3,6):
+   for scroll in (0,3,127):
+    c=self.cpu();self.load(c,kind);c.memory[0x7446]=scroll;seen=set()
+    for tick in range(260):
+     self.call(c,0x3b03);boxes=[]
+     for i in range(8):
+      progress=c.memory[0x2d40+i]
+      if progress>=128:continue
+      seen.add(i)
+      x=(c.memory[0x7462+i]+scroll)&255;y=c.memory[0x746a+i]
+      self.assertEqual(x,127-progress if kind==3 else columns[i])
+      self.assertEqual(y,rows[i] if kind==3 else 127-progress if kind==2 or (kind==6 and i%2) else progress)
+      boxes.append((x,y))
+     for i,(x,y) in enumerate(boxes):
+      for xx,yy in boxes[i+1:]:self.assertTrue(abs(x-xx)>=8 or abs(y-yy)>=16,(kind,tick,boxes))
+    self.assertEqual(seen,set(range(8)))
+    self.assertEqual(c.memory[0x2d40:0x2d48],[128]*8)
+ def test_native_browser_meteor_parity(self):
+  import json,subprocess,shutil
+  traces=[]
+  for kind in (1,2,3,6):
+   c=self.cpu();self.load(c,kind);frames=[]
+   for _ in range(260):
+    self.call(c,0x3b03)
+    frames.append([[c.memory[0x7462+i],c.memory[0x746a+i]] if c.memory[0x2d40+i]<128 else None for i in range(8)])
+   traces.append(dict(kind=kind,frames=frames))
+  result=subprocess.run([shutil.which('node'),str(Path(__file__).resolve().parents[1]/'editor/meteors-parity.cjs')],input=json.dumps(dict(project=default_project(),sine=list(self.ram[0x7164:0x7264]),traces=traces)),text=True,capture_output=True)
+  self.assertEqual(result.returncode,0,result.stderr)
  def test_first_meteor_is_slow_and_has_warning_gap(self):
   c=self.cpu();self.load(c,1)
   for tick in range(25):
