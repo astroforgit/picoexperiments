@@ -79,7 +79,7 @@ if ($CheckBossExit) {
 if ($CheckBossActions -or $CheckSpriteWaves) {
     $commands=$commands[0..($commands.Count-3)]
     # Deterministic diagnostic seed; preserve the distributed executable.
-    $commands+=@('e 2DC0 01 00 96','e 2DC4 01','e 2D23 58 30','e 1BE0 00 00 00 00 00 00 00 00')
+    $commands+=@('e 2DC0 01 00 01','e 2DC4 01','e 2D23 58 30','e 1BE0 00 00 00 00 00 00 00 00')
     foreach ($frame in 1..48) {
         $commands+=@('e F398 00','e F0BF FF','e 2D22 FF','e FD0A FF','gcr $200000',
             ('.autotest_saveimage "'+(Join-Path $OutputDirectory ('boss-action-'+$frame+'.png'))+'"'),

@@ -104,29 +104,34 @@ e.trail.push([e.x,e.y]);if(e.trail.length>28)e.trail.shift();}
  bossActions(){
   const a=this.ai,rand=()=>a.rng=(a.rng>>1)^((a.rng&1)?0xb8:0),count=()=>this.hostile.length;
   const clean=()=>{this.hostile=this.hostile.filter(b=>b.x>=0);};
-  const orbs=()=>{for(const b of this.hostile){b.x-=b.style===2?3:4;b.age++;if(b.style===2)b.y=Math.max(0,Math.min(112,b.baseY+(this.sine[(b.age*8)&255]>>1)-14));}clean();};
+  const orbs=()=>{for(const b of this.hostile){b.x-=4;b.age++;if(b.style===2)b.y=Math.max(0,Math.min(112,b.baseY+(this.sine[(b.age*8)&255]>>1)-14));}clean();};
   const rocks=()=>{for(let lane=7;lane>=0;lane--){let b=this.hostile.find(b=>b.lane===lane);if(b){b.progress+=[2,4,6,3,5,4,7,5][lane];if(b.progress>=128){this.hostile=this.hostile.filter(v=>v!==b);a.wait[lane]=32;continue;}}else if(a.phase===5&&this.project.firing.mode){if(a.wait[lane]>0){a.wait[lane]--;continue;}b={boss:true,art:'meteor',lane,progress:0,x:0,y:0};this.hostile.push(b);}else continue;
    b.x=a.direction===3?127-b.progress:[8,68,108,38,88,18,58,118][lane];b.y=a.direction===3?[0,64,112,32,96,16,80,48][lane]:a.direction===2||(a.direction===6&&(lane&1))?127-b.progress:b.progress;
   }};
   if(this.bossHP<=0){this.hostile=[];return;}
   if(a.phase===0){a.phase=8;this.bossX=128;this.bossTop=32;a.timer=0;a.cooldown=0;a.frame=0;a.art=1;this.hostile=[];}
   if(a.phase===1||a.phase===2){
-   const i=(a.timer>>2)&15,target=[64,40,16,16,8,14,8,4,0,4,8,14,8,16,16,40][i];
-   a.frame=[0,1,1,2,2,3,3,3,3,3,3,3,2,2,1,1][i];this.bossTop+=Math.max(-4,Math.min(4,target-this.bossTop));orbs();
-   if(a.cooldown>0)a.cooldown--;else if(a.phase===2||(rand()&3)===0){
-    const limit=a.phase===2?4:6;let lane=limit-1;while(lane>=0&&this.hostile.some(b=>b.lane===lane))lane--;
-    if(lane>=0&&this.project.firing.mode){this.hostile.push({boss:true,art:'orb',lane,x:this.bossX,y:this.bossTop+24,baseY:this.bossTop+24,age:0,style:a.phase});if(a.phase===2)a.cooldown=11;}
+   const i=a.timer&15;
+   this.bossTop=[64,40,16,16,8,14,8,4,0,4,8,14,8,16,16,40][i];
+   a.frame=[0,1,1,2,2,3,3,3,3,3,3,3,2,2,1,1][i];
+   const limit=a.phase===2?3:6;let lane=0;while(lane<limit&&this.hostile.some(b=>b.lane===lane))lane++;
+   if(this.project.firing.mode&&lane<limit&&(rand()&(a.phase===2?7:3))===0){
+    const y=[103,80,56,40,32,22,16,12,8,12,16,22,32,40,56,80][i];
+    this.hostile.push({boss:true,art:'orb',lane,x:this.bossX,y,baseY:y,age:0,style:a.phase});
    }
+   orbs();
    if(++a.timer>=96){a.phase=3;a.nextHazard=4+(rand()&1);}
   }else if(a.phase===3){
    orbs();if(this.bossX<128)this.bossX+=2;else if(!count()){
-    a.phase=a.nextHazard;a.timer=0;this.bossWarmup=0;this.bossClock=29;this.attack=null;
+    a.phase=a.nextHazard;a.timer=0;a.cooldown=0;this.bossWarmup=9;this.bossClock=29;this.attack=null;
     if(a.phase===4){a.art=0;this.bossX=88;this.bossTop=32;}else{a.art=2;a.direction=[1,2,3,6][rand()&3];a.wait=Array.from({length:8},(_,i)=>i?i*16+24:0);}
    }
-  }else if(a.phase===4){this.curtainAttack();clean();if(++a.timer>=120)a.phase=7;}
+  }else if(a.phase===4){
+   a.cooldown^=1;if(a.cooldown){const warming=this.bossWarmup>0;this.curtainAttack();clean();if(!warming&&++a.timer>=120)a.phase=7;}
+  }
   else if(a.phase===5){rocks();if(++a.timer>=192)a.phase=7;}
   else if(a.phase===7){
-   if(a.art===2)rocks();else{for(const b of this.hostile)advanceBossShot(b);clean();}
+   if(a.art===2)rocks();else{a.cooldown^=1;if(!a.cooldown)return;for(const b of this.hostile)advanceBossShot(b);clean();}
    if(!count()){a.phase=6;this.bossX=128;this.bossX-=2;}
   }else{
    this.bossX-=2;if(this.bossX===88){a.timer=0;a.cooldown=0;a.art=1;a.phase=1+(rand()&1);this.attack=null;}

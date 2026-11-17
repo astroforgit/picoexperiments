@@ -101,9 +101,8 @@ NotMeteors
 NotDrain
  jmp Arrive
 Shooting
+ ; Original guardian animation and muzzle-height sequence, one step/update.
  lda Timer
- lsr
- lsr
  and #15
  tay
  lda $FCDA,y
@@ -111,26 +110,11 @@ Shooting
  lda $FCCA,y
  clc
  adc #16
- sta $1BB6
- lda #4
- sta $1BB7
- lda $2D24
- jsr $6553
  sta $2D24
- jsr Orbs
- lda Cooldown
- beq TryShot
- dec Cooldown
- jmp ShotDone
-TryShot
- lda Phase
- cmp #2
- beq SpawnShot
- jsr $0300
- and #3
- bne ShotDone
-SpawnShot
  jsr NewOrb
+ ; Original guardian moves a newly spawned projectile immediately.
+ jsr Orbs
+
 ShotDone
  inc Timer
  lda Timer
@@ -161,6 +145,8 @@ Offscreen
  sta Phase
  lda #0
  sta Timer
+ sta Cooldown
+ lda #9
  sta $2D7C
  lda $2D70
  sta $1BBF
@@ -200,6 +186,16 @@ WaitReady
  bpl SetWait
  rts
 Curtains
+ ; Advance hazards every second game update; the pilot always moves normally.
+ lda Cooldown
+ eor #1
+ sta Cooldown
+ beq CurtainDone
+ lda $2D7C
+ beq CurtainActive
+ jsr $6550
+ rts
+CurtainActive
  lda $2D00
  bne FireCurtain
  lda #255
@@ -213,11 +209,22 @@ CurtainTime
  lda Timer
  cmp #120
  bcs StartDrain
+CurtainDone
+ ; Stationary bullets still collide on updates between movement steps.
+ ldx #7
+CurtainHits
+ lda $1BE0,x
+ beq NextCurtainHit
+ jsr $1809
+NextCurtainHit
+ dex
+ bpl CurtainHits
  rts
 StartDrain
  lda #7
  sta Phase
  rts
+
 Meteors
  jsr Rocks
  inc Timer
@@ -229,6 +236,10 @@ Drain
  lda Art
  cmp #2
  beq DrainRocks
+ lda Cooldown
+ eor #1
+ sta Cooldown
+ beq CurtainDone
  lda #255
  sta $2D79
  jsr $1806
@@ -267,55 +278,60 @@ Entered
 NewOrb
  lda $2D00
  beq NoOrb
+ lda #6
+ sta $2DC9
  lda Phase
  cmp #2
- beq FewOrbs
- ldx #5
- bne FindOrb
-FewOrbs
- ldx #3
+ bne OrbLimitReady
+ lda #3
+ sta $2DC9
+OrbLimitReady
+ ldx #0
 FindOrb
  lda $1BE0,x
- beq Born
- dex
- bpl FindOrb
+ beq TryOrb
+ inx
+ cpx $2DC9
+ bcc FindOrb
 NoOrb
  rts
+TryOrb
+ jsr $0300
+ ldy Phase
+ cpy #2
+ beq SparseChance
+ and #3
+ bne NoOrb
+ beq Born
+SparseChance
+ and #7
+ bne NoOrb
 Born
  lda #1
  sta $1BE0,x
  lda $2D23
  sta $1BD0,x
- lda $2D24
- clc
- adc #8
+ lda Timer
+ and #15
+ tay
+ lda $FCEA,y
  sta $1BD8,x
  sta $1BF0,x
  lda Phase
  sta $1BC0,x
  lda #0
  sta $1BE8,x
- lda Phase
- cmp #2
- bne NoOrb
- lda #11
- sta Cooldown
  rts
+
 Orbs
  ldx #7
 OrbLoop
  lda $1BE0,x
  beq NextOrb
- lda #4
  ldy $1BC0,x
- cpy #2
- bne OrbSpeed
- lda #3
-OrbSpeed
- sta $2DC9
  lda $1BD0,x
  sec
- sbc $2DC9
+ sbc #4
  bcc EndOrb
  sta $1BD0,x
  inc $1BE8,x

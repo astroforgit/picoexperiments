@@ -276,7 +276,8 @@ arc**, **Double-sine ribbon**, **Reverse sine sweep**, **Folded arc**, and
 the opening vertically. Ordinary enemy motion edits do not change these attacks.
 Original enemy-18 projectiles keep the larger two animation frames visible.
 
-After a one-time 24-update entrance, six bullets form over 16 updates (following
+In the standalone nine-wave lab, a one-time 24-step entrance precedes the
+formation primitive: six bullets form over 16 steps (following
 a two-update charge), then rush left at a nominal 24 pixels/update, four times
 the ship's 6 pixels/update. Trigonometric offsets slightly vary individual speed.
 A new wave begins every 30 updates. Its formation overlaps the older wave's two
@@ -291,7 +292,9 @@ legal ship heights at X=24 pixels. The trigonometric gap width varies slightly.
 No stationary height survives the sequence at the tested flight columns.
 Bombs clear both generations and give a fresh entrance delay.
 
-The boss remains fixed at X88/Y48 in native colour-clock/scanline coordinates.
+The isolated primitive uses an emitter at X88/Y48 in native colour-clock/scanline coordinates.
+In the live four-wave attack the boss has already left the screen, and each
+formation step takes two game updates while the pilot moves every update.
 The legacy difficulty value remains compatible with saved projects; its control
 is hidden because these measured waves currently use a single speed.
 
@@ -411,15 +414,22 @@ the right edge. They return only after every remaining
 hazard has left the playfield. The next firing style and hazard are chosen by a
 small random generator.
 
-Straight fire uses rounded hollow orbs, up to six at once. Sine fire has at most
-four, launched every 12 updates. Meteors use one of the existing top, bottom,
+Straight fire follows the original guardian routine: six slots, the first free
+slot considered once per update, a 1-in-4 firing chance, and four colour clocks
+of leftward movement immediately on spawning. The 16-step animation and muzzle
+height tables ($FCCA/$FCDA/$FCEA) advance every update, so shots come from the
+original changing heights instead of a fixed body offset. Rounded hollow orbs
+replace the original projectile art. Sine fire uses the same launch sequence
+and horizontal speed, with three slots and a 1-in-8 chance; its vertical sine
+motion is retained. Meteors use one of the existing top, bottom,
 right, or separated alternating top/bottom lane layouts. Their first meteor is
 slow; spawning ends after 192 updates without deleting surviving rocks. Bosses
 can be damaged only during the two firing actions. Bombs clear projectiles but
 do not destroy meteors.
 
 The flight editor's boss preview and browser game run the same controller.
-**Inspect curtain pattern** keeps the isolated formation inspection available.
+**Preview four-wave attack** starts the actual paced off-screen attack directly.
+The separate nine-wave lab remains an explicitly labeled primitive inspection.
 `test_boss_actions.py` compares 6,400 native CPU updates with browser state and
 projectile coordinates, and searches for a continuous escape route using the
 player's actual movement steps and collision bounds. This proves route existence
@@ -442,7 +452,8 @@ tiles are skipped. A separate cache for each framebuffer keeps unchanged boss
 pixels; animation, movement, disappearance, death, and boss type invalidate it.
 The cache helper occupies $1780..$17FF and its state uses $2DD2..$2DDB.
 
-Measured on the PAL Altirra runner, the same continuous six-orb firing test
+In the rendering-optimization checkpoint (`ca802161`), the PAL Altirra runner’s
+continuous six-orb firing test
 completed 32 updates before and 68 after in 8 × 1,048,576 emulated cycles:
 approximately **6.8 → 14.4 game updates/second**. This is a targeted firing test,
 not a claim of constant frame rate across every encounter. The native CPU test
@@ -464,3 +475,21 @@ body caches invalidate during death as well. `test_boss_respawn.py` covers all
 four scroll phases for both bosses. `verify-emulator.ps1 -CheckBossMeteorDeath`
 forces a real right-to-left meteor collision and waits through the original
 particle effect to check that one life is spent and gameplay resumes.
+
+
+The live off-screen curtain sequence has an 18-game-update lead-in, then four
+births at updates 18, 78, 138 and 198. Bullets move every other game update,
+including while the last guards drain. Their nominal average rush is 12 pixels
+per game update (twice the pilot speed), restoring reaction time independently
+of rendering performance. Collision checks still run on the intervening updates.
+
+`editor/boss-wave-safety.test.cjs` and its Playwright browser counterpart test
+126 live sequences: all six formations plus rotation, both first-gap directions,
+three flight columns and three starting heights. The pilot waits until the
+opening starts to unfold, then another six game updates before reacting (about
+0.35 seconds at 17 updates/sec). Routes retain two-pixel clearance and replay
+through actual Encounter input/collision handling without hits or consumables.
+These are tested escape routes, not a guarantee that arbitrary movement is safe.
+`test_boss_actions.py` also compares primary firing directly against execution
+of the original guardian routine, checks reduced sine-shot density and confirms
+native/browser state and projectile parity through full fights.

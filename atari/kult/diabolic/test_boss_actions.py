@@ -1,7 +1,7 @@
 import json,shutil,subprocess,unittest
 from pathlib import Path
 from py65.devices.mpu6502 import MPU
-from build import create_runtime
+from build import create_runtime, project
 from workshop import default_project
 from boss_lab import call
 class BossActions(unittest.TestCase):
@@ -22,15 +22,52 @@ class BossActions(unittest.TestCase):
     traces.append(dict(guardian=guardian,seed=seed,frames=frames))
   result=subprocess.run([shutil.which('node'),str(Path(__file__).parents[1]/'editor/boss-actions-parity.cjs')],input=json.dumps(dict(project=default_project(),sine=list(self.ram[0x7164:0x7264]),traces=traces)),text=True,capture_output=True)
   self.assertEqual(result.returncode,0,result.stderr)
+ def test_standard_fire_matches_original_guardian_cpu(self):
+  original=project('kult')['banks']['ram']
+  for seed in (0x5d,0x37,0x96):
+   c=self.cpu(seed=seed);m=c.memory;m[0x2dc0]=1;m[0x2dc2]=seed;m[0x2d23]=88;m[0x2d24]=48
+   o=MPU(memory=list(original));n=o.memory;n[0xfd04]=1;n[0xfcfa]=88;n[0x74e0:0x74e8]=[0]*8
+   heights=set()
+   for tick in range(96):
+    # Recycle sprites whose original erase routine has completed.
+    for i in range(6):
+     if n[0x74e0+i]&128:n[0x74e0+i]=0
+    rng=m[0x2dc2];n[0xd20a]=(rng>>1)^(0xb8 if rng&1 else 0);n[0xfd05]=tick&15
+    call(o,0xfe83);self.step(c)
+    native=[[i,m[0x1bd0+i],m[0x1bd8+i]] for i in range(6) if m[0x1be0+i]]
+    expected=[[i,n[0x7462+i],n[0x746a+i]] for i in range(6) if n[0x74e0+i]==16]
+    self.assertEqual(native,expected,(seed,tick))
+    heights.update(y for _,x,y in native if x==84)
+   self.assertGreaterEqual(len(heights),5)
+ def test_sine_fire_uses_original_heights_with_fewer_projectiles(self):
+  totals=[]
+  for phase in (1,2):
+   births=0
+   for seed in range(1,33):
+    c=self.cpu(seed=seed);m=c.memory;m[0x2dc0]=phase;m[0x2dc2]=seed;m[0x2d23]=88;m[0x2dc6]=3
+    for tick in range(96):
+     self.step(c)
+     active=[i for i in range(8) if m[0x1be0+i]]
+     self.assertLessEqual(len(active),6 if phase==1 else 3)
+     for i in active:
+      if m[0x1be8+i]==1:
+       births+=1;self.assertEqual(m[0x1bf0+i],m[0xfcea+(tick&15)])
+   totals.append(births)
+  self.assertLess(totals[1],totals[0]*.7)
+ def test_paused_curtains_still_hit_player(self):
+  c=self.cpu();m=c.memory;m[0x2dc0]=4;m[0x2dc4]=0;m[0x2dc5]=1;m[0x2dc6]=3
+  m[0xe957:0xe959]=[12,56];m[0x1be0]=1;m[0x1bd0]=20;m[0x1bd8]=56;m[0xf0bf]=m[0x2d61]=0
+  call(c,0xdac0)
+  self.assertEqual(m[0xf398],3);self.assertEqual(m[0x1bd0],20)
  def test_four_curtains_then_drain_before_return(self):
   c=self.cpu();m=c.memory;m[0x2dc0]=4;m[0x2dc4]=0;m[0x2d23]=88;m[0x2d24]=48;m[0x2d76]=29;m[0x2d7c]=0;m[0x1bbf]=m[0x2dc6]=3
   births=[];last=False
-  for t in range(180):
+  for t in range(360):
    old=m[0x1be0];f=self.step(c)
    if m[0x1be0] and not old:births.append(t)
    if f[0]==6:
     self.assertFalse(f[-1]);break
-  self.assertEqual(births,[0,30,60,90]);self.assertGreater(t,120);self.assertLess(t,160)
+  self.assertEqual(births,[0,60,120,180]);self.assertGreater(t,240);self.assertLess(t,320)
  def test_rocks_have_disjoint_lanes_and_drain(self):
   for direction in (1,2,3,6):
    c=self.cpu();m=c.memory;m[0x2dc0]=5;m[0x2dc4]=2;m[0x2dc7]=direction;m[0x2dc6]=3;m[0x2de0:0x2de8]=[0]+[i*16+24 for i in range(1,8)]
