@@ -16,14 +16,14 @@ function changed(reset=true){persist();if(reset)restart();timeline();}
 function drawAsset(id,thing,frame){const c=$(id),g=c.getContext('2d');g.clearRect(0,0,c.width,c.height);g.imageSmoothingEnabled=false;const scale=Math.min(thing.width===40?4:5,(c.width-8)/thing.width,(c.height-8)/thing.height);g.drawImage(sprite(thing,frame),(c.width-thing.width*scale)/2,(c.height-thing.height*scale)/2,thing.width*scale,thing.height*scale);}
 function drawFrames(id,thing){const c=$(id),g=c.getContext('2d');g.clearRect(0,0,c.width,c.height);g.imageSmoothingEnabled=false;const cell=c.width/4,scale=Math.min((cell-8)/thing.width,(c.height-8)/thing.height);for(let f=0;f<4;f++)g.drawImage(sprite(thing,f),f*cell+(cell-thing.width*scale)/2,4,thing.width*scale,thing.height*scale);}
 
-function render(){if(!encounter)return;const frame=Math.floor(encounter.tick/3)%4,ship=asset('ships',project.ship),enemy=encounter.kind===4?asset('bosses',project.boss.design):asset('enemies',encounter.kind?'redesign-14':project.slots[record()[0]]);
+function render(){if(!encounter)return;const frame=Math.floor(encounter.tick/3)%4,ship=asset('ships',project.ship),enemy=encounter.kind===4?asset('bosses',project.boss.design):asset('enemies',encounter.kind&&encounter.kind!==7?'redesign-14':project.slots[record()[0]]);
  for(const c of $('bossGallery').querySelectorAll('canvas')){const a=asset('bosses',c.dataset.id),g=c.getContext('2d');g.clearRect(0,0,128,128);g.imageSmoothingEnabled=false;g.drawImage(sprite(a,(encounter.age>>2)&3),0,0,128,128);c.parentElement.setAttribute('aria-pressed',String(a.id===project.boss.design));}
  drawFrames('bossFrames',asset('bosses',project.boss.design));
  drawAsset('shipPreview',ship,frame);drawAsset('enemyPreview',enemy,encounter.kind===4?(encounter.age>>2)&3:frame);drawFrames('shipFrames',ship);drawFrames('enemyFrames',enemy);
  $('previewTitle').textContent=`Sector ${encounter.sector+1} · Wave ${encounter.wave+1}`;
  renderer.draw(encounter,{trails:$('trails').checked,bossGuide:$('bossGuide').checked});
  $('playbackStatus').textContent=campaign?`Sector ${encounter.sector+1} · Wave ${encounter.wave+1} / 48 · ${campaign.mode==='playing'?'Playing sequence':campaign.mode==='won'?'Sector complete':'Flight ended — restart to try again'}`:'Looping selected wave';
- $('hits').textContent=(encounter.kind===4?`Boss HP: ${encounter.bossHP} · `:encounter.kind?'Indestructible meteors · ':'')+`Bombs: ${encounter.bombs}/3 · Shields: ${encounter.shields}/3 · Hits to ship: ${encounter.hits} · Enemy shots: ${encounter.hostile.length}/${encounter.boss?8:4}${encounter.boss&&!encounter.options.curtainOnly?' · '+['Entering','Straight orbs','Sine orbs','Retreating','Four curtain waves','Meteor shower','Returning','Clearing the sky','Entering'][encounter.ai.phase]:''}${encounter.attack?' · '+FlightWorkshop.formations[encounter.attack.pattern-1].name+' · '+encounter.attack.state:''}`;
+ $('hits').textContent=(encounter.kind===4?`Boss HP: ${encounter.bossHP} · `:encounter.kind===7?'2 meteors + 6 shootable enemies · ':encounter.kind?'Indestructible meteors · ':'')+`Bombs: ${encounter.bombs}/3 · Shields: ${encounter.shields}/3 · Hits to ship: ${encounter.hits} · Enemy shots: ${encounter.hostile.length}/${encounter.boss?8:4}${encounter.boss&&!encounter.options.curtainOnly?' · '+['Entering','Straight orbs','Sine orbs','Retreating','Four curtain waves','Meteor shower','Returning','Clearing the sky','Entering'][encounter.ai.phase]:''}${encounter.attack?' · '+FlightWorkshop.formations[encounter.attack.pattern-1].name+' · '+encounter.attack.state:''}`;
  if($('originalGallery').open)for(const c of $('originalGrid').querySelectorAll('canvas')){const a=asset('enemies',c.dataset.id),ctx=c.getContext('2d');ctx.clearRect(0,0,64,64);ctx.imageSmoothingEnabled=false;ctx.drawImage(sprite(a,frame),0,0,64,64);}
  if($('gallery').open)for(const c of $('galleryGrid').querySelectorAll('canvas')){const a=asset('enemies',c.dataset.id),ctx=c.getContext('2d');ctx.clearRect(0,0,64,64);ctx.imageSmoothingEnabled=false;ctx.drawImage(sprite(a,frame),0,0,64,64);}
 }
@@ -35,7 +35,7 @@ function captureWave(sector,wave){
  const sim=new FlightWorkshop.Encounter(project,payload.sine,sector,wave,{loop:false,bulletWaves:measuredBulletWaves}),frames=[];
  const limit=sim.meteor?240:sim.kind===4?160:150;
  for(let i=0;i<limit;i++){sim.invulnerable=999;sim.update();frames.push(sim.enemies.map(e=>({x:e.x,y:e.y,visible:e.visible})));if(sim.complete)break;}
- return {frames,kind:sim.kind,id:sim.kind===4?project.boss.design:sim.kind?'redesign-14':project.slots[sim.record[0]]};
+ return {frames,kind:sim.kind,enemyId:project.slots[sim.record[0]],id:sim.kind===4?project.boss.design:sim.kind?'redesign-14':project.slots[sim.record[0]]};
 }
 function drawWavePlan(canvas,plan,index){
  const g=canvas.getContext('2d'),scale=canvas.width/512,frame=plan.frames[index];if(!frame)return;
@@ -46,7 +46,7 @@ function drawWavePlan(canvas,plan,index){
   g.strokeStyle=n===0?'#78899d':'#354252';g.lineWidth=n===0?1.5:1;g.beginPath();let prev=null;
   for(let i=Math.max(0,index-60);i<=index;i++){const e=plan.frames[i][n];if(!e.visible){prev=null;continue;}const x=e.x*4+(plan.kind===4?64:16),y=e.y*2+(plan.kind===4?32:16);if(prev&&Math.abs(e.y-prev.y)<40&&Math.abs(e.x-prev.x)<40)g.lineTo(x,y);else g.moveTo(x,y);prev=e;}g.stroke();
   const e=frame[n];if(!e.visible)continue;const x=e.x*4,y=e.y*2;
-  g.drawImage(sprite(asset(plan.kind===4?'bosses':'enemies',plan.id),plan.kind===4?((index+1)>>2)&3:Math.floor(index/3)%4),x,y-(plan.kind===4?32:0),plan.kind===4?128:32,plan.kind===4?128:32);
+  g.drawImage(sprite(asset(plan.kind===4?'bosses':'enemies',plan.kind===7&&n>=2?plan.enemyId:plan.id),plan.kind===4?((index+1)>>2)&3:plan.kind===7?(n<2?0:Math.floor(index/3)%2):Math.floor(index/3)%4),x,y-(plan.kind===4?32:0),plan.kind===4?128:32,plan.kind===4?128:32);
   const previous=plan.frames[Math.max(0,index-2)][n],dx=e.x-previous.x,dy=e.y-previous.y;
   if(previous.visible&&Math.hypot(dx,dy)>.1&&Math.abs(dy)<40){const angle=Math.atan2(dy*2,dx*4),cx=x+(plan.kind===4?64:16)+Math.cos(angle)*24,cy=y+(plan.kind===4?32:16)+Math.sin(angle)*24;g.strokeStyle='#c2cedd';g.beginPath();g.moveTo(cx-7*Math.cos(angle-.6),cy-7*Math.sin(angle-.6));g.lineTo(cx,cy);g.lineTo(cx-7*Math.cos(angle+.6),cy-7*Math.sin(angle+.6));g.stroke();}
  }
@@ -58,13 +58,13 @@ function renderWavePlans(time){
  const selected=Number($('wave').value),plan=wavePlans[selected];
  if($('animateWaveMap').checked){mapClock+=1;mapFrame=(mapFrame+1)%plan.frames.length;$('waveTime').value=mapFrame;}
  drawWavePlan($('waveMap'),plan,mapFrame);
- $('waveMapTime').textContent=`${(mapFrame*.06).toFixed(1)} s / ${((plan.frames.length-1)*.06).toFixed(1)} s · ${plan.kind===4?'Sub-boss entrance and movement':plan.kind?({1:'Meteors from above',2:'Meteors from below',3:'Meteors from the right',6:'Alternating top / bottom lanes'}[plan.kind]):'Eight-enemy formation'}`;
+ $('waveMapTime').textContent=`${(mapFrame*.06).toFixed(1)} s / ${((plan.frames.length-1)*.06).toFixed(1)} s · ${plan.kind===4?'Sub-boss entrance and movement':plan.kind?({1:'Meteors from above',2:'Meteors from below',3:'Meteors from the right',6:'Alternating top / bottom lanes',7:'Two meteors and six enemies from the right'}[plan.kind]):'Eight-enemy formation'}`;
  const bounds=$('waveTimeline').getBoundingClientRect();for(const c of $('waveTimeline').querySelectorAll('canvas')){const r=c.getBoundingClientRect();if(r.right<bounds.left||r.left>bounds.right)continue;const i=Number(c.dataset.wave),p=wavePlans[i];drawWavePlan(c,p,$('animateWaveMap').checked?(40+mapClock)%p.frames.length:Math.min(mapFrame,p.frames.length-1));}
 }
 function showBossRanges(){const profiles=measuredBulletWaves=FlightWorkshop.measureBulletWaves(project,payload.sine);$('bossRange').textContent='Six trigonometric curtains use the original sine table. Each has one 32-pixel opening, slow formation, and a 12-pixel/update average rush (twice ship speed). A new wave forms every 60 game updates while the previous guards pass.';options($('bossPattern'),[[0,'Rotate all six'],...FlightWorkshop.formations.map((f,i)=>[i+1,f.name])],project.boss.pattern);return profiles;}
 function timeline(){
  showBossRanges();
- const sector=Number($('sector').value),selected=Number($('wave').value),names=['Formation','Meteors ↓','Meteors ↑','Meteors ←','Sub-boss','Reserved','Meteors ↓↑'];
+ const sector=Number($('sector').value),selected=Number($('wave').value),names=['Formation','Meteors ↓','Meteors ↑','Meteors ←','Sub-boss','Reserved','Meteors ↓↑','Meteors + enemies ←'];
  wavePlans=project.waves[sector].map((_,i)=>captureWave(sector,i));mapFrame=40;mapClock=0;$('waveTime').max=wavePlans[selected].frames.length-1;$('waveTime').value=mapFrame;$('waveMapTitle').textContent=`Sector ${sector+1} · Wave ${selected+1} flight plan`;
  $('waveTimeline').replaceChildren(...project.waves[sector].map((w,i)=>{const b=document.createElement('button'),c=document.createElement('canvas'),title=document.createElement('strong'),description=document.createElement('span');b.type='button';b.dataset.wave=i;b.setAttribute('aria-pressed',String(i===selected));b.setAttribute('aria-label',`Wave ${i+1}: ${names[project.encounters[sector][i]]}`);c.width=256;c.height=128;c.dataset.wave=i;const kind=project.encounters[sector][i];drawWavePlan(c,wavePlans[i],40);title.textContent=`${String(i+1).padStart(2,'0')} · ${names[kind]}`;description.textContent=`Path ${w[1]+1} · HP ${w[3]}`;b.append(c,title,description);b.onclick=()=>selectWave(i);return b;}));
  $('previousWave').disabled=$('moveEarlier').disabled=selected===0;$('nextWave').disabled=$('moveLater').disabled=selected===47;highlightWave();

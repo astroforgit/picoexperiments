@@ -8,7 +8,7 @@ function validate(p,lib){
  if(!Array.isArray(p.waves)||p.waves.length!==8||p.waves.some(s=>!Array.isArray(s)||s.length!==48||s.some(w=>!Array.isArray(w)||w.length!==4||w.some((v,i)=>!int(v,i===3?1:0,i===3?16:31)))))throw Error('Invalid wave data');
  if(!Array.isArray(p.motions)||p.motions.length!==32||p.motions.some(m=>!Array.isArray(m)||m.length!==8||m.some(v=>!int(v,-128,127))))throw Error('Invalid movement data');
  if(p.encounters===undefined)p={...p,encounters:Array.from({length:8},()=>Array(48).fill(0))};
- if(!Array.isArray(p.encounters)||p.encounters.length!==8||p.encounters.some(s=>!Array.isArray(s)||s.length!==48||s.some(n=>(!int(n,0,6)||n===5))))throw Error('Invalid encounter types');
+ if(!Array.isArray(p.encounters)||p.encounters.length!==8||p.encounters.some(s=>!Array.isArray(s)||s.length!==48||s.some(n=>(!int(n,0,7)||n===5))))throw Error('Invalid encounter types');
  if(!p.firing||!int(p.firing.mode,0,2)||!int(p.firing.interval,12,180)||!int(p.firing.speed,1,4))throw Error('Invalid firing settings');
  if(p.boss===undefined)p={...p,boss:{pattern:0,difficulty:1}};
  if(p.boss&&p.boss.design===undefined)p={...p,boss:{...p.boss,design:'boss-bone-dragon'}};
@@ -65,7 +65,7 @@ class Encounter{
   this.shieldTicks=Math.max(0,this.shieldTicks-1);
   if(input.shield&&!this.shieldHeld&&!this.shieldTicks&&this.shields>0){this.shields--;this.shieldTicks=17;}
   this.shieldHeld=!!input.shield;
-  if(input.bomb&&!this.bombHeld&&this.bombs>0){this.bombs--;if(!this.boss||this.ai.art!==2)this.hostile=[];this.bombSuppress=0;this.bossWarmup=25;this.bossClock=29;if(this.boss&&(this.options.curtainOnly||this.ai.phase<3))this.bossHP=Math.max(0,this.bossHP-16);else if(!this.kind)for(const e of this.enemies)e.hp=0;}
+  if(input.bomb&&!this.bombHeld&&this.bombs>0){this.bombs--;if(!this.boss||this.ai.art!==2)this.hostile=[];this.bombSuppress=0;this.bossWarmup=25;this.bossClock=29;if(this.boss&&(this.options.curtainOnly||this.ai.phase<3))this.bossHP=Math.max(0,this.bossHP-16);else if(!this.kind||this.kind===7)for(const e of this.enemies)if(this.kind!==7||e.i>=2)e.hp=0;}
   this.bombHeld=!!input.bomb;
   if(input.right&&!input.left&&this.player.x<100)this.player.x+=3;
   if(input.left&&!input.right&&this.player.x>=3)this.player.x-=3;
@@ -73,7 +73,18 @@ class Encounter{
   const points=native.motionPoints(this.sine,this.project.motions[this.record[1]].map(n=>n&255),this.phase);
   const entry=Math.max(0,96-this.age*6),exit=Math.max(0,(this.age-100)*4);
   for(const e of this.enemies){e.x=points[e.i%8][0]+entry-exit;e.y=points[e.i%8][1];
-   if(this.meteor){
+   if(this.kind===7){
+    if(e.hp>0){
+     if(e.meteorY<128)e.meteorY=Math.min(255,e.meteorY+[2,3,3,3,3,3,3,3][e.i]);
+     else if(e.meteorY===128&&this.age>=[1,57,9,21,33,45,69,81][e.i])e.meteorY=0;
+     if(e.meteorY>=128&&e.meteorY!==128)e.meteorY=255;
+     // Mark an exact edge crossing as spent too; it must never respawn.
+     if(e.meteorY===128&&e.started)e.meteorY=255;
+     if(e.meteorY<128)e.started=true;
+    }
+    e.x=127-e.meteorY;e.y=[16,96,0,32,48,64,80,112][e.i];e.visible=e.hp>0&&e.meteorY<128;
+   }
+   else if(this.meteor){
     if(e.meteorY<128){e.meteorY+=[2,4,6,3,5,4,7,5][e.i];if(e.meteorY>=128){e.meteorY=128;e.wait=32;}}
     else if(this.age<192){if(e.wait>0)e.wait--;else e.meteorY=0;}
     e.visible=e.meteorY<128;const up=this.kind===2||(this.kind===6&&(e.i&1));e.x=this.kind===3?127-e.meteorY:[8,68,108,38,88,18,58,118][e.i];e.y=this.kind===3?[0,64,112,32,96,16,80,48][e.i]:up?127-e.meteorY:e.meteorY;
@@ -82,9 +93,9 @@ class Encounter{
    else e.visible=e.hp>0;
 e.trail.push([e.x,e.y]);if(e.trail.length>28)e.trail.shift();}
   if(input.fire&&!this.cooldown){for(const y of [[8],[4,11],[2,8,14],[1,5,10,14]][this.weapon-1])this.shots.push({x:this.player.x+20,y:this.player.y+y});this.cooldown=4;}
-  for(const b of this.shots){b.x+=6;for(const e of this.enemies)if(e.visible&&b.x>=e.x&&b.x<e.x+8&&b.y>=e.y&&b.y<e.y+16){if(!this.kind)e.hp--;else if(this.boss)this.bossHP=Math.max(0,this.bossHP-1);b.x=999;break;}}
+  for(const b of this.shots){b.x+=6;for(const e of this.enemies)if(e.visible&&b.x>=e.x&&b.x<e.x+8&&b.y>=e.y&&b.y<e.y+16){if(!this.kind||(this.kind===7&&e.i>=2))e.hp--;else if(this.boss)this.bossHP=Math.max(0,this.bossHP-1);b.x=999;break;}}
   this.shots=this.shots.filter(b=>b.x<128);
-  if(!this.kind)for(const e of this.enemies)if(e.hp<=0)e.visible=false;
+  if(!this.kind||this.kind===7)for(const e of this.enemies)if(e.hp<=0)e.visible=false;
   if(this.boss&&this.bossHP<=0)for(const e of this.enemies)e.visible=false;
   for(const e of this.enemies)if(e.visible&&this.player.x<e.x+8&&this.player.x+20>e.x&&this.player.y<e.y+16&&this.player.y+16>e.y&&!this.invulnerable&&!this.shieldTicks){this.hits++;this.invulnerable=40;}
   // Conservative contact envelope for the full 64x64 native tile artwork.
@@ -95,7 +106,7 @@ e.trail.push([e.x,e.y]);if(e.trail.length>28)e.trail.shift();}
   }
   for(const b of this.hostile){if(!b.boss){b.x-=f.speed;b.y+=b.dy;}if((b.boss?b.x+8>=this.player.x:b.x+2>this.player.x)&&b.x<this.player.x+20&&(b.boss?b.y+16>=this.player.y:b.y+2>this.player.y)&&b.y<this.player.y+16){if(!this.invulnerable&&!this.shieldTicks){this.hits++;this.invulnerable=40;}if(!b.boss)b.x=-99;}}
   this.hostile=this.hostile.filter(b=>b.x>=0&&b.y>=0&&b.y<(b.boss?128:125));
-  for(const e of this.enemies)if(!this.kind&&e.hp<=0&&!e.defeated){e.defeated=true;this.score+=100;const award=this.options.drops?.[this.record[2]]?.[e.i];if(award)this.pickups.push({x:e.x,y:e.y,type:award===5?'Shield':`Weapon ${award}`});}
+  for(const e of this.enemies)if((!this.kind||(this.kind===7&&e.i>=2))&&e.hp<=0&&!e.defeated){e.defeated=true;this.score+=100;const award=!this.kind&&this.options.drops?.[this.record[2]]?.[e.i];if(award)this.pickups.push({x:e.x,y:e.y,type:award===5?'Shield':`Weapon ${award}`});}
   if(this.boss&&this.bossHP<=0&&!this.rewarded){this.rewarded=true;this.score+=1000;this.pickups=this.kind===5?[]:[{x:80,y:32,type:'Weapon 2'},{x:96,y:60,type:'Weapon 3'},{x:112,y:88,type:'Shield'}];}
   for(const p of this.pickups){p.x-=2;if(p.x<this.player.x+20&&p.x+8>this.player.x&&p.y<this.player.y+16&&p.y+16>this.player.y){this.collected.push(p.type);if(p.type==='Shield')this.shields=Math.min(3,this.shields+1);else this.weapon=Number(p.type.slice(-1));p.x=-100;}}
   this.pickups=this.pickups.filter(p=>p.x>-8);

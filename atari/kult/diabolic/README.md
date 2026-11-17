@@ -377,14 +377,14 @@ The native/browser parity test requires Node.js 22 or later on PATH alongside Py
 
 Temporary Atari debug keys: **1** jumps to the first sub-boss in the current sector, **2** to top-down meteors, **3** to bottom-up meteors, **4** to right-to-left meteors, and **5** to alternating top/bottom meteors. Holding a key does not repeatedly restart the wave. If that encounter type is absent from the sector, the current wave continues.
 
-**6** jumps directly to the Insect Queen (100 HP, generated animation and the shared four-action controller). It shares the debug-key hold protection and can be used after keys 1–5. Press 1–5 to leave the guardian for another debug encounter.
+**6** jumps to the mixed meteor/enemy test wave (encounter type 7). Two indestructible rocks and six shootable enemies enter from the right, staggered in separate horizontal lanes. The first rock is slower; every actor crosses once. Bombs destroy enemies but leave rocks intact. The selected enemy slot supplies two animation frames; the original explosion frames are preserved. The Queen remains the end-of-level boss. The mixed controller occupies `$2420..$24FF`; `$2400..$241F` must remain the blank scrolling terrain tile. Waiting mixed-wave actors are hidden until their scheduled entry.
 
 ## Selectable 64×64 sub-boss artwork
 
 The flight editor's **Sub-boss appearance** section offers the Bone Dragon (default), Iron Manta, Void Kraken, and Insect Queen. Every selection
 has four 64×64 monochrome frames. Save/export retains `boss.design`; older
 projects automatically select Bone Dragon. Apply to local game and restart,
-then press **1** to preview. **6** loads the generated Insect Queen end-of-level fight.
+then press **1** to preview. **6** loads the mixed meteor/enemy wave.
 
 During firing, the sub-boss stays at X=88 colour clocks and bobs vertically.
 It uses the original guardian tile drawing/erasing routines, with its own tile
@@ -474,7 +474,17 @@ counter could leave the ship invisible forever after a meteor collision. The
 body caches invalidate during death as well. `test_boss_respawn.py` covers all
 four scroll phases for both bosses. `verify-emulator.ps1 -CheckBossMeteorDeath`
 forces a real right-to-left meteor collision and waits through the original
-particle effect to check that one life is spent and gameplay resumes.
+particle effect to check that one life is spent and gameplay resumes with the
+same boss health. A live sub-boss now holds its wave during player respawn,
+including phase zero; only a deliberate debug-key jump bypasses that hold.
+
+The software projectile renderer clips partially visible rocks at the right
+edge before drawing or saving their backgrounds. Each framebuffer record keeps
+both width and height, so erasure restores exactly the drawn rectangle. This
+prevents edge pixels spilling into the next scanline or framebuffer at the
+maximum scroll offset. Full-width sprites retain the unrolled fast path.
+`test_boss_sprites.py` checks both buffers and all four horizontal alignments;
+the edge regression fails against the previous renderer.
 
 
 The live off-screen curtain sequence has an 18-game-update lead-in, then four

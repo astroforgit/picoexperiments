@@ -29,6 +29,27 @@ class SpriteWaves(unittest.TestCase):
      self.assertNotEqual(m[base:base+8192],[0x55]*8192)
      self.call(c,0x1800);self.assertEqual(m[base:base+8192],[0x55]*8192)
      self.assertEqual(bytes(m[0x1800:0x1b80]),code)
+ def test_meteor_edge_does_not_write_outside_sky_or_leave_pixels(self):
+  # At the maximum scrolling row offset, an off-right sprite used to spill
+  # into the next scanline (and the other framebuffer on the bottom row).
+  for buffer in (0,1):
+   for scroll in range(1,5):
+    for x in range(120,128):
+     c=MPU(memory=list(self.ram));m=c.memory
+     m[0x3b1b]=m[0x3b1e]=0x60;m[0x2d20]=4;m[0x2d22]=21;m[0x2dc4]=2
+     m[0x7439]=buffer;m[0x7446]=scroll;m[0x7e:0x80]=[0,0x60]
+     base=0x8000+buffer*8192
+     m[0x8000:0xc000]=[0]*16384
+     for y in range(128):m[0x6000+y*3:0x6002+y*3]=list((base+y*64+31).to_bytes(2,'little'))
+     m[0x1be0:0x1be8]=[1]+[0]*7;m[0x1bd0]=x;m[0x1bd8]=112
+     self.call(c,0x1803)
+     end_column=31+(128+scroll+3)//4
+     allowed={base+y*64+col for y in range(112,128) for col in range(31,end_column)}
+     dirty={a for a in range(0x8000,0xc000) if m[a]}
+     self.assertTrue(dirty)
+     self.assertFalse(dirty-allowed,(buffer,scroll,x,sorted(dirty-allowed)))
+     self.call(c,0x1800)
+     self.assertFalse(any(m[0x8000:0xc000]))
  def test_full_wave_traversal_and_stationary_boss(self):
   for pattern in (1,2,3):
    c=MPU(memory=list(self.ram));m=c.memory;m[0x2d74]=pattern;m[0x2d23]=88;m[0x2d24]=48;m[0x2d70]=3;m[0xf0bf]=255

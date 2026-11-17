@@ -171,12 +171,19 @@ VisibleActor
  lda $FD04
  bne OrdinaryActor
  lda $2D20
+ cmp #7
+ bne CheckSubBossActor
+ lda $2D40,y
+ bmi HiddenActor
+ jmp OrdinaryActor
+CheckSubBossActor
  cmp #4
  bne OrdinaryActor
  lda $2D22
  beq OrdinaryActor
  lda $F398
  bne OrdinaryActor
+HiddenActor
  lda #$80
  rts
 OrdinaryActor

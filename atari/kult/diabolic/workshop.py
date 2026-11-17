@@ -23,7 +23,7 @@ def default_project():
     return dict(version=1,ship='ship-2',slots=[f'redesign-{i}' for i in range(32)],
       waves=[[list(ram[0x4400+s*192+w*4:0x4404+s*192+w*4]) for w in range(48)] for s in range(8)],
       motions=[aggressive_motion([signed(b) for b in ram[0x7310+i*8:0x7318+i*8]]) for i in range(32)],
-      boss=dict(pattern=0,difficulty=1,design='boss-bone-dragon'),firing=dict(mode=2,interval=18,speed=3),encounters=[[0,0,1,0,2,0,3,4,0,0,6]+[0]*37 for _ in range(8)])
+      boss=dict(pattern=0,difficulty=1,design='boss-bone-dragon'),firing=dict(mode=2,interval=18,speed=3),encounters=[[0,0,1,0,2,0,3,4,0,0,6,7]+[0]*36 for _ in range(8)])
 def integer(v,lo,hi):
     if type(v)!=int or not lo<=v<=hi:raise ValueError(f'Expected integer {lo}..{hi}')
     return v
@@ -39,7 +39,7 @@ def validate(value):
     for sector in encounters:
         if not isinstance(sector,list) or len(sector)!=48:raise ValueError('Expected 48 encounter types')
         for kind in sector:
-            integer(kind,0,6)
+            integer(kind,0,7)
             if kind==5:raise ValueError("Encounter 5 is reserved")
     lib=catalog()
     if value['ship'] not in {a['id'] for a in lib['ships']}:raise ValueError('Unknown ship')

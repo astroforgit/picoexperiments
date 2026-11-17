@@ -86,6 +86,14 @@ L0392
 L0395
  RTS
 WaveGate
+ ; Only an explicit debug jump may bypass a living boss. Preserve Mode
+ ; until LoadEncounter restores the original explosion graphics.
+ LDA $2dc0
+ CMP #$ff
+ BNE KeepEncounter
+ INC $2dc0
+ JMP L03B1
+KeepEncounter
  LDA $fd04
  BNE L03AE
  LDA $2d20
@@ -93,8 +101,7 @@ WaveGate
  BNE L03B1
  LDA $2d22
  BEQ L03B1
- LDA $2dc0
- BEQ L03B1
+ ; Phase zero also means player respawn; keep this live boss and its HP.
  CLC
  RTS
 L03AE

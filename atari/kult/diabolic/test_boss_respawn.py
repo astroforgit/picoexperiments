@@ -14,7 +14,7 @@ class BossRespawn(unittest.TestCase):
             for phase in range(4):
                 with self.subTest(guardian=guardian, scroll=phase):
                     c=MPU(memory=list(self.ram));m=c.memory
-                    m[0xfd04]=guardian;m[0xfd0a]=100;m[0x2d20]=4;m[0x2d22]=64
+                    m[0xfd04]=guardian;m[0xfd0a]=37;m[0x2d20]=4;m[0x2d22]=21
                     m[0x2dc0]=5;m[0x2dc4]=2;m[0x2dc7]=3;m[0x758e]=phase
                     m[0x4e78]=3;m[0xf398]=m[0xf0bf]=m[0x2d61]=0
                     m[0xe957:0xe959]=[12,56];m[0x1bd1]=23;m[0x1bd9]=64
@@ -34,6 +34,15 @@ class BossRespawn(unittest.TestCase):
                     else:self.fail('Respawn stayed stuck with invisible player')
                     self.assertEqual(m[0x4e78],2)
                     self.assertEqual(m[0xe957:0xe959],[0,56])
+                    # The death effect clears original actors; the wave gate must still
+                    # retain this encounter instead of loading the next wave.
+                    m[0x74e0:0x74e8]=[0]*8
+                    wave=m[0xfb8a]
+                    call(c,0x030f)
+                    self.assertEqual(m[0xfb8a],wave)
+                    self.assertEqual(m[0x2d20],4)
+                    self.assertEqual(m[0x2d22],21)
+                    self.assertEqual(m[0xfd0a],37)
                     # The live boss resumes with a clean entrance and no stale rocks.
                     call(c,0xdac0)
                     self.assertEqual(m[0x2dc0],8)
@@ -43,6 +52,17 @@ class BossRespawn(unittest.TestCase):
                         if c.pc in (0xeab0,0xead8):break
                         c.step()
                     self.assertEqual(c.pc,0xead8,'Restore the fast terrain hold after respawn')
+
+    def test_explicit_debug_jump_bypasses_boss_without_losing_old_mode(self):
+        c=MPU(memory=list(self.ram));m=c.memory
+        m[0xfd04]=0;m[0x2d20]=4;m[0x2d22]=21;m[0x2dc0]=255
+        c.pc=0x030f
+        for _ in range(50):
+            if c.pc==0xfb90:break
+            c.step()
+        self.assertEqual(c.pc,0xfb90)
+        self.assertEqual(m[0x2dc0],0)
+        self.assertEqual(m[0x2d20],4,'Loader must restore saved explosion graphics')
 
     def test_dying_player_invalidates_both_body_caches(self):
         for buffer in (0,1):

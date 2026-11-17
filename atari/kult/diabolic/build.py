@@ -98,6 +98,9 @@ def create_runtime(settings=None,assemble=False,write_files=False):
     # and reuse the remainder for PM DMA and the small 6502 extension.
     ram[0x2400:0x4400]=bytes(0x2000)
     ram[0x1800:0x2400]=bytes(0xc00)
+    if assemble:subprocess.run([os.environ.get('MADS','mads'),str(ROOT/'mixed.asm'),'-o:'+str(ROOT/'mixed.bin')],check=True,stdout=subprocess.PIPE)
+    mixed=(ROOT/'mixed.bin').read_bytes();assert len(mixed)<=224
+    ram[0x2420:0x2420+len(mixed)]=mixed # Preserve the 32-byte black terrain tile at $2400.
     if assemble:subprocess.run([os.environ.get('MADS','mads'),str(ROOT/'boss-sprites.asm'),'-o:'+str(ROOT/'boss-sprites.bin')],check=True,stdout=subprocess.PIPE)
     sprite_code=(ROOT/'boss-sprites.bin').read_bytes()
     assert len(sprite_code)<=0x380

@@ -16,7 +16,7 @@ class Renderer{
   if(bossGuide){const bullets=e.hostile.filter(b=>b.boss);if(bullets.length){const left=Math.min(...bullets.map(b=>b.x))*4,right=Math.max(...bullets.map(b=>b.x))*4+32,top=Math.min(...bullets.map(b=>b.y))*2,bottom=Math.max(...bullets.map(b=>b.y))*2+32;g.strokeStyle='#72859b';g.setLineDash([3,4]);g.strokeRect(left,top,right-left,bottom-top);g.setLineDash([]);}}
   const enemy=e.kind===5?'boss-insect-queen':e.kind===4?(e.project.boss?.design||'boss-bone-dragon'):e.kind?'redesign-14':e.project.slots[e.record[0]];
   if(e.boss&&e.bossVisible){g.drawImage(this.sprite(enemy,e.options.curtainOnly?(e.age>>2)&3:e.ai.frame),Math.round(e.bossX*4),Math.round(e.bossTop*2),128,128);}
-  else if(!e.boss)for(const a of e.enemies)if(a.visible&&a.hp>0)g.drawImage(this.sprite(enemy,frame),Math.round(a.x*4),Math.round(a.y*2),32,32);
+  else if(!e.boss)for(const a of e.enemies)if(a.visible&&a.hp>0)g.drawImage(this.sprite(e.kind===7?(a.i<2?'redesign-14':e.project.slots[e.record[0]]):enemy,e.kind===7?(a.i<2?0:frame&1):frame),Math.round(a.x*4),Math.round(a.y*2),32,32);
   if(e.shieldTicks||!e.invulnerable||e.tick%4<2)g.drawImage(this.sprite(e.project.ship,frame),e.player.x*4,e.player.y*2,80,32);
   g.fillStyle='#fff';for(const b of e.shots)g.fillRect(b.x*4,b.y*2,8,2);
   for(const b of e.hostile){if(b.boss){g.drawImage(this.sprite(b.art==='orb'?'boss-orb':b.art==='meteor'?'redesign-14':'original-17',b.art==='orb'||b.art==='meteor'?0:2+((e.bossClock>>2)&1)),Math.round(b.x*4),Math.round(b.y*2),32,32);}else if(b.style){for(let y=0;y<8;y++)for(let x=0;x<8;x++)if(this.data.playerBullet[y]&(128>>x))g.fillRect(Math.round(b.x*4)+x*4,Math.round(b.y*2)+y*2,4,2);}else g.fillRect(Math.round(b.x*4),Math.round(b.y*2),16,8);}

@@ -10,6 +10,7 @@ Slot = $1BB0
 Record = $1BB1
 Rows = $1BB2
 PhysicalX = $1BB3
+Width = $1BBB
 Update
  ldx #7
 Actors
@@ -240,7 +241,17 @@ EraseActor
  jsr BackupPointer
  ldx Record
  lda $1BA0,x
- beq EraseNext
+ jeq EraseNext
+ pha
+ and #$60
+ lsr
+ lsr
+ lsr
+ lsr
+ lsr
+ sta Width
+ pla
+ and #31
  sta Rows
  asl
  clc
@@ -252,8 +263,11 @@ EraseActor
  sta $F8
  lda $1B90,x
  sta $F9
+ lda Width
+ cmp #3
+ bne EraseClipped
  ldy #0
-EraseRow
+EraseFastRow
  lda ($FC),y
  sta ($F8),y
  iny
@@ -265,10 +279,28 @@ EraseRow
  iny
  jsr NextRow
  cpy Rows
+ bne EraseFastRow
+ jmp EraseNext
+EraseClipped
+ ldy #0
+EraseRow
+ lda ($FC),y
+ sta ($F8),y
+ iny
+ lda Width
+ cmp #2
+ bcc ErasePadding
+ lda ($FC),y
+ sta ($F8),y
+ErasePadding
+ iny
+ iny
+ jsr NextRow
+ cpy Rows
  bne EraseRow
 EraseNext
  dec Slot
- bpl EraseActor
+ jpl EraseActor
  jmp $3B1E
 
 Draw
@@ -295,16 +327,30 @@ DrawReady
 DrawActor
  ldx Slot
  lda $1BE0,x
- beq DrawNext
+ jeq DrawNext
  lda $1BD0,x
  cmp #128
- bcs DrawNext
+ jcs DrawNext
  clc
  adc $7446
  sta PhysicalX
+ ; Clip off-right bytes before saving or drawing. They otherwise spill into
+ ; the next scanline/buffer when the scroll origin is at the end of a row.
+ and #3
+ clc
+ adc #131
+ sec
+ sbc $1BD0,x
+ lsr
+ lsr
+ cmp #3
+ bcc HaveWidth
+ lda #3
+HaveWidth
+ sta Width
  lda $1BD8,x
  cmp #128
- bcs DrawNext
+ jcs DrawNext
  tay
  lda #128
  sec
@@ -318,7 +364,13 @@ RowCount
  jsr $EF43
  jsr BackupPointer
  ldx Record
- lda Rows
+ lda Width
+ asl
+ asl
+ asl
+ asl
+ asl
+ ora Rows
  sta $1BA0,x
  lda $F8
  sta $1B80,x
@@ -330,6 +382,31 @@ RowCount
  clc
  adc Rows
  sta Rows
+ lda Width
+ cmp #3
+ bne DrawClipped
+ ldy #0
+DrawFastRow
+ lda ($F8),y
+ sta ($FC),y
+ ora ($FA),y
+ sta ($F8),y
+ iny
+ lda ($F8),y
+ sta ($FC),y
+ ora ($FA),y
+ sta ($F8),y
+ iny
+ lda ($F8),y
+ sta ($FC),y
+ ora ($FA),y
+ sta ($F8),y
+ iny
+ jsr NextRow
+ cpy Rows
+ bne DrawFastRow
+ jmp DrawNext
+DrawClipped
  ldy #0
 DrawRow
  lda ($F8),y
@@ -337,15 +414,15 @@ DrawRow
  ora ($FA),y
  sta ($F8),y
  iny
+ lda Width
+ cmp #2
+ bcc DrawPadding
  lda ($F8),y
  sta ($FC),y
  ora ($FA),y
  sta ($F8),y
+DrawPadding
  iny
- lda ($F8),y
- sta ($FC),y
- ora ($FA),y
- sta ($F8),y
  iny
  jsr NextRow
  cpy Rows

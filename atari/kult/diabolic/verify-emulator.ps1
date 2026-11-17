@@ -1,4 +1,4 @@
-param([string]$OutputDirectory, [switch]$CheckEdges, [switch]$CheckShield, [switch]$LongRun, [switch]$CheckDebugJump, [switch]$CheckSpriteWaves, [switch]$CheckBossActions, [switch]$CheckBossExit, [switch]$CheckBossPerformance, [switch]$CheckBossMeteorDeath, [switch]$PerformanceContinuous, [string]$GamePath, [string]$FirstCycles='1312D00', [ValidateRange(1,6)][int]$DebugKey=1)
+param([string]$OutputDirectory, [switch]$CheckEdges, [switch]$CheckShield, [switch]$LongRun, [switch]$CheckDebugJump, [switch]$CheckSpriteWaves, [switch]$CheckBossActions, [switch]$CheckBossExit, [switch]$CheckBossPerformance, [switch]$CheckBossMeteorDeath, [switch]$CheckMeteorEdges, [switch]$PerformanceContinuous, [string]$GamePath, [string]$FirstCycles='1312D00', [ValidateRange(1,6)][int]$DebugKey=1)
 $ErrorActionPreference='Stop'
 $game=Join-Path $PSScriptRoot 'kult-diabolic.xex'
 if ($GamePath) {$game=$GamePath}
@@ -25,28 +25,45 @@ $commands=@(
 'gcr $989680',
 ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'flight-later.png')+'"'),
 'db 43FF L1','db 4E75 L10','r','.logclose','.autotest_exit')
-if ($CheckDebugJump -or $CheckSpriteWaves -or $CheckBossActions -or $CheckBossExit -or $CheckBossPerformance -or $CheckBossMeteorDeath) {
+if ($CheckDebugJump -or $CheckSpriteWaves -or $CheckBossActions -or $CheckBossExit -or $CheckBossPerformance -or $CheckBossMeteorDeath -or $CheckMeteorEdges) {
     $commands=$commands[0..($commands.Count-3)]
     # Simulate a held debug number at the two POKEY read sites, then restore runtime code.
     $keyCode=@(0x1F,0x1E,0x1A,0x18,0x1D,0x1B)[$DebugKey-1]
+    $previewCycles=if ($DebugKey -eq 6) {'400000'} else {'989680'}
     # The distributed XEX stays unchanged.
     $commands+=@('e 3F50 A9 00 EA',('e 3F57 A9 {0:X2} EA' -f $keyCode),'gcr $200000',
         'e 3F50 AD 0F D2','e 3F57 AD 09 D2','e F398 00','e F0BF FF','db 2D20 L10','db FB8A L2','db FD04 L7',
-        'gcr $989680',
+        ('gcr $'+$previewCycles),
         ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'debug-boss.png')+'"'),
         'db 2D20 L10','r','.logclose','.autotest_exit')
+}
+if ($CheckMeteorEdges) {
+    $commands=$commands[0..($commands.Count-3)]
+    foreach ($direction in @(1,2,3,6)) {
+        $commands+=@('e F398 00','e F0BF FF','e 2D22 15','e FD0A 25',
+          ('e 2DC0 05 00 5D 00 02 00 03 {0:X2}' -f $direction),
+          'e 2D23 80 30','e 1BE0 00 00 00 00 00 00 00 00',
+          'e 2DE0 00 28 38 48 58 68 78 88','gcr $400000',
+          ('.autotest_saveimage "'+(Join-Path $OutputDirectory ('meteor-entry-'+$direction+'.png'))+'"'),
+          'gcr $800000',
+          ('.autotest_saveimage "'+(Join-Path $OutputDirectory ('meteor-moving-'+$direction+'.png'))+'"'),
+          'e 2DC0 07','gcr $A00000',
+          ('.autotest_saveimage "'+(Join-Path $OutputDirectory ('meteor-drained-'+$direction+'.png'))+'"'),
+          'db 2DC0 L9','db 1BE0 L8')
+    }
+    $commands+=@('.logclose','.autotest_exit')
 }
 if ($CheckBossMeteorDeath) {
     $commands=$commands[0..($commands.Count-3)]
     # Real collision in the right-to-left meteor phase, with no immunity.
     # Scroll phase 1 reproduces the old respawn wait deadlock.
     $commands+=@('e 2DC0 05 00 5D 00 02 00 03 03','e 2D23 80 30',
-      'e 2D61 00','e F398 00','e F0BF 00','e E957 0C 38','e 4E78 03',
+      'e 2D22 15','e FD0A 25','e 2D61 00','e F398 00','e F0BF 00','e E957 0C 38','e 4E78 03',
       'e 758E 01','e 1BE0 00 01 00 00 00 00 00 00','e 1BE8 00 64 00 00 00 00 00 00',
       'e 2DE0 FF FF FF FF FF FF FF FF','gcr $200000',
       'db F398 L1','db 4E78 L1','db 758E L1','db 2DC0 L9',
       ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'meteor-respawn.png')+'"'),
-      'gcr $800000','db F398 L1','db 4E78 L1','db 2DC0 L9',
+      'gcr $800000','db F398 L1','db 4E78 L1','db 2DC0 L9','db 2D22 L1','db FD0A L1','db 2D20 L1',
       ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'meteor-after-respawn.png')+'"'),
       '.logclose','.autotest_exit')
 }
@@ -110,7 +127,7 @@ foreach($cmd in $commands){$argsList+=('/debugcmd:"'+$cmd.Replace('"','\"')+'"')
 $started=Get-Date
 $p=Start-Process -FilePath $emulator -ArgumentList $argsList -PassThru
 $timeout=60000
-if ($LongRun -or $CheckSpriteWaves -or $CheckBossActions) {$timeout=180000}
+if ($LongRun -or $CheckSpriteWaves -or $CheckBossActions -or $CheckMeteorEdges) {$timeout=180000}
 if (!$p.WaitForExit($timeout)) {$p.Kill();Remove-Item -LiteralPath $testConfig -Force;throw 'Emulator verification timed out.'}
 Remove-Item -LiteralPath $testConfig -Force
 if ($p.ExitCode -ne 0) {throw ('Emulator exited with code '+$p.ExitCode)}
@@ -125,6 +142,17 @@ if ($CheckBossMeteorDeath) {
     $lives=@([regex]::Matches($trace,'(?im)^4E78:\s+([0-9A-F]{2})') | ForEach-Object {$_.Groups[1].Value})
     if ($deaths.Count -lt 2 -or $deaths[-1] -ne '00' -or $lives[-1] -ne '02') {
         throw 'Meteor collision did not finish respawning with exactly one life spent.'
+    }
+}
+if ($CheckBossMeteorDeath) {
+    $hpAddress=if ($DebugKey -eq 6) {'FD0A'} else {'2D22'}
+    $expected=if ($DebugKey -eq 6) {'25'} else {'15'}
+    if ($trace -notmatch ('(?im)^'+$hpAddress+':\s+'+$expected+'\s')) {
+        throw 'Boss health changed during player respawn.'
+    }
+    $modes=@([regex]::Matches($trace,'(?im)^2D20:\s+([0-9A-F]{2})') | ForEach-Object {$_.Groups[1].Value})
+    if ($DebugKey -eq 1 -and ($modes.Count -eq 0 -or $modes[-1] -ne '04')) {
+        throw 'Player respawn left the living sub-boss encounter.'
     }
 }
 if ($CheckBossPerformance) {
@@ -149,5 +177,5 @@ if ($CheckBossActions -or $CheckSpriteWaves) {
         if ($trace -notmatch ('(?im)^2DC0:\s+'+$phase+'\s')) {throw ('Boss action not observed: '+$phase)}
     }
 }
-if ($CheckDebugJump -and $DebugKey -eq 6 -and (Get-Content -Raw -LiteralPath $log) -notmatch '(?i)FD04:\s+01') {throw 'Debug shortcut did not enter the Insect Queen guardian encounter.'}
+if ($CheckDebugJump -and $DebugKey -eq 6 -and (Get-Content -Raw -LiteralPath $log) -notmatch '(?i)2D20:\s+07') {throw 'Debug shortcut did not enter the mixed meteor/enemy encounter.'}
 Write-Output ('Altirra exit code: '+$p.ExitCode)

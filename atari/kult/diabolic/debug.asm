@@ -1,4 +1,4 @@
-; TEMPORARY DEBUG: 1 skull, 2 top, 3 bottom, 4 right, 5 top/bottom, 6 Insect Queen.
+; TEMPORARY DEBUG: 1 skull, 2 top, 3 bottom, 4 right, 5 top/bottom, 6 mixed rocks/enemies.
 ; POKEY key codes verified against Altirra uikeyboard.cpp.
  opt h-
  org $3F50
@@ -24,8 +24,6 @@ Pressed
  jmp $FB8C
 JumpWave
  sta $2D7E
- lda #0
- sta $2DC0
  lda Kinds,x
  sta CompareKind+1
  jsr $FB5F
@@ -52,6 +50,8 @@ FoundBoss
  sta $FB8A
  lda #0
  sta $FD04
+ sta $2DC0
+ dec $2DC0 ; explicit debug jump, distinct from death/respawn phase zero
  sta $4E79
  sta $F398
  sta $2D61
@@ -77,14 +77,7 @@ ClearEnemyShots
  sta $E958
  lda #40
  sta $F0BF
- lda $2D7E
- cmp #$1B
- bne LoadWave
- lda #33
- sta $4E79
-LoadWave
- ; The normal loader enters the original guardian at progress 33.
  jmp $FB8C
 Keys dta $1F,$1E,$1A,$18,$1D,$1B
-Kinds dta $80,$20,$40,$60,$C0,0
+Kinds dta $80,$20,$40,$60,$C0,$E0
  ert * > $4000

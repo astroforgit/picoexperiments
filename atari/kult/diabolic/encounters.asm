@@ -87,6 +87,11 @@ ReadKind
  lda SavedDesign
  jmp $F16B
 SpecialLoad
+ cmp #7
+ bne NotMixedLoad
+ jsr $2420
+ jmp InitialActors
+NotMixedLoad
  cmp #4
  beq HeadLoad
  lda #14
@@ -132,6 +137,7 @@ SourceReady
  lda Tile
  cmp TileLimit
  bcc LoadTile
+InitialActors
  ldx #7
  lda #0
 NoDrops
@@ -156,6 +162,11 @@ FirstMeteorDelay
  rts
 TileLimit dta 0
 MoveEncounter
+ lda Mode
+ cmp #7
+ bne NotMixedMove
+ jmp $2423
+NotMixedMove
  lda Mode
  bne SpecialMove
  jmp $E7A4
@@ -274,17 +285,14 @@ HeadTiles
  bpl HeadTiles
  rts
 EncounterFrame
- lda $FD04
- bne OrdinaryFrame
- lda Mode
- cmp #4
- bne OrdinaryFrame
- tya
- rts
-OrdinaryFrame
- lda $743C,x
- rts
+ jmp $2426
 HitEncounter
+ lda Mode
+ cmp #7
+ bne NotMixedHit
+ cpx #2
+ bcs OrdinaryHit
+NotMixedHit
  lda Mode
  beq OrdinaryHit
  cmp #4

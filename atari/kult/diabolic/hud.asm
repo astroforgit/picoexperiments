@@ -148,7 +148,7 @@ GuardianHealth
  sta $FD0A
  jmp BombSound
 BombFormation
- lda $2D20
+ jsr $2429
  beq BombOrdinary
  cmp #4
  bne BombSound
