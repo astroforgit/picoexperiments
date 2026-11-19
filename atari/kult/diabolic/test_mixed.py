@@ -39,7 +39,7 @@ class MixedWave(unittest.TestCase):
      births+=1;lane=m[0x2d04]
      self.assertGreaterEqual(lane,2);self.assertLess(lane,8)
      self.assertEqual(m[0x74e0+lane],16)
-     self.assertTrue(8<=m[0x2d40+lane]<104)
+     self.assertTrue(8<=m[0x2d40+lane]<128)
      self.assertEqual(m[0x2d14+slot],127-m[0x2d40+lane]-6)
   self.assertGreaterEqual(births,6)
  def test_three_mixed_waves_per_sector(self):

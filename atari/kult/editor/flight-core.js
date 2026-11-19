@@ -1,5 +1,7 @@
 (function(root){'use strict';
 const formations=typeof module!=='undefined'?require('./boss-formations.js'):root.BossFormations;
+const laserPatterns=typeof module!=='undefined'?require('./laser-patterns.js'):root.LaserPatterns;
+let nextLaserVariant=0,nextCurtainVariant=0;
 const native=typeof module!=='undefined'?require('../web/engine.js'):root.Kult;
 function validate(p,lib){
  const int=(v,a,b)=>Number.isInteger(v)&&v>=a&&v<=b;
@@ -8,8 +10,8 @@ function validate(p,lib){
  if(!Array.isArray(p.waves)||p.waves.length!==8||p.waves.some(s=>!Array.isArray(s)||s.length!==48||s.some(w=>!Array.isArray(w)||w.length!==4||w.some((v,i)=>!int(v,i===3?1:0,i===3?16:31)))))throw Error('Invalid wave data');
  if(!Array.isArray(p.motions)||p.motions.length!==32||p.motions.some(m=>!Array.isArray(m)||m.length!==8||m.some(v=>!int(v,-128,127))))throw Error('Invalid movement data');
  if(p.encounters===undefined)p={...p,encounters:Array.from({length:8},()=>Array(48).fill(0))};
- if(!Array.isArray(p.encounters)||p.encounters.length!==8||p.encounters.some(s=>!Array.isArray(s)||s.length!==48||s.some(n=>(!int(n,0,8)||n===5))))throw Error('Invalid encounter types');
- if(!p.firing||!int(p.firing.mode,0,2)||!int(p.firing.interval,12,180)||!int(p.firing.speed,1,4))throw Error('Invalid firing settings');
+ if(!Array.isArray(p.encounters)||p.encounters.length!==8||p.encounters.some(s=>!Array.isArray(s)||s.length!==48||s.some(n=>(!int(n,0,9)||n===5))))throw Error('Invalid encounter types');
+ if(!p.firing||!int(p.firing.mode,0,2)||!int(p.firing.interval,12,180)||!int(p.firing.speed,1,8))throw Error('Invalid firing settings');
  if(p.boss===undefined)p={...p,boss:{pattern:0,difficulty:1}};
  if(p.boss&&p.boss.design===undefined)p={...p,boss:{...p.boss,design:'boss-bone-dragon'}};
  if(p.boss?.design==='boss-original-dragon')p={...p,boss:{...p.boss,design:'boss-insect-queen'}};
@@ -50,12 +52,12 @@ function advanceBossShot(b){
 }
 class Encounter{
  constructor(project,sine,sector=0,wave=0,options={}){this.options=options;this.bulletWaves=options.bulletWaves||measureBulletWaves(project,sine);this.weapon=1;this.weaponHeld=false;this.score=0;this.project=project;this.sine=sine;this.sector=sector;this.wave=wave;this.player={x:12,y:56};this.hits=0;this.tick=0;this.bombs=3;this.bombHeld=false;this.shields=3;this.clocks=3;this.slowRemaining=0;this.clockHeld=false;this.slowPhase=0;this.shieldTicks=0;this.shieldHeld=false;this.reset();}
- get meteor(){return this.kind>0&&this.kind!==4&&this.kind!==5;}
+ get meteor(){return this.kind>0&&this.kind!==4&&this.kind!==5&&this.kind!==9;}
  get boss(){return this.kind===4||this.kind===5;}
  get kind(){if(this.options.bossPreview)return 4;if(this.options.guardian)return 5;return this.project.encounters?.[this.sector]?.[this.wave]||0;}
  get bossVulnerable(){return this.bossHP>0&&(this.options.curtainOnly||this.ai.phase===1||this.ai.phase===2);}
  get bossVisible(){return this.bossHP>0&&(this.options.curtainOnly||[1,2,3,6,8].includes(this.ai.phase))&&this.bossX<128;}
- reset(){this.ai={phase:0,timer:0,rng:this.options.aiSeed??0x5d,cooldown:0,art:1,frame:0,direction:0,wait:[]};this.bossX=this.options.curtainOnly?88:128;this.bossTop=32;this.bossWarmup=24;this.bossClock=29;this.attack=null;this.attackCycle=-1;this.bombSuppress=0;this.complete=false;this.bossHP=this.options.guardian?100:this.record[3]*4;this.bossMaxHP=this.bossHP;this.rewarded=false;this.deathShots=[];this.deathStarted=false;this.pickups=[];this.collected=[];this.age=0;this.phase=[0,0,0,0];this.enemies=Array.from({length:8},(_,i)=>({i,x:160,y:i*14,hp:this.record[3],trail:[],meteorY:128,wait:i?i*16+24:0}));this.shots=[];this.hostile=[];this.cooldown=0;this.invulnerable=40;this.fireClock=0;this.enemyIndex=0;}
+ reset(){this.ai={phase:0,timer:0,rng:this.options.aiSeed??0x5d,cooldown:0,art:1,frame:0,direction:0,wait:[]};this.bossX=this.options.curtainOnly?88:128;this.bossTop=32;this.bossWarmup=24;this.bossClock=29;this.attack=null;this.attackCycle=-1;this.curtainRotation=this.options.rotationSeed??1;this.curtainGap=this.options.gapSeed??0;this.curtainVisits=0;this.bombSuppress=0;this.complete=false;this.bossHP=this.options.guardian?100:this.record[3]*4;this.bossMaxHP=this.bossHP;const variant=this.options.laserVariant??(this.kind===9?nextLaserVariant++%3:0);this.laser={phase:1,index:variant*15,end:variant*15+15,variant,remaining:laserPatterns.warningFrames/50,started:false};this.rewarded=false;this.deathShots=[];this.deathStarted=false;this.pickups=[];this.collected=[];this.age=0;this.phase=[0,0,0,0];this.enemies=Array.from({length:8},(_,i)=>({i,x:160,y:i*14,hp:this.record[3],trail:[],meteorY:128,wait:i?i*16+24:0}));this.shots=[];this.hostile=[];this.cooldown=0;this.invulnerable=40;this.fireClock=0;this.enemyIndex=0;}
  get record(){return this.project.waves[this.sector][this.wave];}
  update(input={},dt=.06){
   if(this.complete)return;
@@ -74,7 +76,7 @@ class Encounter{
   if(input.right&&!input.left&&this.player.x<100)this.player.x+=3;
   if(input.left&&!input.right&&this.player.x>=3)this.player.x-=3;
   this.player.y=Math.max(0,Math.min(112,this.player.y+((input.down?1:0)-(input.up?1:0))*6));
-  if(worldStep){
+  if(worldStep&&this.kind!==9){
   const points=native.motionPoints(this.sine,this.project.motions[this.record[1]].map(n=>n&255),this.phase);
   const entry=Math.max(0,96-this.age*6),exit=Math.max(0,(this.age-100)*4);
   for(const e of this.enemies){e.x=points[e.i%8][0]+entry-exit;e.y=points[e.i%8][1];
@@ -106,6 +108,7 @@ class Encounter{
    else e.visible=e.hp>0;
 e.trail.push([e.x,e.y]);if(e.trail.length>28)e.trail.shift();}
   }
+  if(this.kind===9)this.laserUpdate(dt);
   if(input.fire&&!this.cooldown){for(const y of [[8],[4,11],[2,8,14],[1,5,10,14]][this.weapon-1])this.shots.push({x:this.player.x+20,y:this.player.y+y});this.cooldown=4;}
   for(const b of this.shots){b.x+=6;for(const e of this.enemies)if(e.visible&&b.x>=e.x&&b.x<e.x+8&&b.y>=e.y&&b.y<e.y+16){if(!this.kind||(this.kind===7&&e.i>=2))e.hp--;else if(this.boss)this.bossHP=Math.max(0,this.bossHP-1);b.x=999;break;}}
   this.shots=this.shots.filter(b=>b.x<128);
@@ -115,9 +118,9 @@ e.trail.push([e.x,e.y]);if(e.trail.length>28)e.trail.shift();}
   // Conservative contact envelope for the full 64x64 native tile artwork.
   if(this.boss&&this.bossVisible&&this.player.x+20>this.bossX&&this.player.x<this.bossX+32&&this.player.y+16>this.bossTop&&this.player.y<this.bossTop+64&&!this.invulnerable&&!this.shieldTicks){this.hits++;this.invulnerable=40;}
   const f={...this.project.firing};if(this.kind&&this.kind!==7)f.mode=0;if(this.kind===7){f.interval=8;f.speed=6;}if(worldStep&&this.boss){if(this.bossHP<=0)this.defeatBurst();else if(this.options.curtainOnly)this.curtainAttack();else this.bossActions();}
-  if(worldStep&&f.mode&&++this.fireClock>=f.interval){this.fireClock=0;this.enemyIndex=this.boss?(this.enemyIndex===0?4:0):(this.enemyIndex+1)&7;if(this.kind===7){for(let n=0;n<6;n++){if(this.enemyIndex<2||this.enemyIndex>7)this.enemyIndex=2;const candidate=this.enemies[this.enemyIndex];if(candidate.visible&&candidate.meteorY>=8&&candidate.meteorY<104)break;this.enemyIndex++;}}
+  if(worldStep&&f.mode&&++this.fireClock>=f.interval){this.fireClock=0;this.enemyIndex=this.boss?(this.enemyIndex===0?4:0):(this.enemyIndex+1)&7;if(this.kind===7){for(let n=0;n<6;n++){if(this.enemyIndex<2||this.enemyIndex>7)this.enemyIndex=2;const candidate=this.enemies[this.enemyIndex];if(candidate.visible&&candidate.meteorY>=8&&candidate.meteorY<128)break;this.enemyIndex++;}}
    const e=this.enemies[this.enemyIndex%8];
-   if(this.hostile.length<4&&(this.kind!==7||(e.i>=2&&e.meteorY>=8&&e.meteorY<104))&&e.visible&&e.x>=24&&e.x<120&&e.y+8<124)this.hostile.push({x:e.x,y:e.y+8,style:!this.kind&&(this.record[0]&1)&&!this.hostile.some(b=>b.style)?1:0,dy:f.mode===2?Math.sign(this.player.y-e.y):0});
+   if(this.hostile.length<4&&(this.kind!==7||(e.i>=2&&e.meteorY>=8&&e.meteorY<128))&&e.x-this.player.x>=52&&e.visible&&e.x>=24&&e.x<120&&e.y+8<124)this.hostile.push({x:e.x,y:e.y+8,style:0,dy:f.mode===2?Math.sign(this.player.y-e.y)*Math.floor((Math.abs(this.player.y-e.y)+Math.floor(Math.ceil((e.x-this.player.x)/f.speed)/2))/Math.ceil((e.x-this.player.x)/f.speed)):0});
   }
   for(const b of this.hostile){if(worldStep&&!b.boss){b.x-=f.speed;b.y+=b.dy;}if((b.boss&&b.art==='orb'?(b.x+6>this.player.x+6&&b.x+2<this.player.x+16&&b.y+12>this.player.y+4&&b.y+4<this.player.y+12):((b.boss?b.x+8>=this.player.x:b.x+2>this.player.x)&&b.x<this.player.x+20&&(b.boss?b.y+16>=this.player.y:b.y+2>this.player.y)&&b.y<this.player.y+16))){if(!this.invulnerable&&!this.shieldTicks){this.hits++;this.invulnerable=40;}if(!b.boss)b.x=-99;}}
   this.hostile=this.hostile.filter(b=>b.x>=0&&b.y>=0&&b.y<(b.boss?128:125));
@@ -126,6 +129,20 @@ e.trail.push([e.x,e.y]);if(e.trail.length>28)e.trail.shift();}
   for(const p of this.pickups){p.x-=2;if(p.x<this.player.x+20&&p.x+8>this.player.x&&p.y<this.player.y+16&&p.y+16>this.player.y){this.collected.push(p.type);if(p.type==='Clock')this.clocks=Math.min(3,this.clocks+1);else if(p.type==='Bomb')this.bombs=Math.min(3,this.bombs+1);else if(p.type==='Shield')this.shields=Math.min(3,this.shields+1);else this.weapon=Number(p.type.slice(-1));p.x=-100;}}
   this.pickups=this.pickups.filter(p=>p.x>-8);
   if((!this.kind&&this.age>=150)||(this.meteor&&this.age>=192&&this.enemies.every(e=>!e.visible))||(this.kind===8&&this.enemies.every(e=>e.meteorY===255))||(this.boss&&this.rewarded&&this.ai.phase===10&&!this.pickups.length)){if(this.options.loop===false)this.complete=true;else this.reset();}
+ }
+ get laserShape(){const route=laserPatterns.routes[this.laser.variant];return laserPatterns.shapes[route.steps[this.laser.index%15]];}
+ get laserLines(){const shape=this.laserShape;if(!shape)return [];return [8,24,40,56,72,88,104,120].flatMap((y,i)=>shape.mask&(1<<i)?[{y,slope:!shape.type?0:shape.type===2&&(i&1)?-1:1}]:[]);}
+ laserContact(){return this.laserLines.some(line=>{for(let col=Math.floor(this.player.x/4);col<=Math.floor((this.player.x+19)/4);col++){const y=line.y+line.slope*(col-16);if(y>=0&&y<125&&this.player.y<y+4&&this.player.y+16>y)return true;}return false;});}
+ laserUpdate(dt){
+  const l=this.laser;if(!l.started){l.started=true;return;}l.remaining=Math.max(0,l.remaining-dt);if(l.remaining<1e-8)l.remaining=0;
+  if(l.remaining===0){
+   if(l.phase===1){l.phase=2;l.remaining=laserPatterns.liveFrames/50;}
+   else if(++l.index>=l.end){l.phase=3;if(this.options.loop===false)this.complete=true;else this.reset();return;}
+   else{l.phase=1;l.remaining=laserPatterns.warningFrames/50;}
+  }
+  if(l.phase===2&&!this.invulnerable&&!this.shieldTicks&&this.laserContact()){
+   this.hits++;this.invulnerable=40;l.phase=1;l.remaining=laserPatterns.warningFrames/50;
+  }
  }
  defeatBurst(){
   this.hostile=[];
@@ -160,7 +177,7 @@ e.trail.push([e.x,e.y]);if(e.trail.length>28)e.trail.shift();}
   }else if(a.phase===3){
    orbs();if(this.bossX<128)this.bossX+=2;else if(!count()){
     a.phase=a.nextHazard;a.timer=0;a.cooldown=0;this.bossWarmup=9;this.bossClock=29;this.attack=null;
-    if(a.phase===4){a.art=0;this.bossX=88;this.bossTop=32;}else{a.art=2;a.direction=[1,2,3,6][rand()&3];a.wait=Array.from({length:8},(_,i)=>i?i*16+24:0);}
+    if(a.phase===4){const variant=this.options.curtainVariant===undefined?nextCurtainVariant++%12:(this.options.curtainVariant+this.curtainVisits++)%12;this.curtainRotation=variant%6;this.curtainGap=Math.floor(variant/6);this.attackCycle=-1;a.art=0;this.bossX=88;this.bossTop=32;}else{a.art=2;a.direction=[1,2,3,6][rand()&3];a.wait=Array.from({length:8},(_,i)=>i?i*16+24:0);}
    }
   }else if(a.phase===4){
    a.cooldown^=1;if(a.cooldown){const warming=this.bossWarmup>0;this.curtainAttack();clean();if(!warming&&++a.timer>=120)a.phase=7;}
@@ -180,8 +197,8 @@ e.trail.push([e.x,e.y]);if(e.trail.length>28)e.trail.shift();}
   if(this.bossHP<=0||!this.project.firing.mode){this.hostile=[];this.attack=null;return;}
   if(this.bossWarmup>0){this.bossWarmup--;this.bossClock=29;return;}
   const phase=this.bossClock=(this.bossClock+1)%30;
-  if(phase===0||!this.attack){this.attackCycle++;const pattern=setting.pattern||(this.attackCycle+1)%formations.length+1;
-   this.attack={pattern,phase:0,state:'forming',gapRow:this.attackCycle%2===0?5:1,guardDelay:formations[pattern-1][setting.pattern?'soloGuards':'mixedGuards'][this.attackCycle%2===0?1:0]};
+  if(phase===0||!this.attack){this.attackCycle++;const pattern=setting.pattern||(this.attackCycle+this.curtainRotation)%formations.length+1;
+   this.attack={pattern,phase:0,state:'forming',gapRow:(this.attackCycle+this.curtainGap)%2===0?5:1,guardDelay:formations[pattern-1][setting.pattern?'soloGuards':'mixedGuards'][(this.attackCycle+this.curtainGap)%2===0?1:0]};
   }
   const a=this.attack;a.phase=phase;a.state=phase<=18?'forming':'rush';
   for(const b of this.hostile)advanceBossShot(b);
@@ -214,5 +231,5 @@ class Campaign{
   for(const key of ['player','hits','tick','bombs','bombHeld','shields','shieldHeld','shieldTicks','clocks','clockHeld','slowRemaining','slowPhase','weapon','weaponHeld','score'])next[key]=e[key];
  }
 }
-const api={formations,validate,Encounter,Campaign,advanceBossShot,measureBulletWaves};if(typeof module!=='undefined')module.exports=api;else root.FlightWorkshop=api;
+const api={laserPatterns,formations,validate,Encounter,Campaign,advanceBossShot,measureBulletWaves};if(typeof module!=='undefined')module.exports=api;else root.FlightWorkshop=api;
 })(globalThis);

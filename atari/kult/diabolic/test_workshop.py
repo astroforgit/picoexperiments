@@ -94,20 +94,16 @@ class WorkshopTests(unittest.TestCase):
         self.assertEqual(c.memory[0xd007],162)
         self.assertEqual([c.memory[0x3300+y]&192 for y in range(99,103)],[192]*4)
         self.assertEqual(c.memory[0x3300+103]&192,0)
-    def test_enemy_reuses_mirrored_player_bullet(self):
-        c=MPU(memory=list(self.ram));c.memory[0x2d00:0x2d05]=[2,12,2,11,0]
-        c.memory[0xfb8b]=17;c.memory[0x74e1]=16;c.memory[0x7463]=100;c.memory[0x746b]=50
-        c.memory[0x7444]=c.memory[0x7446]=c.memory[0xfd04]=0
-        c.memory[0xe957]=12;c.memory[0xe958]=80
-        self.call(c,self.shots)
-        self.assertEqual(c.memory[0x2d10],1);self.assertEqual(c.memory[0x2d50],1)
-        self.assertEqual(c.memory[0xd003],162)
-        self.assertEqual(c.memory[0x3700+99:0x3700+107],c.memory[0x2f80:0x2f88])
-        expected=[int(f'{b:08b}'[::-1],2) for b in c.memory[0x7278:0x7280]]
-        self.assertEqual(c.memory[0x2f80:0x2f88],expected)
+    def test_enemy_waves_use_one_bullet_style(self):
+        for design in (16,17):
+            c=MPU(memory=list(self.ram));m=c.memory;m[0x2d00:0x2d05]=[2,12,6,11,0]
+            m[0xfb8b]=design;m[0x74e1]=16;m[0x7463]=100;m[0x746b]=50
+            m[0x7444]=m[0x7446]=m[0xfd04]=0;m[0xe957]=12;m[0xe958]=80
+            self.call(c,self.shots)
+            self.assertEqual(m[0x2d13],1);self.assertEqual(m[0x2d53],0)
     def test_bullets_hit_and_respect_invulnerability(self):
         for immune,expected in ((0,3),(20,0)):
-            c=MPU(memory=list(self.ram));c.memory[0x2d10]=1;c.memory[0x2d14]=19;c.memory[0x2d18]=60;c.memory[0x2d1c]=0
+            c=MPU(memory=list(self.ram));c.memory[0x2d10]=1;c.memory[0x2d14]=16+c.memory[0x2d02];c.memory[0x2d18]=60;c.memory[0x2d1c]=0
             c.memory[0xe957]=12;c.memory[0xe958]=56;c.memory[0xf0bf]=immune;c.memory[0xf398]=0
             self.call(c,self.shots);self.assertEqual(c.memory[0xf398],expected);self.assertEqual(c.memory[0x2d10],0)
     def test_aggressive_balance(self):
@@ -116,7 +112,7 @@ class WorkshopTests(unittest.TestCase):
         self.assertEqual(self.ram[0xfc1b],96)
         for i in range(32):
             self.assertLessEqual(sum(bool(n) for n in self.ram[0x4a00+i*8:0x4a08+i*8]),2)
-        self.assertEqual(self.ram[0x2d00:0x2d03],bytes([2,18,3]))
+        self.assertEqual(self.ram[0x2d00:0x2d03],bytes([2,18,6]))
     def test_equal_star_sizes(self):
         layout=json.loads((ROOT/'star-layout.json').read_text())
         self.assertEqual({s['height'] for s in layout},{2})

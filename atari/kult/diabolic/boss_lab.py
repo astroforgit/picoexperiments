@@ -93,9 +93,9 @@ def escape(frames,start,graph,reaction=3,padding=1,allowed=None):
     for parents in reversed(history):route.append(list(end));end=parents[end]
     return route[::-1],counts
 
-def replay_route(ram,pattern,start,route,frames):
+def replay_route(ram,pattern,start,route,frames,rotation_seed=1,gap_seed=0):
     c=MPU(memory=list(ram));m=c.memory
-    m[0x2d78]=1;m[0x2d7c]=24;m[0x2d74]=pattern;m[0x2d23]=88;m[0x2d24]=48;m[0x2d70]=3
+    m[0x2d78]=rotation_seed;m[0x2d7b]=gap_seed;m[0x2d7c]=24;m[0x2d74]=pattern;m[0x2d23]=88;m[0x2d24]=48;m[0x2d70]=3
     m[0xe957:0xe959]=start;m[0xf0bf]=m[0xf398]=m[0x2d61]=0
     for tick,pos in enumerate(route):
         old=tuple(m[0xe957:0xe959])

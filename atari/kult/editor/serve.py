@@ -23,7 +23,7 @@ class Handler(BaseHTTPRequestHandler):
         elif path in ('/boss-lab/','/boss-lab.js'):
             file=HERE/('boss-lab.html' if path=='/boss-lab/' else 'boss-lab.js')
             self.send(200,file.read_bytes(),mimetypes.guess_type(str(file))[0] or 'text/plain')
-        elif path in ('/flight/','/flight.html','/flight.js','/flight.css','/flight-core.js','/boss-formations.js'):
+        elif path in ('/flight/','/flight.html','/flight.js','/flight.css','/flight-core.js','/boss-formations.js','/laser-patterns.js'):
             name='flight.html' if path=='/flight/' else path[1:]
             self.send(200,(HERE/name).read_bytes(),mimetypes.guess_type(name)[0] or 'text/plain')
         elif path=='/flight/concept.png':

@@ -70,7 +70,7 @@ Done
 Move
  lda Skip
  bne Return
- jmp $3B03
+ jmp $DF03
 Boss
  jmp $2FD8
 Return
@@ -85,6 +85,7 @@ DisplayFrame
  pha
  lda $7460 ; Do not spend the effect while the game is paused.
  bne FrameDone
+ jsr $DF06
  lda Time
  beq FrameDone
  dec Time
@@ -120,7 +121,7 @@ Scroll
  beq NormalScroll
  jmp $EAD8
 NormalScroll
- jmp $DE80
+ jmp $DF0F
 PlayerShots
  ; Player firing and projectiles always advance at normal speed.
  jmp $F22F

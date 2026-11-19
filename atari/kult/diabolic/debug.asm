@@ -8,7 +8,7 @@ DebugWave
  bne Released
  lda $D209
  and #$3F
- ldx #6
+ ldx #7
 FindKey
  cmp Keys,x
  beq Pressed
@@ -31,8 +31,7 @@ JumpWave
  lda CompareKind+1
  beq FoundBoss
 FindBoss
- lda ($80),y
- and #$E0
+ jsr $DF18
 CompareKind
  cmp #$80
  beq FoundBoss
@@ -61,7 +60,7 @@ ClearActors
  sta $7482,x
  dex
  bpl ClearActors
- ldx #6
+ ldx #5
 ClearPlayerShots
  sta $74E8,x
  dex
@@ -78,6 +77,6 @@ ClearEnemyShots
  lda #40
  sta $F0BF
  jmp $FB8C
-Keys dta $1F,$1E,$1A,$18,$1D,$1B,$33
-Kinds dta $80,$20,$40,$60,$C0,$E0,$A0
+Keys dta $1F,$1E,$1A,$18,$1D,$1B,$33,$35
+Kinds dta $80,$20,$40,$60,$C0,$E0,$A0,$10
  ert * > $4000

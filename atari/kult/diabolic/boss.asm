@@ -3,6 +3,7 @@
  org $6550
  jmp BossTick
  jmp Approach
+ jmp SelectVariant
 BossTick
  lda $2D7C
  beq AdvanceClock
@@ -94,5 +95,25 @@ Increase
  cmp $1BB6
  bcs Target
 Approached
+ rts
+; Cycle all six starting formations, then mirror the opening direction.
+; Persistent across encounters and debug jumps; respawn does not reload waves.
+SelectVariant
+ lda $2DDC
+ cmp #12
+ bcc VariantValid
+ lda #0
+ sta $2DDC
+VariantValid
+ inc $2DDC
+ ldx #0
+ cmp #6
+ bcc VariantReady
+ sec
+ sbc #6
+ inx
+VariantReady
+ sta $2D78
+ stx $2D7B
  rts
  ert * > $6684

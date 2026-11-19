@@ -6,6 +6,8 @@ class Renderer{
  draw(e,{trails=false,hud=true,bossGuide=false}={}){
   const g=this.g,frame=Math.floor(e.tick/3)%4;g.imageSmoothingEnabled=false;g.fillStyle='#000';g.fillRect(0,0,this.canvas.width,this.canvas.height);g.save();g.beginPath();g.rect(0,0,512,256);g.clip();
   for(let i=0;i<56;i++){const z=i<8?2:i<24?1:0,x=((i*137.51-e.tick*[1,3,7][z])%512+512)%512,y=(i*79.43)%256,light=Math.round([50,105,190][z]+Math.sin(e.tick*.07+i)*15);g.fillStyle=`rgb(${light},${light},${light})`;g.beginPath();g.arc(x,y,1.4,0,Math.PI*2);g.fill();}
+  if(e.kind===9&&e.laser.phase!==3){for(const line of e.laserLines)for(let col=0;col<32;col++){const y=line.y+line.slope*(col-16);if(y<0||y>=128)continue;g.fillStyle=e.laser.phase===1?'#666':(Math.round(e.laser.remaining*50)&4)?'#aaa':'#fff';g.fillRect(col*16,y*2,16,e.laser.phase===1?2:Math.min(4,128-y)*2);if(e.laser.phase===2&&y<125){g.fillStyle='#fff';g.fillRect(col*16,(y+1)*2,16,4);}}}
+
   if(trails){g.strokeStyle='#444';for(const a of e.enemies){g.beginPath();a.trail.forEach(([x,y],i)=>i?g.lineTo(x*4+16,y*2+16):g.moveTo(x*4+16,y*2+16));g.stroke();}}
   if(bossGuide&&e.attack){const y=e.attack.gapRow*32;g.fillStyle='rgba(90,220,140,.08)';g.fillRect(0,y,352,64);g.strokeStyle='#39875b';g.strokeRect(0,y,352,64);}
   if(e.attack&&['warning','charging'].includes(e.attack.state)){

@@ -173,23 +173,24 @@ def create_runtime(settings=None,assemble=False,write_files=False):
         ram[dl:dl+6]=bytes([0x70,0x70,0x70,0x01,target&255,target>>8])
 
     patches={
+        0xF7FE:('2040f9','2009df'), # laser timing/collision or ordinary collision
         0xF7E5:('ad98f3','20002e'), # clock activation before movement; preserve death flag
         0xF831:('202ff2','20182e'), # player projectiles keep normal speed during the clock effect
         0xEBA9:('ce4474','20092e'), # formation entry/exit must slow with its path
         0xEBB3:('ce4474','20092e'),
         0xFA0D:('c906d0','4c122e'), # clock / bomb pickup inventory
 
-        0xF914:('207efc','208317'), # retain unchanged body pixels in each framebuffer
+        0xF914:('207efc','2012df'), # retain unchanged body pixels in each framebuffer
         0xEAAD:('ce8e75','4c152e'), # hold retired terrain scrolling during bosses
         0xF91C:('20f9e7','20a0de'), # avoid obsolete terrain copies in sub-boss fights
         0xEB52:('b9e074','208604'), # skip rendering invisible sub-boss collision targets
         0xFCAB:('ac08fd','4c8904'), # fast full-width boss erasure
         0xF80E:('2083fe','20062e'), # shared boss action controller
         0xF819:('203ffe','200c03'), # guardian damage gate and moving target
-        0xFB8C:('a207a900','4c0f03ea'), # retain active sub-boss while it retreats
+        0xFB8C:('a207a900','4c15dfea'), # retain active sub-boss while it retreats
         0xFC9B:('8d08fd','201803'), # clip guardian background erasure at right edge
         0xFDAD:('a210a000','4c8304ea'), # clip tile copies at right sky edge
-        0xF925:('20d5fd','208004'), # shared 64x64 animated guardian/sub-boss renderer
+        0xF925:('20d5fd','200cdf'), # shared 64x64 animated guardian/sub-boss renderer
         0xC1FF:('200003','eaeaea'), # retired terrain decoder: reserve 1800-23FF for full-size bullet sprites
         0xF8DE:('a0','60'), # retired progress-bar reset must not erase HUD/bomb code
 
@@ -225,7 +226,7 @@ def create_runtime(settings=None,assemble=False,write_files=False):
         0xF886:('8d7b4e','eaeaea'), # no new-game fuel refill
         0xFA13:('8d7b4e','eaeaea'), # obsolete pickup cannot restore fuel
 
-        0xFC22:('206bf1','20003b'), # select wave encounter and graphics
+        0xFC22:('206bf1','2000df'), # select wave encounter and graphics
         0xF7F2:('20a4e7','20032e'), # normal, meteor or sub-boss motion
         0xEB60:('bd3c74','20063b'), # composite boss tile selection
         0xFA64:('de8675','20093b'), # immunity / shared boss health
@@ -236,6 +237,7 @@ def create_runtime(settings=None,assemble=False,write_files=False):
 
         0xF764:('73','0c'),
         0xF769:('ea','40'),
+        0xC2FF:('2087e4','eaeaea'), # retired title VBI must not interpret reused music data
         0xC126:('2062c3','4c55c1'), # skip title/menu loop, enter normal game setup
         0xC23B:('20','60'),         # skip stage announcement / fire prompt
 
@@ -267,6 +269,15 @@ def create_runtime(settings=None,assemble=False,write_files=False):
     if assemble:subprocess.run([os.environ.get('MADS','mads'),str(ROOT/'diagonal.asm'),'-o:'+str(ROOT/'diagonal.bin')],check=True,stdout=subprocess.PIPE)
     diagonal=(ROOT/'diagonal.bin').read_bytes();assert len(diagonal)<=0x8f
     ram[0xfe83:0xff12]=diagonal+bytes(0x8f-len(diagonal))
+    laser_patterns=json.loads((ROOT.parent/'editor/laser-patterns.json').read_text())
+    if assemble:
+        (ROOT/'lasers-data.inc').write_text(f"WarningFrames = {laser_patterns['warningFrames']}\nLiveFrames = {laser_patterns['liveFrames']}\nMasks dta "+','.join(str(s['mask']) for s in laser_patterns['shapes'])+'\nTypes dta '+','.join(str(s['type']) for s in laser_patterns['shapes'])+'\nSequence dta '+','.join(str(step) for route in laser_patterns['routes'] for step in route['steps'])+'\n')
+    if assemble:subprocess.run([os.environ.get('MADS','mads'),str(ROOT/'lasers.asm'),'-o:'+str(ROOT/'lasers.bin')],check=True,stdout=subprocess.PIPE)
+    laser=(ROOT/'lasers.bin').read_bytes();assert len(laser)<=0x400
+    ram[0xdf00:0xe460]=laser+bytes(0x560-len(laser))
+    if assemble:subprocess.run([os.environ.get('MADS','mads'),str(ROOT/'approach.asm'),'-o:'+str(ROOT/'approach.bin')],check=True,stdout=subprocess.PIPE)
+    approach=(ROOT/'approach.bin').read_bytes();assert len(approach)<=0x160
+    ram[0xe300:0xe300+len(approach)]=approach
     return p,ram,patches,frames
 
 def main():
@@ -279,6 +290,8 @@ def main():
     preview.resize((656,80),Image.Resampling.NEAREST).convert('RGB').save(ROOT/'ship.png')
     manifest={'original_sha256':hashlib.sha256(p['original']).hexdigest(),'output_sha256':hashlib.sha256(out).hexdigest(),'runtime_changed_bytes':sum(a!=b for a,b in zip(old,ram)),'patches':{f'{a:04X}':{'before':x,'after':y} for a,(x,y) in patches.items()},'cpu_depacker_verified':True}
     (ROOT/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
+    laser_patterns=json.loads((ROOT.parent/'editor/laser-patterns.json').read_text())
+    (ROOT.parent/'editor/laser-patterns.js').write_text('// Generated from laser-patterns.json.\n(function(root){const data='+json.dumps(laser_patterns,separators=(',',':'))+";if(typeof module!=='undefined')module.exports=data;else root.LaserPatterns=data;})(globalThis);\n")
     formations=json.loads((ROOT.parent/'editor/boss-formations.json').read_text())
     (ROOT.parent/'editor/boss-formations.js').write_text('// Generated from boss-formations.json by the native builder.\n(function(root){const formations='+json.dumps(formations,separators=(',',':'))+";if(typeof module!=='undefined')module.exports=formations;else root.BossFormations=formations;})(globalThis);\n")
     print('Built',ROOT/'kult-diabolic.xex','with verified original-loader replay.')

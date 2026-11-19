@@ -161,6 +161,7 @@ Offscreen
  lda Phase
  cmp #5
  beq StartMeteors
+ jsr $6556
  lda #0
  sta Art
  lda #88
@@ -466,10 +467,13 @@ HoldTerrain
  :($DEA0-*) dta 0
 BossTerrain
  lda $2D20
+ cmp #8
+ beq TerrainDone
  cmp #4
  bne DrawTerrain
  lda $2D22
  beq DrawTerrain
+TerrainDone
  rts
 DrawTerrain
  jmp $E7F9

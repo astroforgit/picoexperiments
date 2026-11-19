@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs');const {Encounter}=require('./flight-core.js');
 const data=JSON.parse(fs.readFileSync(0,'utf8'));
-for(const trace of data.traces){const e=new Encounter(data.project,data.sine,0,0,{loop:false,bossPreview:!trace.guardian,guardian:trace.guardian,aiSeed:trace.seed});
+for(const trace of data.traces){const e=new Encounter(data.project,data.sine,0,0,{loop:false,bossPreview:!trace.guardian,guardian:trace.guardian,aiSeed:trace.seed,curtainVariant:0});
  assert.equal(e.bossHP,trace.guardian?100:e.record[3]*4);
  let reachable=new Set([12*128+56]);
  for(let t=0;t<trace.frames.length;t++){e.invulnerable=999;e.update();const actual=[e.ai.phase,e.ai.timer,e.bossX,e.bossTop+16,e.ai.frame,e.ai.art,e.ai.direction,e.hostile.map(b=>[b.lane,b.x,b.y]).sort((a,b)=>a[0]-b[0])];assert.deepEqual(actual,trace.frames[t],`Native/browser action mismatch: main=${trace.guardian}, tick=${t}`);

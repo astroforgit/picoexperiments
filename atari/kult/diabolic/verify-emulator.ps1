@@ -1,4 +1,4 @@
-param([string]$OutputDirectory, [switch]$CheckEdges, [switch]$CheckShield, [switch]$LongRun, [switch]$CheckDebugJump, [switch]$CheckSpriteWaves, [switch]$CheckBossActions, [switch]$CheckBossExit, [switch]$CheckBossPerformance, [switch]$CheckBossMeteorDeath, [switch]$CheckMeteorEdges, [switch]$CheckPendingSprites, [switch]$CheckClock, [switch]$CheckBossDefeat, [switch]$PerformanceContinuous, [string]$GamePath, [string]$FirstCycles='1312D00', [ValidateRange(1,7)][int]$DebugKey=1)
+param([string]$OutputDirectory, [switch]$CheckEdges, [switch]$CheckShield, [switch]$LongRun, [switch]$CheckDebugJump, [switch]$CheckSpriteWaves, [switch]$CheckBossActions, [switch]$CheckBossExit, [switch]$CheckBossPerformance, [switch]$CheckBossMeteorDeath, [switch]$CheckMeteorEdges, [switch]$CheckPendingSprites, [switch]$CheckClock, [switch]$CheckBossDefeat, [switch]$CheckWallVariants, [switch]$CheckLaserCleanup, [switch]$PerformanceContinuous, [string]$GamePath, [string]$FirstCycles='1312D00', [ValidateRange(1,8)][int]$DebugKey=1)
 $ErrorActionPreference='Stop'
 $game=Join-Path $PSScriptRoot 'kult-diabolic.xex'
 if ($GamePath) {$game=$GamePath}
@@ -33,10 +33,10 @@ if ($CheckDebugJump) {
         $command
     })
 }
-if ($CheckDebugJump -or $CheckSpriteWaves -or $CheckBossActions -or $CheckBossExit -or $CheckBossPerformance -or $CheckBossMeteorDeath -or $CheckMeteorEdges -or $CheckPendingSprites -or $CheckClock -or $CheckBossDefeat) {
+if ($CheckDebugJump -or $CheckSpriteWaves -or $CheckBossActions -or $CheckBossExit -or $CheckBossPerformance -or $CheckBossMeteorDeath -or $CheckMeteorEdges -or $CheckPendingSprites -or $CheckClock -or $CheckBossDefeat -or $CheckWallVariants) {
     $commands=$commands[0..($commands.Count-3)]
     # Simulate a held debug number at the two POKEY read sites, then restore runtime code.
-    $keyCode=@(0x1F,0x1E,0x1A,0x18,0x1D,0x1B,0x33)[$DebugKey-1]
+    $keyCode=@(0x1F,0x1E,0x1A,0x18,0x1D,0x1B,0x33,0x35)[$DebugKey-1]
     $previewCycles=if ($DebugKey -ge 6) {'400000'} else {'989680'}
     # The distributed XEX stays unchanged.
     $commands+=@('e 3F50 A9 00 EA',('e 3F57 A9 {0:X2} EA' -f $keyCode),'gcr $200000',
@@ -44,6 +44,44 @@ if ($CheckDebugJump -or $CheckSpriteWaves -or $CheckBossActions -or $CheckBossEx
         ('gcr $'+$previewCycles),
         ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'debug-boss.png')+'"'),
         'db 2D20 L10','r','.logclose','.autotest_exit')
+}
+if ($CheckDebugJump -and $DebugKey -eq 8) {
+    $commands=$commands[0..($commands.Count-3)]
+    foreach ($sample in 1..12) {
+        $commands+=@('e F0BF FF','gcr $70000','db 2DE8 L6',
+          ('.autotest_saveimage "'+(Join-Path $OutputDirectory ('laser-'+$sample+'.png'))+'"'))
+    }
+    foreach ($pattern in @(2,5,6)) {
+        $commands+=@( ('e 2DE8 01 32 {0:X2} 00' -f $pattern))
+        foreach ($sample in 1..8) {
+            $commands+=@('e F0BF FF','gcr $70000','db 2DE8 L6',
+              ('.autotest_saveimage "'+(Join-Path $OutputDirectory ('cross-'+$pattern+'-'+$sample+'.png'))+'"'))
+        }
+    }
+    $commands+=@('r','.logclose','.autotest_exit')
+}
+if ($CheckLaserCleanup) {
+    $commands=$commands[0..($commands.Count-3)]
+    $commands+=@('e 2DE8 02 19 06 02','e F0BF FF','gcr $100000',
+      'e F398 03','e F0BF 00','gcr $A00000',
+      ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'laser-after-respawn.png')+'"'),
+      'e DF0C 60','e F939 EA EA EA','e F398 00','e F0BF FF',
+      'e 2DE8 01 FF 06 00','e 74E8 00 00 00 00 00 00','gcr $100000',
+      ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'laser-cleaned.png')+'"'),
+      'db 2DEC L2','r','.logclose','.autotest_exit')
+}
+if ($CheckWallVariants) {
+    $commands=$commands[0..($commands.Count-3)]
+    foreach ($variant in @(0,5,8)) {
+        $commands+=@('e FD04 00','e F398 00','e F0BF FF','e 2D20 04 00 20 80 30',
+          'e 2DC0 03 00 5D 04 01 00 03',('e 2DDC {0:X2}' -f $variant),
+          'e 1BE0 00 00 00 00 00 00 00 00')
+        foreach ($sample in 1..2) {
+            $commands+=@('e F0BF FF','gcr $400000','db 2DDC L2','db 2DC0 L8','db 2D76 L8',
+              ('.autotest_saveimage "'+(Join-Path $OutputDirectory ('walls-'+$variant+'-'+$sample+'.png'))+'"'))
+        }
+    }
+    $commands+=@('r','.logclose','.autotest_exit')
 }
 if ($CheckBossDefeat) {
     $commands=$commands[0..($commands.Count-3)]
@@ -261,3 +299,21 @@ if ($CheckDebugJump -and $DebugKey -eq 6 -and (Get-Content -Raw -LiteralPath $lo
 Write-Output ('Altirra exit code: '+$p.ExitCode)
 
 if ($CheckDebugJump -and $DebugKey -eq 7 -and (Get-Content -Raw -LiteralPath $log) -notmatch '(?i)2D20:\s+05') {throw 'Debug shortcut did not enter diagonal meteors.'}
+
+if ($CheckDebugJump -and $DebugKey -eq 8 -and (Get-Content -Raw -LiteralPath $log) -notmatch "(?i)2D20:\s+08") {throw "Debug shortcut did not enter laser razors."}
+
+if ($CheckDebugJump -and $DebugKey -eq 8) {
+    $trace=Get-Content -Raw -LiteralPath $log
+    foreach ($phase in @('01','02')) {
+        if ($trace -notmatch ('(?im)^2DE8:\s+'+$phase+'\s')) {throw ('Laser phase not observed: '+$phase)}
+    }
+}
+
+if ($CheckWallVariants) {
+    $trace=Get-Content -Raw -LiteralPath $log
+    foreach ($next in @('01','06','09')) {
+        if ($trace -notmatch ('(?im)^2DDC:\s+'+$next+'\s')) {throw ('Wall variation selector did not advance to '+$next)}
+    }
+}
+
+if ($CheckLaserCleanup -and (Get-Content -Raw -LiteralPath $log) -notmatch '(?im)^2DEC:\s+00\s+00') {throw 'Laser buffers were not both cleaned.'}

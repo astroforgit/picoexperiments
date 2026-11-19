@@ -248,14 +248,6 @@ FireNow
     lda #0
     sta FireClock
     ldx #3
-    lda $2D20
-    bne FindFree
-    lda $FB8B
-    and #1
-    beq FindFree
-    lda Active
-    bne FindFree
-    ldx #0
 FindFree
     lda Active,x
     beq ChooseEnemy
@@ -292,6 +284,8 @@ FireFromEnemy
     bcs MoveShots
     cmp #24
     bcc MoveShots
+    jsr $E300
+    bcs MoveShots
     sta BulletX,x
     lda $746A,y
     clc
@@ -304,29 +298,16 @@ FireFromEnemy
     lda FireMode
     cmp #2
     bne ActivateShot
-    lda $E958
-    clc
-    adc #8
-    cmp BulletY,x
-    beq ActivateShot
-    lda #1
-    bcs AimDown
-    lda #$FF
+    jsr $E303
 AimDown
     sta BulletDY,x
 ActivateShot
     lda #0
     sta BulletStyle,x
-    cpx #0
-    bne ActivateReady
-    lda $2D20
-    bne ActivateReady
-    lda $FB8B
-    and #1
-    sta BulletStyle,x
 ActivateReady
     lda #1
     sta Active,x
+
 MoveShots
     ldx #3
 MoveOne
@@ -473,7 +454,7 @@ MixedIndex
     lda $2D40,y
     cmp #8
     bcc MixedNext
-    cmp #104
+    cmp #128
     bcs MixedNext
     tya
     jmp FireFromEnemy
