@@ -18,7 +18,10 @@ class BossActions(unittest.TestCase):
   for guardian in (False,True):
    for seed in (0x5d,0x37):
     c=self.cpu(guardian,seed);frames=[self.step(c) for _ in range(1600)]
-    self.assertTrue({1,2,3,4,5,6,7,8}<=set(f[0] for f in frames))
+    self.assertTrue(({1,2,3,4,5,6,7,8} if guardian else {1,2,3,6,7,8})<=set(f[0] for f in frames))
+    retreats=sum(f[0]==3 and (i==0 or frames[i-1][0]!=3) for i,f in enumerate(frames))
+    if guardian:self.assertGreater(retreats,1)
+    else:self.assertEqual(retreats,1)
     traces.append(dict(guardian=guardian,seed=seed,frames=frames))
   result=subprocess.run([shutil.which('node'),str(Path(__file__).parents[1]/'editor/boss-actions-parity.cjs')],input=json.dumps(dict(project=default_project(),sine=list(self.ram[0x7164:0x7264]),traces=traces)),text=True,capture_output=True)
   self.assertEqual(result.returncode,0,result.stderr)

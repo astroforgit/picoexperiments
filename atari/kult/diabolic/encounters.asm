@@ -66,6 +66,7 @@ ReadKind
  lda #0
  sta Age
  sta $2DC0
+ sta $2DC3 ; no retreat used in this encounter
  sta $2D76
  sta $2D7B
  lda #24
@@ -77,7 +78,6 @@ ReadKind
  lda #128
  sta HeadX
  lda $FC09
- asl
  asl
  asl
  sta Health
@@ -113,7 +113,7 @@ SaveExplosions
  bne SaveExplosions
  lda #19
  jsr $F16B
- lda #$2E
+ lda #$24
  sta SourceHi
  lda #8
 TileCount
@@ -126,6 +126,9 @@ LoadTile
  ldx SourceLo
  ldy SourceHi
  jsr $F0C4
+ lda Mode
+ cmp #4
+ beq SourceReady
  clc
  lda SourceLo
  adc #32

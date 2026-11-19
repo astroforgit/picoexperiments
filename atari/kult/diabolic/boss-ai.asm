@@ -120,6 +120,13 @@ ShotDone
  lda Timer
  cmp #96
  bcc Done
+ lda $FD04
+ bne LeaveScreen
+ lda NextHazard
+ beq LeaveScreen
+ ; A sub-boss gets one retreat per encounter, even after pilot respawn.
+ jmp Entered
+LeaveScreen
  lda #3
  sta Phase
  jsr $0300

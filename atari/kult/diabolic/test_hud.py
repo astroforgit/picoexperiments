@@ -30,7 +30,7 @@ class HudTests(unittest.TestCase):
   from pathlib import Path
   from build import word
   icons=json.loads((Path(__file__).parent/'art/pickups.json').read_text())
-  self.assertEqual(len(icons),5)
+  self.assertEqual(len(icons),7)
   for i,icon in enumerate(icons):
    base=word(self.ram,0x7264+i*2);frame=icon['frames'][0]
    for y in range(16):
@@ -42,7 +42,7 @@ class HudTests(unittest.TestCase):
   c.memory[0x4e7c:0x4e80]=[0x78,0x56,0x34,0x12]
   top=c.memory[0x6384:0x6684].copy();ship=c.memory[0x6a84:0x6f84].copy()
   self.call(c,0x6384)
-  for x,number in ((21,3),(25,1),(29,2)):
+  for x,number in ((18,3),(22,1),(26,2),(30,0)):
    actual=[c.memory[0x6684+(5+y)*32+x] for y in range(8)]
    self.assertEqual(actual,c.memory[0x4c00+number*8:0x4c08+number*8])
   for i,number in enumerate(range(1,9)):

@@ -9,41 +9,13 @@
 HudInit
  sta $4E77
  sta $2D70
+ jsr $2E0F
  lda #0
  sta $2D71
  rts
 HudUpdate
- jsr $F48C
- jsr $F475
- lda #<($6684+5*32+21)
- sta $80
- lda #>($6684+5*32+21)
- sta $81
- lda $4E78
- sec
- sbc #1
- jsr Digit
- lda #<($6684+5*32+25)
- sta $80
- lda #>($6684+5*32+25)
- sta $81
- lda $2D70
- jsr Digit
- lda #<($6684+5*32+29)
- sta $80
- lda #>($6684+5*32+29)
- sta $81
- lda $4E77
- jsr Digit
- jsr WeaponPreview
- jmp $3B0F
-Digit
- and #15
- asl
- asl
- asl
- tax
- jmp $EA34
+ jmp $2F88
+
 WeaponPreview
  ; Four 16x16 dotted firing patterns, selected by the native weapon index.
  lda $F24D

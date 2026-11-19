@@ -84,16 +84,8 @@ def apply_project(ram,value):
             encoded=list(record);encoded[1]|=value['encounters'][sector][w]<<5
             ram[0x4400+sector*192+w*4:0x4404+sector*192+w*4]=bytes(encoded)
     for i,motion in enumerate(value['motions']):ram[0x7310+i*8:0x7318+i*8]=bytes(n&255 for n in motion)
-    # Each nonzero drop-table entry belongs to one of eight enemies.
-    # Retain at most two original awards per pattern, spread through the wave.
-    for pattern in range(32):
-        start=0x4a00+pattern*8
-        for i in range(8):
-            if ram[start+i]>=6:ram[start+i]=0  # remove fuel and score-only bonus packages
-        eligible=[i for i in range(8) if ram[start+i]]
-        keep=set(eligible if len(eligible)<=2 else (eligible[len(eligible)//3],eligible[2*len(eligible)//3]))
-        for i in range(8):
-            if i not in keep:ram[start+i]=0
+    for pattern,row in enumerate(drop_patterns(original_project('kult')['banks']['ram'])):
+        ram[0x4a00+pattern*8:0x4a08+pattern*8]=bytes(row)
     # Redesigned meteor and skull, independent of ordinary enemy slot assignments.
     original=original_project('kult')['banks']['ram']
     ram[0x2f00:0x2f80]=b''.join(pack(f,16,16) for f in enemies['redesign-14']['frames'])
@@ -149,17 +141,26 @@ def apply_project(ram,value):
         ram[0x2340+(i-1)*2:0x2342+(i-1)*2]=bytes(f['mixedGuards'])
     ram[0x2d74:0x2d76]=bytes(value['boss'][k] for k in ('pattern','difficulty'))
     ram[0x2d00:0x2d03]=bytes(value['firing'][k] for k in ('mode','interval','speed'))
+def drop_patterns(ram):
+    """Two awards maximum: clocks in 24/32 patterns, bombs in 4/32."""
+    result=[]
+    for pattern in range(32):
+        row=[v if 0<v<6 else 0 for v in ram[0x4a00+pattern*8:0x4a08+pattern*8]]
+        eligible=[i for i,v in enumerate(row) if v]
+        keep=eligible if len(eligible)<=2 else [eligible[len(eligible)//3],eligible[2*len(eligible)//3]]
+        row=[v if i in keep else 0 for i,v in enumerate(row)]
+        if pattern%4!=3 or pattern%8==7:
+            slot=keep[0] if keep else 2
+            row[slot]=6 if pattern%4!=3 else 7 # pickup indices 5 clock / 6 bomb
+        result.append(row)
+    return result
+
 def public():
     ram=original_project('kult')['banks']['ram']
     from hud_art import build_hud
     hud_ram=bytearray(65536)
     build_hud(hud_ram, write_patterns=False)
-    drops=[]
-    for pattern in range(32):
-        row=[v if v<6 else 0 for v in ram[0x4a00+pattern*8:0x4a08+pattern*8]]
-        eligible=[i for i,v in enumerate(row) if v]
-        keep=eligible if len(eligible)<=2 else [eligible[len(eligible)//3],eligible[2*len(eligible)//3]]
-        drops.append([v if i in keep else 0 for i,v in enumerate(row)])
+    drops=drop_patterns(ram)
     guardian=next(b for b in catalog()['bosses'] if b['id']=='boss-insect-queen')['frames'][0]
     from bullet_waves import measure
     applied=load_project()

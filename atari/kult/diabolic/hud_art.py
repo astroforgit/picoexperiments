@@ -17,10 +17,11 @@ def build_hud(ram, write_patterns=True):
  # Compact twin-engine ship, distinct from the old helicopter and line icons.
  d.polygon([(16,8),(23,10),(30,14),(37,16),(30,18),(23,22),(16,24),(20,18),(14,18),(14,14),(20,14)],fill=1)
  d.line((23,15,31,16),fill=0);d.line((23,17,29,17),fill=0)
- # Lives, bomb and shield icons on exactly the same baseline as their counts.
- d.polygon([(153,5),(158,7),(164,9),(158,11),(153,13),(155,9)],fill=1)
- d.ellipse((185,7,192,13),outline=1);d.line((190,7,190,4,193,4),fill=1)
- d.line((217,5,225,5,225,9,221,13,217,9,217,5),fill=1)
+ # Four aligned counters: lives, bombs, shields, clocks.
+ d.polygon([(129,4),(134,6),(140,8),(134,10),(129,11),(131,8)],fill=1)
+ d.ellipse((161,6,168,12),outline=1);d.line((166,6,166,3,169,3),fill=1)
+ d.line((193,4,201,4,201,8,197,12,193,8,193,4),fill=1)
+ d.ellipse((225,3,234,12),outline=1);d.line((229,5,229,8,232,8),fill=1)
  ram[0x6684:0x6a84]=packed(im)
  patterns=[]
  for mode in range(4):

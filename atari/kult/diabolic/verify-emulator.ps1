@@ -1,4 +1,4 @@
-param([string]$OutputDirectory, [switch]$CheckEdges, [switch]$CheckShield, [switch]$LongRun, [switch]$CheckDebugJump, [switch]$CheckSpriteWaves, [switch]$CheckBossActions, [switch]$CheckBossExit, [switch]$CheckBossPerformance, [switch]$CheckBossMeteorDeath, [switch]$CheckMeteorEdges, [switch]$CheckPendingSprites, [switch]$PerformanceContinuous, [string]$GamePath, [string]$FirstCycles='1312D00', [ValidateRange(1,6)][int]$DebugKey=1)
+param([string]$OutputDirectory, [switch]$CheckEdges, [switch]$CheckShield, [switch]$LongRun, [switch]$CheckDebugJump, [switch]$CheckSpriteWaves, [switch]$CheckBossActions, [switch]$CheckBossExit, [switch]$CheckBossPerformance, [switch]$CheckBossMeteorDeath, [switch]$CheckMeteorEdges, [switch]$CheckPendingSprites, [switch]$CheckClock, [switch]$PerformanceContinuous, [string]$GamePath, [string]$FirstCycles='1312D00', [ValidateRange(1,6)][int]$DebugKey=1)
 $ErrorActionPreference='Stop'
 $game=Join-Path $PSScriptRoot 'kult-diabolic.xex'
 if ($GamePath) {$game=$GamePath}
@@ -25,7 +25,7 @@ $commands=@(
 'gcr $989680',
 ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'flight-later.png')+'"'),
 'db 43FF L1','db 4E75 L10','r','.logclose','.autotest_exit')
-if ($CheckDebugJump -or $CheckSpriteWaves -or $CheckBossActions -or $CheckBossExit -or $CheckBossPerformance -or $CheckBossMeteorDeath -or $CheckMeteorEdges -or $CheckPendingSprites) {
+if ($CheckDebugJump -or $CheckSpriteWaves -or $CheckBossActions -or $CheckBossExit -or $CheckBossPerformance -or $CheckBossMeteorDeath -or $CheckMeteorEdges -or $CheckPendingSprites -or $CheckClock) {
     $commands=$commands[0..($commands.Count-3)]
     # Simulate a held debug number at the two POKEY read sites, then restore runtime code.
     $keyCode=@(0x1F,0x1E,0x1A,0x18,0x1D,0x1B)[$DebugKey-1]
@@ -36,6 +36,19 @@ if ($CheckDebugJump -or $CheckSpriteWaves -or $CheckBossActions -or $CheckBossEx
         ('gcr $'+$previewCycles),
         ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'debug-boss.png')+'"'),
         'db 2D20 L10','r','.logclose','.autotest_exit')
+}
+if ($CheckClock) {
+    $commands=$commands[0..($commands.Count-3)]
+    # Exercise the actual clock-key handler; leave the distributed XEX untouched.
+    $commands+=@('e F398 00','e F0BF FF','e 2D90 00 03 00 00 00',
+      'e 2E2F A9 00 EA','e 2E36 A9 17 EA','gcr $20000',
+      'e 2E2F AD 0F D2','e 2E36 AD 09 D2','db 2D90 L10',
+      ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'clock-active.png')+'"'),
+      'gcr $300000','db 2D90 L10',
+      ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'clock-midpoint.png')+'"'),
+      'gcr $300000','db 2D90 L10',
+      ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'clock-expired.png')+'"'),
+      '.logclose','.autotest_exit')
 }
 if ($CheckPendingSprites) {
     $commands=$commands[0..($commands.Count-3)]
@@ -159,6 +172,15 @@ foreach ($name in @('direct-start.png','flight.png','flight-later.png')) {
     if ($capture.LastWriteTime -lt $started) {throw ('Missing fresh emulator capture: '+$name)}
 }
 if ((Get-Content -Raw -LiteralPath $log) -match 'Illegal instruction hit') {throw 'Emulator hit an illegal instruction; inspect gameplay.log.'}
+if ($CheckClock) {
+    $trace=Get-Content -Raw -LiteralPath $log
+    $states=[regex]::Matches($trace,'(?im)^2D90:\s+([0-9A-F]{2}) ([0-9A-F]{2})')
+    if ($states.Count -ne 3) {throw 'Missing clock duration samples.'}
+    $first=[Convert]::ToInt32($states[0].Groups[1].Value,16)
+    $middle=[Convert]::ToInt32($states[1].Groups[1].Value,16)
+    if ($first -lt 140 -or $middle -le 0 -or $middle -ge $first -or $states[2].Groups[1].Value -ne '00') {throw 'Clock did not run for three seconds of PAL display time.'}
+    foreach ($state in $states) {if ($state.Groups[2].Value -ne '02') {throw 'Clock activation did not spend exactly one charge.'}}
+}
 if ($CheckPendingSprites -and !$GamePath) {
     $trace=Get-Content -Raw -LiteralPath $log
     $records=[regex]::Matches($trace,'(?im)^74(?:A8|B8):\s+((?:[0-9A-F]{2}\s+){16})')

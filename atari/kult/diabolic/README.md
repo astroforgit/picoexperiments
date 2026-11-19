@@ -515,3 +515,40 @@ while preserving active sprites, explosions and rewards. The Altirra check
 real scroll/render cycles and checks that neither buffer saves their pixels.
 Pass `-GamePath` to capture a pre-fix executable for comparison (the no-draw
 assertion is intentionally disabled for that baseline).
+
+
+Clock pickups add a slow-motion charge, up to three. Press Z, X or C to spend
+one charge: enemies, rocks and hostile projectiles move at
+one-third speed for three seconds. Ship movement, firing and player projectiles stay at full speed. The bottom HUD
+shows the clock icon and remaining charges alongside bombs and shields. New
+games start with three charges; holding a key never spends another charge.
+Clock gifts occur in 24 of the 32 ordinary-wave drop patterns, versus four bomb
+patterns, with at most two gifts per ordinary wave.
+
+The timer uses 150 PAL display frames, independently of game-update frequency,
+and pauses with the game. Death cancels an active effect. Collision checks for
+stationary hostile projectiles remain active. Browser gameplay and the wave
+editor use the same controls, inventory and movement on every third update.
+`test_clock.py` checks native pacing, collisions, duration, pickups and loader
+integrity; `editor/clock.browser.test.cjs` checks browser movement and keyboard
+controls. `verify-emulator.ps1 -CheckClock` verifies activation, HUD and expiry
+in Altirra. Clock code occupies $2E00-$2EFF; its HUD/pacing helper occupies
+$2F88-$2FFF and state uses $2D90-$2D99. Invisible boss collision targets now
+reuse the blank tile at $2400 instead of the reclaimed clock-code bank.
+
+
+Round boss shots (straight and sine) now collide using their inner core against
+the ship's central body, rather than both full sprite rectangles. This leaves
+transparent padding and grazing the wings harmless. In native half-width X
+coordinates, the ship core is [6,16) x [4,12) and the orb core is
+[2,6) x [4,12); touching edges alone does not count as a hit. The browser uses
+the same bounds. Meteor and curtain collision bounds are unchanged.
+`test_boss_sprites.py` exhaustively checks relative offsets and protections.
+
+
+Sub-bosses now start with four times the wave HP setting (half the previous
+eight-times multiplier). They retreat off-screen only once per encounter for
+one curtain sequence or meteor shower. After returning they stay on-screen
+and select straight or sine shots every 96 updates. The used retreat survives
+pilot death and resets when a new encounter loads. End-of-level boss health
+and repeated retreats are unchanged.

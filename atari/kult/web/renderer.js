@@ -21,12 +21,12 @@ class Renderer{
   g.fillStyle='#fff';for(const b of e.shots)g.fillRect(b.x*4,b.y*2,8,2);
   for(const b of e.hostile){if(b.boss){g.drawImage(this.sprite(b.art==='orb'?'boss-orb':b.art==='meteor'?'redesign-14':'original-17',b.art==='orb'||b.art==='meteor'?0:2+((e.bossClock>>2)&1)),Math.round(b.x*4),Math.round(b.y*2),32,32);}else if(b.style){for(let y=0;y<8;y++)for(let x=0;x<8;x++)if(this.data.playerBullet[y]&(128>>x))g.fillRect(Math.round(b.x*4)+x*4,Math.round(b.y*2)+y*2,4,2);}else g.fillRect(Math.round(b.x*4),Math.round(b.y*2),16,8);}
   if(e.shieldTicks){g.strokeStyle='#fff';g.lineWidth=2;g.beginPath();g.ellipse(e.player.x*4+40,e.player.y*2+16,44,20,0,0,Math.PI*2);g.stroke();}
-  for(const p of e.pickups){const index=p.type==='Shield'?4:Number(p.type.slice(-1))-1;g.drawImage(this.sprite(this.data.pickups[index].id),p.x*4,p.y*2,32,32);}
+  for(const p of e.pickups){const index=p.type==='Clock'?5:p.type==='Bomb'?6:p.type==='Shield'?4:Number(p.type.slice(-1))-1;g.drawImage(this.sprite(this.data.pickups[index].id),p.x*4,p.y*2,32,32);}
   g.restore();if(hud)this.hud(e);
  }
  hud(e){const g=this.pg;g.fillStyle='#000';g.fillRect(0,0,256,32);g.fillStyle='#e6e6e6';this.data.hud.forEach((b,i)=>{for(let bit=0;bit<8;bit++)if(b&(128>>bit))g.fillRect((i%32)*8+bit,Math.floor(i/32),1,1);});
   const digit=(n,x,y)=>{for(let row=0;row<8;row++){const b=this.data.digits[n*8+row];for(let bit=0;bit<8;bit++)if(b&(128>>bit))g.fillRect(x+bit,y+row,1,1);}};
-  String(e.score).padStart(8,'0').slice(-8).split('').forEach((n,i)=>digit(Number(n),80+i*8,12));digit(e.sector+1,112,23);digit(Math.max(0,3-e.hits),168,5);digit(e.bombs,200,5);digit(e.shields,232,5);
+  String(e.score).padStart(8,'0').slice(-8).split('').forEach((n,i)=>digit(Number(n),80+i*8,12));digit(e.sector+1,112,23);digit(Math.max(0,3-e.hits),144,5);digit(e.bombs,176,5);digit(e.shields,208,5);digit(e.clocks??3,240,5);
   for(const y of [[8],[4,11],[2,8,14],[1,5,10,14]][e.weapon-1])for(const x of [2,7,12])g.fillRect(40+x,8+y,1,1);
   for(const y of [12,20])g.fillRect(e.tick&2?8:10,y,e.tick&2?4:2,1);
   if(e.boss&&e.bossHP>0)for(let i=0;i<8;i++){g.strokeStyle='#e6e6e6';g.strokeRect(184+i*8+.5,22.5,5,5);if(i<Math.ceil(e.bossHP/e.bossMaxHP*8))g.fillRect(185+i*8,23,4,4);}

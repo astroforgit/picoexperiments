@@ -55,7 +55,7 @@ class WorkshopTests(unittest.TestCase):
                 self.assertEqual(self.ram[start:start+32],pack(frame,16,16))
         self.assertEqual(self.ram[0x2f00:0x2f80],b''.join(pack(f,16,16) for f in lib['redesign-14']['frames']))
         # Sub-boss targets are invisible; the guardian renderer owns its artwork.
-        self.assertEqual(self.ram[0x2e00:0x2f00],bytes(256))
+        self.assertEqual(self.ram[0x2400:0x2420],bytes(32)) # Shared blank target tile; $2E00 now holds clock code.
 
     def test_enemy_blit_and_restore_clip_bottom_without_corrupting_code(self):
         for base in (0x8000,0xa000):

@@ -152,6 +152,7 @@ Raster
     cmp #80
     bcc StarRaster
     pla
+    jsr $2E0C
     jmp $EA73
 StarRaster
     txa
@@ -212,6 +213,8 @@ FireEnabled
 SkipFire
     jmp MoveShots
 FireGate
+    lda $2D94
+    bne SkipFire
     lda $FD04
     bne SkipFire
     lda $2D20
@@ -323,6 +326,8 @@ MoveActive
     bne LiveMissile
     jmp DrawLaser
 LiveMissile
+    lda $2D94
+    bne BulletBoundsDone
     lda $2D20
     cmp #4
     bne NormalVelocity

@@ -15,7 +15,7 @@ class BossRespawn(unittest.TestCase):
                 with self.subTest(guardian=guardian, scroll=phase):
                     c=MPU(memory=list(self.ram));m=c.memory
                     m[0xfd04]=guardian;m[0xfd0a]=37;m[0x2d20]=4;m[0x2d22]=21
-                    m[0x2dc0]=5;m[0x2dc4]=2;m[0x2dc7]=3;m[0x758e]=phase
+                    m[0x2dc0]=5;m[0x2dc3]=5;m[0x2dc4]=2;m[0x2dc7]=3;m[0x758e]=phase
                     m[0x4e78]=3;m[0xf398]=m[0xf0bf]=m[0x2d61]=0
                     m[0xe957:0xe959]=[12,56];m[0x1bd1]=23;m[0x1bd9]=64
                     c.x=1;call(c,0x1809);self.assertEqual(m[0xf398],3)
@@ -46,6 +46,7 @@ class BossRespawn(unittest.TestCase):
                     # The live boss resumes with a clean entrance and no stale rocks.
                     call(c,0xdac0)
                     self.assertEqual(m[0x2dc0],8)
+                    self.assertEqual(m[0x2dc3],5,'Respawn must preserve the used retreat')
                     self.assertFalse(any(m[0x1be0:0x1be8]))
                     c.pc=0xde80
                     for _ in range(40):

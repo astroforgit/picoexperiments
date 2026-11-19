@@ -34,11 +34,15 @@ class Encounters(unittest.TestCase):
   for _ in range(25):
    self.call(c,0x3b03);self.call(c,0xdac0)
   self.assertEqual(c.memory[0x7462:0x746a],[88,96,104,112]*2)
-  self.assertEqual(c.memory[0x2d22],32)
+  self.assertEqual(c.memory[0x2d22],16)
+  self.assertEqual(c.memory[0x2d2a],16)
   for i in range(8):c.y=i;self.call(c,0x3b06);self.assertEqual(c.a,i)
-  for i in range(32):c.x=i%8;self.call(c,0x3b09)
+  for i in range(16):c.x=i%8;self.call(c,0x3b09)
   self.assertEqual(c.memory[0x2d22],0);self.assertEqual(c.memory[0x7482:0x748a],[0x11,0x12,0x14,0,0,0,0,0]);self.assertEqual(c.memory[0x74e0:0x74e8],[0,0,0,128,128,128,128,128])
   self.load(c,0);self.assertEqual(c.memory[0x7d00:0x8000],original)
+ def test_new_encounter_resets_retreat_allowance(self):
+  c=self.cpu();c.memory[0x2dc3]=5;self.load(c,4)
+  self.assertEqual(c.memory[0x2dc3],0)
  def test_pack_encounter_flags_and_legacy(self):
   out=package(self.p,self.ram);ram=kult(out)[0]
   self.assertEqual(ram[0x4400+2*4+1]>>5,1);self.assertEqual(ram[0x4400+7*4+1]>>5,4)
@@ -105,7 +109,7 @@ class Encounters(unittest.TestCase):
   self.assertEqual(c.memory[0x7482],0)
  def test_boss_meter_full_half_empty_and_hidden(self):
   c=self.cpu();self.load(c,4)
-  for hp,filled in ((32,8),(16,4),(1,1),(0,0)):
+  for hp,filled in ((16,8),(8,4),(1,1),(0,0)):
    c.memory[0x2d22]=hp;self.call(c,0x3b0f)
    self.assertEqual(sum(c.memory[0x6684+24*32+23+i]==0x7e for i in range(8)),filled)
   c.memory[0x2d20]=0;self.call(c,0x3b0f)
@@ -154,7 +158,7 @@ class Encounters(unittest.TestCase):
   self.call(c,0x3b1b);count=c.memory[0x2d63];self.assertLess(count,c.memory[0x2d68]);self.assertGreater(count,0)
   for i in range(count):self.assertTrue(0x8000<=c.memory[0x2500+i]+256*c.memory[0x2600+i]<0xa000)
  def test_bombs_are_separate_from_shields_and_require_repress(self):
-  c=self.cpu();self.load(c,4);c.memory[0xf533]=0x60;c.memory[0xd20f]=0;c.memory[0x4e77]=2;c.memory[0x2d70]=3
+  c=self.cpu();self.load(c,4);c.memory[0x2d22]=c.memory[0x2d2a]=32;c.memory[0xf533]=0x60;c.memory[0xd20f]=0;c.memory[0x4e77]=2;c.memory[0x2d70]=3
   self.call(c,0x3b0c);self.assertEqual(c.memory[0x2d22],16);self.assertEqual(c.memory[0x4e77],2);self.assertEqual(c.memory[0x2d70],2)
   self.call(c,0x3b0c);self.assertEqual(c.memory[0x2d70],2)
   c.memory[0xd20f]=8;self.call(c,0x3b0c);c.memory[0xd20f]=0;self.call(c,0x3b0c)

@@ -30,7 +30,7 @@ def package(p,ram):
     # Keep a literal prefix in the retired tile bank: compressing empty space too
     # aggressively lets the in-place decoder overwrite its unread input.
     # Retired map resources stay literal, preserving the original input gap.
-    # 3264 literal bytes plus the preceding sprite bank preserve the later gap;
+    # 3248 literal bytes plus the preceding sprite bank preserve the later gap;
     # the remaining star tables are compressed. Replay below checks every block.
     streams=[bytearray(),bytearray()];phase=0;old=p['banks']['ram']
     for block in p['blocks']:
@@ -41,7 +41,7 @@ def package(p,ram):
             streams[phase]+=rle(struct.pack('<HH',0x1780,0xc80))+rle(ram[0x1780:0x2400])
         streams[phase]+=rle(struct.pack('<HH',a,len(data)))
         literal=lambda values:b''.join(bytes([0xbf,v,1]) if v in (0xbf,0xcf) else bytes([v]) for v in values)
-        if a==0x2400:encoded=literal(data[:3264])+rle(data[3264:])
+        if a==0x2400:encoded=literal(data[:3248])+rle(data[3248:])
         elif a==0x480:encoded=literal(data)
         else:encoded=rle(data)
         streams[phase]+=encoded
@@ -152,6 +152,7 @@ def create_runtime(settings=None,assemble=False,write_files=False):
         frame=icon['frames'][0];address=word(ram,0x7264+i*2)
         raw=bytes(sum(frame[y*16+x+k]<<(7-k) for k in range(8)) for y in range(16) for x in (0,8))
         ram[address:address+48]=b''.join(raw[y*2:y*2+2]+b'\x00' for y in range(16))
+    ram[0x70d4:0x7104]=bytes(48) # Retired score-only bonus icon is no longer collectible.
     ring=Image.new('1',(44,20));ImageDraw.Draw(ring).ellipse((0,0,43,19),outline=1)
     points=[(x,y) for y in range(20) for x in range(44) if ring.getpixel((x,y))]
     assert len(points)<128
@@ -172,12 +173,18 @@ def create_runtime(settings=None,assemble=False,write_files=False):
         ram[dl:dl+6]=bytes([0x70,0x70,0x70,0x01,target&255,target>>8])
 
     patches={
+        0xF7E5:('ad98f3','20002e'), # clock activation before movement; preserve death flag
+        0xF831:('202ff2','20182e'), # player projectiles keep normal speed during the clock effect
+        0xEBA9:('ce4474','20092e'), # formation entry/exit must slow with its path
+        0xEBB3:('ce4474','20092e'),
+        0xFA0D:('c906d0','4c122e'), # clock / bomb pickup inventory
+
         0xF914:('207efc','208317'), # retain unchanged body pixels in each framebuffer
-        0xEAAD:('ce8e75','4c80de'), # hold retired terrain scrolling during bosses
+        0xEAAD:('ce8e75','4c152e'), # hold retired terrain scrolling during bosses
         0xF91C:('20f9e7','20a0de'), # avoid obsolete terrain copies in sub-boss fights
         0xEB52:('b9e074','208604'), # skip rendering invisible sub-boss collision targets
         0xFCAB:('ac08fd','4c8904'), # fast full-width boss erasure
-        0xF80E:('2083fe','20c0da'), # shared boss action controller
+        0xF80E:('2083fe','20062e'), # shared boss action controller
         0xF819:('203ffe','200c03'), # guardian damage gate and moving target
         0xFB8C:('a207a900','4c0f03ea'), # retain active sub-boss while it retreats
         0xFC9B:('8d08fd','201803'), # clip guardian background erasure at right edge
@@ -218,7 +225,7 @@ def create_runtime(settings=None,assemble=False,write_files=False):
         0xFA13:('8d7b4e','eaeaea'), # obsolete pickup cannot restore fuel
 
         0xFC22:('206bf1','20003b'), # select wave encounter and graphics
-        0xF7F2:('20a4e7','20033b'), # normal, meteor or sub-boss motion
+        0xF7F2:('20a4e7','20032e'), # normal, meteor or sub-boss motion
         0xEB60:('bd3c74','20063b'), # composite boss tile selection
         0xFA64:('de8675','20093b'), # immunity / shared boss health
         0xF816:('2061f3','200c3b'), # bombs obey encounter rules
@@ -247,6 +254,10 @@ def create_runtime(settings=None,assemble=False,write_files=False):
     ai=(ROOT/'boss-ai.bin').read_bytes()
     assert len(ai)<=0x440
     ram[0xdac0:0xdf00]=ai+bytes(0x440-len(ai))
+    for name,base,limit in [('clock',0x2e00,256),('clock-hud',0x2f88,120)]:
+        if assemble:subprocess.run([os.environ.get('MADS','mads'),str(ROOT/(name+'.asm')),'-o:'+str(ROOT/(name+'.bin'))],check=True,stdout=subprocess.PIPE)
+        code=(ROOT/(name+'.bin')).read_bytes();assert len(code)<=limit
+        ram[base:base+len(code)]=code
     return p,ram,patches,frames
 
 def main():

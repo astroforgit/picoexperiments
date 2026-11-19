@@ -16,6 +16,35 @@ class SpriteWaves(unittest.TestCase):
   original=self.p['banks']['ram'][0x4f80+17*128:0x4f80+18*128]
   for f in range(4):
    for row in range(16):self.assertEqual(bytes(self.ram[0x2000+f*192+row*3:0x2003+f*192+row*3]),bytes(original[f*32+row*2:f*32+row*2+2])+b'\0')
+ def test_round_shot_core_and_transparent_near_misses(self):
+  # Exhaust all relative positions, including exact touching edges and wrap.
+  for art in (0,1,2):
+   c=MPU(memory=list(self.ram));m=c.memory;m[0x2dc4]=art
+   m[0xe957:0xe959]=[40,48];m[0xf0bf]=m[0x2d61]=0
+   for dx in range(-30,31):
+    for dy in range(-35,36):
+     m[0xf398]=0;m[0x1bd0]=40+dx;m[0x1bd8]=48+dy;c.x=0
+     self.call(c,0x1809)
+     expected=(1<=dx<14 and -7<=dy<8) if art==1 else (-8<=dx<20 and -16<=dy<16)
+     self.assertEqual(bool(m[0xf398]),expected,(art,dx,dy))
+  for protection in (0xf0bf,0x2d61):
+   m[protection]=1;m[0xf398]=0;m[0x1bd0]=48;m[0x1bd8]=48
+   self.call(c,0x1809);self.assertEqual(m[0xf398],0);m[protection]=0
+ def test_slowed_round_shot_keeps_the_same_contact_box(self):
+  for dx,dy,hit in ((19,0,False),(8,15,False),(0,0,False),(8,0,True)):
+   c=MPU(memory=list(self.ram));m=c.memory
+   m[0x2dc4]=1;m[0x2d20]=4;m[0x2d94]=1
+   m[0xe957:0xe959]=[40,48];m[0xf0bf]=m[0xf398]=m[0x2d61]=0
+   m[0x1be0:0x1be8]=[1]+[0]*7;m[0x1bd0]=40+dx;m[0x1bd8]=48+dy
+   self.call(c,0x2e06)
+   self.assertEqual(bool(m[0xf398]),hit)
+   self.assertEqual((m[0x1bd0],m[0x1bd8]),(40+dx,48+dy))
+ def test_browser_round_shot_collision_parity(self):
+  import json,shutil,subprocess
+  from pathlib import Path
+  from workshop import default_project
+  result=subprocess.run([shutil.which('node'),str(Path(__file__).parents[1]/'editor/boss-orb-collision.test.cjs')],input=json.dumps(dict(project=default_project(),sine=list(self.ram[0x7164:0x7264]))),text=True,capture_output=True)
+  self.assertEqual(result.returncode,0,result.stderr)
  def test_draw_restore_overlap_and_clipping_both_buffers(self):
   for buffer in (0,1):
    for overlap in (False,True):

@@ -185,24 +185,33 @@ HitSprite
  ora $F398
  ora $2D61
  bne HitDone
+ ; Orb art uses a forgiving central hitbox; curtains and rocks retain theirs.
+ ldy $2DC4
  lda $1BD0,x
  sec
  sbc $E957
  clc
- adc #8
- cmp #28
+ adc HitXBias,y
+ cmp HitWidth,y
  bcs HitDone
  lda $1BD8,x
  sec
  sbc $E958
  clc
- adc #16
- cmp #32
+ adc HitYBias,y
+ cmp HitHeight,y
  bcs HitDone
+HitPlayer
  lda #3
  sta $F398
 HitDone
  rts
+
+; Ship core [6,16) x [4,12), orb core [2,6) x [4,12).
+HitXBias dta 8,255,8
+HitWidth dta 28,13,28
+HitYBias dta 16,7,16
+HitHeight dta 32,15,32
 
 ; Return the per-buffer record index and backup pointer in FC/FD.
 BackupPointer
