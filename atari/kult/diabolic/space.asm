@@ -219,6 +219,8 @@ FireGate
     bne SkipFire
     lda $2D20
     beq RegularFire
+    cmp #7
+    beq RegularFire
     cmp #4
     bne SkipFire
     lda $2D22
@@ -231,6 +233,13 @@ BossAlive
 RegularFire
     inc FireClock
     lda FireClock
+    ldy $2D20
+    cpy #7
+    bne StandardInterval
+    cmp #8
+    bcs FireNow
+    jmp MoveShots
+StandardInterval
     cmp FireInterval
 FireCompare
     bcs FireNow
@@ -254,6 +263,11 @@ FindFree
     bpl FindFree
     jmp MoveShots
 ChooseEnemy
+    lda $2D20
+    cmp #7
+    bne StandardEnemy
+    jmp MixedShooter
+StandardEnemy
     inc EnemyIndex
     lda EnemyIndex
     and #7
@@ -336,6 +350,14 @@ LiveMissile
     sbc $2D88,x
     jmp MovedX
 NormalVelocity
+    lda $2D20
+    cmp #7
+    bne StandardVelocity
+    lda BulletX,x
+    sec
+    sbc #6
+    jmp MovedX
+StandardVelocity
     lda BulletX,x
     sec
     sbc FireSpeed
@@ -430,6 +452,35 @@ PlayerBulletRows
     bcc PlayerBulletRows
     ldx #0
     rts
+MixedShooter
+    lda #6
+    sta $2D9A
+MixedCandidate
+    inc EnemyIndex
+    lda EnemyIndex
+    cmp #2
+    bcc MixedReset
+    cmp #8
+    bcc MixedIndex
+MixedReset
+    lda #2
+    sta EnemyIndex
+MixedIndex
+    tay
+    lda $74E0,y
+    cmp #16
+    bne MixedNext
+    lda $2D40,y
+    cmp #8
+    bcc MixedNext
+    cmp #104
+    bcs MixedNext
+    tya
+    jmp FireFromEnemy
+MixedNext
+    dec $2D9A
+    bne MixedCandidate
+    jmp MoveShots
 BulletStyle = $2D50
 ShotBits dta 3,12,48,192
 FireMode = $2D00

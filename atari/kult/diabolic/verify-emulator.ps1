@@ -1,4 +1,4 @@
-param([string]$OutputDirectory, [switch]$CheckEdges, [switch]$CheckShield, [switch]$LongRun, [switch]$CheckDebugJump, [switch]$CheckSpriteWaves, [switch]$CheckBossActions, [switch]$CheckBossExit, [switch]$CheckBossPerformance, [switch]$CheckBossMeteorDeath, [switch]$CheckMeteorEdges, [switch]$CheckPendingSprites, [switch]$CheckClock, [switch]$PerformanceContinuous, [string]$GamePath, [string]$FirstCycles='1312D00', [ValidateRange(1,6)][int]$DebugKey=1)
+param([string]$OutputDirectory, [switch]$CheckEdges, [switch]$CheckShield, [switch]$LongRun, [switch]$CheckDebugJump, [switch]$CheckSpriteWaves, [switch]$CheckBossActions, [switch]$CheckBossExit, [switch]$CheckBossPerformance, [switch]$CheckBossMeteorDeath, [switch]$CheckMeteorEdges, [switch]$CheckPendingSprites, [switch]$CheckClock, [switch]$CheckBossDefeat, [switch]$PerformanceContinuous, [string]$GamePath, [string]$FirstCycles='1312D00', [ValidateRange(1,7)][int]$DebugKey=1)
 $ErrorActionPreference='Stop'
 $game=Join-Path $PSScriptRoot 'kult-diabolic.xex'
 if ($GamePath) {$game=$GamePath}
@@ -25,17 +25,35 @@ $commands=@(
 'gcr $989680',
 ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'flight-later.png')+'"'),
 'db 43FF L1','db 4E75 L10','r','.logclose','.autotest_exit')
-if ($CheckDebugJump -or $CheckSpriteWaves -or $CheckBossActions -or $CheckBossExit -or $CheckBossPerformance -or $CheckBossMeteorDeath -or $CheckMeteorEdges -or $CheckPendingSprites -or $CheckClock) {
+if ($CheckDebugJump) {
+    # Protect the diagnostic pilot while waiting for the shortcut. A blocking
+    # death animation does not poll keyboard shortcuts.
+    $commands=@(foreach ($command in $commands) {
+        if ($command -eq 'gcr $989680') {'e F0BF FF'}
+        $command
+    })
+}
+if ($CheckDebugJump -or $CheckSpriteWaves -or $CheckBossActions -or $CheckBossExit -or $CheckBossPerformance -or $CheckBossMeteorDeath -or $CheckMeteorEdges -or $CheckPendingSprites -or $CheckClock -or $CheckBossDefeat) {
     $commands=$commands[0..($commands.Count-3)]
     # Simulate a held debug number at the two POKEY read sites, then restore runtime code.
-    $keyCode=@(0x1F,0x1E,0x1A,0x18,0x1D,0x1B)[$DebugKey-1]
-    $previewCycles=if ($DebugKey -eq 6) {'400000'} else {'989680'}
+    $keyCode=@(0x1F,0x1E,0x1A,0x18,0x1D,0x1B,0x33)[$DebugKey-1]
+    $previewCycles=if ($DebugKey -ge 6) {'400000'} else {'989680'}
     # The distributed XEX stays unchanged.
     $commands+=@('e 3F50 A9 00 EA',('e 3F57 A9 {0:X2} EA' -f $keyCode),'gcr $200000',
         'e 3F50 AD 0F D2','e 3F57 AD 09 D2','e F398 00','e F0BF FF','db 2D20 L10','db FB8A L2','db FD04 L7',
         ('gcr $'+$previewCycles),
         ('.autotest_saveimage "'+(Join-Path $OutputDirectory 'debug-boss.png')+'"'),
         'db 2D20 L10','r','.logclose','.autotest_exit')
+}
+if ($CheckBossDefeat) {
+    $commands=$commands[0..($commands.Count-3)]
+    $guardian=if ($DebugKey -eq 6) {'01'} else {'00'}
+    $commands+=@(('e FD04 '+$guardian),'e FD0A 00','e 2D20 04','e 2D22 00 58 30','e 2DC0 01 00','e 2D90 00','e F398 00','e F0BF FF')
+    foreach ($frame in 1..28) {
+        $commands+=@('gcr $20000','db 2DC0 L2','db 1BE0 L8','db E957 L2',
+          ('.autotest_saveimage "'+(Join-Path $OutputDirectory ('defeat-'+$frame+'.png'))+'"'))
+    }
+    $commands+=@('.logclose','.autotest_exit')
 }
 if ($CheckClock) {
     $commands=$commands[0..($commands.Count-3)]
@@ -172,6 +190,11 @@ foreach ($name in @('direct-start.png','flight.png','flight-later.png')) {
     if ($capture.LastWriteTime -lt $started) {throw ('Missing fresh emulator capture: '+$name)}
 }
 if ((Get-Content -Raw -LiteralPath $log) -match 'Illegal instruction hit') {throw 'Emulator hit an illegal instruction; inspect gameplay.log.'}
+if ($CheckBossDefeat) {
+    $trace=Get-Content -Raw -LiteralPath $log
+    if ($trace -notmatch '(?im)^2DC0: 09 ') {throw 'Boss defeat burst never started.'}
+    if ($trace -notmatch '(?im)^1BE0: 01 01 01 01 01 01 01 01') {throw 'Missing eight-shot defeat burst.'}
+}
 if ($CheckClock) {
     $trace=Get-Content -Raw -LiteralPath $log
     $states=[regex]::Matches($trace,'(?im)^2D90:\s+([0-9A-F]{2}) ([0-9A-F]{2})')
@@ -236,3 +259,5 @@ if ($CheckBossActions -or $CheckSpriteWaves) {
 }
 if ($CheckDebugJump -and $DebugKey -eq 6 -and (Get-Content -Raw -LiteralPath $log) -notmatch '(?i)2D20:\s+07') {throw 'Debug shortcut did not enter the mixed meteor/enemy encounter.'}
 Write-Output ('Altirra exit code: '+$p.ExitCode)
+
+if ($CheckDebugJump -and $DebugKey -eq 7 -and (Get-Content -Raw -LiteralPath $log) -notmatch '(?i)2D20:\s+05') {throw 'Debug shortcut did not enter diagonal meteors.'}

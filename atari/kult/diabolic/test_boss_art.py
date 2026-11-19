@@ -28,7 +28,7 @@ class BossArt(unittest.TestCase):
    decoded=kult(package(original,ram))[0]
    self.assertEqual(bytes(decoded[0x480:0x1781]),bytes(ram[0x480:0x1781]))
    self.assertEqual(bytes(ram[0xdac0:0xdac0+3]),bytes.fromhex('4cc3da'))
-   self.assertEqual(bytes(ram[0xfed2:0xff12]),bytes(64))
+   self.assertEqual(bytes(ram[0xfe83:0xfe86]),bytes.fromhex('a9008d')) # diagonal meteor controller replaces retired guardian data
    for f,frame in enumerate(b['frames']):
     for tile in range(16):
      pixels=[frame[(tile//4*16+y)*64+tile%4*16+x] for y in range(16) for x in range(16)]

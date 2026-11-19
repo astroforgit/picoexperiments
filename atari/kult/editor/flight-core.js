@@ -8,7 +8,7 @@ function validate(p,lib){
  if(!Array.isArray(p.waves)||p.waves.length!==8||p.waves.some(s=>!Array.isArray(s)||s.length!==48||s.some(w=>!Array.isArray(w)||w.length!==4||w.some((v,i)=>!int(v,i===3?1:0,i===3?16:31)))))throw Error('Invalid wave data');
  if(!Array.isArray(p.motions)||p.motions.length!==32||p.motions.some(m=>!Array.isArray(m)||m.length!==8||m.some(v=>!int(v,-128,127))))throw Error('Invalid movement data');
  if(p.encounters===undefined)p={...p,encounters:Array.from({length:8},()=>Array(48).fill(0))};
- if(!Array.isArray(p.encounters)||p.encounters.length!==8||p.encounters.some(s=>!Array.isArray(s)||s.length!==48||s.some(n=>(!int(n,0,7)||n===5))))throw Error('Invalid encounter types');
+ if(!Array.isArray(p.encounters)||p.encounters.length!==8||p.encounters.some(s=>!Array.isArray(s)||s.length!==48||s.some(n=>(!int(n,0,8)||n===5))))throw Error('Invalid encounter types');
  if(!p.firing||!int(p.firing.mode,0,2)||!int(p.firing.interval,12,180)||!int(p.firing.speed,1,4))throw Error('Invalid firing settings');
  if(p.boss===undefined)p={...p,boss:{pattern:0,difficulty:1}};
  if(p.boss&&p.boss.design===undefined)p={...p,boss:{...p.boss,design:'boss-bone-dragon'}};
@@ -55,7 +55,7 @@ class Encounter{
  get kind(){if(this.options.bossPreview)return 4;if(this.options.guardian)return 5;return this.project.encounters?.[this.sector]?.[this.wave]||0;}
  get bossVulnerable(){return this.bossHP>0&&(this.options.curtainOnly||this.ai.phase===1||this.ai.phase===2);}
  get bossVisible(){return this.bossHP>0&&(this.options.curtainOnly||[1,2,3,6,8].includes(this.ai.phase))&&this.bossX<128;}
- reset(){this.ai={phase:0,timer:0,rng:this.options.aiSeed??0x5d,cooldown:0,art:1,frame:0,direction:0,wait:[]};this.bossX=this.options.curtainOnly?88:128;this.bossTop=32;this.bossWarmup=24;this.bossClock=29;this.attack=null;this.attackCycle=-1;this.bombSuppress=0;this.complete=false;this.bossHP=this.options.guardian?100:this.record[3]*4;this.bossMaxHP=this.bossHP;this.rewarded=false;this.pickups=[];this.collected=[];this.age=0;this.phase=[0,0,0,0];this.enemies=Array.from({length:8},(_,i)=>({i,x:160,y:i*14,hp:this.record[3],trail:[],meteorY:128,wait:i?i*16+24:0}));this.shots=[];this.hostile=[];this.cooldown=0;this.invulnerable=40;this.fireClock=0;this.enemyIndex=0;}
+ reset(){this.ai={phase:0,timer:0,rng:this.options.aiSeed??0x5d,cooldown:0,art:1,frame:0,direction:0,wait:[]};this.bossX=this.options.curtainOnly?88:128;this.bossTop=32;this.bossWarmup=24;this.bossClock=29;this.attack=null;this.attackCycle=-1;this.bombSuppress=0;this.complete=false;this.bossHP=this.options.guardian?100:this.record[3]*4;this.bossMaxHP=this.bossHP;this.rewarded=false;this.deathShots=[];this.deathStarted=false;this.pickups=[];this.collected=[];this.age=0;this.phase=[0,0,0,0];this.enemies=Array.from({length:8},(_,i)=>({i,x:160,y:i*14,hp:this.record[3],trail:[],meteorY:128,wait:i?i*16+24:0}));this.shots=[];this.hostile=[];this.cooldown=0;this.invulnerable=40;this.fireClock=0;this.enemyIndex=0;}
  get record(){return this.project.waves[this.sector][this.wave];}
  update(input={},dt=.06){
   if(this.complete)return;
@@ -80,7 +80,7 @@ class Encounter{
   for(const e of this.enemies){e.x=points[e.i%8][0]+entry-exit;e.y=points[e.i%8][1];
    if(this.kind===7){
     if(e.hp>0){
-     if(e.meteorY<128)e.meteorY=Math.min(255,e.meteorY+[2,3,3,3,3,3,3,3][e.i]);
+     if(e.meteorY<128)e.meteorY=Math.min(255,e.meteorY+[2,3,5,5,5,5,5,5][e.i]);
      else if(e.meteorY===128&&this.age>=[1,57,9,21,33,45,69,81][e.i])e.meteorY=0;
      if(e.meteorY>=128&&e.meteorY!==128)e.meteorY=255;
      // Mark an exact edge crossing as spent too; it must never respawn.
@@ -88,6 +88,14 @@ class Encounter{
      if(e.meteorY<128)e.started=true;
     }
     e.x=127-e.meteorY;e.y=[16,96,0,32,48,64,80,112][e.i];e.visible=e.hp>0&&e.meteorY<128;
+   }
+   else if(this.kind===8){
+    if(e.meteorY<128)e.meteorY+=[2,5,5,5,4,5,3,3][e.i];
+    else if(e.meteorY===128&&this.age>=[12,55,65,53,49,58,42,35][e.i])e.meteorY=0;
+    const start=[127,127,107,107,87,87,67,67][e.i];
+    if((e.meteorY!==128||e.started)&&e.meteorY>start)e.meteorY=255;
+    if(e.meteorY<128)e.started=true;
+    e.x=start-e.meteorY;e.y=e.i&1?127-e.meteorY:e.meteorY;e.visible=e.meteorY<128;
    }
    else if(this.meteor){
     if(e.meteorY<128){e.meteorY+=[2,4,6,3,5,4,7,5][e.i];if(e.meteorY>=128){e.meteorY=128;e.wait=32;}}
@@ -106,9 +114,10 @@ e.trail.push([e.x,e.y]);if(e.trail.length>28)e.trail.shift();}
   for(const e of this.enemies)if(e.visible&&this.player.x<e.x+8&&this.player.x+20>e.x&&this.player.y<e.y+16&&this.player.y+16>e.y&&!this.invulnerable&&!this.shieldTicks){this.hits++;this.invulnerable=40;}
   // Conservative contact envelope for the full 64x64 native tile artwork.
   if(this.boss&&this.bossVisible&&this.player.x+20>this.bossX&&this.player.x<this.bossX+32&&this.player.y+16>this.bossTop&&this.player.y<this.bossTop+64&&!this.invulnerable&&!this.shieldTicks){this.hits++;this.invulnerable=40;}
-  const f={...this.project.firing};if(this.kind)f.mode=0;if(worldStep&&this.boss){if(this.options.curtainOnly)this.curtainAttack();else this.bossActions();}
-  if(worldStep&&f.mode&&++this.fireClock>=f.interval){this.fireClock=0;this.enemyIndex=this.boss?(this.enemyIndex===0?4:0):(this.enemyIndex+1)&7;const e=this.enemies[this.enemyIndex];
-   if(this.hostile.length<4&&e.visible&&e.x>=24&&e.x<120&&e.y+8<124)this.hostile.push({x:e.x,y:e.y+8,style:!this.kind&&(this.record[0]&1)&&!this.hostile.some(b=>b.style)?1:0,dy:f.mode===2?Math.sign(this.player.y-e.y):0});
+  const f={...this.project.firing};if(this.kind&&this.kind!==7)f.mode=0;if(this.kind===7){f.interval=8;f.speed=6;}if(worldStep&&this.boss){if(this.bossHP<=0)this.defeatBurst();else if(this.options.curtainOnly)this.curtainAttack();else this.bossActions();}
+  if(worldStep&&f.mode&&++this.fireClock>=f.interval){this.fireClock=0;this.enemyIndex=this.boss?(this.enemyIndex===0?4:0):(this.enemyIndex+1)&7;if(this.kind===7){for(let n=0;n<6;n++){if(this.enemyIndex<2||this.enemyIndex>7)this.enemyIndex=2;const candidate=this.enemies[this.enemyIndex];if(candidate.visible&&candidate.meteorY>=8&&candidate.meteorY<104)break;this.enemyIndex++;}}
+   const e=this.enemies[this.enemyIndex%8];
+   if(this.hostile.length<4&&(this.kind!==7||(e.i>=2&&e.meteorY>=8&&e.meteorY<104))&&e.visible&&e.x>=24&&e.x<120&&e.y+8<124)this.hostile.push({x:e.x,y:e.y+8,style:!this.kind&&(this.record[0]&1)&&!this.hostile.some(b=>b.style)?1:0,dy:f.mode===2?Math.sign(this.player.y-e.y):0});
   }
   for(const b of this.hostile){if(worldStep&&!b.boss){b.x-=f.speed;b.y+=b.dy;}if((b.boss&&b.art==='orb'?(b.x+6>this.player.x+6&&b.x+2<this.player.x+16&&b.y+12>this.player.y+4&&b.y+4<this.player.y+12):((b.boss?b.x+8>=this.player.x:b.x+2>this.player.x)&&b.x<this.player.x+20&&(b.boss?b.y+16>=this.player.y:b.y+2>this.player.y)&&b.y<this.player.y+16))){if(!this.invulnerable&&!this.shieldTicks){this.hits++;this.invulnerable=40;}if(!b.boss)b.x=-99;}}
   this.hostile=this.hostile.filter(b=>b.x>=0&&b.y>=0&&b.y<(b.boss?128:125));
@@ -116,7 +125,17 @@ e.trail.push([e.x,e.y]);if(e.trail.length>28)e.trail.shift();}
   if(this.boss&&this.bossHP<=0&&!this.rewarded){this.rewarded=true;this.score+=1000;this.pickups=this.kind===5?[]:[{x:80,y:32,type:'Weapon 2'},{x:96,y:60,type:'Weapon 3'},{x:112,y:88,type:'Shield'}];}
   for(const p of this.pickups){p.x-=2;if(p.x<this.player.x+20&&p.x+8>this.player.x&&p.y<this.player.y+16&&p.y+16>this.player.y){this.collected.push(p.type);if(p.type==='Clock')this.clocks=Math.min(3,this.clocks+1);else if(p.type==='Bomb')this.bombs=Math.min(3,this.bombs+1);else if(p.type==='Shield')this.shields=Math.min(3,this.shields+1);else this.weapon=Number(p.type.slice(-1));p.x=-100;}}
   this.pickups=this.pickups.filter(p=>p.x>-8);
-  if((!this.kind&&this.age>=150)||(this.meteor&&this.age>=192&&this.enemies.every(e=>!e.visible))||(this.boss&&this.rewarded&&!this.pickups.length)){if(this.options.loop===false)this.complete=true;else this.reset();}
+  if((!this.kind&&this.age>=150)||(this.meteor&&this.age>=192&&this.enemies.every(e=>!e.visible))||(this.kind===8&&this.enemies.every(e=>e.meteorY===255))||(this.boss&&this.rewarded&&this.ai.phase===10&&!this.pickups.length)){if(this.options.loop===false)this.complete=true;else this.reset();}
+ }
+ defeatBurst(){
+  this.hostile=[];
+  if(!this.deathStarted){
+   this.deathStarted=true;this.ai.phase=9;this.ai.timer=0;
+   this.deathShots=Array.from({length:8},(_,i)=>({x:this.bossX+12,y:this.bossTop+24,dx:[-3,-2,0,2,3,2,0,-2][i],dy:[0,-4,-6,-4,0,4,6,4][i]}));
+  }else if(this.ai.phase===9){
+   if(++this.ai.timer>=24){this.deathShots=[];this.ai.phase=10;}
+   else{for(const b of this.deathShots){b.x+=b.dx;b.y+=b.dy;}this.deathShots=this.deathShots.filter(b=>b.x>=0&&b.x<128&&b.y>=0&&b.y<128);}
+  }
  }
  bossActions(){
   const a=this.ai,rand=()=>a.rng=(a.rng>>1)^((a.rng&1)?0xb8:0),count=()=>this.hostile.length;

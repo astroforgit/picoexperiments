@@ -30,7 +30,7 @@ def package(p,ram):
     # Keep a literal prefix in the retired tile bank: compressing empty space too
     # aggressively lets the in-place decoder overwrite its unread input.
     # Retired map resources stay literal, preserving the original input gap.
-    # 3248 literal bytes plus the preceding sprite bank preserve the later gap;
+    # 3104 literal bytes plus the preceding sprite bank preserve the later gap;
     # the remaining star tables are compressed. Replay below checks every block.
     streams=[bytearray(),bytearray()];phase=0;old=p['banks']['ram']
     for block in p['blocks']:
@@ -41,7 +41,7 @@ def package(p,ram):
             streams[phase]+=rle(struct.pack('<HH',0x1780,0xc80))+rle(ram[0x1780:0x2400])
         streams[phase]+=rle(struct.pack('<HH',a,len(data)))
         literal=lambda values:b''.join(bytes([0xbf,v,1]) if v in (0xbf,0xcf) else bytes([v]) for v in values)
-        if a==0x2400:encoded=literal(data[:3248])+rle(data[3248:])
+        if a==0x2400:encoded=literal(data[:3104])+rle(data[3104:])
         elif a==0x480:encoded=literal(data)
         else:encoded=rle(data)
         streams[phase]+=encoded
@@ -199,6 +199,7 @@ def create_runtime(settings=None,assemble=False,write_files=False):
         0xF814:('d003','eaea'), # bombs also available during guardian encounters
 
         0xF891:('8d774e','208763'), # initialize independent bombs and shields
+        0xFC64:('a203a0','4c7cfc'), # skip legacy guardian/player explosion
         0xF39D:('a2','60'), # obsolete four-weapon HUD renderer
         0xF81F:('2020f42066f42075f4208cf420adf420c1f4','eaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaea'),
         0xF48D:('90','0e'), 0xF491:('64','68'), # score at x80,y12
@@ -245,6 +246,8 @@ def create_runtime(settings=None,assemble=False,write_files=False):
         0xF75F:('21','3d'),        # enable single-line player DMA
         0xF975:('c900','29aa'),    # pixel 01 stars cannot cause collisions
     }
+    from sound_effects import patches as sound_patches
+    patches.update(sound_patches(old))
     for at,(expected,new) in patches.items():
         assert old[at:at+len(bytes.fromhex(expected))]==bytes.fromhex(expected),hex(at)
         ram[at:at+len(bytes.fromhex(new))]=bytes.fromhex(new)
@@ -258,6 +261,12 @@ def create_runtime(settings=None,assemble=False,write_files=False):
         if assemble:subprocess.run([os.environ.get('MADS','mads'),str(ROOT/(name+'.asm')),'-o:'+str(ROOT/(name+'.bin'))],check=True,stdout=subprocess.PIPE)
         code=(ROOT/(name+'.bin')).read_bytes();assert len(code)<=limit
         ram[base:base+len(code)]=code
+    if assemble:subprocess.run([os.environ.get('MADS','mads'),str(ROOT/'boss-defeat.asm'),'-o:'+str(ROOT/'boss-defeat.bin')],check=True,stdout=subprocess.PIPE)
+    defeat=(ROOT/'boss-defeat.bin').read_bytes();assert len(defeat)<=0xc7
+    ram[0xf39e:0xf39e+len(defeat)]=defeat
+    if assemble:subprocess.run([os.environ.get('MADS','mads'),str(ROOT/'diagonal.asm'),'-o:'+str(ROOT/'diagonal.bin')],check=True,stdout=subprocess.PIPE)
+    diagonal=(ROOT/'diagonal.bin').read_bytes();assert len(diagonal)<=0x8f
+    ram[0xfe83:0xff12]=diagonal+bytes(0x8f-len(diagonal))
     return p,ram,patches,frames
 
 def main():

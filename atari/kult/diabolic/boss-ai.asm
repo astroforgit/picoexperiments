@@ -37,8 +37,7 @@ SubHealth
  lda $2D22
 Alive
  bne Live
- jsr $0303
- rts
+ jmp $F39E
 Live
  lda $F398
  beq PilotAlive

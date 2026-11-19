@@ -103,6 +103,6 @@ BombDone
  lda $2D20 ; Return the mode AND its zero flag to the original bomb branch.
  rts
 Delays dta 1,57,9,21,33,45,69,81
-Speeds dta 2,3,3,3,3,3,3,3
+Speeds dta 2,3,5,5,5,5,5,5
 Rows dta 16,96,0,32,48,64,80,112
  ert * > $2500

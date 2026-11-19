@@ -1,4 +1,4 @@
-; TEMPORARY DEBUG: 1 skull, 2 top, 3 bottom, 4 right, 5 top/bottom, 6 mixed rocks/enemies.
+; TEMPORARY DEBUG: 1 skull, 2 top, 3 bottom, 4 right, 5 top/bottom, 6 mixed rocks/enemies, 7 diagonal meteors.
 ; POKEY key codes verified against Altirra uikeyboard.cpp.
  opt h-
  org $3F50
@@ -8,7 +8,7 @@ DebugWave
  bne Released
  lda $D209
  and #$3F
- ldx #5
+ ldx #6
 FindKey
  cmp Keys,x
  beq Pressed
@@ -61,7 +61,7 @@ ClearActors
  sta $7482,x
  dex
  bpl ClearActors
- ldx #5
+ ldx #6
 ClearPlayerShots
  sta $74E8,x
  dex
@@ -78,6 +78,6 @@ ClearEnemyShots
  lda #40
  sta $F0BF
  jmp $FB8C
-Keys dta $1F,$1E,$1A,$18,$1D,$1B
-Kinds dta $80,$20,$40,$60,$C0,$E0
+Keys dta $1F,$1E,$1A,$18,$1D,$1B,$33
+Kinds dta $80,$20,$40,$60,$C0,$E0,$A0
  ert * > $4000

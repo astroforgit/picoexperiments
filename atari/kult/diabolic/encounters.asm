@@ -170,7 +170,11 @@ MoveEncounter
  bne NotMixedMove
  jmp $2423
 NotMixedMove
- lda Mode
+ cmp #5
+ bne NotDiagonalMove
+ jmp $FE83
+NotDiagonalMove
+ cmp #0
  bne SpecialMove
  lda #1
  sta Age ; This wave now owns its positions; allow ordinary enemy drawing.

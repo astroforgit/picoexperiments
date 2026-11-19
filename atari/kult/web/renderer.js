@@ -20,6 +20,7 @@ class Renderer{
   if(e.shieldTicks||!e.invulnerable||e.tick%4<2)g.drawImage(this.sprite(e.project.ship,frame),e.player.x*4,e.player.y*2,80,32);
   g.fillStyle='#fff';for(const b of e.shots)g.fillRect(b.x*4,b.y*2,8,2);
   for(const b of e.hostile){if(b.boss){g.drawImage(this.sprite(b.art==='orb'?'boss-orb':b.art==='meteor'?'redesign-14':'original-17',b.art==='orb'||b.art==='meteor'?0:2+((e.bossClock>>2)&1)),Math.round(b.x*4),Math.round(b.y*2),32,32);}else if(b.style){for(let y=0;y<8;y++)for(let x=0;x<8;x++)if(this.data.playerBullet[y]&(128>>x))g.fillRect(Math.round(b.x*4)+x*4,Math.round(b.y*2)+y*2,4,2);}else g.fillRect(Math.round(b.x*4),Math.round(b.y*2),16,8);}
+  for(const b of e.deathShots||[])g.drawImage(this.sprite('boss-orb',0),Math.round(b.x*4),Math.round(b.y*2),32,32);
   if(e.shieldTicks){g.strokeStyle='#fff';g.lineWidth=2;g.beginPath();g.ellipse(e.player.x*4+40,e.player.y*2+16,44,20,0,0,Math.PI*2);g.stroke();}
   for(const p of e.pickups){const index=p.type==='Clock'?5:p.type==='Bomb'?6:p.type==='Shield'?4:Number(p.type.slice(-1))-1;g.drawImage(this.sprite(this.data.pickups[index].id),p.x*4,p.y*2,32,32);}
   g.restore();if(hud)this.hud(e);

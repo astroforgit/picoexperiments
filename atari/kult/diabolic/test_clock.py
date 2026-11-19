@@ -39,7 +39,7 @@ class Clock(unittest.TestCase):
   m[0x80:0x82]=[0,0x44];m[0x4401]=kind<<5;m[0xfb8a]=0;m[0xfc09]=4;c.a=0
   call(c,0x3b00)
  def test_every_wave_moves_on_every_third_update(self):
-  for mode in (0,1,2,3,4,6,7):
+  for mode in (0,1,2,3,4,5,6,7):
    a=self.cpu();b=self.cpu();self.load(a,mode);self.load(b,mode);self.press(b)
    for tick in range(20):
     if tick:call(b,0x2e00)

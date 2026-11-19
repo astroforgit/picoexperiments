@@ -5,7 +5,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  await page.goto('http://127.0.0.1:8772/flight/');await page.waitForSelector('#workspace:not([hidden])');
  const report=await page.evaluate(()=>{
   const results=[];
-  for(const kind of [0,1,2,3,4,6,7]){
+  for(const kind of [0,1,2,3,4,6,7,8]){
    const p=structuredClone(project);p.encounters[0][0]=kind;p.firing.mode=0;
    const a=new FlightWorkshop.Encounter(p,payload.sine,0,0,{loop:false}),b=new FlightWorkshop.Encounter(p,payload.sine,0,0,{loop:false});
    a.invulnerable=b.invulnerable=999;

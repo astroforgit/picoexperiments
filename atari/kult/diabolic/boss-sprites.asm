@@ -181,6 +181,9 @@ UpdateDone
  rts
 
 HitSprite
+ lda $2DC0
+ cmp #9
+ bcs HitDone
  lda $F0BF
  ora $F398
  ora $2D61
@@ -326,7 +329,10 @@ DrawGuardian
 DrawBoss
  lda $2D22
 DrawHealth
- beq EarlyDone
+ bne DrawReady
+ lda $2DC0
+ cmp #9
+ bne EarlyDone
  jmp DrawReady
 EarlyDone
  rts

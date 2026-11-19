@@ -25,4 +25,25 @@ for(const [id,key] of [['touchWeapon','weapon'],['touchBomb','bomb'],['touchShie
 fetch('/api/diabolic').then(r=>{if(!r.ok)throw Error('Game assets unavailable');return r.json();}).then(d=>{payload=d;project=FlightWorkshop.validate(d.project,d.catalog);if(params.get('draft')==='1'){const draft=localStorage.getItem('kult-diabolic-simulator-draft');if(!draft)throw Error('Draft unavailable. Open the simulator again from the wave editor.');project=FlightWorkshop.validate(JSON.parse(draft),d.catalog);}$('source').textContent=params.get('draft')==='1'?'Playing your editor draft. Atari files are unchanged.':'Playing the currently applied Atari project.';renderer=new DiabolicRenderer(canvas,payload);start();requestAnimationFrame(frame);}).catch(e=>{$('source').textContent=e.message+' Run python3 editor/start-background.py from the Kult folder, then open http://127.0.0.1:8772/web/.';$('stateLabel').textContent='Unable to load';});
 
 function audioReady(){try{if(!audio)audio=new (window.AudioContext||window.webkitAudioContext)();if(audio.state==='suspended')audio.resume().catch(()=>{});}catch{muted=true;}}
-function sound(name){if(muted||!audio)return;const now=audio.currentTime,o=audio.createOscillator(),g=audio.createGain();const spec={shot:[480,110,.055,.035],explode:[110,25,.2,.06],bomb:[65,15,.55,.09],pickup:[480,960,.16,.05],stage:[220,440,.35,.035],clear:[440,880,.4,.05],hit:[180,90,.04,.025],end:[150,30,.6,.06]}[name];if(!spec)return;o.type=name==='pickup'?'sine':'square';o.frequency.setValueAtTime(spec[0],now);o.frequency.exponentialRampToValueAtTime(spec[1],now+spec[2]);g.gain.setValueAtTime(spec[3],now);g.gain.exponentialRampToValueAtTime(.001,now+spec[2]);o.connect(g);g.connect(audio.destination);o.start(now);o.stop(now+spec[2]);o.onended=()=>{o.disconnect();g.disconnect();};}
+function sound(name){
+ if(muted||!audio)return;
+ const spec={shot:[920,140,.12,.035],explode:[150,32,.32,.065],bomb:[80,18,.8,.075],pickup:[520,2080,.25,.04],stage:[330,660,.35,.035],clear:[550,1100,.45,.05],hit:[210,42,.11,.04],end:[100,22,.65,.06]}[name];
+ if(!spec)return;
+ const now=audio.currentTime,o=audio.createOscillator(),g=audio.createGain();
+ o.type=name==='pickup'?'sine':'square';
+ o.frequency.setValueAtTime(spec[0],now);
+ o.frequency.exponentialRampToValueAtTime(name==='shot'?2100:spec[0]*1.2,now+.025);
+ o.frequency.exponentialRampToValueAtTime(spec[1],now+spec[2]);
+ g.gain.setValueAtTime(spec[3],now);g.gain.exponentialRampToValueAtTime(.001,now+spec[2]);
+ o.connect(g);g.connect(audio.destination);o.start(now);o.stop(now+spec[2]);
+ o.onended=()=>{o.disconnect();g.disconnect();};
+ if(['explode','bomb','hit','end'].includes(name)){
+  const n=audio.createBufferSource(),filter=audio.createBiquadFilter(),gain=audio.createGain();
+  const buffer=audio.createBuffer(1,Math.ceil(audio.sampleRate*spec[2]),audio.sampleRate),samples=buffer.getChannelData(0);
+  for(let i=0;i<samples.length;i++)samples[i]=(Math.random()*2-1)*(0.65+0.35*Math.sin(i/audio.sampleRate*85));
+  n.buffer=buffer;filter.type='lowpass';filter.frequency.setValueAtTime(name==='hit'?3600:2200,now);filter.frequency.exponentialRampToValueAtTime(100,now+spec[2]);
+  gain.gain.setValueAtTime(spec[3]*1.4,now);gain.gain.exponentialRampToValueAtTime(.001,now+spec[2]);
+  n.connect(filter);filter.connect(gain);gain.connect(audio.destination);n.start(now);
+  n.onended=()=>{n.disconnect();filter.disconnect();gain.disconnect();};
+ }
+}

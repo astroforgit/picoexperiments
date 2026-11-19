@@ -94,6 +94,18 @@ WaveGate
  INC $2dc0
  JMP L03B1
 KeepEncounter
+ LDA $2dc0
+ CMP #10
+ BEQ FinishedBurst
+ LDA $fd04
+ BNE HoldBurst
+ LDA $2d20
+ CMP #4
+ BNE FinishedBurst
+HoldBurst
+ CLC
+ RTS
+FinishedBurst
  LDA $fd04
  BNE L03AE
  LDA $2d20

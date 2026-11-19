@@ -22,7 +22,7 @@ class DebugJump(unittest.TestCase):
    self.assertEqual(before,bytes(m[0x4000:0x4400])+bytes(m[0x6384:0x6684]))
  def test_reordered_wave_and_missing_boss(self):
   c=MPU(memory=list(self.ram));m=c.memory;m[0x4e75]=0;m[0xd20f]=0;m[0xd209]=0x1f;m[0x74e0:0x74e8]=[16]*8
-  m[0x4400+7*4+1]&=31;m[0x4400+17*4+1]|=128
+  m[0x4400+7*4+1]&=31;m[0x4400+17*4+1]=(m[0x4400+17*4+1]&31)|128
   self.call(c);self.assertEqual(m[0xfb8a],18);self.assertEqual(m[0x2d20],4)
   c=MPU(memory=list(self.ram));m=c.memory;m[0x4e75]=0;m[0xd20f]=0;m[0xd209]=0x1f;m[0x74e0:0x74e8]=[16]*8;m[0xfb8a]=5
   for w in range(48):m[0x4401+w*4]&=31
@@ -43,19 +43,16 @@ class DebugJump(unittest.TestCase):
    c=MPU(memory=list(self.ram));m=c.memory;m[0xd20f]=0;m[0xd209]=key;m[0xfb8a]=5;m[0x74e0:0x74e8]=[16]*8
    for wave in range(48):m[0x4401+wave*4]&=31
    self.call(c);self.assertEqual(m[0xfb8a],5)
- def test_dragon_shortcut_from_every_encounter_and_sector(self):
+ def test_mixed_shortcut_from_every_encounter_and_sector(self):
   for stage in range(8):
    for previous in (0x1f,0x1e,0x1a,0x18,0x1d):
     c=MPU(memory=list(self.ram));m=c.memory;m[0x4e75]=stage;m[0xd20f]=0;m[0xd209]=previous
     self.call(c)
     m[0xd209]=0x1b;self.call(c)
-    self.assertEqual(m[0xfd04],1);self.assertEqual(m[0xfd0a],100)
-    self.assertEqual(m[0x4e79],33);self.assertEqual(m[0xfd05],0)
-    self.assertEqual(m[0x74e0:0x74e8],[0]*8)
+    self.assertEqual(m[0xfd04],0);self.assertEqual(m[0x2d20],7);self.assertEqual(m[0xfb8a],12)
     self.assertEqual(m[0x74e8:0x74ee],[0]*6)
-    m[0xfd0a]=37;self.call(c);self.assertEqual(m[0xfd0a],37)
+    m[0x2d21]=37;self.call(c);self.assertEqual(m[0x2d21],37)
     m[0xd20f]=4;self.call(c);m[0xd20f]=0;self.call(c)
-    self.assertEqual(m[0xfd0a],100)
-    m[0xd209]=0x1f;self.call(c)
-    self.assertEqual(m[0xfd04],0);self.assertEqual(m[0x2d20],4)
+    self.assertEqual(m[0x2d21],0)
+    m[0xd209]=0x1f;self.call(c);self.assertEqual(m[0x2d20],4)
 if __name__=='__main__':unittest.main()
